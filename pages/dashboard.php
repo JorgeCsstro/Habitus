@@ -40,8 +40,18 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Habitus Zone</title>
+    
+    <!-- Core CSS -->
     <link rel="stylesheet" href="../css/main.css">
+    
+    <!-- Component CSS -->
+    <link rel="stylesheet" href="../css/components/sidebar.css">
+    <link rel="stylesheet" href="../css/components/header.css">
+    <link rel="stylesheet" href="../css/components/scrollbar.css">
+    
+    <!-- Page-specific CSS -->
     <link rel="stylesheet" href="../css/pages/dashboard.css">
+    
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
 </head>
 <body>

@@ -1,200 +1,6 @@
-/* dashboard.css */
+/* dashboard.css - Styles specific to the dashboard page */
 
-/* Main Layout */
-.main-container {
-    display: flex;
-    height: 100vh;
-    width: 100%;
-    overflow: hidden;
-}
-
-/* Font Declarations for Local Fonts */
-@font-face {
-    font-family: 'Quicksand';
-    src: url('../fonts/Quicksand-Regular.woff2') format('woff2'),
-         url('../fonts/Quicksand-Regular.woff') format('woff');
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Quicksand';
-    src: url('../fonts/Quicksand-Medium.woff2') format('woff2'),
-         url('../fonts/Quicksand-Medium.woff') format('woff');
-    font-weight: 500;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Quicksand';
-    src: url('../fonts/Quicksand-SemiBold.woff2') format('woff2'),
-         url('../fonts/Quicksand-SemiBold.woff') format('woff');
-    font-weight: 600;
-    font-style: normal;
-    font-display: swap;
-}
-
-/* Left Navigation Menu */
-.left-menu {
-    display: flex;
-    flex-direction: column;
-    width: 70px;
-    background-color: #f5f5f5;
-    border-right: 1px solid #e0e0e0;
-    padding: 15px 0;
-    align-items: center;
-}
-
-.menu-item {
-    width: 50px;
-    height: 50px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 15px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.menu-item:hover, .menu-item.active {
-    background-color: #e9e9e9;
-}
-
-.menu-item img {
-    width: 24px;
-    height: 24px;
-}
-
-/* Main Content Container */
-.content-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-/* Header */
-.main-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    border-bottom: 1px solid #e0e0e0;
-    background-color: #ffffff;
-}
-
-.user-info {
-    display: flex;
-    align-items: center;
-}
-
-.user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #f0f0f0;
-    overflow: hidden;
-    margin-right: 15px;
-}
-
-.user-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.habitus-name {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
-    font-family: 'Quicksand', sans-serif;
-}
-
-.user-actions {
-    display: flex;
-    align-items: center;
-}
-
-.hcoin-balance {
-    display: flex;
-    align-items: center;
-    background-color: #f8f8f8;
-    border-radius: 20px;
-    padding: 8px 15px;
-    margin-right: 15px;
-}
-
-.hcoin-balance img {
-    width: 20px;
-    height: 20px;
-    margin-right: 8px;
-}
-
-.hcoin-balance span {
-    font-weight: 600;
-    color: #333;
-}
-
-/* HCoin notification */
-.hcoin-notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background-color: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    padding: 15px 20px;
-    display: flex;
-    align-items: center;
-    transform: translateY(-100px);
-    opacity: 0;
-    transition: all 0.5s ease;
-    z-index: 1000;
-}
-
-.hcoin-notification.show {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-.hcoin-notification img {
-    width: 24px;
-    height: 24px;
-    margin-right: 10px;
-}
-
-.hcoin-notification span {
-    font-weight: 600;
-    color: #333;
-}
-
-.tasks-button, .messages-button, .profile-button {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #f5f5f5;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-left: 10px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.tasks-button:hover, .messages-button:hover, .profile-button:hover {
-    background-color: #e9e9e9;
-}
-
-.tasks-button img, .messages-button img, .profile-button img {
-    width: 20px;
-    height: 20px;
-}
-
-/* Dashboard Content with More Contrast */
+/* Dashboard Content Layout */
 .dashboard-content {
     flex: 1;
     display: grid;
@@ -204,62 +10,6 @@
     padding: 20px;
     overflow-y: auto;
     background-color: #eaeaea; /* Darker background for more contrast */
-}
-
-/* Enhanced Panel Styling with Stronger Borders */
-.panel {
-    background-color: #ffffff;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Stronger shadow */
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border: 1px solid #d8d8d8; /* Darker, more visible border */
-    margin-bottom: 5px; /* Add some space between panels */
-}
-
-/* Enhanced Panel Header Styling - Centered and Larger */
-.panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: center; /* Center the content */
-    padding: 18px 15px; /* Slightly more padding for height */
-    border-bottom: 2px solid #e0e0e0; /* Thicker border */
-    background-color: #f0f0f0; /* Slightly darker gray for more contrast */
-    text-align: center; /* Center text */
-}
-
-.panel-header img {
-    width: 22px; /* Slightly larger icon */
-    height: 22px;
-    margin-right: 12px;
-}
-
-.panel-header h2 {
-    margin: 0;
-    font-size: 1.25rem; /* Larger font size */
-    font-weight: 600; /* Less bold for more relaxed look */
-    color: #333;
-    font-family: 'Quicksand', 'Avenir Next', 'Segoe UI', sans-serif; /* More calm/relaxed font */
-    letter-spacing: 0.02em; /* Slightly increased letter spacing for relaxed look */
-}
-
-/* Panel Content Enhancement */
-.panel-content {
-    flex: 1;
-    padding: 15px;
-    overflow-y: auto;
-    background-color: #ffffff;
-    border-bottom: 1px solid #e0e0e0; /* Add border to bottom of content */
-}
-
-/* Panel Footer Enhancement */
-.panel-footer {
-    padding: 15px;
-    border-top: 2px solid #e0e0e0; /* Thicker border */
-    display: flex;
-    justify-content: center;
-    background-color: #f0f0f0; /* Match header background */
 }
 
 /* Panel Placements */
@@ -300,24 +50,24 @@
 .daily-item, .goal-item, .challenge-item {
     display: flex;
     align-items: center;
-    padding: 12px 15px; /* More padding */
+    padding: 12px 15px;
     border-radius: 8px;
-    background-color: #ffffff; /* White background */
-    margin-bottom: 10px; /* More space between items */
+    background-color: #ffffff;
+    margin-bottom: 10px;
     transition: all 0.2s;
-    border: 1px solid #e0e0e0; /* Add border */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03); /* Subtle shadow */
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
 }
 
 .daily-item:hover, .goal-item:hover, .challenge-item:hover {
     background-color: #f8f8f8;
-    border-color: #d0d0d0; /* Darker border on hover */
-    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.05); /* Enhanced shadow on hover */
+    border-color: #d0d0d0;
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.05);
 }
 
 .daily-item.completed, .goal-item.completed, .challenge-item.completed {
     background-color: #f0f9f0;
-    border: 1px solid #c8e6c9; /* Green-tinted border for completed items */
+    border: 1px solid #c8e6c9;
 }
 
 .daily-bullet, .goal-bullet, .challenge-bullet {
@@ -379,19 +129,6 @@
     filter: brightness(10);
 }
 
-/* Empty Message Enhancement */
-.empty-message {
-    color: #777;
-    text-align: center;
-    font-style: italic;
-    padding: 30px 20px;
-    background-color: #f8f8f8;
-    border-radius: 8px;
-    margin: 10px 0;
-    border: 1px dashed #ccc; /* Dashed border for empty state */
-    font-family: 'Quicksand', sans-serif;
-}
-
 /* Shop Grid */
 .shop-grid {
     display: grid;
@@ -405,8 +142,8 @@
     border-radius: 8px;
     overflow: hidden;
     background-color: #f5f5f5;
-    border: 1px solid #e0e0e0; /* Add border to shop items */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Add shadow to shop items */
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .shop-item img {
@@ -424,7 +161,7 @@
     padding: 3px 8px;
     display: flex;
     align-items: center;
-    border: 1px solid rgba(0, 0, 0, 0.1); /* Add border to price tag */
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .item-price img {
@@ -442,13 +179,13 @@
 
 /* Habitus Preview */
 .habitus-preview {
-    width: calc(100% - 10px); /* Make it slightly narrower */
+    width: calc(100% - 10px);
     aspect-ratio: 1/1;
     background-color: #f5f5f5;
     border-radius: 8px;
     overflow: hidden;
-    margin: 5px auto 15px; /* Center it with margin auto */
-    border: 1px solid #e0e0e0; /* Add border to preview */
+    margin: 5px auto 15px;
+    border: 1px solid #e0e0e0;
 }
 
 .habitus-preview img {
@@ -461,7 +198,7 @@
 .habitus-room-container {
     width: 100%;
     height: 100%;
-    overflow: hidden; /* Prevent any overflow */
+    overflow: hidden;
     position: relative;
 }
 
@@ -471,8 +208,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 10px; /* Slightly reduced padding */
-    overflow: hidden; /* Change from overflow-y: auto to overflow: hidden */
+    padding: 10px;
+    overflow: hidden;
 }
 
 /* Enhanced Isometric Room */
@@ -596,7 +333,7 @@
     overflow: hidden;
     cursor: pointer;
     border: 2px solid transparent;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Add shadow to thumbnails */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .room-thumbnail.active {
@@ -607,66 +344,4 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-}
-
-/* Enhanced Buttons with Borders */
-.add-new-button, .go-to-shop-button, .edit-habitus-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 18px;
-    border-radius: 20px;
-    font-weight: 600; /* Bolder text */
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08); /* Stronger shadow */
-    width: 100%;
-    max-width: 220px;
-    border: 1px solid; /* Add border that matches text color */
-    font-family: 'Quicksand', sans-serif;
-}
-
-.add-new-button:hover, .go-to-shop-button:hover, .edit-habitus-button:hover {
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-    transform: translateY(-1px); /* Slight lift effect */
-}
-
-/* Specific button types */
-.add-new-button {
-    background-color: #f0f7ff;
-    color: #3a7bd5;
-    border-color: #cde1ff; /* Light blue border */
-}
-
-.add-new-button:hover {
-    background-color: #e1f0ff;
-    border-color: #a8c7f7; /* Darker border on hover */
-}
-
-.go-to-shop-button {
-    background-color: #fff0e6;
-    color: #e67e22;
-    border-color: #ffd7b3; /* Light orange border */
-}
-
-.go-to-shop-button:hover {
-    background-color: #ffe8d9;
-    border-color: #f7ba8c; /* Darker border on hover */
-}
-
-.edit-habitus-button {
-    background-color: #f0f9f0;
-    color: #4CAF50;
-    border-color: #cfebd0; /* Light green border */
-}
-
-.edit-habitus-button:hover {
-    background-color: #e3f5e3;
-    border-color: #a5d6a7; /* Darker border on hover */
-}
-
-.add-new-button img, .go-to-shop-button img, .edit-habitus-button img {
-    width: 16px;
-    height: 16px;
-    margin-right: 8px;
 }

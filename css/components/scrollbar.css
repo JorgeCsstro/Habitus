@@ -1,0 +1,141 @@
+/* scrollbar.css - Custom scrollbar styling for non-index pages */
+
+/* Apply custom scrollbar to all pages except index.php */
+html:not(.index-page) {
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: #cccccc #f5f5f5; /* For Firefox */
+}
+
+/* For WebKit browsers (Chrome, Safari, Edge) */
+html:not(.index-page)::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+html:not(.index-page)::-webkit-scrollbar-track {
+    background: #f5f5f5;
+    border-radius: 4px;
+}
+
+html:not(.index-page)::-webkit-scrollbar-thumb {
+    background-color: #cccccc;
+    border-radius: 4px;
+    border: 2px solid #f5f5f5;
+}
+
+html:not(.index-page)::-webkit-scrollbar-thumb:hover {
+    background-color: #aaaaaa;
+}
+
+/* Scrollable content containers */
+.content-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Specific content areas that need scrolling */
+.tasks-content,
+.shop-content,
+.habitus-content,
+.dashboard-content,
+.settings-content,
+.profile-content,
+.subscription-content {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: #cccccc #f5f5f5; /* For Firefox */
+}
+
+/* Apply custom scrollbars to content areas */
+.tasks-content::-webkit-scrollbar,
+.shop-content::-webkit-scrollbar,
+.habitus-content::-webkit-scrollbar,
+.dashboard-content::-webkit-scrollbar,
+.settings-content::-webkit-scrollbar,
+.profile-content::-webkit-scrollbar,
+.subscription-content::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.tasks-content::-webkit-scrollbar-track,
+.shop-content::-webkit-scrollbar-track,
+.habitus-content::-webkit-scrollbar-track,
+.dashboard-content::-webkit-scrollbar-track,
+.settings-content::-webkit-scrollbar-track,
+.profile-content::-webkit-scrollbar-track,
+.subscription-content::-webkit-scrollbar-track {
+    background: #f5f5f5;
+    border-radius: 3px;
+}
+
+.tasks-content::-webkit-scrollbar-thumb,
+.shop-content::-webkit-scrollbar-thumb,
+.habitus-content::-webkit-scrollbar-thumb,
+.dashboard-content::-webkit-scrollbar-thumb,
+.settings-content::-webkit-scrollbar-thumb,
+.profile-content::-webkit-scrollbar-thumb,
+.subscription-content::-webkit-scrollbar-thumb {
+    background-color: #cccccc;
+    border-radius: 3px;
+}
+
+.tasks-content::-webkit-scrollbar-thumb:hover,
+.shop-content::-webkit-scrollbar-thumb:hover,
+.habitus-content::-webkit-scrollbar-thumb:hover,
+.dashboard-content::-webkit-scrollbar-thumb:hover,
+.settings-content::-webkit-scrollbar-thumb:hover,
+.profile-content::-webkit-scrollbar-thumb:hover,
+.subscription-content::-webkit-scrollbar-thumb:hover {
+    background-color: #aaaaaa;
+}
+
+/* Panel content scrolling */
+.panel-content {
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: #cccccc #f5f5f5; /* For Firefox */
+}
+
+.panel-content::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+    background-color: #cccccc;
+    border-radius: 2px;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+    background-color: #aaaaaa;
+}
+
+/* Notifications scrollbar */
+.notifications-list {
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: #cccccc #f5f5f5; /* For Firefox */
+}
+
+.notifications-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.notifications-list::-webkit-scrollbar-track {
+    background: #f5f5f5;
+}
+
+.notifications-list::-webkit-scrollbar-thumb {
+    background-color: #cccccc;
+    border-radius: 2px;
+}
+
+.notifications-list::-webkit-scrollbar-thumb:hover {
+    background-color: #aaaaaa;
+}

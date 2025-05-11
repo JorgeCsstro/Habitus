@@ -32,11 +32,21 @@ $challenges = getUserChallenges($_SESSION['user_id']);
 
 <!DOCTYPE html>
 <html lang="en">
+<!-- Update the head section of tasks.php -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tasks - <?php echo SITE_NAME; ?></title>
+    
+    <!-- Core CSS -->
     <link rel="stylesheet" href="../css/main.css">
+    
+    <!-- Component CSS -->
+    <link rel="stylesheet" href="../css/components/sidebar.css">
+    <link rel="stylesheet" href="../css/components/header.css">
+    <link rel="stylesheet" href="../css/components/scrollbar.css">
+    
+    <!-- Page-specific CSS -->
     <link rel="stylesheet" href="../css/pages/tasks.css">
 </head>
 <body>
