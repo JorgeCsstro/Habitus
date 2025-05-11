@@ -1,4 +1,6 @@
 <?php
+// dashboard.php
+
 // Include necessary files
 require_once '../php/include/config.php';
 require_once '../php/include/db_connect.php';
@@ -58,7 +60,7 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
                 <!-- Dailies Panel -->
                 <div class="panel dailies-panel">
                     <div class="panel-header">
-                        <img src="../images/icons/calendar.svg" alt="Calendar">
+                        <img src="../images/icons/dailies-icon-light.webp" alt="Calendar">
                         <h2>Dailies</h2>
                     </div>
                     <div class="panel-content">
@@ -77,7 +79,7 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
                                         <button class="complete-button <?php echo ($daily['completed']) ? 'completed' : ''; ?>" 
                                                 data-id="<?php echo $daily['id']; ?>"
                                                 onclick="completeDaily(<?php echo $daily['id']; ?>)">
-                                            <img src="../images/icons/check.svg" alt="Complete">
+                                            <img src="../images/icons/check.webp" alt="Complete">
                                         </button>
                                     </li>
                                 <?php endforeach; ?>
@@ -86,7 +88,7 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
                     </div>
                     <div class="panel-footer">
                         <button class="add-new-button" onclick="location.href='tasks.php?add=daily'">
-                            <img src="../images/icons/add.svg" alt="Add">
+                            <img src="../images/icons/task_add-icon-light.webp" alt="Add">
                             Add new daily...
                         </button>
                     </div>
@@ -95,16 +97,21 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
                 <!-- Featured Shop Panel -->
                 <div class="panel shop-panel">
                     <div class="panel-header">
-                        <img src="../images/icons/shop.svg" alt="Shop">
+                        <img src="../images/icons/shop-icon-light.webp" alt="Shop">
                         <h2>Featured Shop</h2>
                     </div>
                     <div class="panel-content">
                         <div class="shop-grid">
                             <?php foreach ($featuredItems as $item): ?>
                                 <div class="shop-item">
-                                    <img src="<?php echo htmlspecialchars($item['image_path']); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
+                                    <?php
+                                    // Convert image path to WebP
+                                    $imagePath = $item['image_path'];
+                                    $webpPath = preg_replace('/\.(jpg|jpeg|png|gif)$/i', '.webp', $imagePath);
+                                    ?>
+                                    <img src="<?php echo htmlspecialchars($webpPath); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                                     <div class="item-price">
-                                        <img src="../images/icons/hcoin-small.svg" alt="HCoin">
+                                        <img src="../images/icons/hcoin-small.webp" alt="HCoin">
                                         <span><?php echo $item['price']; ?></span>
                                     </div>
                                 </div>
@@ -113,7 +120,7 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
                     </div>
                     <div class="panel-footer">
                         <button class="go-to-shop-button" onclick="location.href='shop.php'">
-                            <img src="../images/icons/cart.svg" alt="Shop">
+                            <img src="../images/icons/cart-icon-light.webp" alt="Shop">
                             Go to Shop
                         </button>
                     </div>
@@ -122,33 +129,26 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
                 <!-- Habitus Preview Panel -->
                 <div class="panel habitus-panel">
                     <div class="panel-header">
-                        <img src="../images/items/home.svg" alt="Habitus">
+                        <img src="../images/icons/home.webp" alt="Habitus">
                         <h2>Habitus</h2>
                     </div>
                     <div class="panel-content">
                         <div class="habitus-preview">
                             <?php if ($habitusData && isset($habitusData['preview_image'])): ?>
-                                <img src="<?php echo htmlspecialchars($habitusData['preview_image']); ?>" alt="Habitus Preview">
+                                <?php
+                                // Convert preview image to WebP
+                                $previewImage = $habitusData['preview_image'];
+                                $webpPreview = preg_replace('/\.(jpg|jpeg|png|gif)$/i', '.webp', $previewImage);
+                                ?>
+                                <img src="<?php echo htmlspecialchars($webpPreview); ?>" alt="Habitus Preview">
                             <?php else: ?>
                                 <div id="dashboard-room-container" class="habitus-room-container"></div>
                             <?php endif; ?>
                         </div>
-                        <div class="room-selector">
-                            <?php 
-                            // Get user rooms for selector
-                            $userRooms = getUserRooms($_SESSION['user_id']);
-                            foreach ($userRooms as $room): 
-                            ?>
-                                <div class="room-thumbnail<?php echo ($room['id'] == $habitusData['active_room_id']) ? ' active' : ''; ?>"
-                                    onclick="switchRoom(<?php echo $room['id']; ?>)">
-                                    <img src="<?php echo htmlspecialchars($room['thumbnail']); ?>" alt="<?php echo htmlspecialchars($room['name']); ?>">
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
                     </div>
                     <div class="panel-footer">
                         <button class="edit-habitus-button" onclick="location.href='habitus.php'">
-                            <img src="../images/icons/edit.svg" alt="Edit">
+                            <img src="../images/icons/edit-icon-light.webp" alt="Edit">
                             Edit your Habitus...
                         </button>
                     </div>
@@ -157,7 +157,7 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
                 <!-- Goals Panel -->
                 <div class="panel goals-panel">
                     <div class="panel-header">
-                        <img src="../images/icons/goal.svg" alt="Goals">
+                        <img src="../images/icons/goals-icon-light.webp" alt="Goals">
                         <h2>Goals</h2>
                     </div>
                     <div class="panel-content">
@@ -173,7 +173,7 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
                                         <button class="complete-button <?php echo ($goal['completed']) ? 'completed' : ''; ?>" 
                                                 data-id="<?php echo $goal['id']; ?>"
                                                 onclick="completeGoal(<?php echo $goal['id']; ?>)">
-                                            <img src="../images/icons/check.svg" alt="Complete">
+                                            <img src="../images/icons/check.webp" alt="Complete">
                                         </button>
                                     </li>
                                 <?php endforeach; ?>
@@ -182,7 +182,7 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
                     </div>
                     <div class="panel-footer">
                         <button class="add-new-button" onclick="location.href='tasks.php?add=goal'">
-                            <img src="../images/icons/add.svg" alt="Add">
+                            <img src="../images/icons/task_add-icon-light.webp" alt="Add">
                             Add new objective...
                         </button>
                     </div>
@@ -191,7 +191,7 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
                 <!-- Challenges Panel -->
                 <div class="panel challenges-panel">
                     <div class="panel-header">
-                        <img src="../images/icons/challenge.svg" alt="Challenges">
+                        <img src="../images/icons/challenge-icon-light.webp" alt="Challenges">
                         <h2>Challenges</h2>
                     </div>
                     <div class="panel-content">
@@ -207,7 +207,7 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
                                         <button class="complete-button <?php echo ($challenge['completed']) ? 'completed' : ''; ?>" 
                                                 data-id="<?php echo $challenge['id']; ?>"
                                                 onclick="completeChallenge(<?php echo $challenge['id']; ?>)">
-                                            <img src="../images/icons/check.svg" alt="Complete">
+                                            <img src="../images/icons/check.webp" alt="Complete">
                                         </button>
                                     </li>
                                 <?php endforeach; ?>
@@ -216,7 +216,7 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
                     </div>
                     <div class="panel-footer">
                         <button class="add-new-button" onclick="location.href='tasks.php?add=challenge'">
-                            <img src="../images/icons/add.svg" alt="Add">
+                            <img src="../images/icons/task_add-icon-light.webp" alt="Add">
                             Add new challenge...
                         </button>
                     </div>
@@ -229,7 +229,7 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
     <script src="../js/main.js"></script>
     <script src="../js/dashboard.js"></script>
     <!-- Habitus Room Script -->
-    <script src="../js/habitus-house-v2.js"></script>
+    <script src="../js/habitus-house.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize the isometric room
@@ -240,8 +240,3 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
     </script>
 </body>
 </html>
-
-<?php
-// Include footer
-include '../php/include/footer.php';
-?>

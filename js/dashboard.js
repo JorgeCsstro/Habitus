@@ -1,4 +1,4 @@
-// Dashboard.js - Functionality for the home dashboard
+// dashboard.js
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize any necessary dashboard components
@@ -94,14 +94,7 @@ function updateTaskCompletion(taskId, taskType) {
     formData.append('task_type', taskType);
     
     // Determine the appropriate API endpoint
-    let apiEndpoint = '';
-    if (taskType === 'daily') {
-        apiEndpoint = 'php/api/tasks/dailies.php';
-    } else if (taskType === 'goal') {
-        apiEndpoint = 'php/api/tasks/goals.php';
-    } else {
-        apiEndpoint = 'php/api/tasks/challenges.php';
-    }
+    let apiEndpoint = '../php/api/tasks/complete.php';
     
     // Send API request
     fetch(apiEndpoint, {
@@ -157,7 +150,7 @@ function updateUIAfterCompletion(taskId, taskType, data) {
     
     // If task was removed after completion, remove from UI
     if (data.removed) {
-        const taskItem = document.querySelector(`[data-id="${taskId}"]`).closest('li');
+        const taskItem = document.querySelector(`.complete-button[data-id="${taskId}"]`).closest('li');
         if (taskItem) {
             // Fade out and remove
             taskItem.style.opacity = '0';
@@ -206,7 +199,7 @@ function showHCoinEarnedNotification(amount) {
     const notification = document.createElement('div');
     notification.className = 'hcoin-notification';
     notification.innerHTML = `
-        <img src="images/icons/hcoin.svg" alt="HCoin">
+        <img src="../images/icons/hcoin.svg" alt="HCoin">
         <span>+${amount} HCoins earned!</span>
     `;
     
@@ -242,7 +235,7 @@ function switchRoom(roomId) {
     });
     
     // Make API request to get room data
-    fetch(`php/api/habitus/room_data.php?room_id=${roomId}`)
+    fetch(`../php/api/habitus/room_data.php?room_id=${roomId}`)
     .then(response => response.json())
     .then(data => {
         if (data.success) {

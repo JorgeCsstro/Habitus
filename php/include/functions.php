@@ -1,4 +1,7 @@
 <?php
+
+// functions.php
+
 /**
  * Get user data from the database
  * @param int $userId - User ID
@@ -223,4 +226,80 @@ function getUserRooms($userId) {
     }
     
     return $rooms;
+}
+
+/**
+ * Get the number of unread notifications for a user
+ * @param int $userId - User ID
+ * @return int - Number of unread notifications
+ */
+function getUnreadNotificationsCount($userId) {
+    global $conn;
+    
+    $query = "SELECT COUNT(*) as count FROM notifications 
+              WHERE user_id = ? AND `read` = 0";
+    
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows > 0) {
+        return $result->fetch_assoc()['count'];
+    }
+    
+    return 0;
+}
+
+/**
+ * Get user's notifications
+ * @param int $userId - User ID
+ * @param int $limit - Maximum number of notifications to return (default 10)
+ * @return array - Array of notification data
+ */
+function getUserNotifications($userId, $limit = 10) {
+    global $conn;
+    
+    $query = "SELECT * FROM notifications 
+              WHERE user_id = ? 
+              ORDER BY created_at DESC 
+              LIMIT ?";
+    
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("ii", $userId, $limit);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $notifications = [];
+    while ($row = $result->fetch_assoc()) {
+        $notifications[] = $row;
+    }
+    
+    return $notifications;
+}
+
+/**
+ * Format notification time to be more human-readable
+ * @param string $timestamp - Timestamp to format
+ * @return string - Formatted time string
+ */
+function formatNotificationTime($timestamp) {
+    $time = strtotime($timestamp);
+    $now = time();
+    $diff = $now - $time;
+    
+    if ($diff < 60) {
+        return "Just now";
+    } elseif ($diff < 3600) {
+        $minutes = floor($diff / 60);
+        return $minutes . " min" . ($minutes > 1 ? "s" : "") . " ago";
+    } elseif ($diff < 86400) {
+        $hours = floor($diff / 3600);
+        return $hours . " hour" . ($hours > 1 ? "s" : "") . " ago";
+    } elseif ($diff < 604800) {
+        $days = floor($diff / 86400);
+        return $days . " day" . ($days > 1 ? "s" : "") . " ago";
+    } else {
+        return date("M j, Y", $time);
+    }
 }

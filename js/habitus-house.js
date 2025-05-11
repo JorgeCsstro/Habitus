@@ -1,3 +1,5 @@
+// habitus-house.js
+
 function initHabitusRoom(containerId) {
     // Only initialize if the container exists
     if (document.getElementById(containerId)) {
@@ -56,9 +58,13 @@ function createIsometricRoom(canvasId) {
   const scaleX = canvas.width / 500;
   const scaleY = canvas.height / 400;
   
-  // Helper function to scale coordinates
+  // Horizontal and vertical offset to center the room (adjust these values as needed)
+  const horizontalOffset = -40 * scaleX; // Shift left by 40 pixels (scaled)
+  const verticalOffset = 80 * scaleY; // Move down by 80 pixels (scaled)
+  
+  // Helper function to scale coordinates and apply offsets
   function scale(x, y) {
-    return [x * scaleX, y * scaleY];
+    return [(x * scaleX) + horizontalOffset, (y * scaleY) + verticalOffset];
   }
   
   // Draw floor

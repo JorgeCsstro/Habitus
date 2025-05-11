@@ -1,4 +1,7 @@
 <?php
+
+// db_connect.php
+
 // Database connection details
 $dbHost = 'localhost';
 $dbUser = 'u343618305_habit'; // Replace with your database username
