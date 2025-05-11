@@ -8,8 +8,16 @@
     background-color: #f5f5f5;
     border-right: 5px solid #e0e0e0;
     align-items: center;
-    justify-content: space-evenly; /* This distributes items evenly */
-    padding: 0; /* Remove padding to maximize space */
+    justify-content: space-between; /* Changed from space-evenly to space-between */
+    padding: 20px 0; /* Added vertical padding to create space at top and bottom */
+}
+
+/* Container for middle menu items to space them evenly */
+.middle-menu-items {
+    display: flex;
+    flex-direction: column;
+    gap: 25px; /* Consistent spacing between middle items */
+    align-items: center;
 }
 
 .menu-item {
@@ -32,10 +40,19 @@
     height: 24px;
 }
 
-/* Fix for first menu item logo */
-.menu-item:first-child img {
+/* First menu item (logo) styles */
+.menu-item.logo {
+    margin-bottom: 15px; /* Extra space below logo */
+}
+
+.menu-item.logo img {
     width: 32px;
     height: 32px;
+}
+
+/* Last menu item (settings) styles */
+.menu-item.settings {
+    margin-top: 15px; /* Extra space above settings */
 }
 
 /* Add this to ensure links fill the full menu item space */
