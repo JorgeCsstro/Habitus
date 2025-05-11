@@ -16,7 +16,8 @@
 .middle-menu-items {
     display: flex;
     flex-direction: column;
-    gap: 25px; /* Consistent spacing between middle items */
+    flex: 1; /* Take up all available space */
+    justify-content: space-evenly; /* Space items evenly within the container */
     align-items: center;
 }
 
@@ -40,19 +41,9 @@
     height: 24px;
 }
 
-/* First menu item (logo) styles */
-.menu-item.logo {
-    margin-bottom: 15px; /* Extra space below logo */
-}
-
 .menu-item.logo img {
     width: 32px;
     height: 32px;
-}
-
-/* Last menu item (settings) styles */
-.menu-item.settings {
-    margin-top: 15px; /* Extra space above settings */
 }
 
 /* Add this to ensure links fill the full menu item space */

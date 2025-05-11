@@ -12,7 +12,7 @@
             <img src="../images/icons/survey-icon-light.webp" alt="Survey">
         </a>
         <div class="messages-button" id="messages-toggle" title="Notifications">
-            <img src="../images/icons/messages.webp" alt="Messages">
+            <img src="../images/icons/messages-icon-light.webp" alt="Messages">
             <?php
             // Check if there are unread messages/notifications
             $unreadCount = getUnreadNotificationsCount($_SESSION['user_id']);
@@ -22,7 +22,7 @@
             <?php endif; ?>
         </div>
         <a href="profile.php" class="profile-button" title="Profile settings">
-            <img src="../images/icons/user.webp" alt="Profile">
+            <img src="../images/icons/profile-icon-light.webp" alt="Profile">
         </a>
     </div>
     
