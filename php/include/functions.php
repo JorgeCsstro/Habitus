@@ -245,13 +245,17 @@ function getUnreadNotificationsCount($userId) {
 function getUserNotifications($userId, $limit = 10) {
     global $conn;
     
+    // Convert limit to integer to ensure it's safe
+    $limit = (int)$limit;
+    
+    // Use the limit directly in the query string instead of as a parameter
     $query = "SELECT * FROM notifications 
               WHERE user_id = ? 
               ORDER BY created_at DESC 
-              LIMIT ?";
+              LIMIT $limit";
     
     $stmt = $conn->prepare($query);
-    $stmt->execute([$userId, $limit]);
+    $stmt->execute([$userId]);
     
     $notifications = [];
     while ($row = $stmt->fetch()) {

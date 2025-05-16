@@ -139,7 +139,7 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
                 <!-- Habitus Preview Panel -->
                 <div class="panel habitus-panel">
                     <div class="panel-header">
-                        <img src="../images/icons/home.webp" alt="Habitus">
+                        <img src="../images/icons/home-icon-light.webp" alt="Habitus">
                         <h2>Habitus</h2>
                     </div>
                     <div class="panel-content">
