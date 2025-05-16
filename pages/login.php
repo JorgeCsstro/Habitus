@@ -30,12 +30,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Attempt to login user
         $query = "SELECT id, username, password FROM users WHERE email = ?";
         $stmt = $conn->prepare($query);
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $stmt->execute([$email]);
         
-        if ($result->num_rows === 1) {
-            $user = $result->fetch_assoc();
+        if ($stmt->rowCount() === 1) {
+            $user = $stmt->fetch();
             
             // Verify password
             if (password_verify($password, $user['password'])) {
@@ -46,8 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Update last login time
                 $updateQuery = "UPDATE users SET last_login = NOW() WHERE id = ?";
                 $updateStmt = $conn->prepare($updateQuery);
-                $updateStmt->bind_param("i", $user['id']);
-                $updateStmt->execute();
+                $updateStmt->execute([$user['id']]);
                 
                 // Redirect to dashboard page
                 header('Location: dashboard.php');

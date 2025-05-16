@@ -1,5 +1,4 @@
 <?php
-
 // db_connect.php
 
 // Database connection details
@@ -8,13 +7,13 @@ $dbUser = 'u343618305_habit'; // Replace with your database username
 $dbPass = 'habit090402DJct.'; // Replace with your database password
 $dbName = 'u343618305_habitus_zone'; // Your database name
 
-// Create connection
-$conn = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+// Create connection using PDO
+try {
+    $conn = new PDO("mysql:host=$dbHost;dbname=$dbName;charset=utf8mb4", $dbUser, $dbPass);
+    // Set the PDO error mode to exception
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    // Set fetch mode to associative array
+    $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
 }
-
-// Set charset to ensure proper encoding of data
-$conn->set_charset("utf8mb4");
