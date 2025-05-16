@@ -43,40 +43,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Check if username already exists
         $checkUsername = "SELECT id FROM users WHERE username = ?";
         $stmt = $conn->prepare($checkUsername);
-        $stmt->bind_param("s", $username);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $stmt->execute([$username]);
         
-        if ($result->num_rows > 0) {
+        if ($stmt->rowCount() > 0) {
             $error = "Username already exists. Please choose another.";
         } else {
             // Check if email already exists
             $checkEmail = "SELECT id FROM users WHERE email = ?";
             $stmt = $conn->prepare($checkEmail);
-            $stmt->bind_param("s", $email);
-            $stmt->execute();
-            $result = $stmt->get_result();
+            $stmt->execute([$email]);
             
-            if ($result->num_rows > 0) {
+            if ($stmt->rowCount() > 0) {
                 $error = "Email already registered. Please login instead.";
             } else {
                 // Hash password
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
                 
-                // Register user
-                $insertQuery = "INSERT INTO users (username, email, password, created_at) VALUES (?, ?, ?, NOW())";
-                $stmt = $conn->prepare($insertQuery);
-                $stmt->bind_param("sss", $username, $email, $hashed_password);
-                
-                if ($stmt->execute()) {
+                try {
+                    // Begin transaction
+                    $conn->beginTransaction();
+                    
+                    // Register user
+                    $insertQuery = "INSERT INTO users (username, email, password, created_at) VALUES (?, ?, ?, NOW())";
+                    $stmt = $conn->prepare($insertQuery);
+                    $stmt->execute([$username, $email, $hashed_password]);
+                    
                     // Get the user ID
-                    $userId = $stmt->insert_id;
+                    $userId = $conn->lastInsertId();
                     
                     // Create default room for the user
                     $createRoom = "INSERT INTO rooms (user_id, name, layout_json) VALUES (?, 'My First Room', '{}')";
                     $roomStmt = $conn->prepare($createRoom);
-                    $roomStmt->bind_param("i", $userId);
-                    $roomStmt->execute();
+                    $roomStmt->execute([$userId]);
                     
                     // Create default dashboard layout
                     $defaultLayout = json_encode([
@@ -91,8 +89,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     $createDashboard = "INSERT INTO dashboard_layouts (user_id, layout_json) VALUES (?, ?)";
                     $dashboardStmt = $conn->prepare($createDashboard);
-                    $dashboardStmt->bind_param("is", $userId, $defaultLayout);
-                    $dashboardStmt->execute();
+                    $dashboardStmt->execute([$userId, $defaultLayout]);
+                    
+                    // Commit transaction
+                    $conn->commit();
                     
                     // Registration successful
                     $success = "Registration successful! You can now login.";
@@ -103,8 +103,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     // Redirect to dashboard page after 2 seconds
                     header("Refresh: 2; URL=dashboard.php");
-                } else {
-                    $error = "Registration failed. Please try again.";
+                } catch (Exception $e) {
+                    // Rollback transaction on error
+                    $conn->rollBack();
+                    $error = "Registration failed: " . $e->getMessage();
                 }
             }
         }

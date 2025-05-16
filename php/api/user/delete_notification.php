@@ -24,11 +24,10 @@ $notificationId = intval($data['notification_id']);
 // Delete notification
 $query = "DELETE FROM notifications WHERE id = ? AND user_id = ?";
 $stmt = $conn->prepare($query);
-$stmt->bind_param("ii", $notificationId, $_SESSION['user_id']);
-$stmt->execute();
+$stmt->execute([$notificationId, $_SESSION['user_id']]);
 
 // Check if notification was deleted
-if ($stmt->affected_rows > 0) {
+if ($stmt->rowCount() > 0) {
     echo json_encode(['success' => true, 'message' => 'Notification deleted']);
 } else {
     echo json_encode(['success' => false, 'message' => 'Notification not found or could not be deleted']);

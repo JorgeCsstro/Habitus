@@ -1,5 +1,5 @@
-// php/api/shop/purchase.php
 <?php
+// php/api/shop/purchase.php
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';
 require_once '../../include/auth.php';
@@ -30,55 +30,47 @@ if ($itemId <= 0) {
 $userId = $_SESSION['user_id'];
 
 // Begin transaction
-$conn->begin_transaction();
-
 try {
+    $conn->beginTransaction();
+
     // Get item details
     $itemQuery = "SELECT * FROM shop_items WHERE id = ? AND is_available = 1";
     $stmt = $conn->prepare($itemQuery);
-    $stmt->bind_param("i", $itemId);
-    $stmt->execute();
-    $itemResult = $stmt->get_result();
+    $stmt->execute([$itemId]);
     
-    if ($itemResult->num_rows === 0) {
+    if ($stmt->rowCount() === 0) {
         throw new Exception("Item not found or unavailable");
     }
     
-    $itemData = $itemResult->fetch_assoc();
+    $itemData = $stmt->fetch();
     $itemPrice = $itemData['price'];
     
     // Check if user already owns this item
     $inventoryQuery = "SELECT * FROM user_inventory WHERE user_id = ? AND item_id = ?";
     $stmt = $conn->prepare($inventoryQuery);
-    $stmt->bind_param("ii", $userId, $itemId);
-    $stmt->execute();
-    $inventoryResult = $stmt->get_result();
+    $stmt->execute([$userId, $itemId]);
     
-    if ($inventoryResult->num_rows > 0) {
+    if ($stmt->rowCount() > 0) {
         // User already has this item, increment quantity
-        $inventoryData = $inventoryResult->fetch_assoc();
+        $inventoryData = $stmt->fetch();
         $quantity = $inventoryData['quantity'] + 1;
         
         $updateInventory = "UPDATE user_inventory SET quantity = ? WHERE id = ?";
         $stmt = $conn->prepare($updateInventory);
-        $stmt->bind_param("ii", $quantity, $inventoryData['id']);
-        $stmt->execute();
+        $stmt->execute([$quantity, $inventoryData['id']]);
     } else {
         // Add item to inventory
         $insertInventory = "INSERT INTO user_inventory (user_id, item_id, quantity, acquired_at) 
                            VALUES (?, ?, 1, NOW())";
         $stmt = $conn->prepare($insertInventory);
-        $stmt->bind_param("ii", $userId, $itemId);
-        $stmt->execute();
+        $stmt->execute([$userId, $itemId]);
     }
     
     // Get user's current HCoin balance
     $balanceQuery = "SELECT hcoin FROM users WHERE id = ?";
     $stmt = $conn->prepare($balanceQuery);
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $balanceResult = $stmt->get_result();
-    $currentBalance = $balanceResult->fetch_assoc()['hcoin'];
+    $stmt->execute([$userId]);
+    $currentBalance = $stmt->fetch()['hcoin'];
     
     // Check if user has enough HCoins
     if ($currentBalance < $itemPrice) {
@@ -89,8 +81,7 @@ try {
     $newBalance = $currentBalance - $itemPrice;
     $updateUser = "UPDATE users SET hcoin = ? WHERE id = ?";
     $stmt = $conn->prepare($updateUser);
-    $stmt->bind_param("ii", $newBalance, $userId);
-    $stmt->execute();
+    $stmt->execute([$newBalance, $userId]);
     
     // Record transaction
     $transactionDesc = "Purchased: " . $itemData['name'];
@@ -98,8 +89,7 @@ try {
                          transaction_type, reference_id, reference_type) 
                          VALUES (?, ?, ?, 'spend', ?, 'shop')";
     $stmt = $conn->prepare($insertTransaction);
-    $stmt->bind_param("iisi", $userId, $itemPrice, $transactionDesc, $itemId);
-    $stmt->execute();
+    $stmt->execute([$userId, $itemPrice, $transactionDesc, $itemId]);
     
     // Commit transaction
     $conn->commit();
@@ -113,7 +103,7 @@ try {
     
 } catch (Exception $e) {
     // Rollback transaction on error
-    $conn->rollback();
+    $conn->rollBack();
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
-?>  
+?>

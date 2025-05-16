@@ -1,5 +1,5 @@
-// php/api/tasks/delete.php
 <?php
+// php/api/tasks/delete.php
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';
 require_once '../../include/auth.php';
@@ -28,17 +28,15 @@ if ($taskId <= 0 || !in_array($taskType, ['daily', 'goal', 'challenge'])) {
 }
 
 // Begin transaction
-$conn->begin_transaction();
-
 try {
+    $conn->beginTransaction();
+
     // Verify task belongs to user
     $taskQuery = "SELECT id FROM tasks WHERE id = ? AND user_id = ?";
     $stmt = $conn->prepare($taskQuery);
-    $stmt->bind_param("ii", $taskId, $_SESSION['user_id']);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt->execute([$taskId, $_SESSION['user_id']]);
     
-    if ($result->num_rows === 0) {
+    if ($stmt->rowCount() === 0) {
         throw new Exception("Task not found or does not belong to you");
     }
     
@@ -56,14 +54,12 @@ try {
     }
     
     $stmt = $conn->prepare($deleteSpecific);
-    $stmt->bind_param("i", $taskId);
-    $stmt->execute();
+    $stmt->execute([$taskId]);
     
     // Delete main task record
     $deleteTask = "DELETE FROM tasks WHERE id = ?";
     $stmt = $conn->prepare($deleteTask);
-    $stmt->bind_param("i", $taskId);
-    $stmt->execute();
+    $stmt->execute([$taskId]);
     
     // Commit transaction
     $conn->commit();
@@ -72,7 +68,7 @@ try {
     
 } catch (Exception $e) {
     // Rollback transaction on error
-    $conn->rollback();
+    $conn->rollBack();
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>

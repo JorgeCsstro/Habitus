@@ -26,16 +26,14 @@ $query = "SELECT n.*, u.details
           WHERE n.id = ? AND n.user_id = ? AND n.type = 'update'";
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param("ii", $notificationId, $_SESSION['user_id']);
-$stmt->execute();
-$result = $stmt->get_result();
+$stmt->execute([$notificationId, $_SESSION['user_id']]);
 
-if ($result->num_rows === 0) {
+if ($stmt->rowCount() === 0) {
     echo json_encode(['success' => false, 'message' => 'Update not found']);
     exit;
 }
 
-$update = $result->fetch_assoc();
+$update = $stmt->fetch();
 
 echo json_encode([
     'success' => true,

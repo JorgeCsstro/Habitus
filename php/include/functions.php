@@ -12,12 +12,10 @@ function getUserData($userId) {
     
     $sql = "SELECT * FROM users WHERE id = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt->execute([$userId]);
     
-    if ($result->num_rows > 0) {
-        return $result->fetch_assoc();
+    if ($stmt->rowCount() > 0) {
+        return $stmt->fetch();
     }
     
     return [];
@@ -48,12 +46,10 @@ function getUserDailies($userId) {
             ORDER BY d.reset_time, t.title";
     
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt->execute([$userId]);
     
     $dailies = [];
-    while ($row = $result->fetch_assoc()) {
+    while ($row = $stmt->fetch()) {
         $dailies[] = $row;
     }
     
@@ -77,12 +73,10 @@ function getUserGoals($userId) {
             ORDER BY g.deadline, t.title";
     
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt->execute([$userId]);
     
     $goals = [];
-    while ($row = $result->fetch_assoc()) {
+    while ($row = $stmt->fetch()) {
         $goals[] = $row;
     }
     
@@ -106,12 +100,10 @@ function getUserChallenges($userId) {
             ORDER BY c.end_date, t.title";
     
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt->execute([$userId]);
     
     $challenges = [];
-    while ($row = $result->fetch_assoc()) {
+    while ($row = $stmt->fetch()) {
         $challenges[] = $row;
     }
     
@@ -132,10 +124,10 @@ function getFeaturedShopItems() {
             WHERE s.is_featured = 1 AND s.is_available = 1
             ORDER BY s.price LIMIT 9";
     
-    $result = $conn->query($sql);
+    $stmt = $conn->query($sql);
     
     $items = [];
-    while ($row = $result->fetch_assoc()) {
+    while ($row = $stmt->fetch()) {
         $items[] = $row;
     }
     
@@ -160,17 +152,15 @@ function getUserHabitusData($userId) {
             ORDER BY r.id LIMIT 1";
     
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt->execute([$userId]);
     
-    if ($result->num_rows === 0) {
+    if ($stmt->rowCount() === 0) {
         // Create a default room if none exists
         $defaultRoom = createDefaultRoom($userId);
         return $defaultRoom;
     }
     
-    return $result->fetch_assoc();
+    return $stmt->fetch();
 }
 
 /**
@@ -185,10 +175,9 @@ function createDefaultRoom($userId) {
     
     $sql = "INSERT INTO rooms (user_id, name, layout_json) VALUES (?, ?, '{}')";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("is", $userId, $roomName);
-    $stmt->execute();
+    $stmt->execute([$userId, $roomName]);
     
-    $roomId = $conn->insert_id;
+    $roomId = $conn->lastInsertId();
     
     return [
         'id' => $roomId,
@@ -216,12 +205,10 @@ function getUserRooms($userId) {
             ORDER BY r.id";
     
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt->execute([$userId]);
     
     $rooms = [];
-    while ($row = $result->fetch_assoc()) {
+    while ($row = $stmt->fetch()) {
         $rooms[] = $row;
     }
     
@@ -240,12 +227,10 @@ function getUnreadNotificationsCount($userId) {
               WHERE user_id = ? AND `read` = 0";
     
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt->execute([$userId]);
     
-    if ($result->num_rows > 0) {
-        return $result->fetch_assoc()['count'];
+    if ($stmt->rowCount() > 0) {
+        return $stmt->fetch()['count'];
     }
     
     return 0;
@@ -266,12 +251,10 @@ function getUserNotifications($userId, $limit = 10) {
               LIMIT ?";
     
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("ii", $userId, $limit);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt->execute([$userId, $limit]);
     
     $notifications = [];
-    while ($row = $result->fetch_assoc()) {
+    while ($row = $stmt->fetch()) {
         $notifications[] = $row;
     }
     

@@ -25,19 +25,16 @@ if ($roomId <= 0) {
     // Get user's default room
     $roomQuery = "SELECT id FROM rooms WHERE user_id = ? ORDER BY id LIMIT 1";
     $stmt = $conn->prepare($roomQuery);
-    $stmt->bind_param("i", $_SESSION['user_id']);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt->execute([$_SESSION['user_id']]);
     
-    if ($result->num_rows > 0) {
-        $roomId = $result->fetch_assoc()['id'];
+    if ($stmt->rowCount() > 0) {
+        $roomId = $stmt->fetch()['id'];
     } else {
         // Create a default room if none exists
         $createRoom = "INSERT INTO rooms (user_id, name, layout_json) VALUES (?, 'My First Room', '{}')";
         $stmt = $conn->prepare($createRoom);
-        $stmt->bind_param("i", $_SESSION['user_id']);
-        $stmt->execute();
-        $roomId = $conn->insert_id;
+        $stmt->execute([$_SESSION['user_id']]);
+        $roomId = $conn->lastInsertId();
     }
 }
 
@@ -47,17 +44,15 @@ $roomQuery = "SELECT r.*, si.name as background_name, si.image_path as backgroun
              LEFT JOIN shop_items si ON r.background_id = si.id 
              WHERE r.id = ? AND r.user_id = ?";
 $stmt = $conn->prepare($roomQuery);
-$stmt->bind_param("ii", $roomId, $_SESSION['user_id']);
-$stmt->execute();
-$roomResult = $stmt->get_result();
+$stmt->execute([$roomId, $_SESSION['user_id']]);
 
-if ($roomResult->num_rows === 0) {
+if ($stmt->rowCount() === 0) {
     // Room not found or doesn't belong to user
     header('Location: dashboard.php');
     exit;
 }
 
-$roomData = $roomResult->fetch_assoc();
+$roomData = $stmt->fetch();
 
 // Get placed items
 $placedQuery = "SELECT pi.*, ui.item_id, si.name, si.image_path 
@@ -67,14 +62,9 @@ $placedQuery = "SELECT pi.*, ui.item_id, si.name, si.image_path
                WHERE pi.room_id = ? 
                ORDER BY pi.z_index";
 $stmt = $conn->prepare($placedQuery);
-$stmt->bind_param("i", $roomId);
-$stmt->execute();
-$placedResult = $stmt->get_result();
+$stmt->execute([$roomId]);
 
-$placedItems = [];
-while ($row = $placedResult->fetch_assoc()) {
-    $placedItems[] = $row;
-}
+$placedItems = $stmt->fetchAll();
 
 // Get user's inventory (not placed in any room)
 $inventoryQuery = "SELECT ui.id, ui.item_id, ui.quantity, si.name, si.image_path, si.description, 
@@ -87,26 +77,16 @@ $inventoryQuery = "SELECT ui.id, ui.item_id, ui.quantity, si.name, si.image_path
                       OR ui.quantity > 1
                   )";
 $stmt = $conn->prepare($inventoryQuery);
-$stmt->bind_param("i", $_SESSION['user_id']);
-$stmt->execute();
-$inventoryResult = $stmt->get_result();
+$stmt->execute([$_SESSION['user_id']]);
 
-$inventory = [];
-while ($row = $inventoryResult->fetch_assoc()) {
-    $inventory[] = $row;
-}
+$inventory = $stmt->fetchAll();
 
 // Get user's rooms
 $roomsQuery = "SELECT id, name FROM rooms WHERE user_id = ?";
 $stmt = $conn->prepare($roomsQuery);
-$stmt->bind_param("i", $_SESSION['user_id']);
-$stmt->execute();
-$roomsResult = $stmt->get_result();
+$stmt->execute([$_SESSION['user_id']]);
 
-$rooms = [];
-while ($row = $roomsResult->fetch_assoc()) {
-    $rooms[] = $row;
-}
+$rooms = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>

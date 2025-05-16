@@ -1,5 +1,5 @@
 <?php
-// dashboard.php
+// pages/dashboard.php
 
 // Include necessary files
 require_once '../php/include/config.php';

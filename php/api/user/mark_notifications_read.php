@@ -25,23 +25,21 @@ if (empty($notificationIds)) {
     exit;
 }
 
-// Prepare the query with multiple IDs
+// Prepare the query with placeholders
 $placeholders = implode(',', array_fill(0, count($notificationIds), '?'));
-$types = str_repeat('i', count($notificationIds));
 
 $query = "UPDATE notifications SET `read` = 1 
           WHERE id IN ($placeholders) AND user_id = ?";
 
-// Add user ID to the parameters
+// Add all IDs to parameters array, then add user_id at the end
 $params = $notificationIds;
 $params[] = $_SESSION['user_id'];
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param($types . 'i', ...$params);
-$stmt->execute();
+$stmt->execute($params);
 
 // Check how many rows were affected
-if ($stmt->affected_rows > 0) {
+if ($stmt->rowCount() > 0) {
     echo json_encode(['success' => true, 'message' => 'Notifications marked as read']);
 } else {
     echo json_encode(['success' => false, 'message' => 'No notifications were updated']);

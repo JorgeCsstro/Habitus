@@ -30,8 +30,10 @@ $query = "SELECT si.*, ic.name as category_name
          JOIN item_categories ic ON si.category_id = ic.id
          WHERE si.is_available = 1";
 
+$params = [];
 if ($categoryId > 0) {
-    $query .= " AND si.category_id = " . $categoryId;
+    $query .= " AND si.category_id = :categoryId";
+    $params['categoryId'] = $categoryId;
 }
 
 switch ($sort) {
@@ -47,19 +49,14 @@ switch ($sort) {
         break;
 }
 
-$result = $conn->query($query);
-$shopItems = [];
-while ($row = $result->fetch_assoc()) {
-    $shopItems[] = $row;
-}
+$stmt = $conn->prepare($query);
+$stmt->execute($params);
+$shopItems = $stmt->fetchAll();
 
 // Get categories for filter
 $categoryQuery = "SELECT * FROM item_categories ORDER BY name";
-$categoryResult = $conn->query($categoryQuery);
-$categories = [];
-while ($row = $categoryResult->fetch_assoc()) {
-    $categories[] = $row;
-}
+$categoryStmt = $conn->query($categoryQuery);
+$categories = $categoryStmt->fetchAll();
 
 // Get recently purchased items by user
 $recentQuery = "SELECT si.*, t.created_at as purchase_date 
@@ -68,14 +65,9 @@ $recentQuery = "SELECT si.*, t.created_at as purchase_date
                WHERE t.user_id = ? AND t.transaction_type = 'spend'
                ORDER BY t.created_at DESC
                LIMIT 3";
-$stmt = $conn->prepare($recentQuery);
-$stmt->bind_param("i", $_SESSION['user_id']);
-$stmt->execute();
-$recentResult = $stmt->get_result();
-$recentItems = [];
-while ($row = $recentResult->fetch_assoc()) {
-    $recentItems[] = $row;
-}
+$recentStmt = $conn->prepare($recentQuery);
+$recentStmt->execute([$_SESSION['user_id']]);
+$recentItems = $recentStmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
