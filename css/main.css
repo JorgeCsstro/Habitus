@@ -169,6 +169,12 @@ body {
     border-color: #d3d1c5;
 }
 
+.add-new-button img, .go-to-shop-button img, .edit-habitus-button img {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+}
+
 /* Alerts */
 .alert {
     padding: 12px 15px;

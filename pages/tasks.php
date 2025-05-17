@@ -412,7 +412,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                     </div>
                     <div class="modal-body">
                         <div class="completion-animation">
-                            <img src="../images/icons/success.svg" alt="Success">
+                            <img src="../images/icons/success.webp" alt="Success">
                         </div>
                         <p id="completion-message">You earned <span id="earned-hcoins">0</span> HCoins!</p>
                         
