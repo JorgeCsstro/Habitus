@@ -341,12 +341,12 @@ function saveTask() {
     
     // Validate form data
     if (!title) {
-        alert('Please enter a task title');
+        showNotification('Please enter a task title', 'error');
         return;
     }
     
     if (duration <= 0) {
-        alert('Duration must be greater than 0');
+        showNotification('Duration must be greater than 0', 'error');
         return;
     }
     
@@ -361,7 +361,7 @@ function saveTask() {
             typeSpecificData.total_steps = parseInt(document.getElementById('total_steps').value);
             
             if (typeSpecificData.total_steps <= 0) {
-                alert('Total steps must be greater than 0');
+                showNotification('Total steps must be greater than 0', 'error');
                 return;
             }
             break;
@@ -370,7 +370,7 @@ function saveTask() {
             typeSpecificData.end_date = document.getElementById('end_date').value;
             
             if (new Date(typeSpecificData.end_date) <= new Date(typeSpecificData.start_date)) {
-                alert('End date must be after start date');
+                showNotification('End date must be after start date', 'error');
                 return;
             }
             break;
@@ -399,66 +399,43 @@ function saveTask() {
     saveBtn.textContent = 'Saving...';
     saveBtn.disabled = true;
     
-    // In a real implementation, this would send data to the server
-    // For this example, we're simulating a successful save
-    setTimeout(() => {
-        // Reset form state
+    // Send API request
+    fetch('../php/api/tasks/save_task.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Reset button state
         saveBtn.textContent = 'Save Task';
         saveBtn.disabled = false;
         
-        // Close modal
-        closeTaskModal();
-        
-        // Show success message
-        showNotification(
-            taskId === 0 
-                ? `New ${taskType} created successfully!` 
-                : `${capitalizeFirstLetter(taskType)} updated successfully!`
-        );
-        
-        // Refresh page to show new/updated task
-        // In a real application, you would make an API call like this:
-        /*
-        fetch('../php/api/tasks/save_task.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Close modal
-                closeTaskModal();
-                
-                // Show success message
-                showNotification(
-                    taskId === 0 
-                        ? `New ${taskType} created successfully!` 
-                        : `${capitalizeFirstLetter(taskType)} updated successfully!`
-                );
-                
-                // Refresh page or update UI
-                location.reload();
-            } else {
-                // Show error
-                showNotification(data.message, 'error');
-                
-                // Reset button state
-                saveBtn.textContent = 'Save Task';
-                saveBtn.disabled = false;
-            }
-        })
-        .catch(error => {
-            console.error('Error saving task:', error);
-            showNotification('An error occurred while saving the task', 'error');
+        if (data.success) {
+            // Close modal
+            closeTaskModal();
             
-            // Reset button state
-            saveBtn.textContent = 'Save Task';
-            saveBtn.disabled = false;
-        });
-        */
+            // Show success message
+            showNotification(
+                taskId === 0 
+                    ? `New ${taskType} created successfully!` 
+                    : `${capitalizeFirstLetter(taskType)} updated successfully!`
+            );
+            
+            // Refresh page to show new/updated task
+            location.reload();
+        } else {
+            // Show error
+            showNotification(data.message || 'An error occurred while saving the task', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error saving task:', error);
+        showNotification('An error occurred while saving the task', 'error');
         
-        location.reload();
-    }, 1000);
+        // Reset button state
+        saveBtn.textContent = 'Save Task';
+        saveBtn.disabled = false;
+    });
 }
 
 /**
