@@ -39,60 +39,150 @@ if (isset($_SESSION['user_id'])) {
             </div>
         </nav>
 
-        <!-- Main content -->
-        <main class="landing-content">
-            <div class="left-content">
-                <h1>Transform Your Daily Tasks Into Rewards</h1>
-                <p class="subtitle">Gamify your life, earn rewards, and customize your virtual space</p>
-                
-                <div class="feature-list">
-                    <div class="feature">
-                        <div class="feature-icon">
-                            <img src="images/icons/tasks-feature.svg" alt="Tasks Icon">
-                        </div>
-                        <div class="feature-text">
-                            <h3>Track Daily Tasks</h3>
-                            <p>Create customizable dailies, goals, and challenges to stay motivated</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature">
-                        <div class="feature-icon">
-                            <img src="images/icons/hcoin-feature.svg" alt="HCoin Icon">
-                        </div>
-                        <div class="feature-text">
-                            <h3>Earn HCoins</h3>
-                            <p>Complete tasks and receive rewards to spend in the shop</p>
-                        </div>
-                    </div>
-                    
-                    <div class="feature">
-                        <div class="feature-icon">
-                            <img src="images/icons/habitus-feature.svg" alt="Habitus Icon">
-                        </div>
-                        <div class="feature-text">
-                            <h3>Build Your Habitus</h3>
-                            <p>Personalize your virtual space with furniture, decorations, and more</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="cta-buttons">
-                    <a href="pages/register.php" class="primary-button">Get Started Now</a>
-                    <a href="#how-it-works" class="secondary-button">Learn More</a>
-                </div>
+        <!-- Hero Section with Carousel -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title">Transform Your Daily Habits into Lasting Success</h1>
+                <p class="hero-subtitle">A personalized journey to building better habits, staying motivated, and creating your own digital sanctuary</p>
             </div>
             
-            <div class="right-content">
-                <div class="preview-image">
-                    <img src="images/landing/habitus-preview.png" alt="Habitus Zone Preview">
+            <div class="carousel-container">
+                <div class="carousel">
+                    <div class="carousel-slide">
+                        <img src="images/landing/dashboard-preview.jpg" alt="Dashboard Preview">
+                        <div class="slide-caption">
+                            <h3>Personalized Dashboard</h3>
+                            <p>Track your daily tasks, challenges, and see your progress at a glance</p>
+                        </div>
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="images/landing/habitus-preview.jpg" alt="Habitus Room Preview">
+                        <div class="slide-caption">
+                            <h3>Customize Your Habitus</h3>
+                            <p>Design your personal space with furniture, decorations and more</p>
+                        </div>
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="images/landing/shop-preview.jpg" alt="Shop Preview">
+                        <div class="slide-caption">
+                            <h3>Rewards Marketplace</h3>
+                            <p>Earn HCoins and spend them on items for your virtual space</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="carousel-prev">&#10094;</button>
+                <button class="carousel-next">&#10095;</button>
+                
+                <div class="carousel-indicators">
+                    <button class="carousel-indicator active" data-slide="0"></button>
+                    <button class="carousel-indicator" data-slide="1"></button>
+                    <button class="carousel-indicator" data-slide="2"></button>
                 </div>
             </div>
-        </main>
-        
+        </section>
+
+        <!-- Why Habitus Zone Section -->
+        <section class="why-habitus" id="why-habitus">
+            <h2 class="section-title">Why Habitus Zone?</h2>
+            
+            <div class="benefits-container">
+                <div class="benefit-card">
+                    <div class="benefit-img" style="background-image: url('images/landing/benefit-motivation.jpg');"></div>
+                    <div class="benefit-content">
+                        <h3>Stay Motivated</h3>
+                        <p>Transform everyday tasks into rewarding experiences. Our unique gamification system keeps you motivated by providing tangible rewards for your accomplishments.</p>
+                    </div>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-img" style="background-image: url('images/landing/benefit-progress.jpg');"></div>
+                    <div class="benefit-content">
+                        <h3>Track Real Progress</h3>
+                        <p>See your growth in real-time with intuitive progress trackers. Maintain streaks, complete challenges, and witness your improvements day by day.</p>
+                    </div>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-img" style="background-image: url('images/landing/benefit-personalize.jpg');"></div>
+                    <div class="benefit-content">
+                        <h3>Your Personal Sanctuary</h3>
+                        <p>Create a digital space that reflects your achievements. Customize your Habitus with items earned through consistent habit building and goal completion.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features-section">
+            <h2 class="section-title">Features Designed for Your Growth</h2>
+            
+            <div class="features-grid">
+                <div class="feature">
+                    <div class="feature-icon">
+                        <img src="images/icons/dailies-icon-dark.webp" alt="Dailies Icon">
+                    </div>
+                    <div class="feature-text">
+                        <h3>Customizable Daily Tasks</h3>
+                        <p>Create personalized dailies tailored to your specific needs and routine. Set task difficulty and duration to earn appropriate rewards.</p>
+                    </div>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">
+                        <img src="images/icons/goals-icon-dark.webp" alt="Goals Icon">
+                    </div>
+                    <div class="feature-text">
+                        <h3>Long-term Goals</h3>
+                        <p>Break down ambitious objectives into manageable steps. Track your progress visually and stay committed to your bigger aspirations.</p>
+                    </div>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">
+                        <img src="images/icons/challenge-icon-dark.webp" alt="Challenge Icon">
+                    </div>
+                    <div class="feature-text">
+                        <h3>Special Challenges</h3>
+                        <p>Push your limits with time-bound challenges. Earn bonus rewards and build resilience by completing more demanding tasks.</p>
+                    </div>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">
+                        <img src="images/icons/hcoin-icon-dark.webp" alt="HCoin Icon">
+                    </div>
+                    <div class="feature-text">
+                        <h3>HCoin Rewards</h3>
+                        <p>Earn HCoins for every completed task. Our intelligent system calculates rewards based on task difficulty and duration.</p>
+                    </div>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">
+                        <img src="images/icons/home-icon-dark.webp" alt="Home Icon">
+                    </div>
+                    <div class="feature-text">
+                        <h3>Personalized Habitus</h3>
+                        <p>Design your virtual space with items purchased from our shop. Express yourself through customization and decoration.</p>
+                    </div>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">
+                        <img src="images/icons/dashboard-icon-dark.webp" alt="Dashboard Icon">
+                    </div>
+                    <div class="feature-text">
+                        <h3>Adaptable Dashboard</h3>
+                        <p>Arrange your dashboard to suit your workflow. Prioritize the components that matter most to your productivity.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- How it works section -->
-        <section id="how-it-works" class="how-it-works">
-            <h2>How Habitus Zone Works</h2>
+        <section class="how-it-works" id="how-it-works">
+            <h2 class="section-title">How Habitus Zone Works</h2>
             
             <div class="steps-container">
                 <div class="step">
@@ -128,40 +218,45 @@ if (isset($_SESSION['user_id'])) {
                         <img src="images/icons/grow.svg" alt="Grow">
                     </div>
                     <h3>Grow</h3>
-                    <p>Build habits, achieve goals, and watch your virtual space evolve</p>
+                    <p>Build lasting habits, achieve goals, and watch your virtual space evolve</p>
                 </div>
             </div>
         </section>
         
         <!-- Testimonials section -->
         <section class="testimonials">
-            <h2>What Our Users Say</h2>
+            <h2 class="section-title">What Our Users Say</h2>
             
             <div class="testimonial-slider">
                 <div class="testimonial">
-                    <div class="quote">"Habitus Zone helped me build a consistent workout routine. Now I look forward to checking off my dailies!"</div>
+                    <div class="quote">"Habitus Zone has transformed how I approach my daily routine. The streak system keeps me motivated, and watching my virtual space grow feels incredibly rewarding."</div>
                     <div class="author">- Alex S.</div>
                 </div>
                 
                 <div class="testimonial">
-                    <div class="quote">"I love how I can customize my virtual space. It makes completing tasks so much more rewarding."</div>
+                    <div class="quote">"I've tried many productivity apps, but none have kept me engaged like Habitus Zone. Creating my own tasks with custom rewards makes habit-building feel personal and meaningful."</div>
                     <div class="author">- Jamie P.</div>
                 </div>
                 
                 <div class="testimonial">
-                    <div class="quote">"The streak system keeps me motivated to maintain my habits day after day."</div>
+                    <div class="quote">"The visualization of progress through my Habitus space has been a game-changer. It's not just about checking off tasks; it's about building something beautiful through consistency."</div>
                     <div class="author">- Taylor K.</div>
+                </div>
+                
+                <div class="testimonial">
+                    <div class="quote">"As someone who struggled with maintaining habits, the gamification aspect of Habitus Zone makes me excited to complete my daily tasks. It's turned productivity into something I look forward to."</div>
+                    <div class="author">- Morgan L.</div>
                 </div>
             </div>
         </section>
         
         <!-- CTA section -->
         <section class="final-cta">
-            <h2>Ready to Transform Your Daily Routine?</h2>
-            <p>Join Habitus Zone today and turn your tasks into rewards!</p>
+            <h2>Start Your Journey to Better Habits Today</h2>
+            <p>Join Habitus Zone and discover a more engaging way to build consistency, track your progress, and transform your daily routine into a rewarding experience. Create your personalized space and watch as your habits build a better you.</p>
             <div class="cta-buttons">
                 <a href="pages/register.php" class="primary-button">Create Your Account</a>
-                <a href="pages/login.php" class="secondary-button">Login</a>
+                <a href="#why-habitus" class="secondary-button">Learn More</a>
             </div>
         </section>
         
@@ -185,6 +280,8 @@ if (isset($_SESSION['user_id'])) {
         </footer>
     </div>
 
+    <!-- At the bottom of index.php, before the closing </body> tag -->
     <script src="js/main.js"></script>
+    <script src="js/index.js"></script>
 </body>
 </html>
