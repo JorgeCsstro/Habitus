@@ -1,0 +1,40 @@
+/* Updated CSS Variables for Warm Palette
+   These would go in a master CSS file or variables.css
+*/
+
+:root {
+  /* Core warm palette */
+  --color-primary: #8d5b4c;        /* Primary brown */
+  --color-primary-dark: #7d4b3c;   /* Darker brown */
+  --color-primary-light: #a06a59;  /* Lighter brown */
+  
+  /* Background colors */
+  --color-bg-main: #f9f5f0;        /* Light beige background */
+  --color-bg-card: #ffffff;        /* Card/content background */
+  --color-bg-secondary: #f5f1ea;   /* Cream background for headers/footers */
+  --color-bg-tertiary: #e9e2d9;    /* Darker cream for hover states */
+  
+  /* Border colors */
+  --color-border: #e6ded5;         /* Warm border */
+  --color-border-light: #f0ebe4;   /* Lighter warm border */
+  --color-border-dark: #d6cfc7;    /* Darker warm border */
+  
+  /* Accent colors */
+  --color-accent: #b6754c;         /* Warm orangey accent */
+  --color-success: #6a8d7f;        /* Muted green for success */
+  --color-success-light: #eaf4e4;  /* Light green background */
+  --color-error: #a15c5c;          /* Muted red for errors */
+  --color-error-light: #efe2e2;    /* Light red background */
+  --color-warning: #c4a356;        /* Muted gold for warnings */
+  --color-warning-light: #faf3e5;  /* Light gold background */
+  --color-info: #5d7b8a;           /* Muted blue for information */
+  
+  /* Text colors */
+  --color-text-dark: #2d2926;      /* Darker text */
+  --color-text-medium: #5a5755;    /* Medium text */
+  --color-text-light: #8d8580;     /* Warm gray for lighter text */
+  
+  /* Shadow colors */
+  --shadow-warm: 0 4px 15px rgba(141, 91, 76, 0.07);  /* Warm shadow */
+  --shadow-warm-hover: 0 5px 15px rgba(141, 91, 76, 0.15);  /* Stronger warm shadow for hover */
+}

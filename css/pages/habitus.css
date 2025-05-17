@@ -5,7 +5,7 @@
     flex: 1;
     padding: 20px;
     overflow-y: auto;
-    background-color: #f9f9f9;
+    background-color: #f9f5f0; /* Light beige background */
 }
 
 /* Habitus header */
@@ -23,19 +23,21 @@
 
 .room-selector select {
     padding: 10px 15px;
-    border: 1px solid #ddd;
+    border: 1px solid #e9e2d9; /* Warm border */
     border-radius: 25px;
     font-size: 1rem;
     margin-right: 10px;
     min-width: 200px;
+    background-color: #fff;
+    color: #2d2926; /* Darker text */
 }
 
 .new-room-btn, .rename-room-btn {
     padding: 8px 15px;
     border-radius: 20px;
-    background-color: #f0f7ff;
-    color: #3a7bd5;
-    border: 1px solid #cde1ff;
+    background-color: #f5f1ea; /* Cream background */
+    color: #8d5b4c; /* Brown text */
+    border: 1px solid #e2d7cf; /* Warm border */
     cursor: pointer;
     font-weight: 500;
     transition: all 0.3s;
@@ -43,8 +45,8 @@
 }
 
 .new-room-btn:hover, .rename-room-btn:hover {
-    background-color: #e1f0ff;
-    border-color: #a8c7f7;
+    background-color: #e9e2d9; /* Darker cream */
+    border-color: #d6cfc7; /* Darker warm border */
 }
 
 .room-actions {
@@ -55,7 +57,7 @@
 .save-room-btn {
     padding: 10px 20px;
     border-radius: 25px;
-    background-color: #4CAF50;
+    background-color: #6a8d7f; /* Muted green */
     color: white;
     border: none;
     cursor: pointer;
@@ -66,9 +68,9 @@
 }
 
 .save-room-btn:hover {
-    background-color: #3d9140;
+    background-color: #5a7c70; /* Darker muted green */
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(76, 175, 80, 0.2);
+    box-shadow: 0 4px 10px rgba(106, 141, 127, 0.2); /* Green shadow */
 }
 
 /* Habitus editor */
@@ -82,10 +84,11 @@
     flex: 3;
     background-color: white;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 5px 15px rgba(141, 91, 76, 0.08); /* Warm shadow */
     overflow: hidden;
     position: relative;
     height: 100%;
+    border: 1px solid #e9e2d9; /* Warm border */
 }
 
 .room-canvas {
@@ -100,77 +103,90 @@
     flex: 1;
     background-color: white;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 5px 15px rgba(141, 91, 76, 0.08); /* Warm shadow */
     display: flex;
     flex-direction: column;
     max-width: 300px;
     height: 100%;
+    border: 1px solid #e9e2d9; /* Warm border */
 }
 
 .room-inventory h3 {
     padding: 15px;
     margin: 0;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e9e2d9; /* Warm border */
     font-weight: 600;
-    color: #333;
+    color: #2d2926; /* Darker text */
     font-family: 'Quicksand', sans-serif;
+    background-color: #f5f1ea; /* Cream header */
 }
 
 .inventory-filters {
     display: flex;
-    padding: 10px;
-    gap: 5px;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 12px 15px;
+    gap: 8px;
+    border-bottom: 1px solid #f0ebe4; /* Warmer border */
     flex-wrap: wrap;
+    background-color: #fbf8f5; /* Very light beige */
 }
 
 .filter-btn {
     padding: 6px 12px;
-    background-color: #f5f5f5;
-    border: none;
+    background-color: #f5f1ea; /* Cream background */
+    border: 1px solid #e9e2d9; /* Warm border */
     border-radius: 15px;
     font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.2s;
+    color: #5a5755; /* Medium text */
 }
 
 .filter-btn:hover {
-    background-color: #e9e9e9;
+    background-color: #e9e2d9; /* Darker cream */
+    border-color: #d6cfc7; /* Darker warm border */
 }
 
 .filter-btn.active {
-    background-color: #4285f4;
+    background-color: #8d5b4c; /* Brown */
     color: white;
+    border-color: #8d5b4c; /* Brown */
 }
 
 .inventory-items {
     flex: 1;
     overflow-y: auto;
-    padding: 10px;
+    padding: 15px;
+    background-color: #ffffff;
 }
 
 .inventory-item {
     display: flex;
     align-items: center;
-    padding: 10px;
+    padding: 12px;
     border-radius: 8px;
-    border: 1px solid #e0e0e0;
-    background-color: #f9f9f9;
-    margin-bottom: 10px;
+    border: 1px solid #e9e2d9; /* Warm border */
+    background-color: #fbf8f5; /* Very light beige */
+    margin-bottom: 12px;
     cursor: grab;
-    transition: all 0.2s;
+    transition: all 0.3s;
 }
 
 .inventory-item:hover {
-    background-color: #f0f7ff;
-    border-color: #cde1ff;
+    background-color: #f5f1ea; /* Cream background */
+    border-color: #e2d7cf; /* Warm border */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(141, 91, 76, 0.08); /* Warm shadow */
 }
 
 .inventory-item img {
     width: 40px;
     height: 40px;
     object-fit: contain;
-    margin-right: 10px;
+    margin-right: 12px;
+    background-color: white;
+    padding: 3px;
+    border-radius: 4px;
+    border: 1px solid #e9e2d9; /* Warm border */
 }
 
 .item-info {
@@ -179,37 +195,43 @@
 
 .item-name {
     display: block;
-    font-size: 0.9rem;
-    color: #333;
-    margin-bottom: 2px;
+    font-size: 0.95rem;
+    color: #2d2926; /* Darker text */
+    margin-bottom: 3px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-weight: 500;
 }
 
 .item-quantity {
     font-size: 0.8rem;
-    color: #777;
+    color: #8d8580; /* Warm gray */
 }
 
 .empty-inventory {
-    padding: 20px;
+    padding: 30px 20px;
     text-align: center;
-    color: #777;
+    color: #8d8580; /* Warm gray */
     font-style: italic;
+    background-color: #f9f5f0; /* Light beige */
+    border-radius: 8px;
+    margin: 15px;
+    border: 1px dashed #e2d7cf; /* Warm dashed border */
 }
 
 .inventory-actions {
     padding: 15px;
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid #e9e2d9; /* Warm border */
+    background-color: #f5f1ea; /* Cream background */
 }
 
 .shop-btn {
     display: block;
     padding: 10px;
-    background-color: #fff0e6;
-    color: #e67e22;
-    border: 1px solid #ffd7b3;
+    background-color: #faf3e5; /* Light gold */
+    color: #b6754c; /* Orangey-brown */
+    border: 1px solid #e9d8c6; /* Warm border */
     border-radius: 20px;
     text-align: center;
     text-decoration: none;
@@ -218,27 +240,30 @@
 }
 
 .shop-btn:hover {
-    background-color: #ffe8d9;
-    border-color: #f7ba8c;
+    background-color: #f7ebd9; /* Slightly darker light gold */
+    border-color: #e0ccb6; /* Darker warm border */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(182, 117, 76, 0.1); /* Warm shadow */
 }
 
 /* Room item controls - floats above selected items */
 .room-item-controls {
     position: absolute;
     display: flex;
-    padding: 5px;
+    padding: 8px;
     background-color: white;
     border-radius: 20px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(141, 91, 76, 0.15); /* Warm shadow */
     z-index: 1000;
+    border: 1px solid #e9e2d9; /* Warm border */
 }
 
 .room-item-controls button {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    border: none;
-    background-color: #f5f5f5;
+    border: 1px solid #e9e2d9; /* Warm border */
+    background-color: #f5f1ea; /* Cream background */
     margin: 0 3px;
     cursor: pointer;
     display: flex;
@@ -248,7 +273,8 @@
 }
 
 .room-item-controls button:hover {
-    background-color: #e0e0e0;
+    background-color: #e9e2d9; /* Darker cream */
+    border-color: #d6cfc7; /* Darker warm border */
 }
 
 .room-item-controls button img {
@@ -257,14 +283,15 @@
 }
 
 .remove-item-btn:hover {
-    background-color: #ffebee;
+    background-color: #f9e8e5; /* Light muted red-orange */
+    border-color: #e0d0d0; /* Muted red border */
 }
 
 /* Modal styles for room actions */
 .modal-content h3 {
     margin-top: 0;
     margin-bottom: 20px;
-    color: #333;
+    color: #2d2926; /* Darker text */
     font-family: 'Quicksand', sans-serif;
 }
 
@@ -276,30 +303,39 @@
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
-    color: #555;
+    color: #5a5755; /* Medium text */
 }
 
 .form-group input {
     width: 100%;
-    padding: 10px 15px;
-    border: 1px solid #ddd;
+    padding: 12px 15px;
+    border: 1px solid #e9e2d9; /* Warm border */
     border-radius: 8px;
     font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.form-group input:focus {
+    border-color: #8d5b4c; /* Brown */
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(141, 91, 76, 0.1); /* Warm shadow */
 }
 
 .create-btn, .save-btn {
-    padding: 8px 20px;
-    background-color: #4CAF50;
+    padding: 10px 20px;
+    background-color: #6a8d7f; /* Muted green */
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 25px;
     cursor: pointer;
     font-weight: 500;
-    transition: all 0.2s;
+    transition: all 0.3s;
 }
 
 .create-btn:hover, .save-btn:hover {
-    background-color: #3d9140;
+    background-color: #5a7c70; /* Darker muted green */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(106, 141, 127, 0.2); /* Green shadow */
 }
 
 /* Notification bubbles */
@@ -316,8 +352,8 @@
 .notification {
     background-color: white;
     border-radius: 8px;
-    padding: 12px 20px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    padding: 15px 20px;
+    box-shadow: 0 4px 12px rgba(141, 91, 76, 0.15); /* Warm shadow */
     opacity: 0;
     transform: translateY(-20px);
     transition: all 0.3s;
@@ -330,11 +366,11 @@
 }
 
 .notification.success {
-    border-left: 4px solid #4CAF50;
+    border-left: 4px solid #6a8d7f; /* Muted green */
 }
 
 .notification.error {
-    border-left: 4px solid #f44336;
+    border-left: 4px solid #a15c5c; /* Muted red */
 }
 
 /* Canvas container styles */
@@ -363,7 +399,7 @@
     .habitus-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
+        gap: 15px;
     }
 
     .room-actions {

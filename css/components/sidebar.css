@@ -36,6 +36,10 @@
     background-color: #e9e2d9; /* Darker cream on hover/active */
 }
 
+.menu-item.active {
+    box-shadow: inset 0 0 0 2px #8d5b4c; /* Brown border for active item */
+}
+
 .menu-item img {
     width: 24px;
     height: 24px;
