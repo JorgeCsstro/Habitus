@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="auth-card">
             <div class="auth-header">
                 <a href="../index.php" class="logo">
-                    <img src="../images/logo/habitus-logo.svg" alt="Habitus Zone Logo">
+                    <img src="../images/logo/logo.svg" alt="Habitus Zone Logo">
                     <span>Habitus Zone</span>
                 </a>
                 <h1>Login to Your Account</h1>
