@@ -37,7 +37,7 @@ function isLoggedIn() {
 function getUserDailies($userId) {
     global $conn;
     
-    $sql = "SELECT t.id, t.title, t.description, t.hcoin_reward, d.current_streak, 
+    $sql = "SELECT t.id, t.title, t.description, t.hcoin_reward, t.difficulty, d.current_streak, 
             d.highest_streak, d.reset_time, d.last_completed, 
             IF(d.last_completed = CURDATE(), 1, 0) as completed
             FROM tasks t
@@ -64,7 +64,7 @@ function getUserDailies($userId) {
 function getUserGoals($userId) {
     global $conn;
     
-    $sql = "SELECT t.id, t.title, t.description, t.hcoin_reward, 
+    $sql = "SELECT t.id, t.title, t.description, t.hcoin_reward, t.difficulty, 
             g.deadline, g.progress, g.total_steps,
             IF(g.progress >= g.total_steps, 1, 0) as completed
             FROM tasks t
@@ -91,7 +91,7 @@ function getUserGoals($userId) {
 function getUserChallenges($userId) {
     global $conn;
     
-    $sql = "SELECT t.id, t.title, t.description, t.hcoin_reward, 
+    $sql = "SELECT t.id, t.title, t.description, t.hcoin_reward, t.difficulty, 
             c.start_date, c.end_date, c.is_completed as completed
             FROM tasks t
             JOIN challenges c ON t.id = c.task_id
