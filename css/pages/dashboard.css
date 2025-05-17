@@ -9,7 +9,7 @@
     grid-gap: 20px;
     padding: 20px;
     overflow-y: auto;
-    background-color: #eaeaea; /* Darker background for more contrast */
+    background-color: #f9f5f0; /* Light beige background */
 }
 
 /* Panel Placements */
@@ -55,24 +55,24 @@
     background-color: #ffffff;
     margin-bottom: 10px;
     transition: all 0.2s;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+    border: 1px solid #e9e2d9; /* Warm border */
+    box-shadow: 0 2px 5px rgba(141, 91, 76, 0.03);
 }
 
 .daily-item:hover, .goal-item:hover, .challenge-item:hover {
-    background-color: #f8f8f8;
-    border-color: #d0d0d0;
-    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.05);
+    background-color: #fbf8f5; /* Very light beige on hover */
+    border-color: #ded6cc; /* Darker warm border */
+    box-shadow: 0 3px 7px rgba(141, 91, 76, 0.05);
 }
 
 .daily-item.completed, .goal-item.completed, .challenge-item.completed {
-    background-color: #f0f9f0;
-    border: 1px solid #c8e6c9;
+    background-color: #f0f5f3; /* Very light muted green */
+    border: 1px solid #dae5e0; /* Light muted green border */
 }
 
 .daily-bullet, .goal-bullet, .challenge-bullet {
     margin-right: 10px;
-    color: #333;
+    color: #2d2926; /* Darker text */
 }
 
 .daily-title, .goal-title, .challenge-title {
@@ -80,18 +80,18 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: #333;
+    color: #2d2926; /* Darker text */
 }
 
 .daily-dots, .goal-dots, .challenge-dots {
     flex: 1;
-    border-bottom: 1px dotted #ccc;
+    border-bottom: 1px dotted #d6cfc7; /* Dotted warm border */
     margin: 0 5px;
 }
 
 .daily-time {
     margin-right: 10px;
-    color: #888;
+    color: #8d8580; /* Warm gray */
     font-size: 0.85rem;
 }
 
@@ -99,7 +99,7 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    border: 1px solid #ddd;
+    border: 1px solid #e2d7cf; /* Warm border */
     background-color: white;
     display: flex;
     justify-content: center;
@@ -109,12 +109,12 @@
 }
 
 .complete-button:hover {
-    background-color: #f5f5f5;
+    background-color: #f5f1ea; /* Cream background */
 }
 
 .complete-button.completed {
-    background-color: #4CAF50;
-    border-color: #4CAF50;
+    background-color: #6a8d7f; /* Muted green */
+    border-color: #6a8d7f;
 }
 
 .complete-button img {
@@ -141,9 +141,9 @@
     aspect-ratio: 1/1;
     border-radius: 8px;
     overflow: hidden;
-    background-color: #f5f5f5;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    background-color: #f5f1ea; /* Cream background */
+    border: 1px solid #e9e2d9; /* Warm border */
+    box-shadow: 0 2px 5px rgba(141, 91, 76, 0.05);
 }
 
 .shop-item img {
@@ -161,7 +161,7 @@
     padding: 3px 8px;
     display: flex;
     align-items: center;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(141, 91, 76, 0.1); /* Warm border */
 }
 
 .item-price img {
@@ -173,7 +173,7 @@
 .item-price span {
     font-size: 0.8rem;
     font-weight: 600;
-    color: #333;
+    color: #2d2926; /* Darker text */
     font-family: 'Quicksand', sans-serif;
 }
 
@@ -181,11 +181,11 @@
 .habitus-preview {
     width: calc(100% - 10px);
     aspect-ratio: 1/1;
-    background-color: #f5f5f5;
+    background-color: #f5f1ea; /* Cream background */
     border-radius: 8px;
     overflow: hidden;
     margin: 5px auto 15px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #e9e2d9; /* Warm border */
 }
 
 .habitus-preview img {
@@ -234,8 +234,8 @@
     height: 80%;
     bottom: 10%;
     left: 10%;
-    background: linear-gradient(45deg, #f0d78c, #ffd700);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(45deg, #f0e0c3, #e2c999); /* Warmer floor */
+    box-shadow: 0 5px 15px rgba(141, 91, 76, 0.1); /* Warm shadow */
 }
 
 .room-wall-left {
@@ -244,10 +244,10 @@
     height: 40%;
     left: 10%;
     bottom: 10%;
-    background: linear-gradient(to top, #e0e0e0, #f5f5f5);
+    background: linear-gradient(to top, #e9e2d9, #f5f1ea); /* Cream walls */
     transform-origin: bottom;
     transform: rotateX(90deg) translateY(40%);
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
+    box-shadow: inset 0 0 20px rgba(141, 91, 76, 0.05); /* Warm shadow */
 }
 
 .room-wall-right {
@@ -256,10 +256,10 @@
     height: 80%;
     right: 10%;
     bottom: 10%;
-    background: linear-gradient(to right, #d0d0d0, #e8e8e8);
+    background: linear-gradient(to right, #e0d9d0, #ece6dd); /* Cream walls */
     transform-origin: left;
     transform: rotateY(90deg) translateX(-40%);
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 0 0 20px rgba(141, 91, 76, 0.1); /* Warm shadow */
 }
 
 .room-window {
@@ -268,11 +268,11 @@
     height: 20%;
     left: 40%;
     top: 10%;
-    background: linear-gradient(to bottom, #a5d8ff, #87ceeb);
+    background: linear-gradient(to bottom, #c9e0eb, #a7c8d6); /* Slightly warmer blue */
     border: 3px solid white;
     transform-origin: bottom;
     transform: rotateX(90deg) translateY(40%);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 10px rgba(141, 91, 76, 0.1); /* Warm shadow */
 }
 
 .room-window::after {
@@ -301,10 +301,10 @@
     height: 30%;
     left: 20%;
     top: 20%;
-    background: linear-gradient(to top, #8B4513, #A0522D);
+    background: linear-gradient(to top, #8d5b4c, #a06a59); /* Brown door */
     transform-origin: bottom;
     transform: rotateX(90deg) translateY(40%);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 10px rgba(141, 91, 76, 0.2); /* Warm shadow */
 }
 
 .room-door::after {
@@ -313,7 +313,7 @@
     width: 15%;
     height: 15%;
     border-radius: 50%;
-    background: #FFD700;
+    background: #e2c999; /* Warm doorknob */
     right: 10%;
     top: 50%;
     transform: translateY(-50%);
@@ -333,11 +333,11 @@
     overflow: hidden;
     cursor: pointer;
     border: 2px solid transparent;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgba(141, 91, 76, 0.1); /* Warm shadow */
 }
 
 .room-thumbnail.active {
-    border-color: #4CAF50;
+    border-color: #6a8d7f; /* Muted green */
 }
 
 .room-thumbnail img {

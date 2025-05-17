@@ -39,8 +39,8 @@ body {
     font-family: 'Poppins', 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     margin: 0;
     padding: 0;
-    color: #333;
-    background-color: #f9f9f9;
+    color: #2d2926; /* Darker text color */
+    background-color: #f9f5f0; /* Light beige background */
     overflow-x: hidden;
 }
 
@@ -65,11 +65,11 @@ body {
 .panel {
     background-color: #ffffff;
     border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(141, 91, 76, 0.07); /* Warm shadow color */
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border: 1px solid #d8d8d8;
+    border: 1px solid #e6ded5; /* Warmer border color */
     margin-bottom: 5px;
 }
 
@@ -78,8 +78,8 @@ body {
     align-items: center;
     justify-content: center;
     padding: 18px 15px;
-    border-bottom: 2px solid #e0e0e0;
-    background-color: #f0f0f0;
+    border-bottom: 2px solid #e9e2d9; /* Warmer border color */
+    background-color: #f5f1ea; /* Cream header background */
     text-align: center;
 }
 
@@ -93,7 +93,7 @@ body {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #333;
+    color: #2d2926;
     font-family: 'Quicksand', 'Avenir Next', 'Segoe UI', sans-serif;
     letter-spacing: 0.02em;
 }
@@ -103,15 +103,15 @@ body {
     padding: 15px;
     overflow-y: auto;
     background-color: #ffffff;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e9e2d9; /* Warmer border color */
 }
 
 .panel-footer {
     padding: 15px;
-    border-top: 2px solid #e0e0e0;
+    border-top: 2px solid #e9e2d9; /* Warmer border color */
     display: flex;
     justify-content: center;
-    background-color: #f0f0f0;
+    background-color: #f5f1ea; /* Cream footer background */
 }
 
 /* Button styles */
@@ -124,7 +124,7 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 5px rgba(141, 91, 76, 0.12); /* Warm shadow */
     width: 100%;
     max-width: 220px;
     border: 1px solid;
@@ -132,47 +132,41 @@ body {
 }
 
 .add-new-button:hover, .go-to-shop-button:hover, .edit-habitus-button:hover {
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 3px 8px rgba(141, 91, 76, 0.15); /* Warmer shadow on hover */
     transform: translateY(-1px);
 }
 
 .add-new-button {
-    background-color: #f0f7ff;
-    color: #3a7bd5;
-    border-color: #cde1ff;
+    background-color: #f0e9e3; /* Warmer background */
+    color: #8d5b4c; /* Brown text */
+    border-color: #e2d7cf; /* Warm border */
 }
 
 .add-new-button:hover {
-    background-color: #e1f0ff;
-    border-color: #a8c7f7;
+    background-color: #e8e1da; /* Slightly darker on hover */
+    border-color: #d6cbc2;
 }
 
 .go-to-shop-button {
-    background-color: #fff0e6;
-    color: #e67e22;
-    border-color: #ffd7b3;
+    background-color: #f2e8dd; /* Warm orangey background */
+    color: #b6754c; /* Orangey-brown text */
+    border-color: #e9d8c6; /* Warm border */
 }
 
 .go-to-shop-button:hover {
-    background-color: #ffe8d9;
-    border-color: #f7ba8c;
+    background-color: #eedfd0; /* Slightly darker on hover */
+    border-color: #e0ccb6;
 }
 
 .edit-habitus-button {
-    background-color: #f0f9f0;
-    color: #4CAF50;
-    border-color: #cfebd0;
+    background-color: #eae9e2; /* Light olive background */
+    color: #6a8d7f; /* Muted green */
+    border-color: #dddbd1; /* Olive border */
 }
 
 .edit-habitus-button:hover {
-    background-color: #e3f5e3;
-    border-color: #a5d6a7;
-}
-
-.add-new-button img, .go-to-shop-button img, .edit-habitus-button img {
-    width: 16px;
-    height: 16px;
-    margin-right: 8px;
+    background-color: #e2e1d9; /* Slightly darker on hover */
+    border-color: #d3d1c5;
 }
 
 /* Alerts */
@@ -184,27 +178,27 @@ body {
 }
 
 .alert-success {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-    border: 1px solid #a5d6a7;
+    background-color: #e4ebe7; /* Muted green background */
+    color: #6a8d7f; /* Muted green text */
+    border: 1px solid #cfdad4; /* Muted green border */
 }
 
 .alert-error {
-    background-color: #ffebee;
-    color: #c62828;
-    border: 1px solid #ef5350;
+    background-color: #efe2e2; /* Muted red background */
+    color: #a15c5c; /* Muted red text */
+    border: 1px solid #e0d0d0; /* Muted red border */
 }
 
 /* Empty messages */
 .empty-message {
-    color: #777;
+    color: #6b6661; /* Warmer gray */
     text-align: center;
     font-style: italic;
     padding: 30px 20px;
-    background-color: #f8f8f8;
+    background-color: #f5f1ea; /* Cream background */
     border-radius: 8px;
     margin: 10px 0;
-    border: 1px dashed #ccc;
+    border: 1px dashed #d6cfc7; /* Warm dashed border */
     font-family: 'Quicksand', sans-serif;
 }
 
@@ -213,8 +207,8 @@ body {
     position: fixed;
     top: 20px;
     right: 20px;
-    background-color: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 253, 249, 0.95); /* Warm white with transparency */
+    box-shadow: 0 3px 10px rgba(141, 91, 76, 0.15); /* Warm shadow */
     border-radius: 10px;
     padding: 15px 20px;
     display: flex;
@@ -223,6 +217,7 @@ body {
     opacity: 0;
     transition: all 0.5s ease;
     z-index: 1000;
+    border-left: 3px solid #b6754c; /* Orangey-brown accent */
 }
 
 .hcoin-notification.show {
@@ -238,16 +233,16 @@ body {
 
 .hcoin-notification span {
     font-weight: 600;
-    color: #333;
+    color: #2d2926;
 }
 
 /* General link styling */
 a {
     text-decoration: none;
-    color: #4285f4;
+    color: #8d5b4c; /* Primary brown */
     transition: color 0.3s;
 }
 
 a:hover {
-    color: #3367d6;
+    color: #b6754c; /* Accent orange-brown */
 }

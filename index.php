@@ -2,7 +2,6 @@
 
 // index.php
 
-// Include necessary files
 require_once 'php/include/config.php';
 
 // If user is already logged in, redirect to dashboard.php
@@ -30,7 +29,7 @@ if (isset($_SESSION['user_id'])) {
         <!-- Top navigation -->
         <nav class="landing-nav">
             <div class="logo">
-                <img src="images/logo/habitus-logo.svg" alt="Habitus Zone Logo">
+                <img src="images/logo/logo.svg" alt="Habitus Zone Logo">
                 <span>Habitus Zone</span>
             </div>
             <div class="nav-buttons">
@@ -263,7 +262,7 @@ if (isset($_SESSION['user_id'])) {
         <!-- Footer -->
         <footer class="landing-footer">
             <div class="footer-logo">
-                <img src="images/logo/habitus-logo-small.svg" alt="Habitus Zone">
+                <img src="images/logo/logo.svg" alt="Habitus Zone">
                 <span>Habitus Zone</span>
             </div>
             
