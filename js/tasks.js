@@ -42,7 +42,25 @@ function setupEventListeners() {
     const createTaskBtn = document.getElementById('create-task-button');
     if (createTaskBtn) {
         createTaskBtn.addEventListener('click', function() {
-            openTaskModal('daily');
+            // Check which tab-content is currently active
+            const activeTabContent = document.querySelector('.tab-content.active');
+            let taskType = 'daily'; // Default to daily
+            
+            if (activeTabContent) {
+                // Extract the task type from the tab-content id
+                // The format is dailies-tab, goals-tab, challenges-tab
+                const tabId = activeTabContent.id;
+                if (tabId) {
+                    // Extract the tab name and convert to singular
+                    const tabName = tabId.replace('-tab', '');
+                    if (tabName === 'dailies') taskType = 'daily';
+                    else if (tabName === 'goals') taskType = 'goal';
+                    else if (tabName === 'challenges') taskType = 'challenge';
+                }
+            }
+            
+            // Open the modal with the appropriate task type
+            openTaskModal(taskType);
         });
     }
     

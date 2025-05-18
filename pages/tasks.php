@@ -537,5 +537,77 @@ $challenges = getUserChallenges($_SESSION['user_id']);
     <script src="../js/main.js"></script>
     <!-- Tasks-specific JavaScript -->
     <script src="../js/tasks.js"></script>
+    <script>
+        // Wait for the document to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get a reference to the create task button
+            const createTaskBtn = document.getElementById('create-task-button');
+        
+            // Add click event listener directly
+            if (createTaskBtn) {
+                createTaskBtn.addEventListener('click', function() {
+                    // Determine which tab is active
+                    const activeTab = document.querySelector('.tab-content.active');
+                    let taskType = 'daily'; // Default
+                
+                    if (activeTab) {
+                        if (activeTab.id === 'goals-tab') {
+                            taskType = 'goal';
+                        } else if (activeTab.id === 'challenges-tab') {
+                            taskType = 'challenge';
+                        }
+                    }
+                
+                    // Manual implementation of what openTaskModal should do:
+                
+                    // 1. Reset the form
+                    const taskForm = document.getElementById('task-form');
+                    if (taskForm) taskForm.reset();
+                
+                    // 2. Set task type in the hidden input field
+                    const taskTypeInput = document.getElementById('task-type');
+                    if (taskTypeInput) taskTypeInput.value = taskType;
+                
+                    // 3. Set task ID to 0 (for new task)
+                    const taskIdInput = document.getElementById('task-id');
+                    if (taskIdInput) taskIdInput.value = '0';
+                
+                    // 4. Update modal title
+                    const modalTitle = document.getElementById('modal-title');
+                    if (modalTitle) {
+                        const capitalizedType = taskType.charAt(0).toUpperCase() + taskType.slice(1);
+                        modalTitle.textContent = `Create New ${capitalizedType}`;
+                    }
+                
+                    // 5. Show appropriate fields based on task type
+                    const typeSpecificFields = document.querySelectorAll('.type-specific-fields');
+                    typeSpecificFields.forEach(field => {
+                        field.style.display = 'none';
+                    });
+                
+                    const specificField = document.getElementById(`${taskType}-fields`);
+                    if (specificField) specificField.style.display = 'block';
+                
+                    // 6. Update reward calculation
+                    try {
+                        updateRewardCalculation();
+                    } catch(e) {
+                        console.error('Could not update reward calculation:', e);
+                    }
+                
+                    // 7. Show the modal
+                    const modal = document.getElementById('task-modal');
+                    if (modal) {
+                        modal.classList.add('show');
+                        console.log('Modal should be visible now');
+                    } else {
+                        console.error('Modal element not found!');
+                    }
+                });
+            } else {
+                console.error('Create task button not found!');
+            }
+        });
+    </script>
 </body>
 </html>
