@@ -290,3 +290,161 @@ function formatNotificationTime($timestamp) {
         return date("M j, Y", $time);
     }
 }
+
+/**
+ * Get subtasks for a task
+ * @param int $taskId - Parent task ID
+ * @return array - Array of subtask data
+ */
+function getSubtasks($taskId) {
+    global $conn;
+    
+    $sql = "SELECT id, title, description, is_completed, order_position 
+            FROM subtasks 
+            WHERE parent_task_id = ? 
+            ORDER BY order_position, id";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$taskId]);
+    
+    $subtasks = [];
+    while ($row = $stmt->fetch()) {
+        $subtasks[] = $row;
+    }
+    
+    return $subtasks;
+}
+
+/**
+ * Create a new subtask
+ * @param int $taskId - Parent task ID
+ * @param string $title - Subtask title
+ * @param string $description - Subtask description (optional)
+ * @return int - ID of the created subtask
+ */
+function createSubtask($taskId, $title, $description = '') {
+    global $conn;
+    
+    // Get highest order position
+    $sql = "SELECT MAX(order_position) as max_pos FROM subtasks WHERE parent_task_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$taskId]);
+    $result = $stmt->fetch();
+    $orderPosition = ($result['max_pos'] !== null) ? $result['max_pos'] + 1 : 0;
+    
+    // Create subtask
+    $sql = "INSERT INTO subtasks (parent_task_id, title, description, order_position) 
+            VALUES (?, ?, ?, ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$taskId, $title, $description, $orderPosition]);
+    
+    return $conn->lastInsertId();
+}
+
+/**
+ * Update subtask completion status
+ * @param int $subtaskId - Subtask ID
+ * @param bool $completed - Completion status
+ * @return bool - Success status
+ */
+function updateSubtaskStatus($subtaskId, $completed) {
+    global $conn;
+    
+    $sql = "UPDATE subtasks SET is_completed = ? WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$completed ? 1 : 0, $subtaskId]);
+    
+    return $stmt->rowCount() > 0;
+}
+
+/**
+ * Check if all subtasks are completed for a task
+ * @param int $taskId - Parent task ID
+ * @return bool - True if all completed or no subtasks
+ */
+function areAllSubtasksCompleted($taskId) {
+    global $conn;
+    
+    $sql = "SELECT COUNT(*) as total, SUM(is_completed) as completed 
+            FROM subtasks 
+            WHERE parent_task_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$taskId]);
+    $result = $stmt->fetch();
+    
+    // If no subtasks, return true
+    if ($result['total'] == 0) {
+        return true;
+    }
+    
+    // Check if all subtasks are completed
+    return $result['total'] == $result['completed'];
+}
+
+/**
+ * Update goal progress based on subtask completion
+ * @param int $taskId - Parent task ID
+ */
+function updateGoalProgress($taskId) {
+    global $conn;
+    
+    // Get number of completed subtasks
+    $sql = "SELECT COUNT(*) as completed FROM subtasks 
+            WHERE parent_task_id = ? AND is_completed = 1";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$taskId]);
+    $completed = $stmt->fetch()['completed'];
+    
+    // Get total number of subtasks
+    $sql = "SELECT COUNT(*) as total FROM subtasks WHERE parent_task_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$taskId]);
+    $total = $stmt->fetch()['total'];
+    
+    // If no subtasks, don't update progress
+    if ($total == 0) {
+        return;
+    }
+    
+    // Update goal progress
+    $sql = "UPDATE goals SET progress = ? WHERE task_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$completed, $taskId]);
+    
+    // If all completed, update goal's total_steps to match
+    if ($completed == $total) {
+        $sql = "UPDATE goals SET total_steps = ? WHERE task_id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$total, $taskId]);
+    }
+}
+
+/**
+ * Count subtasks for a task
+ * @param int $taskId - Parent task ID
+ * @return int - Number of subtasks
+ */
+function countSubtasks($taskId) {
+    global $conn;
+    
+    $sql = "SELECT COUNT(*) as count FROM subtasks WHERE parent_task_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$taskId]);
+    
+    return $stmt->fetch()['count'];
+}
+
+/**
+ * Count completed subtasks for a task
+ * @param int $taskId - Parent task ID
+ * @return int - Number of completed subtasks
+ */
+function countCompletedSubtasks($taskId) {
+    global $conn;
+    
+    $sql = "SELECT COUNT(*) as count FROM subtasks WHERE parent_task_id = ? AND is_completed = 1";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$taskId]);
+    
+    return $stmt->fetch()['count'];
+}

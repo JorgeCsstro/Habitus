@@ -91,13 +91,31 @@ try {
         
         $streak = $currentStreak;
     } elseif ($taskType === 'goal') {
+        // THIS IS WHERE TO ADD THE GOAL SUBTASKS CHECK
         // Get goal info
         $goalQuery = "SELECT * FROM goals WHERE task_id = ?";
         $stmt = $conn->prepare($goalQuery);
         $stmt->execute([$taskId]);
         $goalData = $stmt->fetch();
         
-        // Increment progress
+        // Check if task uses subtasks
+        $useSubtasks = $goalData['use_subtasks'];
+        
+        if ($useSubtasks) {
+            // Check if all subtasks are completed
+            $subtasksQuery = "SELECT COUNT(*) as total, SUM(is_completed) as completed 
+                             FROM subtasks WHERE parent_task_id = ?";
+            $stmt = $conn->prepare($subtasksQuery);
+            $stmt->execute([$taskId]);
+            $subtasksData = $stmt->fetch();
+            
+            // If there are subtasks and not all are completed, return error
+            if ($subtasksData['total'] > 0 && $subtasksData['total'] != $subtasksData['completed']) {
+                throw new Exception("Please complete all subtasks before completing this goal");
+            }
+        }
+        
+        // Increment progress (keep your existing goal logic here)
         $progress = $goalData['progress'] + 1;
         $totalSteps = $goalData['total_steps'];
         
@@ -112,8 +130,30 @@ try {
         $stmt->execute([$progress, $taskId]);
         
         $completed = ($progress >= $totalSteps);
+        
     } elseif ($taskType === 'challenge') {
-        // Complete challenge
+        // THIS IS WHERE TO ADD THE CHALLENGE SUBTASKS CHECK
+        // Check if task uses subtasks
+        $challengeQuery = "SELECT use_subtasks FROM challenges WHERE task_id = ?";
+        $stmt = $conn->prepare($challengeQuery);
+        $stmt->execute([$taskId]);
+        $useSubtasks = $stmt->fetch()['use_subtasks'];
+        
+        if ($useSubtasks) {
+            // Check if all subtasks are completed
+            $subtasksQuery = "SELECT COUNT(*) as total, SUM(is_completed) as completed 
+                             FROM subtasks WHERE parent_task_id = ?";
+            $stmt = $conn->prepare($subtasksQuery);
+            $stmt->execute([$taskId]);
+            $subtasksData = $stmt->fetch();
+            
+            // If there are subtasks and not all are completed, return error
+            if ($subtasksData['total'] > 0 && $subtasksData['total'] != $subtasksData['completed']) {
+                throw new Exception("Please complete all subtasks before completing this challenge");
+            }
+        }
+        
+        // Complete challenge (keep your existing challenge logic here)
         $updateChallenge = "UPDATE challenges SET is_completed = 1 WHERE task_id = ?";
         $stmt = $conn->prepare($updateChallenge);
         $stmt->execute([$taskId]);

@@ -317,6 +317,36 @@ LOCK TABLES `subscription_plans` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `subtasks`
+--
+
+DROP TABLE IF EXISTS `subtasks`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `subtasks` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `parent_task_id` int NOT NULL,
+  `title` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `is_completed` tinyint(1) DEFAULT '0',
+  `order_position` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `parent_task_id` (`parent_task_id`),
+  CONSTRAINT `subtasks_ibfk_1` FOREIGN KEY (`parent_task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `subtasks`
+--
+
+LOCK TABLES `subtasks` WRITE;
+/*!40000 ALTER TABLE `subtasks` DISABLE KEYS */;
+/*!40000 ALTER TABLE `subtasks` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `task_types`
 --
 
@@ -518,4 +548,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-18 21:41:40
+-- Dump completed on 2025-05-18 23:04:46

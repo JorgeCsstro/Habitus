@@ -128,6 +128,37 @@ try {
             $stmt->execute([$taskId, $startDate, $endDate]);
         }
     }
+
+    // Modify php/api/tasks/save_task.php to handle subtasks option
+
+    // Add to the existing code:
+    $useSubtasks = isset($_POST['use_subtasks']) ? (bool)$_POST['use_subtasks'] : true;
+    
+    // In the section where you create or update goal-specific or challenge-specific data:
+    if ($taskType === 'goal') {
+        // Add this line in the UPDATE query:
+        $updateGoal = "UPDATE goals SET deadline = ?, total_steps = ?, use_subtasks = ? WHERE task_id = ?";
+        $stmt = $conn->prepare($updateGoal);
+        $stmt->execute([$deadline, $totalSteps, $useSubtasks ? 1 : 0, $taskId]);
+        
+        // Or in the INSERT query:
+        $insertGoal = "INSERT INTO goals (task_id, deadline, progress, total_steps, use_subtasks) 
+                      VALUES (?, ?, 0, ?, ?)";
+        $stmt = $conn->prepare($insertGoal);
+        $stmt->execute([$taskId, $deadline, $totalSteps, $useSubtasks ? 1 : 0]);
+        
+    } elseif ($taskType === 'challenge') {
+        // Add similar modifications for challenges
+        $updateChallenge = "UPDATE challenges SET start_date = ?, end_date = ?, use_subtasks = ? WHERE task_id = ?";
+        $stmt = $conn->prepare($updateChallenge);
+        $stmt->execute([$startDate, $endDate, $useSubtasks ? 1 : 0, $taskId]);
+        
+        // Or in the INSERT query:
+        $insertChallenge = "INSERT INTO challenges (task_id, start_date, end_date, is_completed, use_subtasks) 
+                           VALUES (?, ?, ?, 0, ?)";
+        $stmt = $conn->prepare($insertChallenge);
+        $stmt->execute([$taskId, $startDate, $endDate, $useSubtasks ? 1 : 0]);
+    }
     
     // Commit transaction
     $conn->commit();

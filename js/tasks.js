@@ -5,6 +5,7 @@ let currentTaskId = 0;
 let currentTaskType = '';
 let deleteTaskId = 0;
 let deleteTaskType = '';
+let currentSubtasks = [];
 
 // Initialize when document is ready
 document.addEventListener('DOMContentLoaded', function() {
@@ -542,6 +543,49 @@ function completeTask(taskId, taskType) {
     // Prevent multiple clicks
     if (button.disabled) return;
     
+    // For goals and challenges, check if all subtasks are completed first
+    if ((taskType === 'goal' || taskType === 'challenge') && !button.classList.contains('ready')) {
+        // Check if all subtasks are completed
+        fetch(`../php/api/tasks/subtasks.php?task_id=${taskId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const subtasks = data.subtasks;
+                    
+                    // If no subtasks, proceed with completion
+                    if (subtasks.length === 0) {
+                        proceedWithCompletion();
+                        return;
+                    }
+                    
+                    // Check if all subtasks are completed
+                    const allCompleted = subtasks.every(subtask => subtask.is_completed === 1);
+                    
+                    if (allCompleted) {
+                        proceedWithCompletion();
+                    } else {
+                        // Show subtasks modal with message
+                        showNotification('Complete all subtasks before completing the main task', 'warning');
+                        showSubtasks(taskId, taskType);
+                    }
+                } else {
+                    // If error fetching subtasks, proceed anyway
+                    proceedWithCompletion();
+                }
+            })
+            .catch(error => {
+                console.error('Error checking subtasks:', error);
+                // If error, proceed anyway
+                proceedWithCompletion();
+            });
+    } else {
+        // For dailies or if already ready, proceed directly
+        proceedWithCompletion();
+    }
+
+}
+
+function proceedWithCompletion() {
     // Show loading state
     button.innerHTML = '<img src="../images/icons/loading.svg" alt="Loading" class="loading-icon"> Processing...';
     button.disabled = true;
@@ -562,15 +606,12 @@ function completeTask(taskId, taskType) {
                 hcoinsEarned = Math.floor(Math.random() * 100) + 50; // 50-150 hcoins
                 break;
         }
-        
         // Update UI
         const taskItem = button.closest('.task-item');
         taskItem.classList.add('completed');
-        
         button.innerHTML = '<img src="../images/icons/check.svg" alt="Done"> Completed';
         button.classList.add('done');
         button.disabled = true;
-        
         // Update HCoin balance in header (if it exists)
         const hcoinBalanceElement = document.querySelector('.hcoin-balance span');
         if (hcoinBalanceElement) {
@@ -578,7 +619,6 @@ function completeTask(taskId, taskType) {
             const newBalance = currentBalance + hcoinsEarned;
             hcoinBalanceElement.textContent = newBalance.toLocaleString();
         }
-        
         // Show completion modal
         showCompletionModal(hcoinsEarned, taskType);
     }, 1000);
@@ -668,4 +708,399 @@ function showNotification(message, type = 'success') {
  */
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+/**
+ * Load subtasks for a task
+ * @param {number} taskId - ID of the task to load subtasks for
+ */
+function loadSubtasks(taskId) {
+    if (!taskId) return;
+    
+    // Clear current subtasks
+    currentSubtasks = [];
+    
+    // Show loading state
+    const subtasksList = document.querySelector('.subtasks-list');
+    if (subtasksList) {
+        subtasksList.innerHTML = '<div class="loading-subtasks">Loading subtasks...</div>';
+    }
+    
+    // Fetch subtasks from API
+    fetch(`../php/api/tasks/subtasks.php?task_id=${taskId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                currentSubtasks = data.subtasks;
+                updateSubtasksList();
+            } else {
+                console.error('Error loading subtasks:', data.message);
+                if (subtasksList) {
+                    subtasksList.innerHTML = `<div class="error-message">Error loading subtasks: ${data.message}</div>`;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('API request failed:', error);
+            if (subtasksList) {
+                subtasksList.innerHTML = '<div class="error-message">Failed to load subtasks</div>';
+            }
+        });
+}
+
+/**
+ * Update subtasks list in UI
+ */
+function updateSubtasksList() {
+    const subtasksList = document.querySelector('.subtasks-list');
+    if (!subtasksList) return;
+    
+    if (currentSubtasks.length === 0) {
+        subtasksList.innerHTML = '<div class="empty-subtasks">No subtasks yet. Add some to break down this task!</div>';
+        return;
+    }
+    
+    // Build subtasks list
+    let html = '';
+    currentSubtasks.forEach(subtask => {
+        html += `
+            <div class="subtask-item ${subtask.is_completed ? 'completed' : ''}">
+                <div class="subtask-checkbox">
+                    <input type="checkbox" 
+                           id="subtask-${subtask.id}" 
+                           ${subtask.is_completed ? 'checked' : ''} 
+                           onchange="toggleSubtask(${subtask.id}, this.checked)">
+                    <label for="subtask-${subtask.id}"></label>
+                </div>
+                <div class="subtask-content">
+                    <div class="subtask-title">${escapeHtml(subtask.title)}</div>
+                    ${subtask.description ? `<div class="subtask-description">${escapeHtml(subtask.description)}</div>` : ''}
+                </div>
+                <div class="subtask-actions">
+                    <button class="subtask-edit-btn" onclick="editSubtask(${subtask.id})">
+                        <img src="../images/icons/edit-icon-light.webp" alt="Edit">
+                    </button>
+                    <button class="subtask-delete-btn" onclick="deleteSubtask(${subtask.id})">
+                        <img src="../images/icons/trash.webp" alt="Delete">
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    subtasksList.innerHTML = html;
+}
+
+/**
+ * Create a new subtask
+ */
+function createSubtask() {
+    const taskId = currentTaskId;
+    const title = document.getElementById('subtask-title').value.trim();
+    const description = document.getElementById('subtask-description').value.trim();
+    
+    if (!taskId) {
+        showNotification('Please save the task first before adding subtasks', 'error');
+        return;
+    }
+    
+    if (!title) {
+        showNotification('Please enter a subtask title', 'error');
+        return;
+    }
+    
+    // Show loading state
+    const addSubtaskBtn = document.getElementById('add-subtask-btn');
+    addSubtaskBtn.textContent = 'Adding...';
+    addSubtaskBtn.disabled = true;
+    
+    // Send API request
+    fetch('../php/api/tasks/subtasks.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            action: 'create',
+            task_id: taskId,
+            title: title,
+            description: description
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Reset button state
+        addSubtaskBtn.textContent = 'Add Subtask';
+        addSubtaskBtn.disabled = false;
+        
+        if (data.success) {
+            // Clear input fields
+            document.getElementById('subtask-title').value = '';
+            document.getElementById('subtask-description').value = '';
+            
+            // Reload subtasks
+            loadSubtasks(taskId);
+            
+            // Show success message
+            showNotification('Subtask added successfully');
+        } else {
+            // Show error
+            showNotification(data.message || 'Error adding subtask', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error adding subtask:', error);
+        showNotification('An error occurred while adding the subtask', 'error');
+        
+        // Reset button state
+        addSubtaskBtn.textContent = 'Add Subtask';
+        addSubtaskBtn.disabled = false;
+    });
+}
+
+/**
+ * Toggle subtask completion status
+ * @param {number} subtaskId - ID of the subtask to toggle
+ * @param {boolean} completed - New completion status
+ */
+function toggleSubtask(subtaskId, completed) {
+    // Find subtask element
+    const subtaskElement = document.querySelector(`.subtask-item input[id="subtask-${subtaskId}"]`).closest('.subtask-item');
+    
+    // Apply visual change immediately (optimistic UI update)
+    if (completed) {
+        subtaskElement.classList.add('completed');
+    } else {
+        subtaskElement.classList.remove('completed');
+    }
+    
+    // Send API request
+    fetch('../php/api/tasks/subtasks.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            action: 'update',
+            subtask_id: subtaskId,
+            completed: completed
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // If all subtasks completed, show notification
+            if (data.all_completed && completed) {
+                showNotification('All subtasks completed! You can now complete the main task.');
+                
+                // Update the main task's complete button
+                const completeBtn = document.querySelector(`.complete-btn[data-task-id="${currentTaskId}"]`);
+                if (completeBtn) {
+                    completeBtn.classList.add('ready');
+                }
+            }
+            
+            // Update the subtask in our local array
+            const index = currentSubtasks.findIndex(subtask => subtask.id === subtaskId);
+            if (index !== -1) {
+                currentSubtasks[index].is_completed = completed;
+            }
+        } else {
+            // Revert visual change if update failed
+            if (completed) {
+                subtaskElement.classList.remove('completed');
+            } else {
+                subtaskElement.classList.add('completed');
+            }
+            
+            // Show error
+            showNotification(data.message || 'Error updating subtask', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error toggling subtask:', error);
+        showNotification('An error occurred while updating the subtask', 'error');
+        
+        // Revert visual change if update failed
+        if (completed) {
+            subtaskElement.classList.remove('completed');
+        } else {
+            subtaskElement.classList.add('completed');
+        }
+    });
+}
+
+/**
+ * Delete a subtask
+ * @param {number} subtaskId - ID of the subtask to delete
+ */
+function deleteSubtask(subtaskId) {
+    if (!confirm('Are you sure you want to delete this subtask?')) {
+        return;
+    }
+    
+    // Find subtask element
+    const subtaskElement = document.querySelector(`.subtask-item input[id="subtask-${subtaskId}"]`).closest('.subtask-item');
+    
+    // Apply visual change immediately (optimistic UI update)
+    subtaskElement.style.opacity = '0.5';
+    
+    // Send API request
+    fetch('../php/api/tasks/subtasks.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            action: 'delete',
+            subtask_id: subtaskId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove subtask from UI with animation
+            subtaskElement.style.height = '0';
+            subtaskElement.style.margin = '0';
+            subtaskElement.style.padding = '0';
+            
+            setTimeout(() => {
+                subtaskElement.remove();
+                
+                // Remove from our local array
+                currentSubtasks = currentSubtasks.filter(subtask => subtask.id !== subtaskId);
+                
+                // If no subtasks left, show empty message
+                if (currentSubtasks.length === 0) {
+                    updateSubtasksList();
+                }
+            }, 300);
+            
+            // Show success message
+            showNotification('Subtask deleted successfully');
+        } else {
+            // Revert visual change if delete failed
+            subtaskElement.style.opacity = '1';
+            
+            // Show error
+            showNotification(data.message || 'Error deleting subtask', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting subtask:', error);
+        showNotification('An error occurred while deleting the subtask', 'error');
+        
+        // Revert visual change if delete failed
+        subtaskElement.style.opacity = '1';
+    });
+}
+
+/**
+ * Edit a subtask (just fills in the form)
+ * @param {number} subtaskId - ID of the subtask to edit
+ */
+function editSubtask(subtaskId) {
+    // Find subtask in array
+    const subtask = currentSubtasks.find(st => st.id === subtaskId);
+    if (!subtask) return;
+    
+    // Show edit mode
+    document.getElementById('subtask-title').value = subtask.title;
+    document.getElementById('subtask-description').value = subtask.description || '';
+    document.getElementById('subtask-id').value = subtask.id;
+    
+    // Change button text
+    document.getElementById('add-subtask-btn').textContent = 'Update Subtask';
+    
+    // Focus on title field
+    document.getElementById('subtask-title').focus();
+    
+    // Scroll to form
+    document.querySelector('.subtask-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+/**
+ * Reset subtask form
+ */
+function resetSubtaskForm() {
+    document.getElementById('subtask-title').value = '';
+    document.getElementById('subtask-description').value = '';
+    document.getElementById('subtask-id').value = '0';
+    document.getElementById('add-subtask-btn').textContent = 'Add Subtask';
+}
+
+/**
+ * Escape HTML to prevent XSS
+ * @param {string} text - Text to escape
+ * @returns {string} - Escaped text
+ */
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Modify openTaskModal function to load subtasks
+function openTaskModal(taskType, taskId = 0) {
+    // Existing code...
+    
+    // Reset subtask form
+    resetSubtaskForm();
+    
+    // Load subtasks if editing a task
+    if (taskId > 0) {
+        loadSubtasks(taskId);
+    } else {
+        // Clear subtasks list
+        currentSubtasks = [];
+        const subtasksList = document.querySelector('.subtasks-list');
+        if (subtasksList) {
+            subtasksList.innerHTML = '<div class="empty-subtasks">Save the task first to add subtasks</div>';
+        }
+    }
+    
+    // Show/hide subtasks section based on task type
+    const subtasksSection = document.getElementById('subtasks-section');
+    if (subtasksSection) {
+        if (taskType === 'goal' || taskType === 'challenge') {
+            subtasksSection.style.display = 'block';
+        } else {
+            subtasksSection.style.display = 'none';
+        }
+    }
+}
+
+// Add showSubtasks function to display subtasks for a task
+function showSubtasks(taskId, taskType) {
+    // Set current task ID
+    currentTaskId = taskId;
+    currentTaskType = taskType;
+    
+    // Update modal title
+    const modalTitle = document.getElementById('subtasks-modal-title');
+    if (modalTitle) {
+        modalTitle.textContent = `Manage Subtasks`;
+    }
+    
+    // Reset subtask form
+    resetSubtaskForm();
+    
+    // Load subtasks
+    loadSubtasks(taskId);
+    
+    // Show modal
+    const modal = document.getElementById('subtasks-modal');
+    if (modal) {
+        modal.classList.add('show');
+    }
+}
+
+/**
+ * Close subtasks modal
+ */
+function closeSubtasksModal() {
+    const modal = document.getElementById('subtasks-modal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
 }

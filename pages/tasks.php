@@ -166,7 +166,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                             <?php if (!empty($goal['description'])): ?>
                                                 <p class="task-description"><?php echo htmlspecialchars($goal['description']); ?></p>
                                              <?php endif; ?>
-                                             <div class="task-meta">
+                                            <div class="task-meta">
                                                 <span class="difficulty <?php echo $goal['difficulty']; ?>">
                                                     <?php echo ucfirst($goal['difficulty']); ?>
                                                 <span class="difficulty <?php echo isset($goal['difficulty']) ? $goal['difficulty'] : 'medium'; ?>">
@@ -183,6 +183,21 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                                     </span>
                                                 <?php endif; ?>
                                             </div>
+                                            <?php 
+                                                $total = countSubtasks($goal['id']);
+                                                $completed = countCompletedSubtasks($goal['id']);
+                                                if ($total > 0): 
+                                            ?>
+                                            <div class="subtask-progress">
+                                                <div class="progress-bar">
+                                                    <div class="progress" style="width: <?php echo ($completed / $total) * 100; ?>%"></div>
+                                                </div>
+                                                <div class="progress-text">
+                                                    <span><?php echo $completed; ?> / <?php echo $total; ?> subtasks</span>
+                                                    <span class="percentage"><?php echo round(($completed / $total) * 100); ?>%</span>
+                                                </div>
+                                            </div>
+                                            <?php endif; ?>
                                         </div>
                                         <div class="task-progress">
                                             <div class="progress-bar">
@@ -201,6 +216,11 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                                 Completed
                                             </button>
                                         <?php else: ?>
+                                            <button class="manage-subtasks-btn" onclick="showSubtasks(<?php echo $goal['id']; ?>, 'goal')">
+                                                <img src="../images/icons/subtasks.webp" alt="Subtasks">
+                                                Subtasks
+                                                <span class="subtask-count"><?php echo countSubtasks($goal['id']); ?></span>
+                                            </button>
                                             <button class="complete-btn" onclick="completeTask(<?php echo $goal['id']; ?>, 'goal')">
                                                 <img src="../images/icons/check.webp" alt="Step">
                                                 Complete Step
@@ -236,7 +256,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                             <?php if (!empty($challenge['description'])): ?>
                                                 <p class="task-description"><?php echo htmlspecialchars($challenge['description']); ?></p>
                                              <?php endif; ?>
-                                             <div class="task-meta">
+                                            <div class="task-meta">
                                                 <span class="difficulty <?php echo $challenge['difficulty']; ?>">
                                                     <?php echo ucfirst($challenge['difficulty']); ?>
                                                 <span class="difficulty <?php echo isset($challenge['difficulty']) ? $challenge['difficulty'] : 'medium'; ?>">
@@ -247,6 +267,21 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                                     <?php echo $challenge['hcoin_reward']; ?>
                                                 </span>
                                             </div>
+                                            <?php 
+                                                $total = countSubtasks($goal['id']);
+                                                $completed = countCompletedSubtasks($goal['id']);
+                                                if ($total > 0): 
+                                            ?>
+                                            <div class="subtask-progress">
+                                                <div class="progress-bar">
+                                                    <div class="progress" style="width: <?php echo ($completed / $total) * 100; ?>%"></div>
+                                                </div>
+                                                <div class="progress-text">
+                                                    <span><?php echo $completed; ?> / <?php echo $total; ?> subtasks</span>
+                                                    <span class="percentage"><?php echo round(($completed / $total) * 100); ?>%</span>
+                                                </div>
+                                            </div>
+                                            <?php endif; ?>
                                         </div>
                                         <div class="task-timeframe">
                                             <div class="dates">
@@ -279,6 +314,12 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                                 Completed
                                             </button>
                                         <?php else: ?>
+                                            <!-- Add the Subtasks button RIGHT HERE, before the Complete button -->
+                                            <button class="manage-subtasks-btn" onclick="showSubtasks(<?php echo $challenge['id']; ?>, 'challenge')">
+                                                <img src="../images/icons/subtasks.webp" alt="Subtasks">
+                                                Subtasks
+                                                <span class="subtask-count"><?php echo countSubtasks($challenge['id']); ?></span>
+                                            </button>
                                             <button class="complete-btn" onclick="completeTask(<?php echo $challenge['id']; ?>, 'challenge')">
                                                 <img src="../images/icons/check.webp" alt="Complete">
                                                 Complete
@@ -356,6 +397,13 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                     <input type="number" id="total_steps" name="total_steps" min="1" value="1">
                                     <span class="hint">Break down your goal into steps</span>
                                 </div>
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="use_subtasks" name="use_subtasks" checked>
+                                        Break this task into subtasks
+                                    </label>
+                                    <span class="hint">Split your task into smaller, manageable steps</span>
+                                </div>
                             </div>
                             
                             <!-- Challenge-specific fields -->
@@ -368,6 +416,13 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                     <label for="end_date">End Date</label>
                                     <input type="date" id="end_date" name="end_date">
                                     <span class="hint">Challenge will expire after this date</span>
+                                </div>
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="use_subtasks" name="use_subtasks" checked>
+                                        Break this task into subtasks
+                                    </label>
+                                    <span class="hint">Split your task into smaller, manageable steps</span>
                                 </div>
                             </div>
                             
@@ -431,6 +486,46 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                         
                         <div class="form-actions">
                             <button class="primary-btn" onclick="closeCompletionModal()">Continue</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Add this to tasks.php, after the other modals -->
+
+        <!-- Subtasks Modal -->
+        <div id="subtasks-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="subtasks-modal-title">Manage Subtasks</h2>
+                    <button class="close-modal" onclick="closeSubtasksModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="subtasks-container">
+                        <h3>Current Subtasks</h3>
+                        <div class="subtasks-list">
+                            <!-- Subtasks will be loaded here -->
+                            <div class="empty-subtasks">No subtasks yet. Add some to break down this task!</div>
+                        </div>
+                                                
+                        <div class="subtask-form">
+                            <h3>Add New Subtask</h3>
+                            <input type="hidden" id="subtask-id" value="0">
+                            <div class="form-group">
+                                <label for="subtask-title">Title</label>
+                                <input type="text" id="subtask-title" placeholder="Enter subtask title">
+                            </div>
+                            <div class="form-group">
+                                <label for="subtask-description">Description (optional)</label>
+                                <textarea id="subtask-description" rows="2" placeholder="Add details about this subtask"></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="cancel-btn" onclick="resetSubtaskForm()">Reset</button>
+                                <button type="button" class="save-btn" id="add-subtask-btn" onclick="createSubtask()">Add Subtask</button>
+                            </div>
+                            </div>
+                        </div>
+                        <div class="form-actions modal-footer">
+                            <button type="button" class="primary-btn" onclick="closeSubtasksModal()">Done</button>
                         </div>
                     </div>
                 </div>
