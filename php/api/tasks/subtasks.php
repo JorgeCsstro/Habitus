@@ -44,7 +44,8 @@ if ($method === 'GET') {
 // Handle POST requests (create/update subtasks)
 if ($method === 'POST') {
     // Get JSON data
-    $data = json_decode(file_get_contents('php://input'), true);
+    $input = file_get_contents('php://input');
+    $data = json_decode($input, true);
     
     if (!$data) {
         echo json_encode(['success' => false, 'message' => 'Invalid data format']);

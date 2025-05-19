@@ -25,6 +25,7 @@ $description = isset($_POST['description']) ? trim($_POST['description']) : '';
 $difficulty = isset($_POST['difficulty']) ? $_POST['difficulty'] : 'medium';
 $duration = isset($_POST['duration']) ? intval($_POST['duration']) : 15;
 $hcoinReward = isset($_POST['hcoin_reward']) ? intval($_POST['hcoin_reward']) : 0;
+$useSubtasks = isset($_POST['use_subtasks']) ? (bool)$_POST['use_subtasks'] : true;
 
 // Validate data
 if (empty($title) || !in_array($taskType, ['daily', 'goal', 'challenge'])) {
@@ -93,63 +94,8 @@ try {
             $stmt = $conn->prepare($insertDaily);
             $stmt->execute([$taskId, $resetTime]);
         }
-        } elseif ($taskType === 'goal') {
-        // Get goal info
-        $goalQuery = "SELECT * FROM goals WHERE task_id = ?";
-        $stmt = $conn->prepare($goalQuery);
-        $stmt->execute([$taskId]);
-        $goalData = $stmt->fetch();
-        
-        // Check if task uses subtasks
-        $useSubtasks = $goalData['use_subtasks'];
-        
-        if ($useSubtasks) {
-            // Check if all subtasks are completed
-            $subtasksQuery = "SELECT COUNT(*) as total, SUM(is_completed) as completed 
-                             FROM subtasks WHERE parent_task_id = ?";
-            $stmt = $conn->prepare($subtasksQuery);
-            $stmt->execute([$taskId]);
-            $subtasksData = $stmt->fetch();
-            
-            // If there are subtasks and not all are completed, return error
-            if ($subtasksData['total'] > 0 && $subtasksData['total'] != $subtasksData['completed']) {
-                throw new Exception("Please complete all subtasks before completing this goal");
-            }
-        }
-        
-        // Mark goal as completed
-        $updateGoal = "UPDATE goals SET completed = 1 WHERE task_id = ?";
-        $stmt = $conn->prepare($updateGoal);
-        $stmt->execute([$taskId]);
-        
-        $completed = true;
-    } elseif ($taskType === 'challenge') {
-        $startDate = isset($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d');
-        $endDate = isset($_POST['end_date']) ? $_POST['end_date'] : null;
-        
-        if ($taskId > 0 && isset($_POST['task_id']) && intval($_POST['task_id']) > 0) {
-            // Update existing challenge
-            $updateChallenge = "UPDATE challenges SET start_date = ?, end_date = ? WHERE task_id = ?";
-            $stmt = $conn->prepare($updateChallenge);
-            $stmt->execute([$startDate, $endDate, $taskId]);
-        } else {
-            // Create new challenge
-            $insertChallenge = "INSERT INTO challenges (task_id, start_date, end_date, is_completed) 
-                               VALUES (?, ?, ?, 0)";
-            $stmt = $conn->prepare($insertChallenge);
-            $stmt->execute([$taskId, $startDate, $endDate]);
-        }
-    }
-
-    // Modify php/api/tasks/save_task.php to handle subtasks option
-
-    // Add to the existing code:
-    $useSubtasks = isset($_POST['use_subtasks']) ? (bool)$_POST['use_subtasks'] : true;
-    
-    // Goal-specific fields
-    if ($taskType === 'goal') {
+    } elseif ($taskType === 'goal') {
         $deadline = isset($_POST['deadline']) ? $_POST['deadline'] : null;
-        $useSubtasks = isset($_POST['use_subtasks']) ? (bool)$_POST['use_subtasks'] : true;
         
         if ($taskId > 0 && isset($_POST['task_id']) && intval($_POST['task_id']) > 0) {
             // Update existing goal
@@ -158,15 +104,14 @@ try {
             $stmt->execute([$deadline, $useSubtasks ? 1 : 0, $taskId]);
         } else {
             // Create new goal
-            $insertGoal = "INSERT INTO goals (task_id, deadline, use_subtasks) 
-                          VALUES (?, ?, ?)";
+            $insertGoal = "INSERT INTO goals (task_id, deadline, progress, total_steps, use_subtasks) 
+                          VALUES (?, ?, 0, 1, ?)";
             $stmt = $conn->prepare($insertGoal);
             $stmt->execute([$taskId, $deadline, $useSubtasks ? 1 : 0]);
         }
     } elseif ($taskType === 'challenge') {
         $startDate = isset($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d');
         $endDate = isset($_POST['end_date']) ? $_POST['end_date'] : null;
-        $useSubtasks = isset($_POST['use_subtasks']) ? (bool)$_POST['use_subtasks'] : true;
         
         if ($taskId > 0 && isset($_POST['task_id']) && intval($_POST['task_id']) > 0) {
             // Update existing challenge

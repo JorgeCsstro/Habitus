@@ -114,15 +114,14 @@ try {
             }
         }
         
-        // Mark goal as completed
-        $updateGoal = "UPDATE goals SET completed = 1 WHERE task_id = ?";
+        // Mark goal as completed by updating the progress
+        $updateGoal = "UPDATE goals SET progress = total_steps WHERE task_id = ?";
         $stmt = $conn->prepare($updateGoal);
         $stmt->execute([$taskId]);
         
         $completed = true;
     } elseif ($taskType === 'challenge') {
-        // THIS IS WHERE TO ADD THE CHALLENGE SUBTASKS CHECK
-        // Check if task uses subtasks
+        // Check if challenge uses subtasks
         $challengeQuery = "SELECT use_subtasks FROM challenges WHERE task_id = ?";
         $stmt = $conn->prepare($challengeQuery);
         $stmt->execute([$taskId]);
@@ -142,7 +141,7 @@ try {
             }
         }
         
-        // Complete challenge (keep your existing challenge logic here)
+        // Mark challenge as completed
         $updateChallenge = "UPDATE challenges SET is_completed = 1 WHERE task_id = ?";
         $stmt = $conn->prepare($updateChallenge);
         $stmt->execute([$taskId]);
@@ -184,11 +183,7 @@ try {
     // Add task-specific data
     if ($taskType === 'daily') {
         $response['streak'] = $streak;
-    } elseif ($taskType === 'goal') {
-        $response['progress'] = $progress;
-        $response['total'] = $totalSteps;
-        $response['completed'] = $completed;
-    } elseif ($taskType === 'challenge') {
+    } elseif ($taskType === 'goal' || $taskType === 'challenge') {
         $response['completed'] = $completed;
     }
     
