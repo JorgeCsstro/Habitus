@@ -65,8 +65,9 @@ function getUserGoals($userId) {
     global $conn;
     
     $sql = "SELECT t.id, t.title, t.description, t.hcoin_reward, t.difficulty, 
-            g.deadline, g.progress, g.total_steps,
-            IF(g.progress >= g.total_steps, 1, 0) as completed
+            g.deadline, g.use_subtasks,
+            (SELECT COUNT(*) = COUNT(CASE WHEN is_completed = 1 THEN 1 END) 
+             FROM subtasks WHERE parent_task_id = t.id) as completed
             FROM tasks t
             JOIN goals g ON t.id = g.task_id
             WHERE t.user_id = ? AND t.type_id = (SELECT id FROM task_types WHERE name = 'Goal')
@@ -92,7 +93,7 @@ function getUserChallenges($userId) {
     global $conn;
     
     $sql = "SELECT t.id, t.title, t.description, t.hcoin_reward, t.difficulty, 
-            c.start_date, c.end_date, c.is_completed as completed
+            c.start_date, c.end_date, c.is_completed as completed, c.use_subtasks
             FROM tasks t
             JOIN challenges c ON t.id = c.task_id
             WHERE t.user_id = ? AND t.type_id = (SELECT id FROM task_types WHERE name = 'Challenge')
@@ -410,13 +411,6 @@ function updateGoalProgress($taskId) {
     $sql = "UPDATE goals SET progress = ? WHERE task_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->execute([$completed, $taskId]);
-    
-    // If all completed, update goal's total_steps to match
-    if ($completed == $total) {
-        $sql = "UPDATE goals SET total_steps = ? WHERE task_id = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->execute([$total, $taskId]);
-    }
 }
 
 /**

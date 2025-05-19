@@ -165,15 +165,13 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                             <h3><?php echo htmlspecialchars($goal['title']); ?></h3>
                                             <?php if (!empty($goal['description'])): ?>
                                                 <p class="task-description"><?php echo htmlspecialchars($goal['description']); ?></p>
-                                             <?php endif; ?>
+                                            <?php endif; ?>
                                             <div class="task-meta">
-                                                <span class="difficulty <?php echo $goal['difficulty']; ?>">
-                                                    <?php echo ucfirst($goal['difficulty']); ?>
                                                 <span class="difficulty <?php echo isset($goal['difficulty']) ? $goal['difficulty'] : 'medium'; ?>">
                                                     <?php echo ucfirst(isset($goal['difficulty']) ? $goal['difficulty'] : 'medium'); ?>
-                                                 </span>
-                                                 <span class="reward">
-                                                     <img src="../images/icons/hcoin-icon-light.webp" alt="HCoin">
+                                                </span>
+                                                <span class="reward">
+                                                    <img src="../images/icons/hcoin-icon-light.webp" alt="HCoin">
                                                     <?php echo $goal['hcoin_reward']; ?>
                                                 </span>
                                                 <?php if (!empty($goal['deadline'])): ?>
@@ -199,15 +197,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                             </div>
                                             <?php endif; ?>
                                         </div>
-                                        <div class="task-progress">
-                                            <div class="progress-bar">
-                                                <div class="progress" style="width: <?php echo ($goal['progress'] / $goal['total_steps']) * 100; ?>%"></div>
-                                            </div>
-                                            <div class="progress-text">
-                                                <span><?php echo $goal['progress']; ?> / <?php echo $goal['total_steps']; ?> steps</span>
-                                                <span class="percentage"><?php echo round(($goal['progress'] / $goal['total_steps']) * 100); ?>%</span>
-                                            </div>
-                                        </div>
+                                        <!-- Remove task-progress section completely -->
                                     </div>
                                     <div class="task-actions">
                                         <?php if ($goal['completed']): ?>
@@ -221,9 +211,10 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                                 Subtasks
                                                 <span class="subtask-count"><?php echo countSubtasks($goal['id']); ?></span>
                                             </button>
+                                            <!-- Change button text from "Complete Step" to "Complete" -->
                                             <button class="complete-btn" onclick="completeTask(<?php echo $goal['id']; ?>, 'goal')">
-                                                <img src="../images/icons/check.webp" alt="Step">
-                                                Complete Step
+                                                <img src="../images/icons/check.webp" alt="Complete">
+                                                Complete
                                             </button>
                                         <?php endif; ?>
                                         <button class="edit-btn" onclick="openTaskModal('goal', <?php echo $goal['id']; ?>)">
@@ -255,21 +246,19 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                             <h3><?php echo htmlspecialchars($challenge['title']); ?></h3>
                                             <?php if (!empty($challenge['description'])): ?>
                                                 <p class="task-description"><?php echo htmlspecialchars($challenge['description']); ?></p>
-                                             <?php endif; ?>
+                                            <?php endif; ?>
                                             <div class="task-meta">
-                                                <span class="difficulty <?php echo $challenge['difficulty']; ?>">
-                                                    <?php echo ucfirst($challenge['difficulty']); ?>
                                                 <span class="difficulty <?php echo isset($challenge['difficulty']) ? $challenge['difficulty'] : 'medium'; ?>">
                                                     <?php echo ucfirst(isset($challenge['difficulty']) ? $challenge['difficulty'] : 'medium'); ?>
-                                                 </span>
-                                                 <span class="reward">
-                                                     <img src="../images/icons/hcoin-icon-light.webp" alt="HCoin">
+                                                </span>
+                                                <span class="reward">
+                                                    <img src="../images/icons/hcoin-icon-light.webp" alt="HCoin">
                                                     <?php echo $challenge['hcoin_reward']; ?>
                                                 </span>
                                             </div>
                                             <?php 
-                                                $total = countSubtasks($goal['id']);
-                                                $completed = countCompletedSubtasks($goal['id']);
+                                                $total = countSubtasks($challenge['id']);
+                                                $completed = countCompletedSubtasks($challenge['id']);
                                                 if ($total > 0): 
                                             ?>
                                             <div class="subtask-progress">
@@ -314,7 +303,6 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                                 Completed
                                             </button>
                                         <?php else: ?>
-                                            <!-- Add the Subtasks button RIGHT HERE, before the Complete button -->
                                             <button class="manage-subtasks-btn" onclick="showSubtasks(<?php echo $challenge['id']; ?>, 'challenge')">
                                                 <img src="../images/icons/subtasks.webp" alt="Subtasks">
                                                 Subtasks
@@ -391,11 +379,6 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                 <div class="form-group">
                                     <label for="deadline">Deadline (optional)</label>
                                     <input type="date" id="deadline" name="deadline">
-                                </div>
-                                <div class="form-group">
-                                    <label for="total_steps">Total Steps</label>
-                                    <input type="number" id="total_steps" name="total_steps" min="1" value="1">
-                                    <span class="hint">Break down your goal into steps</span>
                                 </div>
                                 <div class="form-group">
                                     <label class="checkbox-label">

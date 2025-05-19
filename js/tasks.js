@@ -304,7 +304,6 @@ function loadTaskData(taskId, taskType) {
                 break;
             case 'goal':
                 taskData.deadline = new Date().toISOString().split('T')[0]; // Today
-                taskData.total_steps = 5;
                 break;
             case 'challenge':
                 const today = new Date();
@@ -329,7 +328,6 @@ function loadTaskData(taskId, taskType) {
                 break;
             case 'goal':
                 document.getElementById('deadline').value = taskData.deadline;
-                document.getElementById('total_steps').value = taskData.total_steps;
                 break;
             case 'challenge':
                 document.getElementById('start_date').value = taskData.start_date;
@@ -377,12 +375,6 @@ function saveTask() {
             break;
         case 'goal':
             typeSpecificData.deadline = document.getElementById('deadline').value;
-            typeSpecificData.total_steps = parseInt(document.getElementById('total_steps').value);
-            
-            if (typeSpecificData.total_steps <= 0) {
-                showNotification('Total steps must be greater than 0', 'error');
-                return;
-            }
             break;
         case 'challenge':
             typeSpecificData.start_date = document.getElementById('start_date').value;
@@ -572,15 +564,15 @@ function completeTask(taskId, taskType) {
                     
                     // If no subtasks, proceed with completion
                     if (subtasks.length === 0) {
-                        proceedWithCompletion();
+                        proceedWithCompletion(button, taskId, taskType);
                         return;
                     }
                     
                     // Check if all subtasks are completed
-                    const allCompleted = subtasks.every(subtask => subtask.is_completed === 1);
+                    const allCompleted = subtasks.every(subtask => subtask.is_completed == 1);
                     
                     if (allCompleted) {
-                        proceedWithCompletion();
+                        proceedWithCompletion(button, taskId, taskType);
                     } else {
                         // Show subtasks modal with message
                         showNotification('Complete all subtasks before completing the main task', 'warning');
@@ -588,58 +580,72 @@ function completeTask(taskId, taskType) {
                     }
                 } else {
                     // If error fetching subtasks, proceed anyway
-                    proceedWithCompletion();
+                    proceedWithCompletion(button, taskId, taskType);
                 }
             })
             .catch(error => {
                 console.error('Error checking subtasks:', error);
                 // If error, proceed anyway
-                proceedWithCompletion();
+                proceedWithCompletion(button, taskId, taskType);
             });
     } else {
         // For dailies or if already ready, proceed directly
-        proceedWithCompletion();
+        proceedWithCompletion(button, taskId, taskType);
     }
-
 }
 
-function proceedWithCompletion() {
+function proceedWithCompletion(button, taskId, taskType) {
     // Show loading state
     button.innerHTML = '<img src="../images/icons/loading.svg" alt="Loading" class="loading-icon"> Processing...';
     button.disabled = true;
     
-    // In a real implementation, this would send data to the server
-    // For this example, we're simulating a successful completion
-    setTimeout(() => {
-        // Get reward amount based on task type
-        let hcoinsEarned = 0;
-        switch (taskType) {
-            case 'daily':
-                hcoinsEarned = Math.floor(Math.random() * 30) + 20; // 20-50 hcoins
-                break;
-            case 'goal':
-                hcoinsEarned = Math.floor(Math.random() * 50) + 30; // 30-80 hcoins
-                break;
-            case 'challenge':
-                hcoinsEarned = Math.floor(Math.random() * 100) + 50; // 50-150 hcoins
-                break;
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('task_id', taskId);
+    formData.append('task_type', taskType);
+    
+    // Send API request
+    fetch('../php/api/tasks/complete.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update UI
+            const taskItem = button.closest('.task-item');
+            taskItem.classList.add('completed');
+            button.innerHTML = '<img src="../images/icons/check.svg" alt="Done"> Completed';
+            button.classList.add('done');
+            button.disabled = true;
+            
+            // Update HCoin balance in header (if it exists)
+            if (data.new_balance) {
+                const hcoinBalanceElement = document.querySelector('.hcoin-balance span');
+                if (hcoinBalanceElement) {
+                    hcoinBalanceElement.textContent = new Intl.NumberFormat().format(data.new_balance);
+                }
+            }
+            
+            // Show completion modal
+            showCompletionModal(data.hcoins_earned || 0, taskType);
+        } else {
+            // Show error
+            showNotification(data.message || 'Error completing task', 'error');
+            
+            // Reset button
+            button.innerHTML = '<img src="../images/icons/check.svg" alt="Complete"> Complete';
+            button.disabled = false;
         }
-        // Update UI
-        const taskItem = button.closest('.task-item');
-        taskItem.classList.add('completed');
-        button.innerHTML = '<img src="../images/icons/check.svg" alt="Done"> Completed';
-        button.classList.add('done');
-        button.disabled = true;
-        // Update HCoin balance in header (if it exists)
-        const hcoinBalanceElement = document.querySelector('.hcoin-balance span');
-        if (hcoinBalanceElement) {
-            const currentBalance = parseInt(hcoinBalanceElement.textContent.replace(/,/g, ''));
-            const newBalance = currentBalance + hcoinsEarned;
-            hcoinBalanceElement.textContent = newBalance.toLocaleString();
-        }
-        // Show completion modal
-        showCompletionModal(hcoinsEarned, taskType);
-    }, 1000);
+    })
+    .catch(error => {
+        console.error('Error completing task:', error);
+        showNotification('An error occurred while completing the task', 'error');
+        
+        // Reset button
+        button.innerHTML = '<img src="../images/icons/check.svg" alt="Complete"> Complete';
+        button.disabled = false;
+    });
 }
 
 /**

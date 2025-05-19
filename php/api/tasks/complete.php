@@ -91,7 +91,6 @@ try {
         
         $streak = $currentStreak;
     } elseif ($taskType === 'goal') {
-        // THIS IS WHERE TO ADD THE GOAL SUBTASKS CHECK
         // Get goal info
         $goalQuery = "SELECT * FROM goals WHERE task_id = ?";
         $stmt = $conn->prepare($goalQuery);
@@ -115,22 +114,12 @@ try {
             }
         }
         
-        // Increment progress (keep your existing goal logic here)
-        $progress = $goalData['progress'] + 1;
-        $totalSteps = $goalData['total_steps'];
-        
-        // Calculate hcoins based on progress
-        if ($progress < $totalSteps) {
-            $hcoinsEarned = $hcoinsEarned / $totalSteps;
-        }
-        
-        // Update goal
-        $updateGoal = "UPDATE goals SET progress = ? WHERE task_id = ?";
+        // Mark goal as completed
+        $updateGoal = "UPDATE goals SET completed = 1 WHERE task_id = ?";
         $stmt = $conn->prepare($updateGoal);
-        $stmt->execute([$progress, $taskId]);
+        $stmt->execute([$taskId]);
         
-        $completed = ($progress >= $totalSteps);
-        
+        $completed = true;
     } elseif ($taskType === 'challenge') {
         // THIS IS WHERE TO ADD THE CHALLENGE SUBTASKS CHECK
         // Check if task uses subtasks

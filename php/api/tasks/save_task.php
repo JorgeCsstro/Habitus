@@ -93,24 +93,36 @@ try {
             $stmt = $conn->prepare($insertDaily);
             $stmt->execute([$taskId, $resetTime]);
         }
-    } elseif ($taskType === 'goal') {
-        $deadline = isset($_POST['deadline']) ? $_POST['deadline'] : null;
-        $totalSteps = isset($_POST['total_steps']) ? intval($_POST['total_steps']) : 1;
+        } elseif ($taskType === 'goal') {
+        // Get goal info
+        $goalQuery = "SELECT * FROM goals WHERE task_id = ?";
+        $stmt = $conn->prepare($goalQuery);
+        $stmt->execute([$taskId]);
+        $goalData = $stmt->fetch();
         
-        if ($totalSteps < 1) $totalSteps = 1;
+        // Check if task uses subtasks
+        $useSubtasks = $goalData['use_subtasks'];
         
-        if ($taskId > 0 && isset($_POST['task_id']) && intval($_POST['task_id']) > 0) {
-            // Update existing goal
-            $updateGoal = "UPDATE goals SET deadline = ?, total_steps = ? WHERE task_id = ?";
-            $stmt = $conn->prepare($updateGoal);
-            $stmt->execute([$deadline, $totalSteps, $taskId]);
-        } else {
-            // Create new goal
-            $insertGoal = "INSERT INTO goals (task_id, deadline, progress, total_steps) 
-                          VALUES (?, ?, 0, ?)";
-            $stmt = $conn->prepare($insertGoal);
-            $stmt->execute([$taskId, $deadline, $totalSteps]);
+        if ($useSubtasks) {
+            // Check if all subtasks are completed
+            $subtasksQuery = "SELECT COUNT(*) as total, SUM(is_completed) as completed 
+                             FROM subtasks WHERE parent_task_id = ?";
+            $stmt = $conn->prepare($subtasksQuery);
+            $stmt->execute([$taskId]);
+            $subtasksData = $stmt->fetch();
+            
+            // If there are subtasks and not all are completed, return error
+            if ($subtasksData['total'] > 0 && $subtasksData['total'] != $subtasksData['completed']) {
+                throw new Exception("Please complete all subtasks before completing this goal");
+            }
         }
+        
+        // Mark goal as completed
+        $updateGoal = "UPDATE goals SET completed = 1 WHERE task_id = ?";
+        $stmt = $conn->prepare($updateGoal);
+        $stmt->execute([$taskId]);
+        
+        $completed = true;
     } elseif ($taskType === 'challenge') {
         $startDate = isset($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d');
         $endDate = isset($_POST['end_date']) ? $_POST['end_date'] : null;
@@ -134,30 +146,40 @@ try {
     // Add to the existing code:
     $useSubtasks = isset($_POST['use_subtasks']) ? (bool)$_POST['use_subtasks'] : true;
     
-    // In the section where you create or update goal-specific or challenge-specific data:
+    // Goal-specific fields
     if ($taskType === 'goal') {
-        // Add this line in the UPDATE query:
-        $updateGoal = "UPDATE goals SET deadline = ?, total_steps = ?, use_subtasks = ? WHERE task_id = ?";
-        $stmt = $conn->prepare($updateGoal);
-        $stmt->execute([$deadline, $totalSteps, $useSubtasks ? 1 : 0, $taskId]);
+        $deadline = isset($_POST['deadline']) ? $_POST['deadline'] : null;
+        $useSubtasks = isset($_POST['use_subtasks']) ? (bool)$_POST['use_subtasks'] : true;
         
-        // Or in the INSERT query:
-        $insertGoal = "INSERT INTO goals (task_id, deadline, progress, total_steps, use_subtasks) 
-                      VALUES (?, ?, 0, ?, ?)";
-        $stmt = $conn->prepare($insertGoal);
-        $stmt->execute([$taskId, $deadline, $totalSteps, $useSubtasks ? 1 : 0]);
-        
+        if ($taskId > 0 && isset($_POST['task_id']) && intval($_POST['task_id']) > 0) {
+            // Update existing goal
+            $updateGoal = "UPDATE goals SET deadline = ?, use_subtasks = ? WHERE task_id = ?";
+            $stmt = $conn->prepare($updateGoal);
+            $stmt->execute([$deadline, $useSubtasks ? 1 : 0, $taskId]);
+        } else {
+            // Create new goal
+            $insertGoal = "INSERT INTO goals (task_id, deadline, use_subtasks) 
+                          VALUES (?, ?, ?)";
+            $stmt = $conn->prepare($insertGoal);
+            $stmt->execute([$taskId, $deadline, $useSubtasks ? 1 : 0]);
+        }
     } elseif ($taskType === 'challenge') {
-        // Add similar modifications for challenges
-        $updateChallenge = "UPDATE challenges SET start_date = ?, end_date = ?, use_subtasks = ? WHERE task_id = ?";
-        $stmt = $conn->prepare($updateChallenge);
-        $stmt->execute([$startDate, $endDate, $useSubtasks ? 1 : 0, $taskId]);
+        $startDate = isset($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d');
+        $endDate = isset($_POST['end_date']) ? $_POST['end_date'] : null;
+        $useSubtasks = isset($_POST['use_subtasks']) ? (bool)$_POST['use_subtasks'] : true;
         
-        // Or in the INSERT query:
-        $insertChallenge = "INSERT INTO challenges (task_id, start_date, end_date, is_completed, use_subtasks) 
-                           VALUES (?, ?, ?, 0, ?)";
-        $stmt = $conn->prepare($insertChallenge);
-        $stmt->execute([$taskId, $startDate, $endDate, $useSubtasks ? 1 : 0]);
+        if ($taskId > 0 && isset($_POST['task_id']) && intval($_POST['task_id']) > 0) {
+            // Update existing challenge
+            $updateChallenge = "UPDATE challenges SET start_date = ?, end_date = ?, use_subtasks = ? WHERE task_id = ?";
+            $stmt = $conn->prepare($updateChallenge);
+            $stmt->execute([$startDate, $endDate, $useSubtasks ? 1 : 0, $taskId]);
+        } else {
+            // Create new challenge
+            $insertChallenge = "INSERT INTO challenges (task_id, start_date, end_date, is_completed, use_subtasks) 
+                               VALUES (?, ?, ?, 0, ?)";
+            $stmt = $conn->prepare($insertChallenge);
+            $stmt->execute([$taskId, $startDate, $endDate, $useSubtasks ? 1 : 0]);
+        }
     }
     
     // Commit transaction

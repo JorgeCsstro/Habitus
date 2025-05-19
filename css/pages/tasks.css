@@ -321,11 +321,6 @@
     margin-top: 3px;
 }
 
-/* Goal progress bar */
-.task-progress {
-    margin-top: 15px;
-}
-
 .progress-bar {
     height: 8px;
     background-color: #f0ebe4; /* Warm light gray */
@@ -995,6 +990,10 @@
     align-items: center;
     justify-content: center;
     padding: 0 4px;
+}
+
+.subtask-progress {
+    margin-top: 15px;
 }
 
 .complete-btn.ready {
