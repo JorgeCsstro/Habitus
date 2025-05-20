@@ -486,59 +486,118 @@ function deleteTask() {
     deleteBtn.textContent = 'Deleting...';
     deleteBtn.disabled = true;
     
-    // In a real implementation, this would send a delete request to the server
-    // For this example, we're simulating a successful delete
-    setTimeout(() => {
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('task_id', deleteTaskId);
+    formData.append('task_type', deleteTaskType);
+    
+    // Send API request
+    fetch('../php/api/tasks/delete.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Reset button state
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.disabled = false;
+        
         // Close modal
         closeDeleteModal();
         
-        // Show success message
-        showNotification(`${capitalizeFirstLetter(deleteTaskType)} deleted successfully`);
-        
-        // Find and remove the task element with animation
-        const taskElement = document.querySelector(`.task-item .delete-btn[onclick="showDeleteConfirmation(${deleteTaskId}, '${deleteTaskType}')"]`).closest('.task-item');
-        
-        if (taskElement) {
-            // Fade out task
-            taskElement.style.opacity = '0';
-            taskElement.style.transform = 'translateX(20px)';
+        if (data.success) {
+            // Show success message
+            showNotification(`${capitalizeFirstLetter(deleteTaskType)} deleted successfully`);
             
-            setTimeout(() => {
-                // Remove task element
-                taskElement.remove();
+            // Find and remove the task element with animation
+            const taskElement = document.querySelector(`.delete-btn[onclick*="${deleteTaskId}"]`);
+            const taskItem = taskElement ? taskElement.closest('.task-item') : null;
+            
+            if (taskItem) {
+                // Fade out task
+                taskItem.style.opacity = '0';
+                taskItem.style.transform = 'translateX(20px)';
                 
-                // Check if list is now empty
-                const tabContent = document.getElementById(`${deleteTaskType}s-tab`);
-                const tasksList = tabContent.querySelector(`.${deleteTaskType}s-list`);
-                
-                if (tasksList && tasksList.children.length === 0) {
-                    // Show empty state
-                    const emptyTasks = document.createElement('div');
-                    emptyTasks.className = 'empty-tasks';
-                    emptyTasks.innerHTML = `
-                        <p>You don't have any ${deleteTaskType} tasks yet.</p>
-                        <button class="add-task-btn" onclick="openTaskModal('${deleteTaskType}')">Add Your First ${capitalizeFirstLetter(deleteTaskType)}</button>
-                    `;
+                setTimeout(() => {
+                    // Remove task element
+                    taskItem.remove();
                     
-                    tabContent.innerHTML = '';
-                    tabContent.appendChild(emptyTasks);
-                }
-                
-                // Update task count
-                const tabElement = document.querySelector(`.tab[onclick="changeTab('${deleteTaskType}s')"]`);
-                const countElement = tabElement.querySelector('.task-count');
-                
-                if (countElement) {
-                    const currentCount = parseInt(countElement.textContent);
-                    countElement.textContent = currentCount > 0 ? currentCount - 1 : 0;
-                }
-            }, 300);
+                    // Check if list is now empty - fix the selector logic
+                    let tabContentId;
+                    let tasksListClass;
+                    
+                    // Map deleteTaskType to correct tab and list identifiers
+                    switch(deleteTaskType) {
+                        case 'daily':
+                            tabContentId = 'dailies-tab';
+                            tasksListClass = 'dailies-list';
+                            break;
+                        case 'goal':
+                            tabContentId = 'goals-tab';
+                            tasksListClass = 'goals-list';
+                            break;
+                        case 'challenge':
+                            tabContentId = 'challenges-tab';
+                            tasksListClass = 'challenges-list';
+                            break;
+                        default:
+                            console.error('Unknown task type:', deleteTaskType);
+                            return;
+                    }
+                    
+                    const tabContent = document.getElementById(tabContentId);
+                    const tasksList = tabContent ? tabContent.querySelector(`.${tasksListClass}`) : null;
+                    
+                    if (tasksList && tasksList.children.length === 0) {
+                        // Show empty state
+                        const emptyTasks = document.createElement('div');
+                        emptyTasks.className = 'empty-tasks';
+                        emptyTasks.innerHTML = `
+                            <p>You don't have any ${deleteTaskType === 'daily' ? 'daily tasks' : deleteTaskType + ' tasks'} yet.</p>
+                            <button class="add-task-btn" onclick="openTaskModal('${deleteTaskType}')">Add Your First ${capitalizeFirstLetter(deleteTaskType)}</button>
+                        `;
+                        
+                        // Replace the tasks list with empty state
+                        tasksList.parentNode.replaceChild(emptyTasks, tasksList);
+                    }
+                    
+                    // Update task count in tab
+                    const tabElement = document.querySelector(`.tab[onclick*="${deleteTaskType === 'daily' ? 'dailies' : deleteTaskType + 's'}"]`);
+                    const countElement = tabElement ? tabElement.querySelector('.task-count') : null;
+                    
+                    if (countElement) {
+                        const currentCount = parseInt(countElement.textContent) || 0;
+                        countElement.textContent = Math.max(0, currentCount - 1);
+                    }
+                }, 300);
+            } else {
+                // If we can't find the task element, just refresh the page
+                location.reload();
+            }
+        } else {
+            // Show error message
+            showNotification(data.message || 'Error deleting task', 'error');
         }
         
         // Reset delete data
         deleteTaskId = 0;
         deleteTaskType = '';
-    }, 1000);
+    })
+    .catch(error => {
+        console.error('Error deleting task:', error);
+        showNotification('An error occurred while deleting the task', 'error');
+        
+        // Reset button state
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.disabled = false;
+        
+        // Close modal
+        closeDeleteModal();
+        
+        // Reset delete data
+        deleteTaskId = 0;
+        deleteTaskType = '';
+    });
 }
 
 /**
