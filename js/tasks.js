@@ -35,6 +35,72 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /**
+ * Update task counter for a specific tab
+ * @param {string} tabType - Type of tab (dailies, goals, challenges)
+ * @param {number} change - Change amount (+1, -1)
+ */
+function updateTaskCounter(tabType, change) {
+    // Map task types to tab types
+    const tabMapping = {
+        'daily': 'dailies',
+        'goal': 'goals', 
+        'challenge': 'challenges'
+    };
+    
+    const actualTabType = tabMapping[tabType] || tabType;
+    
+    // Find the tab element - try multiple selectors to be safe
+    let tabElement = document.querySelector(`.tab[onclick*="${actualTabType}"]`);
+    
+    if (!tabElement) {
+        // Alternative selector approach
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            const onclick = tab.getAttribute('onclick');
+            if (onclick && onclick.includes(actualTabType)) {
+                tabElement = tab;
+            }
+        });
+    }
+    
+    if (tabElement) {
+        const countElement = tabElement.querySelector('.task-count');
+        if (countElement) {
+            const currentCount = parseInt(countElement.textContent) || 0;
+            const newCount = Math.max(0, currentCount + change);
+            countElement.textContent = newCount;
+            
+            console.log(`Updated ${actualTabType} counter: ${currentCount} -> ${newCount}`);
+        } else {
+            console.warn(`Count element not found for tab: ${actualTabType}`);
+        }
+    } else {
+        console.warn(`Tab element not found for: ${actualTabType}`);
+    }
+}
+
+/**
+ * Update subtask counter for a specific task
+ * @param {number} taskId - ID of the parent task
+ * @param {number} change - Change amount (+1, -1)
+ */
+function updateSubtaskCounter(taskId, change) {
+    // Find all subtask count elements for this task
+    const subtaskButtons = document.querySelectorAll(`.manage-subtasks-btn[onclick*="${taskId}"]`);
+    
+    subtaskButtons.forEach(button => {
+        const countElement = button.querySelector('.subtask-count');
+        if (countElement) {
+            const currentCount = parseInt(countElement.textContent) || 0;
+            const newCount = Math.max(0, currentCount + change);
+            countElement.textContent = newCount;
+            
+            console.log(`Updated subtask counter for task ${taskId}: ${currentCount} -> ${newCount}`);
+        }
+    });
+}
+
+/**
  * Set up event listeners
  */
 function setupEventListeners() {
@@ -410,6 +476,9 @@ function saveTask() {
     saveBtn.textContent = 'Saving...';
     saveBtn.disabled = true;
     
+    // Check if this is a new task
+    const isNewTask = taskId === 0;
+    
     // Send API request
     fetch('../php/api/tasks/save_task.php', {
         method: 'POST',
@@ -426,14 +495,23 @@ function saveTask() {
             closeTaskModal();
             
             // Show success message
-            showNotification(
-                taskId === 0 
-                    ? `New ${taskType} created successfully!` 
-                    : `${capitalizeFirstLetter(taskType)} updated successfully!`
-            );
+            const successMessage = isNewTask 
+                ? `New ${taskType} created successfully!` 
+                : `${capitalizeFirstLetter(taskType)} updated successfully!`;
             
-            // Refresh page to show new/updated task
-            location.reload();
+            showNotification(successMessage);
+            
+            // Update counter only for new tasks
+            if (isNewTask) {
+                updateTaskCounter(taskType, 1);
+                console.log(`Task created: incrementing ${taskType} counter`);
+            }
+            
+            // For production, you might want to refresh the page or update the task list dynamically
+            // For now, we'll refresh to show the new/updated task
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
         } else {
             // Show error
             showNotification(data.message || 'An error occurred while saving the task', 'error');
@@ -509,6 +587,10 @@ function deleteTask() {
             // Show success message
             showNotification(`${capitalizeFirstLetter(deleteTaskType)} deleted successfully`);
             
+            // Update counter immediately
+            updateTaskCounter(deleteTaskType, -1);
+            console.log(`Task deleted: decrementing ${deleteTaskType} counter`);
+            
             // Find and remove the task element with animation
             const taskElement = document.querySelector(`.delete-btn[onclick*="${deleteTaskId}"]`);
             const taskItem = taskElement ? taskElement.closest('.task-item') : null;
@@ -559,15 +641,6 @@ function deleteTask() {
                         
                         // Replace the tasks list with empty state
                         tasksList.parentNode.replaceChild(emptyTasks, tasksList);
-                    }
-                    
-                    // Update task count in tab
-                    const tabElement = document.querySelector(`.tab[onclick*="${deleteTaskType === 'daily' ? 'dailies' : deleteTaskType + 's'}"]`);
-                    const countElement = tabElement ? tabElement.querySelector('.task-count') : null;
-                    
-                    if (countElement) {
-                        const currentCount = parseInt(countElement.textContent) || 0;
-                        countElement.textContent = Math.max(0, currentCount - 1);
                     }
                 }, 300);
             } else {
@@ -875,7 +948,7 @@ function updateSubtasksList() {
 }
 
 /**
- * Create a new subtask
+ * Create a new subtask (UPDATED VERSION)
  */
 function createSubtask() {
     const taskId = currentTaskId;
@@ -921,8 +994,29 @@ function createSubtask() {
             document.getElementById('subtask-title').value = '';
             document.getElementById('subtask-description').value = '';
             
-            // Reload subtasks
-            loadSubtasks(taskId);
+            // Update subtask counter
+            updateSubtaskCounter(taskId, 1);
+            console.log(`Subtask created: incrementing counter for task ${taskId}`);
+            
+            // Add new subtask to local array immediately (optimistic update)
+            const newSubtask = {
+                id: data.subtask_id,
+                title: title,
+                description: description,
+                is_completed: 0,
+                parent_task_id: taskId
+            };
+            currentSubtasks.push(newSubtask);
+            
+            // Update the UI immediately
+            updateSubtasksList();
+            
+            // Update progress bar immediately
+            const totalSubtasks = currentSubtasks.length;
+            const completedSubtasks = currentSubtasks.filter(subtask => subtask.is_completed == 1).length;
+            updateTaskProgress(taskId, completedSubtasks, totalSubtasks);
+            
+            console.log(`Progress updated after creating subtask: ${completedSubtasks}/${totalSubtasks}`);
             
             // Show success message
             showNotification('Subtask added successfully');
@@ -942,7 +1036,7 @@ function createSubtask() {
 }
 
 /**
- * Toggle subtask completion status
+ * Toggle subtask completion status (UPDATED VERSION)
  * @param {number} subtaskId - ID of the subtask to toggle
  * @param {boolean} completed - New completion status
  */
@@ -972,28 +1066,43 @@ function toggleSubtask(subtaskId, completed) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            // Update the subtask in our local array
+            const index = currentSubtasks.findIndex(subtask => subtask.id === subtaskId);
+            if (index !== -1) {
+                currentSubtasks[index].is_completed = completed;
+            }
+            
+            // Calculate new progress counts
+            const totalSubtasks = currentSubtasks.length;
+            const completedSubtasks = currentSubtasks.filter(subtask => subtask.is_completed == 1).length;
+            
+            // Update progress bar in real-time if we're in the subtasks modal
+            updateTaskProgress(currentTaskId, completedSubtasks, totalSubtasks);
+            
             // If all subtasks completed, show notification
             if (data.all_completed && completed) {
                 showNotification('All subtasks completed! You can now complete the main task.');
                 
-                // Update the main task's complete button
+                // Update the main task's complete button in the modal
                 const completeBtn = document.querySelector(`.complete-btn[data-task-id="${currentTaskId}"]`);
                 if (completeBtn) {
                     completeBtn.classList.add('ready');
                 }
             }
             
-            // Update the subtask in our local array
-            const index = currentSubtasks.findIndex(subtask => subtask.id === subtaskId);
-            if (index !== -1) {
-                currentSubtasks[index].is_completed = completed;
-            }
+            console.log(`Subtask ${subtaskId} ${completed ? 'completed' : 'uncompleted'}. Progress: ${completedSubtasks}/${totalSubtasks}`);
         } else {
             // Revert visual change if update failed
             if (completed) {
                 subtaskElement.classList.remove('completed');
+                // Uncheck the checkbox
+                const checkbox = subtaskElement.querySelector('input[type="checkbox"]');
+                if (checkbox) checkbox.checked = false;
             } else {
                 subtaskElement.classList.add('completed');
+                // Check the checkbox
+                const checkbox = subtaskElement.querySelector('input[type="checkbox"]');
+                if (checkbox) checkbox.checked = true;
             }
             
             // Show error
@@ -1007,14 +1116,18 @@ function toggleSubtask(subtaskId, completed) {
         // Revert visual change if update failed
         if (completed) {
             subtaskElement.classList.remove('completed');
+            const checkbox = subtaskElement.querySelector('input[type="checkbox"]');
+            if (checkbox) checkbox.checked = false;
         } else {
             subtaskElement.classList.add('completed');
+            const checkbox = subtaskElement.querySelector('input[type="checkbox"]');
+            if (checkbox) checkbox.checked = true;
         }
     });
 }
 
 /**
- * Delete a subtask
+ * Delete a subtask (UPDATED VERSION)
  * @param {number} subtaskId - ID of the subtask to delete
  */
 function deleteSubtask(subtaskId) {
@@ -1042,6 +1155,20 @@ function deleteSubtask(subtaskId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            // Update subtask counter
+            updateSubtaskCounter(currentTaskId, -1);
+            console.log(`Subtask deleted: decrementing counter for task ${currentTaskId}`);
+            
+            // Remove from our local array FIRST
+            currentSubtasks = currentSubtasks.filter(subtask => subtask.id !== subtaskId);
+            
+            // Update progress immediately after removing from array
+            const totalSubtasks = currentSubtasks.length;
+            const completedSubtasks = currentSubtasks.filter(subtask => subtask.is_completed == 1).length;
+            updateTaskProgress(currentTaskId, completedSubtasks, totalSubtasks);
+            
+            console.log(`Progress updated after deleting subtask: ${completedSubtasks}/${totalSubtasks}`);
+            
             // Remove subtask from UI with animation
             subtaskElement.style.height = '0';
             subtaskElement.style.margin = '0';
@@ -1049,9 +1176,6 @@ function deleteSubtask(subtaskId) {
             
             setTimeout(() => {
                 subtaskElement.remove();
-                
-                // Remove from our local array
-                currentSubtasks = currentSubtasks.filter(subtask => subtask.id !== subtaskId);
                 
                 // If no subtasks left, show empty message
                 if (currentSubtasks.length === 0) {
@@ -1123,37 +1247,11 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Modify openTaskModal function to load subtasks
-function openTaskModal(taskType, taskId = 0) {
-    // Existing code...
-    
-    // Reset subtask form
-    resetSubtaskForm();
-    
-    // Load subtasks if editing a task
-    if (taskId > 0) {
-        loadSubtasks(taskId);
-    } else {
-        // Clear subtasks list
-        currentSubtasks = [];
-        const subtasksList = document.querySelector('.subtasks-list');
-        if (subtasksList) {
-            subtasksList.innerHTML = '<div class="empty-subtasks">Save the task first to add subtasks</div>';
-        }
-    }
-    
-    // Show/hide subtasks section based on task type
-    const subtasksSection = document.getElementById('subtasks-section');
-    if (subtasksSection) {
-        if (taskType === 'goal' || taskType === 'challenge') {
-            subtasksSection.style.display = 'block';
-        } else {
-            subtasksSection.style.display = 'none';
-        }
-    }
-}
-
-// Add showSubtasks function to display subtasks for a task
+/**
+ * Show subtasks modal and update progress (UPDATED VERSION)
+ * @param {number} taskId - ID of the task
+ * @param {string} taskType - Type of task
+ */
 function showSubtasks(taskId, taskType) {
     // Set current task ID
     currentTaskId = taskId;
@@ -1171,11 +1269,44 @@ function showSubtasks(taskId, taskType) {
     // Load subtasks
     loadSubtasks(taskId);
     
+    // Update progress when modal opens
+    setTimeout(() => {
+        getSubtaskCounts(taskId).then(({completed, total}) => {
+            updateTaskProgress(taskId, completed, total);
+        });
+    }, 500);
+    
     // Show modal
     const modal = document.getElementById('subtasks-modal');
     if (modal) {
         modal.classList.add('show');
     }
+}
+
+// Add CSS for the pulse animation (add this to your tasks.css)
+const pulseCSS = `
+.complete-btn.ready {
+    animation: pulse 1.5s infinite alternate !important;
+}
+
+@keyframes pulse {
+    from { 
+        transform: scale(1); 
+        box-shadow: 0 2px 5px rgba(106, 141, 127, 0.2);
+    }
+    to { 
+        transform: scale(1.05); 
+        box-shadow: 0 4px 15px rgba(106, 141, 127, 0.4);
+    }
+}
+`;
+
+// Inject the CSS if it doesn't exist
+if (!document.querySelector('#pulse-animation-css')) {
+    const style = document.createElement('style');
+    style.id = 'pulse-animation-css';
+    style.textContent = pulseCSS;
+    document.head.appendChild(style);
 }
 
 /**
@@ -1186,4 +1317,129 @@ function closeSubtasksModal() {
     if (modal) {
         modal.classList.remove('show');
     }
+}
+
+/**
+ * Update progress bar for a specific task
+ * @param {number} taskId - ID of the parent task
+ * @param {number} completed - Number of completed subtasks
+ * @param {number} total - Total number of subtasks
+ */
+function updateTaskProgress(taskId, completed, total) {
+    // Find all progress elements for this task
+    const taskItems = document.querySelectorAll(`.task-item`);
+    
+    taskItems.forEach(taskItem => {
+        // Check if this task item contains buttons with the current task ID
+        const taskButtons = taskItem.querySelectorAll(`[onclick*="${taskId}"]`);
+        if (taskButtons.length === 0) return;
+        
+        // Find the subtask progress section (your existing progress bar)
+        const subtaskProgress = taskItem.querySelector('.subtask-progress');
+        
+        if (subtaskProgress && total > 0) {
+            // Find or create progress bar elements
+            let progressBar = subtaskProgress.querySelector('.progress-bar');
+            let progressElement = progressBar ? progressBar.querySelector('.progress') : null;
+            let progressText = subtaskProgress.querySelector('.progress-text');
+            
+            // If progress bar doesn't exist, create it (in case it was hidden)
+            if (!progressBar) {
+                progressBar = document.createElement('div');
+                progressBar.className = 'progress-bar';
+                
+                progressElement = document.createElement('div');
+                progressElement.className = 'progress';
+                progressBar.appendChild(progressElement);
+                
+                subtaskProgress.insertBefore(progressBar, subtaskProgress.firstChild);
+            }
+            
+            if (!progressText) {
+                progressText = document.createElement('div');
+                progressText.className = 'progress-text';
+                progressText.innerHTML = `
+                    <span>${completed} / ${total} subtasks</span>
+                    <span class="percentage">${Math.round((completed / total) * 100)}%</span>
+                `;
+                subtaskProgress.appendChild(progressText);
+            }
+            
+            // Calculate percentage
+            const progressPercent = Math.round((completed / total) * 100);
+            
+            // Update progress bar width with smooth transition
+            if (progressElement) {
+                progressElement.style.width = progressPercent + '%';
+            }
+            
+            // Update progress text
+            const progressSpan = progressText.querySelector('span:first-child');
+            const percentageSpan = progressText.querySelector('.percentage');
+            
+            if (progressSpan) {
+                progressSpan.textContent = `${completed} / ${total} subtasks`;
+            }
+            
+            if (percentageSpan) {
+                percentageSpan.textContent = `${progressPercent}%`;
+            }
+            
+            // Make sure the progress section is visible
+            subtaskProgress.style.display = 'block';
+            
+            console.log(`Updated progress for task ${taskId}: ${completed}/${total} (${progressPercent}%)`);
+            
+            // Check if task is ready to complete (all subtasks done)
+            if (completed === total && total > 0) {
+                // Find and update the complete button
+                const completeBtn = taskItem.querySelector('.complete-btn:not(.done)');
+                if (completeBtn) {
+                    completeBtn.classList.add('ready');
+                    completeBtn.style.animation = 'pulse 1.5s infinite alternate';
+                    
+                    // Optional: Show a notification that task is ready
+                    showNotification('Task ready to complete! All subtasks finished.', 'success');
+                }
+            } else {
+                // Remove ready state if not all subtasks are completed
+                const completeBtn = taskItem.querySelector('.complete-btn');
+                if (completeBtn) {
+                    completeBtn.classList.remove('ready');
+                    completeBtn.style.animation = '';
+                }
+            }
+        } else if (total === 0) {
+            // Hide progress bar if no subtasks
+            if (subtaskProgress) {
+                subtaskProgress.style.display = 'none';
+            }
+        }
+    });
+}
+
+
+/**
+ * Get current subtask counts for a task
+ * @param {number} taskId - ID of the parent task
+ * @returns {Promise} Promise that resolves with {completed, total}
+ */
+function getSubtaskCounts(taskId) {
+    return fetch(`../php/api/tasks/subtasks.php?task_id=${taskId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const subtasks = data.subtasks;
+                const total = subtasks.length;
+                const completed = subtasks.filter(subtask => subtask.is_completed == 1).length;
+                return { completed, total };
+            } else {
+                console.error('Error getting subtask counts:', data.message);
+                return { completed: 0, total: 0 };
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching subtask counts:', error);
+            return { completed: 0, total: 0 };
+        });
 }
