@@ -64,10 +64,22 @@ function getUserDailies($userId) {
 function getUserGoals($userId) {
     global $conn;
     
+    // Fix: Update the SQL to properly determine if a goal is completed
+    // The issue is in the subquery that determines completion status
+    
     $sql = "SELECT t.id, t.title, t.description, t.hcoin_reward, t.difficulty, 
             g.deadline, g.use_subtasks,
-            (SELECT COUNT(*) = COUNT(CASE WHEN is_completed = 1 THEN 1 END) 
-             FROM subtasks WHERE parent_task_id = t.id) as completed
+            CASE 
+                WHEN g.use_subtasks = 1 AND EXISTS (
+                    SELECT 1 FROM subtasks WHERE parent_task_id = t.id
+                ) THEN (
+                    -- For tasks with subtasks, check if ALL subtasks are completed
+                    SELECT COUNT(*) = COUNT(CASE WHEN is_completed = 1 THEN 1 END) 
+                    FROM subtasks WHERE parent_task_id = t.id
+                )
+                WHEN g.progress = g.total_steps THEN 1
+                ELSE 0 
+            END as completed
             FROM tasks t
             JOIN goals g ON t.id = g.task_id
             WHERE t.user_id = ? AND t.type_id = (SELECT id FROM task_types WHERE name = 'Goal')

@@ -1,4 +1,7 @@
 <?php
+// Fix for php/api/tasks/complete.php - ensures goals aren't automatically completed 
+// when all subtasks aren't done
+
 // php/api/tasks/complete.php
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';
@@ -102,7 +105,7 @@ try {
         
         if ($useSubtasks) {
             // Check if all subtasks are completed
-            $subtasksQuery = "SELECT COUNT(*) as total, SUM(is_completed) as completed 
+            $subtasksQuery = "SELECT COUNT(*) as total, SUM(CASE WHEN is_completed = 1 THEN 1 ELSE 0 END) as completed 
                              FROM subtasks WHERE parent_task_id = ?";
             $stmt = $conn->prepare($subtasksQuery);
             $stmt->execute([$taskId]);
@@ -129,7 +132,7 @@ try {
         
         if ($useSubtasks) {
             // Check if all subtasks are completed
-            $subtasksQuery = "SELECT COUNT(*) as total, SUM(is_completed) as completed 
+            $subtasksQuery = "SELECT COUNT(*) as total, SUM(CASE WHEN is_completed = 1 THEN 1 ELSE 0 END) as completed 
                              FROM subtasks WHERE parent_task_id = ?";
             $stmt = $conn->prepare($subtasksQuery);
             $stmt->execute([$taskId]);
