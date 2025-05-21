@@ -530,8 +530,19 @@
 
 /* Form styling */
 .form-group {
+    transition: all 0.3s ease;
+    overflow: hidden;
+    max-height: 500px; /* Set to a value larger than your tallest form group */
     margin-bottom: 20px;
 }
+
+.form-group[style*="display: none"] {
+    margin: 0;
+    padding: 0;
+    max-height: 0;
+    opacity: 0;
+}
+
 
 .form-group label {
     display: block;
@@ -601,6 +612,7 @@
     margin-top: 10px;
     font-size: 0.9rem;
     color: #8d8580; /* Warm gray */
+    transition: opacity 0.3s;
 }
 
 /* Form actions */
@@ -998,6 +1010,22 @@
 
 .complete-btn.ready {
     animation: pulse 1.5s infinite alternate;
+}
+
+.daily-mode .duration-multiplier-text {
+    display: inline;
+}
+
+.goal-mode .duration-multiplier-text,
+.challenge-mode .duration-multiplier-text {
+    display: none;
+}
+
+#task-form.daily-mode #daily-fields,
+#task-form.goal-mode #goal-fields,
+#task-form.challenge-mode #challenge-fields {
+    background-color: #f8f4ed; /* Slightly brighter background to highlight active section */
+    border-left: 3px solid #8d5b4c; /* Brown accent on the left */
 }
 
 @keyframes pulse {

@@ -289,9 +289,20 @@ function updateTaskTypeFields() {
     // Show fields for the selected type
     document.getElementById(taskType + '-fields').style.display = 'block';
     
+    // Show/hide duration field based on task type
+    const durationGroup = document.querySelector('.form-group:has(#duration)');
+    if (durationGroup) {
+        if (taskType === 'daily') {
+            durationGroup.style.display = 'block';
+        } else {
+            durationGroup.style.display = 'none';
+        }
+    }
+    
     // Update reward calculation with appropriate multiplier
     updateRewardCalculation();
 }
+
 
 /**
  * Update reward calculation based on form values
@@ -1045,6 +1056,12 @@ function createSubtask() {
     });
 }
 
+/**
+ * Update the main task progress bars
+ * @param {number} taskId - Task ID to update
+ * @param {number} completed - Number of completed subtasks
+ * @param {number} total - Total number of subtasks
+ */
 function updateMainTaskProgress(taskId, completed, total) {
     // Find the task item in the main task list
     const taskItems = document.querySelectorAll(`.task-item`);
@@ -1057,8 +1074,16 @@ function updateMainTaskProgress(taskId, completed, total) {
         // Find or create the subtask progress section
         let subtaskProgress = taskItem.querySelector('.subtask-progress');
         
+        // If there are no subtasks, hide the progress bar
+        if (total === 0) {
+            if (subtaskProgress) {
+                subtaskProgress.style.display = 'none';
+            }
+            return;
+        }
+        
         // If progress container doesn't exist, create it
-        if (!subtaskProgress && total > 0) {
+        if (!subtaskProgress) {
             const taskInfo = taskItem.querySelector('.task-info');
             if (!taskInfo) return;
             
@@ -1085,7 +1110,10 @@ function updateMainTaskProgress(taskId, completed, total) {
             subtaskProgress.appendChild(progressText);
             taskInfo.appendChild(subtaskProgress);
         } 
-        else if (subtaskProgress && total > 0) {
+        else {
+            // Show the progress section if it was hidden
+            subtaskProgress.style.display = 'block';
+            
             // Update existing progress bar
             let progressBar = subtaskProgress.querySelector('.progress-bar');
             let progressElement = progressBar ? progressBar.querySelector('.progress') : null;
@@ -1112,9 +1140,6 @@ function updateMainTaskProgress(taskId, completed, total) {
                     percentageSpan.textContent = `${progressPercent}%`;
                 }
             }
-            
-            // Make sure the progress section is visible
-            subtaskProgress.style.display = 'block';
         }
     });
 }
@@ -1212,7 +1237,7 @@ function toggleSubtask(subtaskId, completed) {
 }
 
 /**
- * Delete a subtask (UPDATED VERSION)
+ * Delete a subtask - Fixed to directly match the createSubtask pattern
  * @param {number} subtaskId - ID of the subtask to delete
  */
 function deleteSubtask(subtaskId) {
@@ -1222,6 +1247,10 @@ function deleteSubtask(subtaskId) {
     
     // Find subtask element
     const subtaskElement = document.querySelector(`.subtask-item input[id="subtask-${subtaskId}"]`).closest('.subtask-item');
+    if (!subtaskElement) {
+        console.error(`Subtask element not found for ID: ${subtaskId}`);
+        return;
+    }
     
     // Apply visual change immediately (optimistic UI update)
     subtaskElement.style.opacity = '0.5';
@@ -1240,19 +1269,30 @@ function deleteSubtask(subtaskId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            // Record whether this subtask was completed before removal
+            // (This is important for correct progress calculation)
+            const subtask = currentSubtasks.find(s => s.id === subtaskId);
+            const wasCompleted = subtask && subtask.is_completed == 1;
+            
             // Update subtask counter
             updateSubtaskCounter(currentTaskId, -1);
-            console.log(`Subtask deleted: decrementing counter for task ${currentTaskId}`);
             
-            // Remove from our local array FIRST
+            // Remove from our local array
             currentSubtasks = currentSubtasks.filter(subtask => subtask.id !== subtaskId);
             
-            // Update progress immediately after removing from array
+            // Calculate new progress values right after removing from array
             const totalSubtasks = currentSubtasks.length;
             const completedSubtasks = currentSubtasks.filter(subtask => subtask.is_completed == 1).length;
+            
+            console.log('After removing subtask:');
+            console.log(`- Total subtasks: ${totalSubtasks}`);
+            console.log(`- Completed subtasks: ${completedSubtasks}`);
+            
+            // Update progress in the subtasks modal
             updateTaskProgress(currentTaskId, completedSubtasks, totalSubtasks);
             
-            console.log(`Progress updated after deleting subtask: ${completedSubtasks}/${totalSubtasks}`);
+            // Update progress in the main task list
+            updateMainTaskProgress(currentTaskId, completedSubtasks, totalSubtasks);
             
             // Remove subtask from UI with animation
             subtaskElement.style.height = '0';
@@ -1405,7 +1445,7 @@ function closeSubtasksModal() {
 }
 
 /**
- * Update progress bar for a specific task
+ * Update task progress bar for a specific task
  * @param {number} taskId - ID of the parent task
  * @param {number} completed - Number of completed subtasks
  * @param {number} total - Total number of subtasks
@@ -1416,7 +1456,44 @@ function updateTaskProgress(taskId, completed, total) {
     if (subtasksModal && subtasksModal.classList.contains('show')) {
         const subtaskProgress = subtasksModal.querySelector('.subtask-progress');
         
-        if (subtaskProgress && total > 0) {
+        // If there are no subtasks, hide the progress section
+        if (total === 0) {
+            if (subtaskProgress) {
+                subtaskProgress.style.display = 'none';
+            }
+            return;
+        }
+        
+        if (!subtaskProgress) {
+            // Create the progress section if it doesn't exist
+            const modalBody = subtasksModal.querySelector('.modal-body');
+            if (!modalBody) return;
+            
+            const newSubtaskProgress = document.createElement('div');
+            newSubtaskProgress.className = 'subtask-progress';
+            modalBody.insertBefore(newSubtaskProgress, modalBody.firstChild);
+            
+            // Create progress bar and text
+            const progressBar = document.createElement('div');
+            progressBar.className = 'progress-bar';
+            
+            const progress = document.createElement('div');
+            progress.className = 'progress';
+            progress.style.width = `${Math.round((completed / total) * 100)}%`;
+            
+            progressBar.appendChild(progress);
+            newSubtaskProgress.appendChild(progressBar);
+            
+            const progressText = document.createElement('div');
+            progressText.className = 'progress-text';
+            progressText.innerHTML = `
+                <span>${completed} / ${total} subtasks</span>
+                <span class="percentage">${Math.round((completed / total) * 100)}%</span>
+            `;
+            
+            newSubtaskProgress.appendChild(progressText);
+        } 
+        else if (total > 0) {
             // Find or create progress bar elements
             let progressBar = subtaskProgress.querySelector('.progress-bar');
             let progressElement = progressBar ? progressBar.querySelector('.progress') : null;

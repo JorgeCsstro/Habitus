@@ -338,17 +338,17 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                         <form id="task-form">
                             <input type="hidden" id="task-id" name="task_id" value="0">
                             <input type="hidden" id="task-type" name="task_type" value="daily">
-                            
+                                                    
                             <div class="form-group">
                                 <label for="title">Task Title</label>
                                 <input type="text" id="title" name="title" placeholder="Enter task title" required>
                             </div>
-                            
+                                                    
                             <div class="form-group">
                                 <label for="description">Description (optional)</label>
                                 <textarea id="description" name="description" rows="3" placeholder="Add details about your task"></textarea>
                             </div>
-                            
+                                                    
                             <div class="form-group">
                                 <label for="difficulty">Difficulty</label>
                                 <select id="difficulty" name="difficulty" onchange="updateRewardCalculation()">
@@ -358,13 +358,14 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                     <option value="expert">Expert (50 HCoins)</option>
                                 </select>
                             </div>
-                            
-                            <div class="form-group">
+                                                    
+                            <!-- Duration field - only shown for dailies -->
+                            <div class="form-group" id="duration-group">
                                 <label for="duration">Estimated Duration (minutes)</label>
                                 <input type="number" id="duration" name="duration" min="1" value="15" oninput="updateRewardCalculation()">
                                 <span class="hint">Longer tasks earn more HCoins</span>
                             </div>
-                            
+                                                    
                             <!-- Daily-specific fields -->
                             <div id="daily-fields" class="type-specific-fields">
                                 <div class="form-group">
@@ -373,7 +374,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                     <span class="hint">When should this daily reset?</span>
                                 </div>
                             </div>
-                            
+                                                    
                             <!-- Goal-specific fields -->
                             <div id="goal-fields" class="type-specific-fields" style="display: none;">
                                 <div class="form-group">
@@ -388,7 +389,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                     <span class="hint">Split your task into smaller, manageable steps</span>
                                 </div>
                             </div>
-                            
+                                                    
                             <!-- Challenge-specific fields -->
                             <div id="challenge-fields" class="type-specific-fields" style="display: none;">
                                 <div class="form-group">
@@ -408,7 +409,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                     <span class="hint">Split your task into smaller, manageable steps</span>
                                 </div>
                             </div>
-                            
+                                                    
                             <div class="form-group reward-preview">
                                 <label>Reward Preview</label>
                                 <div class="reward-display">
@@ -420,7 +421,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                     </div>
                                 </div>
                             </div>
-                            
+                                                    
                             <div class="form-actions">
                                 <button type="button" class="cancel-btn" onclick="closeTaskModal()">Cancel</button>
                                 <button type="submit" class="save-btn" id="save-task-btn">Save Task</button>

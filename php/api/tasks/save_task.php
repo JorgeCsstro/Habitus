@@ -1,4 +1,6 @@
 <?php
+// This is a modification for php/api/tasks/save_task.php
+
 // php/api/tasks/save_task.php
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';
@@ -23,7 +25,13 @@ $taskType = isset($_POST['task_type']) ? $_POST['task_type'] : '';
 $title = isset($_POST['title']) ? trim($_POST['title']) : '';
 $description = isset($_POST['description']) ? trim($_POST['description']) : '';
 $difficulty = isset($_POST['difficulty']) ? $_POST['difficulty'] : 'medium';
-$duration = isset($_POST['duration']) ? intval($_POST['duration']) : 15;
+
+// Duration only applies to Daily tasks now
+$duration = null;
+if ($taskType === 'daily') {
+    $duration = isset($_POST['duration']) ? intval($_POST['duration']) : 15;
+}
+
 $hcoinReward = isset($_POST['hcoin_reward']) ? intval($_POST['hcoin_reward']) : 0;
 $useSubtasks = isset($_POST['use_subtasks']) ? (bool)$_POST['use_subtasks'] : true;
 
