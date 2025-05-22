@@ -20,34 +20,27 @@ $userHabitusName = $userData['username'] . "'s Habitus";
 
 // Get category filter if any
 $categoryId = isset($_GET['category']) ? intval($_GET['category']) : 0;
+$searchQuery = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-// Get sort option
-$sort = isset($_GET['sort']) ? $_GET['sort'] : 'recent';
-
-// Get shop items
+// Get shop items with search and filter
 $query = "SELECT si.*, ic.name as category_name 
          FROM shop_items si
          JOIN item_categories ic ON si.category_id = ic.id
          WHERE si.is_available = 1";
 
 $params = [];
+
 if ($categoryId > 0) {
     $query .= " AND si.category_id = :categoryId";
     $params['categoryId'] = $categoryId;
 }
 
-switch ($sort) {
-    case 'price_low':
-        $query .= " ORDER BY si.price ASC";
-        break;
-    case 'price_high':
-        $query .= " ORDER BY si.price DESC";
-        break;
-    case 'recent':
-    default:
-        $query .= " ORDER BY si.created_at DESC";
-        break;
+if ($searchQuery) {
+    $query .= " AND (si.name LIKE :search OR si.description LIKE :search)";
+    $params['search'] = '%' . $searchQuery . '%';
 }
+
+$query .= " ORDER BY si.is_featured DESC, si.created_at DESC";
 
 $stmt = $conn->prepare($query);
 $stmt->execute($params);
@@ -57,22 +50,10 @@ $shopItems = $stmt->fetchAll();
 $categoryQuery = "SELECT * FROM item_categories ORDER BY name";
 $categoryStmt = $conn->query($categoryQuery);
 $categories = $categoryStmt->fetchAll();
-
-// Get recently purchased items by user
-$recentQuery = "SELECT si.*, t.created_at as purchase_date 
-               FROM shop_items si
-               JOIN transactions t ON t.reference_id = si.id AND t.reference_type = 'shop'
-               WHERE t.user_id = ? AND t.transaction_type = 'spend'
-               ORDER BY t.created_at DESC
-               LIMIT 3";
-$recentStmt = $conn->prepare($recentQuery);
-$recentStmt->execute([$_SESSION['user_id']]);
-$recentItems = $recentStmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-<!-- Update the head section of shop.php -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -101,193 +82,170 @@ $recentItems = $recentStmt->fetchAll();
 
             <!-- Shop Content -->
             <div class="shop-content">
+                <!-- Shop Header with Search -->
                 <div class="shop-header">
                     <h1>Shop</h1>
-                    <div class="shop-filters">
-                        <div class="categories">
-                            <label for="category-filter">Category:</label>
-                            <select id="category-filter" onchange="filterByCategory(this.value)">
-                                <option value="0" <?php echo $categoryId === 0 ? 'selected' : ''; ?>>All Categories</option>
-                                <?php foreach ($categories as $category): ?>
-                                    <option value="<?php echo $category['id']; ?>" <?php echo $categoryId === $category['id'] ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($category['name']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="sort">
-                            <label for="sort-options">Sort by:</label>
-                            <select id="sort-options" onchange="sortItems(this.value)">
-                                <option value="recent" <?php echo $sort === 'recent' ? 'selected' : ''; ?>>Most Recent</option>
-                                <option value="price_low" <?php echo $sort === 'price_low' ? 'selected' : ''; ?>>Price: Low to High</option>
-                                <option value="price_high" <?php echo $sort === 'price_high' ? 'selected' : ''; ?>>Price: High to Low</option>
-                            </select>
+                    <div class="shop-controls">
+                        <div class="search-box">
+                            <input type="text" id="search-input" placeholder="Search items..." value="<?php echo htmlspecialchars($searchQuery); ?>">
+                            <button class="search-btn" onclick="searchItems()">
+                                <img src="../images/icons/search.svg" alt="Search">
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <?php if (!empty($recentItems)): ?>
-                    <div class="recently-purchased">
-                        <h2>Recently Purchased</h2>
-                        <div class="recent-items">
-                            <?php foreach ($recentItems as $item): ?>
-                                <div class="recent-item">
-                                    <img src="../<?php echo $item['image_path']; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
-                                    <div class="item-details">
-                                        <h3><?php echo htmlspecialchars($item['name']); ?></h3>
-                                        <p class="purchase-date">Purchased: <?php echo date('M j, Y', strtotime($item['purchase_date'])); ?></p>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                <?php endif; ?>
+                <!-- Category Filter Tabs -->
+                <div class="category-tabs">
+                    <button class="category-tab <?php echo $categoryId === 0 ? 'active' : ''; ?>" 
+                            onclick="filterByCategory(0)">
+                        All Items
+                    </button>
+                    <?php foreach ($categories as $category): ?>
+                        <button class="category-tab <?php echo $categoryId === $category['id'] ? 'active' : ''; ?>" 
+                                onclick="filterByCategory(<?php echo $category['id']; ?>)">
+                            <?php echo htmlspecialchars($category['name']); ?>
+                        </button>
+                    <?php endforeach; ?>
+                </div>
 
-                <div class="shop-items">
+                <!-- Shop Items Grid -->
+                <div class="shop-items-grid">
                     <?php if (empty($shopItems)): ?>
                         <div class="empty-shop">
-                            <p>No items found in the shop. Please check back later!</p>
+                            <p>No items found. Please try a different search or category.</p>
                         </div>
                     <?php else: ?>
                         <?php foreach ($shopItems as $item): ?>
-                            <div class="shop-item <?php echo $item['rarity']; ?>">
-                                <div class="item-image">
-                                    <img src="../<?php echo $item['image_path']; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
-                                    <?php if ($item['is_featured']): ?>
-                                        <span class="featured-badge">Featured</span>
-                                    <?php endif; ?>
+                            <div class="shop-item-card <?php echo $item['rarity']; ?>" data-item-id="<?php echo $item['id']; ?>">
+                                <?php if ($item['is_featured']): ?>
+                                    <div class="featured-badge">Featured</div>
+                                <?php endif; ?>
+                                
+                                <div class="item-image-container">
+                                    <img src="../<?php echo $item['image_path']; ?>" 
+                                         alt="<?php echo htmlspecialchars($item['name']); ?>"
+                                         class="item-image">
                                 </div>
+                                
                                 <div class="item-details">
-                                    <h3><?php echo htmlspecialchars($item['name']); ?></h3>
+                                    <h3 class="item-name"><?php echo htmlspecialchars($item['name']); ?></h3>
                                     <p class="item-category"><?php echo htmlspecialchars($item['category_name']); ?></p>
-                                    <p class="item-description"><?php echo htmlspecialchars($item['description']); ?></p>
-                                    <div class="item-meta">
-                                        <span class="rarity-badge"><?php echo ucfirst($item['rarity']); ?></span>
-                                        <span class="price">
-                                            <img src="../images/icons/hcoin.svg" alt="HCoin">
-                                            <span><?php echo number_format($item['price']); ?></span>
-                                        </span>
+                                    
+                                    <div class="item-price">
+                                        <img src="../images/icons/hcoin.svg" alt="HCoin">
+                                        <span><?php echo number_format($item['price']); ?></span>
                                     </div>
-                                    <button class="purchase-btn" 
-                                            onclick="purchaseItem(<?php echo $item['id']; ?>, '<?php echo htmlspecialchars($item['name']); ?>', <?php echo $item['price']; ?>)" 
+                                    
+                                    <button class="add-to-cart-btn" 
+                                            onclick="addToCart(<?php echo $item['id']; ?>, '<?php echo htmlspecialchars($item['name']); ?>', <?php echo $item['price']; ?>, '<?php echo $item['image_path']; ?>')"
                                             <?php echo ($userHCoins < $item['price']) ? 'disabled' : ''; ?>>
-                                        <?php echo ($userHCoins < $item['price']) ? 'Not Enough HCoins' : 'Purchase'; ?>
+                                        <?php echo ($userHCoins < $item['price']) ? 'Not Enough HCoins' : 'Add to Cart'; ?>
                                     </button>
                                 </div>
                             </div>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
+
+                <!-- Floating Cart -->
+                <div class="floating-cart" id="floating-cart">
+                    <div class="cart-icon-container" onclick="toggleCart()">
+                        <img src="../images/icons/cart-icon-light.webp" alt="Cart">
+                        <span class="cart-count" id="cart-count">0</span>
+                    </div>
+                    
+                    <div class="cart-dropdown" id="cart-dropdown">
+                        <div class="cart-header">
+                            <h3>Shopping Cart</h3>
+                            <button class="clear-cart-btn" onclick="clearCart()">Clear All</button>
+                        </div>
+                        
+                        <div class="cart-items" id="cart-items">
+                            <p class="empty-cart">Your cart is empty</p>
+                        </div>
+                        
+                        <div class="cart-footer">
+                            <div class="cart-total">
+                                <span>Total:</span>
+                                <div class="total-price">
+                                    <img src="../images/icons/hcoin.svg" alt="HCoin">
+                                    <span id="cart-total">0</span>
+                                </div>
+                            </div>
+                            <button class="checkout-btn" onclick="checkout()" disabled>
+                                Checkout
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Purchase Confirmation Modal -->
-    <div id="purchase-modal" class="modal" style="display: none;">
+    <!-- Item Added Animation Container -->
+    <div id="animation-container"></div>
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="modal">
         <div class="modal-content">
-            <h2>Confirm Purchase</h2>
-            <p>Are you sure you want to purchase <span id="item-name"></span> for <span id="item-price"></span> HCoins?</p>
-            <div class="modal-actions">
-                <button class="cancel-btn" onclick="closeModal()">Cancel</button>
-                <button class="confirm-btn" onclick="confirmPurchase()">Confirm Purchase</button>
+            <div class="modal-header">
+                <h2>Checkout</h2>
+                <button class="close-modal" onclick="closeCheckoutModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="checkout-summary">
+                    <h3>Order Summary</h3>
+                    <div id="checkout-items"></div>
+                    
+                    <div class="checkout-total">
+                        <span>Total Cost:</span>
+                        <div class="total-price">
+                            <img src="../images/icons/hcoin.svg" alt="HCoin">
+                            <span id="checkout-total">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="balance-info">
+                        <span>Your Balance:</span>
+                        <div class="balance-amount">
+                            <img src="../images/icons/hcoin.svg" alt="HCoin">
+                            <span><?php echo number_format($userHCoins); ?></span>
+                        </div>
+                    </div>
+                    
+                    <div class="remaining-balance">
+                        <span>After Purchase:</span>
+                        <div class="remaining-amount">
+                            <img src="../images/icons/hcoin.svg" alt="HCoin">
+                            <span id="remaining-balance">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="cancel-btn" onclick="closeCheckoutModal()">Cancel</button>
+                    <button class="confirm-btn" onclick="confirmPurchase()">Confirm Purchase</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Purchase Success Modal -->
-    <div id="success-modal" class="modal" style="display: none;">
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal">
         <div class="modal-content success">
-            <h2>Purchase Successful!</h2>
             <div class="success-animation">
                 <img src="../images/icons/check-circle.svg" alt="Success">
             </div>
-            <p>You have successfully purchased <span id="purchased-item-name"></span>.</p>
-            <p>Your new balance: <span id="new-balance"></span> HCoins</p>
+            <h2>Purchase Successful!</h2>
+            <p>Your items have been added to your inventory.</p>
             <div class="modal-actions">
-                <button class="confirm-btn" onclick="closeSuccessModal()">Continue Shopping</button>
-                <a href="habitus.php" class="view-btn">Go to Habitus</a>
+                <button class="primary-btn" onclick="closeSuccessModal()">Continue Shopping</button>
+                <a href="habitus.php" class="view-inventory-btn">Go to Habitus</a>
             </div>
         </div>
     </div>
 
-    <script>
-        let purchaseItemId = 0;
-        let purchaseItemName = '';
-        let purchaseItemPrice = 0;
-        
-        function filterByCategory(categoryId) {
-            window.location.href = `shop.php?category=${categoryId}&sort=<?php echo $sort; ?>`;
-        }
-        
-        function sortItems(sortOption) {
-            window.location.href = `shop.php?category=<?php echo $categoryId; ?>&sort=${sortOption}`;
-        }
-        
-        function purchaseItem(id, name, price) {
-            purchaseItemId = id;
-            purchaseItemName = name;
-            purchaseItemPrice = price;
-            
-            // Update modal content
-            document.getElementById('item-name').textContent = name;
-            document.getElementById('item-price').textContent = price;
-            
-            // Show modal
-            document.getElementById('purchase-modal').style.display = 'flex';
-        }
-        
-        function closeModal() {
-            document.getElementById('purchase-modal').style.display = 'none';
-        }
-        
-        function confirmPurchase() {
-            // Hide confirmation modal
-            closeModal();
-            
-            // Send purchase request
-            const formData = new FormData();
-            formData.append('item_id', purchaseItemId);
-            
-            fetch('../php/api/shop/purchase.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Show success modal
-                    document.getElementById('purchased-item-name').textContent = purchaseItemName;
-                    document.getElementById('new-balance').textContent = data.new_balance;
-                    document.getElementById('success-modal').style.display = 'flex';
-                    
-                    // Update HCoin balance in header
-                    const balanceElement = document.querySelector('.hcoin-balance span');
-                    if (balanceElement) {
-                        balanceElement.textContent = data.new_balance;
-                    }
-                    
-                    // Disable purchase buttons if new balance is too low
-                    const purchaseButtons = document.querySelectorAll('.purchase-btn');
-                    purchaseButtons.forEach(button => {
-                        const price = parseInt(button.parentElement.querySelector('.price span').textContent.replace(/,/g, ''));
-                        if (data.new_balance < price) {
-                            button.disabled = true;
-                            button.textContent = 'Not Enough HCoins';
-                        }
-                    });
-                } else {
-                    alert('Purchase failed: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred during purchase');
-            });
-        }
-        
-        function closeSuccessModal() {
-            document.getElementById('success-modal').style.display = 'none';
-        }
-    </script>
+    <script src="../js/shop.js"></script>
 </body>
 </html>

@@ -45,7 +45,7 @@ try {
     $itemData = $stmt->fetch();
     $itemPrice = $itemData['price'];
     
-    // Check if user already owns this item
+    // Check if user already owns this item (for non-consumable items)
     $inventoryQuery = "SELECT * FROM user_inventory WHERE user_id = ? AND item_id = ?";
     $stmt = $conn->prepare($inventoryQuery);
     $stmt->execute([$userId, $itemId]);
