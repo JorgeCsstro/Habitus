@@ -1,9 +1,9 @@
 <?php
 // php/api/habitus/create_room.php
+
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';
 require_once '../../include/auth.php';
-require_once '../../include/functions.php';
 
 // Check if user is logged in
 if (!isLoggedIn()) {
@@ -11,30 +11,47 @@ if (!isLoggedIn()) {
     exit;
 }
 
-// Check if request is POST
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit;
-}
+// Get JSON data
+$input = file_get_contents('php://input');
+$data = json_decode($input, true);
 
-// Get POST data
-$name = isset($_POST['name']) ? trim($_POST['name']) : '';
-
-if (empty($name)) {
+if (!$data || !isset($data['name'])) {
     echo json_encode(['success' => false, 'message' => 'Room name is required']);
     exit;
 }
 
+$roomName = trim($data['name']);
+
+if (empty($roomName)) {
+    echo json_encode(['success' => false, 'message' => 'Room name cannot be empty']);
+    exit;
+}
+
+// Check room limit (optional - e.g., max 5 rooms per user)
+$countQuery = "SELECT COUNT(*) as room_count FROM rooms WHERE user_id = ?";
+$stmt = $conn->prepare($countQuery);
+$stmt->execute([$_SESSION['user_id']]);
+$result = $stmt->fetch();
+
+if ($result['room_count'] >= 5) {
+    echo json_encode(['success' => false, 'message' => 'You have reached the maximum number of rooms (5)']);
+    exit;
+}
+
 // Create new room
-$insertRoom = "INSERT INTO rooms (user_id, name, layout_json) VALUES (?, ?, '{}')";
-$stmt = $conn->prepare($insertRoom);
-$stmt->execute([$_SESSION['user_id'], $name]);
+$insertQuery = "INSERT INTO rooms (user_id, name, floor_color, wall_color) VALUES (?, ?, '#FFD700', '#E0E0E0')";
+$stmt = $conn->prepare($insertQuery);
 
-$roomId = $conn->lastInsertId();
-
-echo json_encode([
-    'success' => true,
-    'message' => 'Room created successfully',
-    'room_id' => $roomId
-]);
+try {
+    $stmt->execute([$_SESSION['user_id'], $roomName]);
+    $roomId = $conn->lastInsertId();
+    
+    echo json_encode([
+        'success' => true,
+        'room_id' => $roomId,
+        'message' => 'Room created successfully'
+    ]);
+} catch (PDOException $e) {
+    echo json_encode(['success' => false, 'message' => 'Error creating room']);
+}
 ?>

@@ -1,8 +1,9 @@
 <?php
+// php/api/habitus/rename_room.php
+
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';
 require_once '../../include/auth.php';
-require_once '../../include/functions.php';
 
 // Check if user is logged in
 if (!isLoggedIn()) {
@@ -10,24 +11,26 @@ if (!isLoggedIn()) {
     exit;
 }
 
-// Check if request is POST
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+// Get JSON data
+$input = file_get_contents('php://input');
+$data = json_decode($input, true);
+
+if (!$data || !isset($data['room_id']) || !isset($data['name'])) {
+    echo json_encode(['success' => false, 'message' => 'Room ID and name are required']);
     exit;
 }
 
-// Get POST data
-$roomId = isset($_POST['room_id']) ? intval($_POST['room_id']) : 0;
-$name = isset($_POST['name']) ? trim($_POST['name']) : '';
+$roomId = intval($data['room_id']);
+$roomName = trim($data['name']);
 
-if (empty($name) || $roomId <= 0) {
-    echo json_encode(['success' => false, 'message' => 'Room name and ID are required']);
+if (empty($roomName)) {
+    echo json_encode(['success' => false, 'message' => 'Room name cannot be empty']);
     exit;
 }
 
 // Verify room belongs to user
-$roomQuery = "SELECT id FROM rooms WHERE id = ? AND user_id = ?";
-$stmt = $conn->prepare($roomQuery);
+$verifyQuery = "SELECT id FROM rooms WHERE id = ? AND user_id = ?";
+$stmt = $conn->prepare($verifyQuery);
 $stmt->execute([$roomId, $_SESSION['user_id']]);
 
 if ($stmt->rowCount() === 0) {
@@ -36,12 +39,16 @@ if ($stmt->rowCount() === 0) {
 }
 
 // Update room name
-$updateRoom = "UPDATE rooms SET name = ? WHERE id = ?";
-$stmt = $conn->prepare($updateRoom);
-$stmt->execute([$name, $roomId]);
+$updateQuery = "UPDATE rooms SET name = ? WHERE id = ?";
+$stmt = $conn->prepare($updateQuery);
 
-echo json_encode([
-    'success' => true,
-    'message' => 'Room renamed successfully'
-]);
+try {
+    $stmt->execute([$roomName, $roomId]);
+    echo json_encode([
+        'success' => true,
+        'message' => 'Room renamed successfully'
+    ]);
+} catch (PDOException $e) {
+    echo json_encode(['success' => false, 'message' => 'Error renaming room']);
+}
 ?>

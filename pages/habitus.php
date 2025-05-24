@@ -18,80 +18,84 @@ $userData = getUserData($_SESSION['user_id']);
 $userHCoins = $userData['hcoin'];
 $userHabitusName = $userData['username'] . "'s Habitus";
 
-// Get user's current room
+// Get room ID from URL or use default
 $roomId = isset($_GET['room_id']) ? intval($_GET['room_id']) : 0;
 
-if ($roomId <= 0) {
-    // Get user's default room
-    $roomQuery = "SELECT id FROM rooms WHERE user_id = ? ORDER BY id LIMIT 1";
-    $stmt = $conn->prepare($roomQuery);
+// Get user's rooms
+$roomsQuery = "SELECT * FROM rooms WHERE user_id = ? ORDER BY id";
+$stmt = $conn->prepare($roomsQuery);
+$stmt->execute([$_SESSION['user_id']]);
+$rooms = $stmt->fetchAll();
+
+// If no room ID specified, use first room
+if ($roomId === 0 && count($rooms) > 0) {
+    $roomId = $rooms[0]['id'];
+}
+
+// If user has no rooms, create a default one
+if (count($rooms) === 0) {
+    $createRoomQuery = "INSERT INTO rooms (user_id, name, floor_color, wall_color) VALUES (?, 'My First Room', '#FFD700', '#E0E0E0')";
+    $stmt = $conn->prepare($createRoomQuery);
     $stmt->execute([$_SESSION['user_id']]);
+    $roomId = $conn->lastInsertId();
     
-    if ($stmt->rowCount() > 0) {
-        $roomId = $stmt->fetch()['id'];
-    } else {
-        // Create a default room if none exists
-        $createRoom = "INSERT INTO rooms (user_id, name, layout_json) VALUES (?, 'My First Room', '{}')";
-        $stmt = $conn->prepare($createRoom);
-        $stmt->execute([$_SESSION['user_id']]);
-        $roomId = $conn->lastInsertId();
+    // Reload rooms
+    $stmt = $conn->prepare($roomsQuery);
+    $stmt->execute([$_SESSION['user_id']]);
+    $rooms = $stmt->fetchAll();
+}
+
+// Get current room data
+$roomData = null;
+foreach ($rooms as $room) {
+    if ($room['id'] == $roomId) {
+        $roomData = $room;
+        break;
     }
 }
 
-// Get room details
-$roomQuery = "SELECT r.*, si.name as background_name, si.image_path as background_image 
-             FROM rooms r 
-             LEFT JOIN shop_items si ON r.background_id = si.id 
-             WHERE r.id = ? AND r.user_id = ?";
-$stmt = $conn->prepare($roomQuery);
-$stmt->execute([$roomId, $_SESSION['user_id']]);
-
-if ($stmt->rowCount() === 0) {
-    // Room not found or doesn't belong to user
-    header('Location: dashboard.php');
-    exit;
-}
-
-$roomData = $stmt->fetch();
-
-// Get placed items
-$placedQuery = "SELECT pi.*, ui.item_id, si.name, si.image_path 
-               FROM placed_items pi 
-               JOIN user_inventory ui ON pi.inventory_id = ui.id 
-               JOIN shop_items si ON ui.item_id = si.id 
-               WHERE pi.room_id = ? 
-               ORDER BY pi.z_index";
-$stmt = $conn->prepare($placedQuery);
+// Get placed items for this room
+$placedItemsQuery = "SELECT pi.*, ui.item_id, si.name, si.image_path, si.category_id, ic.name as category_name
+                    FROM placed_items pi
+                    JOIN user_inventory ui ON pi.inventory_id = ui.id
+                    JOIN shop_items si ON ui.item_id = si.id
+                    JOIN item_categories ic ON si.category_id = ic.id
+                    WHERE pi.room_id = ?
+                    ORDER BY pi.z_index";
+$stmt = $conn->prepare($placedItemsQuery);
 $stmt->execute([$roomId]);
-
 $placedItems = $stmt->fetchAll();
 
-// Get user's inventory (not placed in any room)
-$inventoryQuery = "SELECT ui.id, ui.item_id, ui.quantity, si.name, si.image_path, si.description, 
-                  ic.name as category 
-                  FROM user_inventory ui 
-                  JOIN shop_items si ON ui.item_id = si.id 
-                  JOIN item_categories ic ON si.category_id = ic.id 
-                  WHERE ui.user_id = ? AND (
-                      ui.id NOT IN (SELECT inventory_id FROM placed_items) 
-                      OR ui.quantity > 1
-                  )";
+// Get user's inventory
+$inventoryQuery = "SELECT ui.*, si.name, si.image_path, si.category_id, ic.name as category
+                  FROM user_inventory ui
+                  JOIN shop_items si ON ui.item_id = si.id
+                  JOIN item_categories ic ON si.category_id = ic.id
+                  WHERE ui.user_id = ? AND ui.quantity > 0
+                  ORDER BY si.category_id, si.name";
 $stmt = $conn->prepare($inventoryQuery);
 $stmt->execute([$_SESSION['user_id']]);
-
 $inventory = $stmt->fetchAll();
 
-// Get user's rooms
-$roomsQuery = "SELECT id, name FROM rooms WHERE user_id = ?";
-$stmt = $conn->prepare($roomsQuery);
-$stmt->execute([$_SESSION['user_id']]);
-
-$rooms = $stmt->fetchAll();
+// Filter out items that are already placed (unless quantity > 1)
+$availableInventory = [];
+foreach ($inventory as $item) {
+    $placedCount = 0;
+    foreach ($placedItems as $placed) {
+        if ($placed['inventory_id'] == $item['id']) {
+            $placedCount++;
+        }
+    }
+    
+    if ($item['quantity'] > $placedCount) {
+        $availableInventory[] = $item;
+    }
+}
+$inventory = $availableInventory;
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-<!-- Update the head section of habitus.php -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -107,6 +111,7 @@ $rooms = $stmt->fetchAll();
     
     <!-- Page-specific CSS -->
     <link rel="stylesheet" href="../css/pages/habitus.css">
+    <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div class="main-container">
@@ -133,33 +138,62 @@ $rooms = $stmt->fetchAll();
                         <button class="rename-room-btn" onclick="renameRoom()">Rename</button>
                     </div>
                     <div class="room-actions">
-                        <button class="save-room-btn" onclick="saveRoomLayout()">Save Layout</button>
+                        <button class="save-room-btn" onclick="saveRoom()">Save Layout</button>
+                        <button class="clear-room-btn" onclick="clearRoom()">Clear Room</button>
                     </div>
                 </div>
 
                 <div class="habitus-editor">
-                    <div class="room-canvas-container">
-                        <div id="room-canvas" class="room-canvas"></div>
+                    <div class="room-container">
+                        <div id="isometric-room" class="isometric-room">
+                            <!-- Grid overlay -->
+                            <div class="room-grid" id="room-grid"></div>
+                            <!-- Floor -->
+                            <div class="room-floor" id="room-floor"></div>
+                            <!-- Left wall -->
+                            <div class="room-wall-left" id="wall-left"></div>
+                            <!-- Right wall -->
+                            <div class="room-wall-right" id="wall-right"></div>
+                            <!-- Door (non-placeable area) -->
+                            <div class="room-door"></div>
+                            <!-- Placed items container -->
+                            <div class="placed-items" id="placed-items"></div>
+                        </div>
+                        
+                        <!-- Room controls -->
+                        <div class="room-controls">
+                            <button class="grid-toggle" onclick="toggleGrid()">
+                                <img src="../images/icons/grid.svg" alt="Toggle Grid"> Grid
+                            </button>
+                            <button class="rotate-view" onclick="rotateView()">
+                                <img src="../images/icons/rotate.svg" alt="Rotate"> Rotate View
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="room-inventory">
                         <h3>Your Inventory</h3>
                         <div class="inventory-filters">
-                            <button class="filter-btn active" data-filter="all">All</button>
-                            <button class="filter-btn" data-filter="furniture">Furniture</button>
-                            <button class="filter-btn" data-filter="decorations">Decorations</button>
-                            <button class="filter-btn" data-filter="backgrounds">Backgrounds</button>
+                            <button class="filter-btn active" data-filter="all" onclick="filterInventory('all')">All</button>
+                            <button class="filter-btn" data-filter="furniture" onclick="filterInventory('furniture')">Furniture</button>
+                            <button class="filter-btn" data-filter="decorations" onclick="filterInventory('decorations')">Decorations</button>
+                            <button class="filter-btn" data-filter="walls" onclick="filterInventory('walls')">Walls</button>
+                            <button class="filter-btn" data-filter="floors" onclick="filterInventory('floors')">Floors</button>
                         </div>
                         
-                        <div class="inventory-items">
+                        <div class="inventory-items" id="inventory-items">
                             <?php if (empty($inventory)): ?>
                                 <p class="empty-inventory">Your inventory is empty. Visit the shop to buy items!</p>
                             <?php else: ?>
                                 <?php foreach ($inventory as $item): ?>
                                     <div class="inventory-item" 
                                          data-id="<?php echo $item['id']; ?>"
+                                         data-item-id="<?php echo $item['item_id']; ?>"
                                          data-category="<?php echo strtolower($item['category']); ?>"
-                                         draggable="true">
+                                         data-image="<?php echo $item['image_path']; ?>"
+                                         data-name="<?php echo htmlspecialchars($item['name']); ?>"
+                                         draggable="true"
+                                         ondragstart="startDrag(event)">
                                         <img src="../<?php echo $item['image_path']; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                                         <div class="item-info">
                                             <span class="item-name"><?php echo htmlspecialchars($item['name']); ?></span>
@@ -178,165 +212,44 @@ $rooms = $stmt->fetchAll();
                     </div>
                 </div>
                 
-                <div class="room-item-controls" style="display: none;">
-                    <button class="rotate-left-btn"><img src="../images/icons/rotate-left.svg" alt="Rotate Left"></button>
-                    <button class="rotate-right-btn"><img src="../images/icons/rotate-right.svg" alt="Rotate Right"></button>
-                    <button class="bring-forward-btn"><img src="../images/icons/layer-up.svg" alt="Bring Forward"></button>
-                    <button class="send-backward-btn"><img src="../images/icons/layer-down.svg" alt="Send Backward"></button>
-                    <button class="remove-item-btn"><img src="../images/icons/trash.svg" alt="Remove"></button>
+                <!-- Item context menu -->
+                <div id="item-context-menu" class="item-context-menu" style="display: none;">
+                    <button onclick="rotateItem()">Rotate</button>
+                    <button onclick="moveToFront()">Bring to Front</button>
+                    <button onclick="moveToBack()">Send to Back</button>
+                    <button onclick="removeItem()">Remove</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Templates for modals -->
-    <div id="new-room-modal" class="modal" style="display: none;">
+    <!-- Room name modal -->
+    <div id="room-modal" class="modal" style="display: none;">
         <div class="modal-content">
-            <h3>Create New Room</h3>
+            <h3 id="modal-title">Create New Room</h3>
             <div class="form-group">
-                <label for="new-room-name">Room Name</label>
-                <input type="text" id="new-room-name" placeholder="My Awesome Room">
+                <label for="room-name-input">Room Name</label>
+                <input type="text" id="room-name-input" placeholder="Enter room name">
             </div>
             <div class="modal-actions">
-                <button class="cancel-btn" onclick="closeModal('new-room-modal')">Cancel</button>
-                <button class="create-btn" onclick="submitNewRoom()">Create</button>
+                <button class="cancel-btn" onclick="closeRoomModal()">Cancel</button>
+                <button class="save-btn" onclick="saveRoomName()">Save</button>
             </div>
         </div>
     </div>
 
-    <div id="rename-room-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <h3>Rename Room</h3>
-            <div class="form-group">
-                <label for="room-name">New Name</label>
-                <input type="text" id="room-name" value="<?php echo htmlspecialchars($roomData['name']); ?>">
-            </div>
-            <div class="modal-actions">
-                <button class="cancel-btn" onclick="closeModal('rename-room-modal')">Cancel</button>
-                <button class="save-btn" onclick="submitRenameRoom()">Save</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.1/fabric.min.js"></script>
-    <script src="../js/habitus.js"></script>
+    <!-- Scripts -->
+    <script src="../js/main.js"></script>
+    <script src="../js/habitus-room.js"></script>
     <script>
-        // Initialize room canvas
+        // Initialize room data
+        const roomData = <?php echo json_encode($roomData); ?>;
+        const placedItems = <?php echo json_encode($placedItems); ?>;
+        
+        // Initialize the room when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize the room editor
-            initRoomEditor(<?php echo $roomId; ?>, <?php echo json_encode($placedItems); ?>);
-            
-            // Initialize inventory drag and drop
-            initInventoryDragDrop();
-            
-            // Initialize filter buttons
-            initFilterButtons();
+            initializeHabitusRoom(roomData, placedItems);
         });
-        
-        function changeRoom(roomId) {
-            window.location.href = 'habitus.php?room_id=' + roomId;
-        }
-        
-        function createNewRoom() {
-            document.getElementById('new-room-modal').style.display = 'flex';
-        }
-        
-        function renameRoom() {
-            document.getElementById('rename-room-modal').style.display = 'flex';
-        }
-        
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-        
-        function submitNewRoom() {
-            const name = document.getElementById('new-room-name').value.trim();
-            if (name === '') {
-                alert('Please enter a room name');
-                return;
-            }
-            
-            // Create new room via AJAX
-            fetch('../php/api/habitus/create_room.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: 'name=' + encodeURIComponent(name)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.href = 'habitus.php?room_id=' + data.room_id;
-                } else {
-                    alert('Error creating room: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while creating the room');
-            });
-        }
-        
-        function submitRenameRoom() {
-            const name = document.getElementById('room-name').value.trim();
-            if (name === '') {
-                alert('Please enter a room name');
-                return;
-            }
-            
-            // Rename room via AJAX
-            fetch('../php/api/habitus/rename_room.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: 'room_id=<?php echo $roomId; ?>&name=' + encodeURIComponent(name)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update room name in select box
-                    const option = document.querySelector('#room-select option[value="<?php echo $roomId; ?>"]');
-                    if (option) {
-                        option.textContent = name;
-                    }
-                    closeModal('rename-room-modal');
-                } else {
-                    alert('Error renaming room: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while renaming the room');
-            });
-        }
-        
-        function initFilterButtons() {
-            const filterButtons = document.querySelectorAll('.filter-btn');
-            filterButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Remove active class from all buttons
-                    filterButtons.forEach(btn => btn.classList.remove('active'));
-                    
-                    // Add active class to clicked button
-                    this.classList.add('active');
-                    
-                    // Get filter category
-                    const filter = this.dataset.filter;
-                    
-                    // Filter inventory items
-                    const items = document.querySelectorAll('.inventory-item');
-                    items.forEach(item => {
-                        if (filter === 'all' || item.dataset.category === filter) {
-                            item.style.display = 'flex';
-                        } else {
-                            item.style.display = 'none';
-                        }
-                    });
-                });
-            });
-        }
     </script>
 </body>
 </html>
