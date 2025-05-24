@@ -69,6 +69,7 @@ $categories = $categoryStmt->fetchAll();
     
     <!-- Page-specific CSS -->
     <link rel="stylesheet" href="../css/pages/shop.css">
+    <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div class="main-container">
