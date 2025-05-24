@@ -82,100 +82,98 @@ $categories = $categoryStmt->fetchAll();
 
             <!-- Shop Content -->
             <div class="shop-content">
-                <!-- Shop Header with Search -->
-                <div class="shop-header">
-                    <h1>Shop</h1>
-                    <div class="shop-controls">
-                        <div class="search-box">
-                            <input type="text" id="search-input" placeholder="Search items..." value="<?php echo htmlspecialchars($searchQuery); ?>">
-                            <button class="search-btn" onclick="searchItems()">
-                                <img src="../images/icons/search.svg" alt="Search">
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Category Filter Tabs -->
-                <div class="category-tabs">
-                    <button class="category-tab <?php echo $categoryId === 0 ? 'active' : ''; ?>" 
-                            onclick="filterByCategory(0)">
-                        All Items
-                    </button>
-                    <?php foreach ($categories as $category): ?>
-                        <button class="category-tab <?php echo $categoryId === $category['id'] ? 'active' : ''; ?>" 
-                                onclick="filterByCategory(<?php echo $category['id']; ?>)">
-                            <?php echo htmlspecialchars($category['name']); ?>
-                        </button>
-                    <?php endforeach; ?>
-                </div>
-
-                <!-- Shop Items Grid -->
-                <div class="shop-items-grid">
-                    <?php if (empty($shopItems)): ?>
-                        <div class="empty-shop">
-                            <p>No items found. Please try a different search or category.</p>
-                        </div>
-                    <?php else: ?>
-                        <?php foreach ($shopItems as $item): ?>
-                            <div class="shop-item-card <?php echo $item['rarity']; ?>" data-item-id="<?php echo $item['id']; ?>">
-                                <?php if ($item['is_featured']): ?>
-                                    <div class="featured-badge">Featured</div>
-                                <?php endif; ?>
-                                
-                                <div class="item-image-container">
-                                    <img src="../<?php echo $item['image_path']; ?>" 
-                                         alt="<?php echo htmlspecialchars($item['name']); ?>"
-                                         class="item-image">
-                                </div>
-                                
-                                <div class="item-details">
-                                    <h3 class="item-name"><?php echo htmlspecialchars($item['name']); ?></h3>
-                                    <p class="item-category"><?php echo htmlspecialchars($item['category_name']); ?></p>
-                                    
-                                    <div class="item-price">
+                <!-- Shop Sections -->
+                <div class="shop-sections">
+                    <!-- Featured Shop Section -->
+                    <div class="shop-section">
+                        <h2>Featured Shop</h2>
+                        <div class="shop-grid">
+                            <?php 
+                            $featuredItems = array_filter($shopItems, function($item) {
+                                return $item['is_featured'] == 1;
+                            });
+                            $featuredItems = array_slice($featuredItems, 0, 9);
+                            
+                            foreach ($featuredItems as $item): 
+                            ?>
+                                <div class="shop-item" onclick="addToCart(<?php echo $item['id']; ?>, '<?php echo htmlspecialchars($item['name']); ?>', <?php echo $item['price']; ?>, '<?php echo $item['image_path']; ?>', this)">
+                                    <img src="../<?php echo $item['image_path']; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
+                                    <div class="shop-item-price">
                                         <img src="../images/icons/hcoin.svg" alt="HCoin">
                                         <span><?php echo number_format($item['price']); ?></span>
                                     </div>
-                                    
-                                    <button class="add-to-cart-btn" 
-                                            onclick="addToCart(<?php echo $item['id']; ?>, '<?php echo htmlspecialchars($item['name']); ?>', <?php echo $item['price']; ?>, '<?php echo $item['image_path']; ?>')"
-                                            <?php echo ($userHCoins < $item['price']) ? 'disabled' : ''; ?>>
-                                        <?php echo ($userHCoins < $item['price']) ? 'Not Enough HCoins' : 'Add to Cart'; ?>
-                                    </button>
                                 </div>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <!-- Popular Shop Section -->
+                    <div class="shop-section">
+                        <h2>Popular Shop</h2>
+                        <div class="shop-grid">
+                            <?php 
+                            // For demo, using random items as "popular"
+                            $popularItems = array_slice($shopItems, 0, 9);
+                            
+                            foreach ($popularItems as $item): 
+                            ?>
+                                <div class="shop-item" onclick="addToCart(<?php echo $item['id']; ?>, '<?php echo htmlspecialchars($item['name']); ?>', <?php echo $item['price']; ?>, '<?php echo $item['image_path']; ?>', this)">
+                                    <img src="../<?php echo $item['image_path']; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
+                                    <div class="shop-item-price">
+                                        <img src="../images/icons/hcoin.svg" alt="HCoin">
+                                        <span><?php echo number_format($item['price']); ?></span>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <!-- All Shop Section -->
+                    <div class="shop-section">
+                        <h2>Shop</h2>
+                        <div class="shop-grid">
+                            <?php 
+                            $allItems = array_slice($shopItems, 0, 9);
+                            
+                            foreach ($allItems as $item): 
+                            ?>
+                                <div class="shop-item" onclick="addToCart(<?php echo $item['id']; ?>, '<?php echo htmlspecialchars($item['name']); ?>', <?php echo $item['price']; ?>, '<?php echo $item['image_path']; ?>', this)">
+                                    <img src="../<?php echo $item['image_path']; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
+                                    <div class="shop-item-price">
+                                        <img src="../images/icons/hcoin.svg" alt="HCoin">
+                                        <span><?php echo number_format($item['price']); ?></span>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Floating Cart -->
-                <div class="floating-cart" id="floating-cart">
-                    <div class="cart-icon-container" onclick="toggleCart()">
+                <!-- Bottom Cart -->
+                <div class="bottom-cart" id="bottom-cart">
+                    <div class="cart-icon-wrapper" onclick="toggleCart()">
                         <img src="../images/icons/cart-icon-light.webp" alt="Cart">
-                        <span class="cart-count" id="cart-count">0</span>
+                        <span class="cart-badge" id="cart-badge">0</span>
                     </div>
                     
+                    <!-- Cart Dropdown -->
                     <div class="cart-dropdown" id="cart-dropdown">
-                        <div class="cart-header">
+                        <div class="cart-dropdown-header">
                             <h3>Shopping Cart</h3>
                             <button class="clear-cart-btn" onclick="clearCart()">Clear All</button>
                         </div>
-                        
-                        <div class="cart-items" id="cart-items">
-                            <p class="empty-cart">Your cart is empty</p>
+                        <div class="cart-dropdown-items" id="cart-items">
+                            <p class="empty-cart-message">Your cart is empty</p>
                         </div>
-                        
-                        <div class="cart-footer">
-                            <div class="cart-total">
+                        <div class="cart-dropdown-footer">
+                            <div class="cart-total-row">
                                 <span>Total:</span>
-                                <div class="total-price">
+                                <div class="cart-total-price">
                                     <img src="../images/icons/hcoin.svg" alt="HCoin">
                                     <span id="cart-total">0</span>
                                 </div>
                             </div>
-                            <button class="checkout-btn" onclick="checkout()" disabled>
-                                Checkout
-                            </button>
+                            <button class="checkout-button" onclick="checkout()" disabled>Checkout</button>
                         </div>
                     </div>
                 </div>
@@ -183,69 +181,8 @@ $categories = $categoryStmt->fetchAll();
         </div>
     </div>
 
-    <!-- Item Added Animation Container -->
-    <div id="animation-container"></div>
-
-    <!-- Checkout Modal -->
-    <div id="checkout-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Checkout</h2>
-                <button class="close-modal" onclick="closeCheckoutModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="checkout-summary">
-                    <h3>Order Summary</h3>
-                    <div id="checkout-items"></div>
-                    
-                    <div class="checkout-total">
-                        <span>Total Cost:</span>
-                        <div class="total-price">
-                            <img src="../images/icons/hcoin.svg" alt="HCoin">
-                            <span id="checkout-total">0</span>
-                        </div>
-                    </div>
-                    
-                    <div class="balance-info">
-                        <span>Your Balance:</span>
-                        <div class="balance-amount">
-                            <img src="../images/icons/hcoin.svg" alt="HCoin">
-                            <span><?php echo number_format($userHCoins); ?></span>
-                        </div>
-                    </div>
-                    
-                    <div class="remaining-balance">
-                        <span>After Purchase:</span>
-                        <div class="remaining-amount">
-                            <img src="../images/icons/hcoin.svg" alt="HCoin">
-                            <span id="remaining-balance">0</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="modal-actions">
-                    <button class="cancel-btn" onclick="closeCheckoutModal()">Cancel</button>
-                    <button class="confirm-btn" onclick="confirmPurchase()">Confirm Purchase</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Success Modal -->
-    <div id="success-modal" class="modal">
-        <div class="modal-content success">
-            <div class="success-animation">
-                <img src="../images/icons/check-circle.svg" alt="Success">
-            </div>
-            <h2>Purchase Successful!</h2>
-            <p>Your items have been added to your inventory.</p>
-            <div class="modal-actions">
-                <button class="primary-btn" onclick="closeSuccessModal()">Continue Shopping</button>
-                <a href="habitus.php" class="view-inventory-btn">Go to Habitus</a>
-            </div>
-        </div>
-    </div>
-
+    <!-- Scripts -->
+    <script src="../js/main.js"></script>
     <script src="../js/shop.js"></script>
 </body>
 </html>

@@ -4,18 +4,114 @@
 let cart = [];
 let cartOpen = false;
 
-// Initialize cart from localStorage
+// Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    // Load cart from localStorage
     loadCart();
     updateCartDisplay();
+    
+    // Close cart when clicking outside
+    document.addEventListener('click', function(e) {
+        if (cartOpen && !e.target.closest('.bottom-cart')) {
+            toggleCart();
+        }
+    });
 });
+
+/**
+ * Add item to cart with flying animation
+ * @param {number} itemId - Item ID
+ * @param {string} itemName - Item name
+ * @param {number} itemPrice - Item price
+ * @param {string} imagePath - Path to item image
+ * @param {HTMLElement} element - The clicked element
+ */
+function addToCart(itemId, itemName, itemPrice, imagePath, element) {
+    // Check if item already in cart
+    const existingItem = cart.find(item => item.id === itemId);
+    if (existingItem) {
+        showNotification('Item already in cart!', 'warning');
+        return;
+    }
+
+    // Get positions for animation
+    const itemRect = element.getBoundingClientRect();
+    const cartRect = document.querySelector('.cart-icon-wrapper').getBoundingClientRect();
+
+    // Create flying item
+    const flyingItem = document.createElement('div');
+    flyingItem.className = 'flying-item';
+    flyingItem.innerHTML = `<img src="../${imagePath}" alt="${itemName}">`;
+    
+    // Set initial position
+    flyingItem.style.left = itemRect.left + 'px';
+    flyingItem.style.top = itemRect.top + 'px';
+    
+    document.body.appendChild(flyingItem);
+
+    // Animate to cart
+    const animationDuration = 800;
+    const startTime = performance.now();
+    
+    function animate(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / animationDuration, 1);
+        
+        // Easing function for smooth animation
+        const easeOutQuad = 1 - (1 - progress) * (1 - progress);
+        
+        // Calculate position
+        const currentX = itemRect.left + (cartRect.left - itemRect.left) * easeOutQuad;
+        const currentY = itemRect.top + (cartRect.top - itemRect.top) * easeOutQuad;
+        
+        // Add parabolic arc for up and down motion
+        const arcHeight = 150;
+        const arc = Math.sin(progress * Math.PI) * arcHeight;
+        
+        flyingItem.style.left = currentX + 'px';
+        flyingItem.style.top = (currentY - arc) + 'px';
+        flyingItem.style.transform = `scale(${1 - progress * 0.3})`;
+        
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        } else {
+            // Remove flying item
+            flyingItem.remove();
+            
+            // Add to cart
+            cart.push({
+                id: itemId,
+                name: itemName,
+                price: itemPrice,
+                image: imagePath
+            });
+            
+            // Save cart
+            saveCart();
+            
+            // Update cart display
+            updateCartDisplay();
+            
+            // Wiggle cart
+            const cartWrapper = document.querySelector('.bottom-cart');
+            cartWrapper.classList.add('cart-wiggle');
+            setTimeout(() => {
+                cartWrapper.classList.remove('cart-wiggle');
+            }, 500);
+            
+            showNotification('Item added to cart!', 'success');
+        }
+    }
+    
+    requestAnimationFrame(animate);
+}
 
 /**
  * Toggle cart dropdown
  */
 function toggleCart() {
-    const dropdown = document.getElementById('cart-dropdown');
     cartOpen = !cartOpen;
+    const dropdown = document.getElementById('cart-dropdown');
     
     if (cartOpen) {
         dropdown.classList.add('show');
@@ -28,50 +124,48 @@ function toggleCart() {
  * Update cart display
  */
 function updateCartDisplay() {
-    const cartCount = document.getElementById('cart-count');
+    const badge = document.getElementById('cart-badge');
     const cartItems = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
-    const checkoutBtn = document.querySelector('.checkout-btn');
+    const checkoutBtn = document.querySelector('.checkout-button');
     
-    // Update count
-    cartCount.textContent = cart.length;
+    // Update badge
+    badge.textContent = cart.length;
     
-    // Update items display
     if (cart.length === 0) {
-        cartItems.innerHTML = '<p class="empty-cart">Your cart is empty</p>';
+        cartItems.innerHTML = '<p class="empty-cart-message">Your cart is empty</p>';
         checkoutBtn.disabled = true;
+        cartTotal.textContent = '0';
     } else {
-        let itemsHTML = '';
+        let html = '';
         let total = 0;
         
         cart.forEach(item => {
-            itemsHTML += `
+            html += `
                 <div class="cart-item">
                     <img src="../${item.image}" alt="${item.name}" class="cart-item-image">
                     <div class="cart-item-details">
-                        <p class="cart-item-name">${item.name}</p>
+                        <div class="cart-item-name">${item.name}</div>
                         <div class="cart-item-price">
                             <img src="../images/icons/hcoin.svg" alt="HCoin">
                             <span>${item.price.toLocaleString()}</span>
                         </div>
                     </div>
-                    <button class="remove-item" onclick="removeFromCart(${item.id})">×</button>
+                    <button class="remove-item-btn" onclick="removeFromCart(${item.id})">×</button>
                 </div>
             `;
             total += item.price;
         });
         
-        cartItems.innerHTML = itemsHTML;
+        cartItems.innerHTML = html;
+        cartTotal.textContent = total.toLocaleString();
         checkoutBtn.disabled = false;
     }
-    
-    // Update total
-    const total = cart.reduce((sum, item) => sum + item.price, 0);
-    cartTotal.textContent = total.toLocaleString();
 }
 
 /**
  * Remove item from cart
+ * @param {number} itemId - Item ID to remove
  */
 function removeFromCart(itemId) {
     cart = cart.filter(item => item.id !== itemId);
@@ -95,188 +189,15 @@ function clearCart() {
 }
 
 /**
- * Search items
- */
-function searchItems() {
-    const searchValue = document.getElementById('search-input').value;
-    const currentCategory = document.querySelector('.category-tab.active').onclick.toString().match(/\d+/);
-    const categoryId = currentCategory ? currentCategory[0] : 0;
-    
-    window.location.href = `shop.php?category=${categoryId}&search=${encodeURIComponent(searchValue)}`;
-}
-
-// Allow search on Enter key
-document.getElementById('search-input')?.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        searchItems();
-    }
-});
-
-/**
- * Filter by category
- */
-function filterByCategory(categoryId) {
-    const searchValue = document.getElementById('search-input').value;
-    window.location.href = `shop.php?category=${categoryId}&search=${encodeURIComponent(searchValue)}`;
-}
-
-/**
- * Open checkout modal
- */
-function checkout() {
-    if (cart.length === 0) return;
-    
-    // Update checkout modal
-    const checkoutItems = document.getElementById('checkout-items');
-    const checkoutTotal = document.getElementById('checkout-total');
-    const remainingBalance = document.getElementById('remaining-balance');
-    
-    // Get current balance from header
-    const currentBalance = parseInt(document.querySelector('.hcoin-balance span').textContent.replace(/,/g, ''));
-    
-    // Display items
-    let itemsHTML = '';
-    let total = 0;
-    
-    cart.forEach(item => {
-        itemsHTML += `
-            <div class="checkout-item">
-                <span>${item.name}</span>
-                <div class="item-price">
-                    <img src="../images/icons/hcoin.svg" alt="HCoin" style="width: 16px; height: 16px;">
-                    <span>${item.price.toLocaleString()}</span>
-                </div>
-            </div>
-        `;
-        total += item.price;
-    });
-    
-    checkoutItems.innerHTML = itemsHTML;
-    checkoutTotal.textContent = total.toLocaleString();
-    
-    // Calculate remaining balance
-    const remaining = currentBalance - total;
-    remainingBalance.textContent = remaining.toLocaleString();
-    
-    if (remaining < 0) {
-        remainingBalance.parentElement.classList.add('insufficient');
-        document.querySelector('.confirm-btn').disabled = true;
-    } else {
-        remainingBalance.parentElement.classList.remove('insufficient');
-        document.querySelector('.confirm-btn').disabled = false;
-    }
-    
-    // Show modal
-    document.getElementById('checkout-modal').classList.add('show');
-}
-
-/**
- * Close checkout modal
- */
-function closeCheckoutModal() {
-    document.getElementById('checkout-modal').classList.remove('show');
-}
-
-/**
- * Confirm purchase
- */
-function confirmPurchase() {
-    const confirmBtn = document.querySelector('.confirm-btn');
-    confirmBtn.disabled = true;
-    confirmBtn.textContent = 'Processing...';
-    
-    // Process each item in cart
-    const purchases = cart.map(item => 
-        fetch('../php/api/shop/purchase.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `item_id=${item.id}`
-        }).then(response => response.json())
-    );
-    
-    Promise.all(purchases)
-        .then(results => {
-            const allSuccess = results.every(result => result.success);
-            
-            if (allSuccess) {
-                // Clear cart
-                cart = [];
-                saveCart();
-                updateCartDisplay();
-                
-                // Close checkout modal
-                closeCheckoutModal();
-                
-                // Update balance in header
-                const lastResult = results[results.length - 1];
-                if (lastResult.new_balance !== undefined) {
-                    document.querySelector('.hcoin-balance span').textContent = 
-                        lastResult.new_balance.toLocaleString();
-                }
-                
-                // Show success modal
-                document.getElementById('success-modal').classList.add('show');
-                
-                // Update disabled buttons
-                updatePurchaseButtons(lastResult.new_balance);
-            } else {
-                // Find first error
-                const error = results.find(r => !r.success);
-                showNotification(error.message || 'Purchase failed', 'error');
-                
-                // Reset button
-                confirmBtn.disabled = false;
-                confirmBtn.textContent = 'Confirm Purchase';
-            }
-        })
-        .catch(error => {
-            console.error('Purchase error:', error);
-            showNotification('An error occurred during purchase', 'error');
-            
-            // Reset button
-            confirmBtn.disabled = false;
-            confirmBtn.textContent = 'Confirm Purchase';
-        });
-}
-
-/**
- * Close success modal
- */
-function closeSuccessModal() {
-    document.getElementById('success-modal').classList.remove('show');
-}
-
-/**
- * Update purchase buttons based on new balance
- */
-function updatePurchaseButtons(newBalance) {
-    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-        const itemCard = btn.closest('.shop-item-card');
-        const priceElement = itemCard.querySelector('.item-price span');
-        const price = parseInt(priceElement.textContent.replace(/,/g, ''));
-        
-        if (newBalance < price) {
-            btn.disabled = true;
-            btn.textContent = 'Not Enough HCoins';
-        } else {
-            btn.disabled = false;
-            btn.textContent = 'Add to Cart';
-        }
-    });
-}
-
-/**
  * Show notification
+ * @param {string} message - Notification message
+ * @param {string} type - Notification type (success, warning, info, error)
  */
 function showNotification(message, type = 'success') {
-    // Create notification element
     const notification = document.createElement('div');
     notification.className = `shop-notification ${type}`;
     notification.textContent = message;
     
-    // Add to page
     document.body.appendChild(notification);
     
     // Animate in
@@ -293,59 +214,88 @@ function showNotification(message, type = 'success') {
     }, 3000);
 }
 
-// Close modals when clicking outside
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('modal')) {
-        e.target.classList.remove('show');
+/**
+ * Checkout process
+ */
+function checkout() {
+    if (cart.length === 0) return;
+    
+    // Get current balance
+    const currentBalance = parseInt(document.querySelector('.hcoin-balance span').textContent.replace(/,/g, ''));
+    const total = cart.reduce((sum, item) => sum + item.price, 0);
+    
+    if (currentBalance < total) {
+        showNotification('Not enough HCoins!', 'error');
+        return;
     }
     
-    // Close cart if clicking outside
-    if (cartOpen && !e.target.closest('.floating-cart')) {
-        toggleCart();
+    // Show checkout modal or process
+    if (confirm(`Total: ${total.toLocaleString()} HCoins\n\nProceed with checkout?`)) {
+        // Process each item
+        processCheckout();
     }
-});
+}
 
-// Add notification styles dynamically
-const notificationStyles = `
-    .shop-notification {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background-color: white;
-        padding: 15px 20px;
-        border-radius: 8px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        transform: translateX(400px);
-        transition: transform 0.3s;
-        z-index: 2000;
-        max-width: 300px;
-    }
+/**
+ * Process checkout
+ */
+function processCheckout() {
+    const checkoutBtn = document.querySelector('.checkout-button');
+    checkoutBtn.disabled = true;
+    checkoutBtn.textContent = 'Processing...';
     
-    .shop-notification.show {
-        transform: translateX(0);
-    }
+    // Create promises for each item purchase
+    const purchases = cart.map(item => 
+        fetch('../php/api/shop/purchase.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `item_id=${item.id}`
+        }).then(response => response.json())
+    );
     
-    .shop-notification.success {
-        border-left: 4px solid #6a8d7f;
-    }
-    
-    .shop-notification.error {
-        border-left: 4px solid #a15c5c;
-    }
-    
-    .shop-notification.warning {
-        border-left: 4px solid #c4a356;
-    }
-    
-    .shop-notification.info {
-        border-left: 4px solid #5d7b8a;
-    }
-`;
-
-// Inject notification styles
-const styleSheet = document.createElement('style');
-styleSheet.textContent = notificationStyles;
-document.head.appendChild(styleSheet);
+    // Process all purchases
+    Promise.all(purchases)
+        .then(results => {
+            const allSuccess = results.every(result => result.success);
+            
+            if (allSuccess) {
+                // Clear cart
+                cart = [];
+                saveCart();
+                updateCartDisplay();
+                
+                // Update balance
+                const lastResult = results[results.length - 1];
+                if (lastResult.new_balance !== undefined) {
+                    document.querySelector('.hcoin-balance span').textContent = 
+                        lastResult.new_balance.toLocaleString();
+                }
+                
+                // Close cart dropdown
+                toggleCart();
+                
+                showNotification('Purchase successful! Items added to your inventory.', 'success');
+            } else {
+                // Find first error
+                const error = results.find(r => !r.success);
+                showNotification(error.message || 'Purchase failed', 'error');
+            }
+            
+            // Reset button
+            checkoutBtn.disabled = false;
+            checkoutBtn.textContent = 'Checkout';
+        })
+        .catch(error => {
+            console.error('Purchase error:', error);
+            showNotification('An error occurred during purchase', 'error');
+            
+            // Reset button
+            checkoutBtn.disabled = false;
+            checkoutBtn.textContent = 'Checkout';
+        });
+}
 
 /**
  * Load cart from localStorage
@@ -353,7 +303,12 @@ document.head.appendChild(styleSheet);
 function loadCart() {
     const savedCart = localStorage.getItem('habitusCart');
     if (savedCart) {
-        cart = JSON.parse(savedCart);
+        try {
+            cart = JSON.parse(savedCart);
+        } catch (e) {
+            console.error('Error loading cart:', e);
+            cart = [];
+        }
     }
 }
 
@@ -361,31 +316,9 @@ function loadCart() {
  * Save cart to localStorage
  */
 function saveCart() {
-    localStorage.setItem('habitusCart', JSON.stringify(cart));
-}
-
-/**
- * Add item to cart with animation
- */
-function addToCart(itemId, itemName, itemPrice, imagePath) {
-    // Check if item already in cart
-    const existingItem = cart.find(item => item.id === itemId);
-    if (existingItem) {
-        showNotification('Item already in cart!', 'warning');
-        return;
+    try {
+        localStorage.setItem('habitusCart', JSON.stringify(cart));
+    } catch (e) {
+        console.error('Error saving cart:', e);
     }
-    
-    // Get the item card element
-    const itemCard = document.querySelector(`.shop-item-card[data-item-id="${itemId}"]`);
-    if (!itemCard) return;
-    
-    // Get positions for animation
-    const itemRect = itemCard.getBoundingClientRect();
-    const cartIcon = document.querySelector('.cart-icon-container');
-    const cartRect = cartIcon.getBoundingClientRect();
-    
-    // Create flying item element
-    const flyingItem = document.createElement('div');
-    flyingItem.className = 'flying-item';
-    flyingItem.innerHTML = `<img src="../${imagePath}" alt="${itemName}">`;
 }
