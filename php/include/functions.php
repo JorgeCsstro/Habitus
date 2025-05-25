@@ -1,6 +1,6 @@
 <?php
 
-// functions.php
+// functions.php - Fixed getUserHabitusData function
 
 /**
  * Get user data from the database
@@ -63,9 +63,6 @@ function getUserDailies($userId) {
  */
 function getUserGoals($userId) {
     global $conn;
-    
-    // Fix: Update the SQL to properly determine if a goal is completed
-    // The issue is in the subquery that determines completion status
     
     $sql = "SELECT t.id, t.title, t.description, t.hcoin_reward, t.difficulty, 
             g.deadline, g.use_subtasks,
@@ -148,19 +145,17 @@ function getFeaturedShopItems() {
 }
 
 /**
- * Get user's habitus data
+ * Get user's habitus data - FIXED VERSION
  * @param int $userId - User ID
  * @return array - User's habitus data
  */
 function getUserHabitusData($userId) {
     global $conn;
     
-    // Get active room
-    $sql = "SELECT r.id, r.name, r.background_id, r.layout_json,
-            CONCAT('images/backgrounds/', b.image_path) as preview_image,
+    // Get active room - removed background_id reference
+    $sql = "SELECT r.id, r.name, r.floor_color, r.wall_color,
             r.id as active_room_id
             FROM rooms r
-            LEFT JOIN shop_items b ON r.background_id = b.id
             WHERE r.user_id = ?
             ORDER BY r.id LIMIT 1";
     
@@ -173,11 +168,16 @@ function getUserHabitusData($userId) {
         return $defaultRoom;
     }
     
-    return $stmt->fetch();
+    $roomData = $stmt->fetch();
+    
+    // Since we don't have a preview_image system, we'll return null for it
+    $roomData['preview_image'] = null;
+    
+    return $roomData;
 }
 
 /**
- * Create default room for new user
+ * Create default room for new user - FIXED VERSION
  * @param int $userId - User ID
  * @return array - Default room data
  */
@@ -186,7 +186,8 @@ function createDefaultRoom($userId) {
     
     $roomName = "My First Room";
     
-    $sql = "INSERT INTO rooms (user_id, name, layout_json) VALUES (?, ?, '{}')";
+    // Use the correct column names based on your database schema
+    $sql = "INSERT INTO rooms (user_id, name, floor_color, wall_color) VALUES (?, ?, '#FFD700', '#E0E0E0')";
     $stmt = $conn->prepare($sql);
     $stmt->execute([$userId, $roomName]);
     
@@ -195,25 +196,25 @@ function createDefaultRoom($userId) {
     return [
         'id' => $roomId,
         'name' => $roomName,
-        'background_id' => null,
-        'layout_json' => '{}',
+        'floor_color' => '#FFD700',
+        'wall_color' => '#E0E0E0',
         'preview_image' => null,
         'active_room_id' => $roomId
     ];
 }
 
 /**
- * Get user's rooms
+ * Get user's rooms - FIXED VERSION
  * @param int $userId - User ID
  * @return array - User's rooms
  */
 function getUserRooms($userId) {
     global $conn;
     
+    // Removed the background reference since it doesn't exist in your schema
     $sql = "SELECT r.id, r.name, 
-            IFNULL(CONCAT('images/backgrounds/', b.image_path), 'images/backgrounds/default_room.png') as thumbnail
+            'images/backgrounds/default_room.png' as thumbnail
             FROM rooms r
-            LEFT JOIN shop_items b ON r.background_id = b.id
             WHERE r.user_id = ?
             ORDER BY r.id";
     
