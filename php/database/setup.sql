@@ -1,22 +1,10 @@
-CREATE DATABASE  IF NOT EXISTS `u343618305_habitus_zone` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+CREATE DATABASE  IF NOT EXISTS `u343618305_habitus_zone`
 USE `u343618305_habitus_zone`;
 -- MySQL dump 10.13  Distrib 8.0.36, for Win64 (x86_64)
 --
 -- Host: localhost    Database: u343618305_habitus_zone
 -- ------------------------------------------------------
 -- Server version	8.0.37
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
 --
 -- Table structure for table `challenges`
 --
@@ -243,7 +231,7 @@ CREATE TABLE `rooms` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `rooms_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -252,6 +240,7 @@ CREATE TABLE `rooms` (
 
 LOCK TABLES `rooms` WRITE;
 /*!40000 ALTER TABLE `rooms` DISABLE KEYS */;
+INSERT INTO `rooms` VALUES (1,1,'My First Room','#FFD700','#E0E0E0','2025-05-25 08:21:40','2025-05-25 08:21:40');
 /*!40000 ALTER TABLE `rooms` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -276,7 +265,7 @@ CREATE TABLE `shop_items` (
   PRIMARY KEY (`id`),
   KEY `category_id` (`category_id`),
   CONSTRAINT `shop_items_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `item_categories` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=95 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=96 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -285,7 +274,7 @@ CREATE TABLE `shop_items` (
 
 LOCK TABLES `shop_items` WRITE;
 /*!40000 ALTER TABLE `shop_items` DISABLE KEYS */;
-INSERT INTO `shop_items` VALUES (1,1,'Wooden Desk','A sturdy oak desk perfect for productivity','images/shop/furniture/wooden-desk.png',150,'common',0,1,'2025-05-22 21:40:42'),(2,1,'Comfy Chair','Ergonomic chair for long work sessions','images/shop/furniture/comfy-chair.png',200,'common',1,1,'2025-05-22 21:40:42'),(4,1,'Gaming Chair','Ultimate comfort for gaming sessions','images/shop/furniture/gaming-chair.png',450,'uncommon',1,1,'2025-05-22 21:40:42'),(5,1,'Standing Desk','Adjustable height for healthy posture','images/shop/furniture/standing-desk.png',600,'rare',0,1,'2025-05-22 21:40:42'),(6,1,'Bean Bag','Casual seating for relaxation','images/shop/furniture/bean-bag.png',120,'common',0,1,'2025-05-22 21:40:42'),(7,1,'Coffee Table','Modern glass coffee table','images/shop/furniture/coffee-table.png',250,'uncommon',0,1,'2025-05-22 21:40:42'),(8,1,'Royal Throne','Sit like royalty','images/shop/furniture/royal-throne.png',2000,'legendary',1,1,'2025-05-22 21:40:42'),(10,3,'Wall Clock','Never lose track of time','images/shop/decorations/wall-clock.png',80,'common',0,1,'2025-05-22 21:40:42'),(11,3,'Motivational Poster','Stay inspired every day','images/shop/decorations/motivational-poster.png',30,'common',1,1,'2025-05-22 21:40:42'),(12,3,'Desk Lamp','Illuminate your workspace','images/shop/decorations/desk-lamp.png',100,'common',0,1,'2025-05-22 21:40:42'),(13,3,'Cat Statue','Lucky cat for good fortune','images/shop/decorations/cat-statue.png',150,'uncommon',0,1,'2025-05-22 21:40:42'),(14,3,'Crystal Ball','Mystical decoration','images/shop/decorations/crystal-ball.png',300,'rare',0,1,'2025-05-22 21:40:42'),(15,3,'Trophy Collection','Display your achievements','images/shop/decorations/trophy-collection.png',500,'epic',1,1,'2025-05-22 21:40:42'),(16,3,'Aquarium','Relaxing fish tank','images/shop/decorations/aquarium.png',400,'rare',0,1,'2025-05-22 21:40:42'),(17,3,'Neon Sign','Custom neon lighting','images/shop/decorations/neon-sign.png',350,'uncommon',0,1,'2025-05-22 21:40:42'),(18,3,'Golden Statue','Prestigious golden decoration','images/shop/decorations/golden-statue.png',1500,'legendary',0,1,'2025-05-22 21:40:42'),(19,2,'Cozy Room','Warm and inviting atmosphere','images/shop/backgrounds/cozy-room.png',300,'common',0,1,'2025-05-22 21:40:42'),(20,2,'Modern Office','Sleek and professional','images/shop/backgrounds/modern-office.png',400,'uncommon',1,1,'2025-05-22 21:40:42'),(21,2,'Beach View','Work with an ocean view','images/shop/backgrounds/beach-view.png',600,'rare',0,1,'2025-05-22 21:40:42'),(22,2,'Mountain Cabin','Rustic mountain retreat','images/shop/backgrounds/mountain-cabin.png',500,'uncommon',0,1,'2025-05-22 21:40:42'),(23,2,'Space Station','Futuristic workspace','images/shop/backgrounds/space-station.png',1000,'epic',0,1,'2025-05-22 21:40:42'),(24,2,'Zen Garden','Peaceful Japanese garden','images/shop/backgrounds/zen-garden.png',800,'rare',1,1,'2025-05-22 21:40:42'),(25,2,'Castle Chamber','Medieval castle room','images/shop/backgrounds/castle-chamber.png',1200,'epic',0,1,'2025-05-22 21:40:42'),(26,2,'Penthouse Suite','Luxury city view','images/shop/backgrounds/penthouse-suite.png',3000,'legendary',0,1,'2025-05-22 21:40:42'),(27,3,'Friendly Cat','A purring companion','images/shop/pets/cat.png',250,'common',1,1,'2025-05-22 21:40:42'),(28,3,'Loyal Dog','Man\'s best friend','images/shop/pets/dog.png',300,'common',0,1,'2025-05-22 21:40:42'),(29,3,'Wise Owl','Night-time companion','images/shop/pets/owl.png',400,'uncommon',0,1,'2025-05-22 21:40:42'),(30,3,'Baby Dragon','Mythical pet','images/shop/pets/dragon.png',2500,'legendary',1,1,'2025-05-22 21:40:42'),(41,1,'Wooden Chair','A comfortable wooden chair','images/items/furniture/wooden_chair.webp',50,'common',1,1,'2025-05-24 20:35:09'),(42,1,'Simple Table','A basic wooden table','images/items/furniture/simple_table.webp',100,'common',1,1,'2025-05-24 20:35:09'),(43,1,'Bookshelf','Store your favorite books','images/items/furniture/bookshelf.webp',150,'common',0,1,'2025-05-24 20:35:09'),(44,1,'Cozy Sofa','A comfortable sofa for relaxing','images/items/furniture/cozy_sofa.webp',300,'uncommon',1,1,'2025-05-24 20:35:09'),(45,1,'Study Desk','Perfect for productivity','images/items/furniture/study_desk.webp',200,'uncommon',0,1,'2025-05-24 20:35:09'),(46,1,'Gaming Chair','Ergonomic gaming chair','images/items/furniture/gaming_chair.webp',250,'uncommon',1,1,'2025-05-24 20:35:09'),(47,1,'Coffee Table','Low wooden coffee table','images/items/furniture/coffee_table.webp',120,'common',0,1,'2025-05-24 20:35:09'),(48,1,'Wardrobe','Spacious wardrobe','images/items/furniture/wardrobe.webp',350,'uncommon',0,1,'2025-05-24 20:35:09'),(49,3,'Potted Plant','Brings life to your room','images/items/decorations/potted_plant.webp',30,'common',1,1,'2025-05-24 20:35:09'),(50,3,'Wall Clock','Keep track of time','images/items/decorations/wall_clock.webp',80,'common',0,1,'2025-05-24 20:35:09'),(51,3,'Floor Lamp','Ambient lighting','images/items/decorations/floor_lamp.webp',120,'uncommon',1,1,'2025-05-24 20:35:09'),(52,3,'Picture Frame','Display your memories','images/items/decorations/picture_frame.webp',40,'common',0,1,'2025-05-24 20:35:09'),(53,3,'Rug','Comfortable floor covering','images/items/decorations/rug.webp',150,'uncommon',1,1,'2025-05-24 20:35:09'),(54,3,'Cactus','Low maintenance plant','images/items/decorations/cactus.webp',25,'common',0,1,'2025-05-24 20:35:09'),(55,3,'Motivational Poster','Stay motivated!','images/items/decorations/poster.webp',35,'common',1,1,'2025-05-24 20:35:09'),(56,3,'Aquarium','Small fish tank','images/items/decorations/aquarium.webp',200,'uncommon',0,1,'2025-05-24 20:35:09'),(57,6,'Wooden Floor','Classic wooden pattern','images/items/floors/wooden_floor.webp',500,'common',0,1,'2025-05-24 20:35:09'),(58,6,'Marble Floor','Elegant marble tiles','images/items/floors/marble_floor.webp',800,'uncommon',0,1,'2025-05-24 20:35:09'),(59,6,'Carpet Floor','Soft carpet flooring','images/items/floors/carpet_floor.webp',400,'common',0,1,'2025-05-24 20:35:09'),(60,7,'White Paint','Clean white walls','images/items/walls/white_paint.webp',200,'common',0,1,'2025-05-24 20:35:09'),(61,7,'Blue Paint','Calming blue walls','images/items/walls/blue_paint.webp',250,'common',0,1,'2025-05-24 20:35:09'),(62,7,'Brick Wall','Industrial brick pattern','images/items/walls/brick_wall.webp',600,'uncommon',0,1,'2025-05-24 20:35:09'),(63,1,'Wooden Chair','A comfortable wooden chair','images/items/furniture/wooden_chair.webp',50,'common',1,1,'2025-05-24 20:36:26'),(64,1,'Simple Table','A basic wooden table','images/items/furniture/simple_table.webp',100,'common',1,1,'2025-05-24 20:36:26'),(65,1,'Bookshelf','Store your favorite books','images/items/furniture/bookshelf.webp',150,'common',0,1,'2025-05-24 20:36:26'),(66,1,'Cozy Sofa','A comfortable sofa for relaxing','images/items/furniture/cozy_sofa.webp',300,'uncommon',1,1,'2025-05-24 20:36:26'),(67,1,'Study Desk','Perfect for productivity','images/items/furniture/study_desk.webp',200,'uncommon',0,1,'2025-05-24 20:36:26'),(68,1,'Gaming Chair','Ergonomic gaming chair','images/items/furniture/gaming_chair.webp',250,'uncommon',1,1,'2025-05-24 20:36:26'),(69,1,'Coffee Table','Low wooden coffee table','images/items/furniture/coffee_table.webp',120,'common',0,1,'2025-05-24 20:36:26'),(70,1,'Wardrobe','Spacious wardrobe','images/items/furniture/wardrobe.webp',350,'uncommon',0,1,'2025-05-24 20:36:26'),(71,3,'Potted Plant','Brings life to your room','images/items/decorations/potted_plant.webp',30,'common',1,1,'2025-05-24 20:36:26'),(72,3,'Wall Clock','Keep track of time','images/items/decorations/wall_clock.webp',80,'common',0,1,'2025-05-24 20:36:26'),(73,3,'Floor Lamp','Ambient lighting','images/items/decorations/floor_lamp.webp',120,'uncommon',1,1,'2025-05-24 20:36:26'),(74,3,'Picture Frame','Display your memories','images/items/decorations/picture_frame.webp',40,'common',0,1,'2025-05-24 20:36:26'),(75,3,'Rug','Comfortable floor covering','images/items/decorations/rug.webp',150,'uncommon',1,1,'2025-05-24 20:36:26'),(76,3,'Cactus','Low maintenance plant','images/items/decorations/cactus.webp',25,'common',0,1,'2025-05-24 20:36:26'),(77,3,'Motivational Poster','Stay motivated!','images/items/decorations/poster.webp',35,'common',1,1,'2025-05-24 20:36:26'),(78,3,'Aquarium','Small fish tank','images/items/decorations/aquarium.webp',200,'uncommon',0,1,'2025-05-24 20:36:26'),(79,6,'Wooden Floor','Classic wooden pattern','images/items/floors/wooden_floor.webp',500,'common',0,1,'2025-05-24 20:36:26'),(80,6,'Marble Floor','Elegant marble tiles','images/items/floors/marble_floor.webp',800,'uncommon',0,1,'2025-05-24 20:36:26'),(81,6,'Carpet Floor','Soft carpet flooring','images/items/floors/carpet_floor.webp',400,'common',0,1,'2025-05-24 20:36:26'),(82,7,'White Paint','Clean white walls','images/items/walls/white_paint.webp',200,'common',0,1,'2025-05-24 20:36:26'),(83,7,'Blue Paint','Calming blue walls','images/items/walls/blue_paint.webp',250,'common',0,1,'2025-05-24 20:36:26'),(84,7,'Brick Wall','Industrial brick pattern','images/items/walls/brick_wall.webp',600,'uncommon',0,1,'2025-05-24 20:36:26'),(85,1,'Wooden Chair','A comfortable wooden chair','images/items/furniture/wooden_chair.webp',50,'common',1,1,'2025-05-24 20:41:56'),(86,1,'Simple Table','A basic wooden table','images/items/furniture/simple_table.webp',100,'common',1,1,'2025-05-24 20:41:56'),(87,1,'Bookshelf','Store your favorite books','images/items/furniture/bookshelf.webp',150,'common',0,1,'2025-05-24 20:41:56'),(88,1,'Cozy Sofa','A comfortable sofa for relaxing','images/items/furniture/cozy_sofa.webp',300,'uncommon',1,1,'2025-05-24 20:41:56'),(89,1,'Study Desk','Perfect for productivity','images/items/furniture/study_desk.webp',200,'uncommon',0,1,'2025-05-24 20:41:56'),(90,3,'Potted Plant','Brings life to your room','images/items/decorations/potted_plant.webp',30,'common',1,1,'2025-05-24 20:41:56'),(91,3,'Wall Clock','Keep track of time','images/items/decorations/wall_clock.webp',80,'common',0,1,'2025-05-24 20:41:56'),(92,3,'Floor Lamp','Ambient lighting','images/items/decorations/floor_lamp.webp',120,'uncommon',1,1,'2025-05-24 20:41:56'),(93,3,'Picture Frame','Display your memories','images/items/decorations/picture_frame.webp',40,'common',0,1,'2025-05-24 20:41:56'),(94,3,'Rug','Comfortable floor covering','images/items/decorations/rug.webp',150,'uncommon',1,1,'2025-05-24 20:41:56');
+INSERT INTO `shop_items` VALUES (1,1,'Wooden Chair','A comfortable wooden chair','images/items/furniture/wooden_chair.webp',50,'common',1,1,'2025-05-24 20:35:09'),(2,1,'Simple Table','A basic wooden table','images/items/furniture/simple_table.webp',100,'common',1,1,'2025-05-24 20:35:09'),(3,1,'Bookshelf','Store your favorite books','images/items/furniture/bookshelf.webp',150,'common',0,1,'2025-05-24 20:35:09'),(4,1,'Cozy Sofa','A comfortable sofa for relaxing','images/items/furniture/cozy_sofa.webp',300,'uncommon',1,1,'2025-05-24 20:35:09'),(5,3,'Potted Plant','Brings life to your room','images/items/decorations/potted_plant.webp',30,'common',1,1,'2025-05-24 20:35:09'),(6,3,'Floor Lamp','Ambient lighting','images/items/decorations/floor_lamp.webp',120,'uncommon',1,1,'2025-05-24 20:35:09'),(7,3,'Picture Frame','Display your memories','images/items/decorations/picture_frame.webp',40,'common',0,1,'2025-05-24 20:35:09'),(8,3,'Cactus','Low maintenance plant','images/items/decorations/cactus.webp',25,'common',0,1,'2025-05-24 20:35:09'),(9,3,'Wall Clock','Keep track of time','images/items/decorations/wall_clock.webp',80,'common',0,1,'2025-05-24 20:36:26');
 /*!40000 ALTER TABLE `shop_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -495,7 +484,6 @@ CREATE TABLE `user_inventory` (
 
 LOCK TABLES `user_inventory` WRITE;
 /*!40000 ALTER TABLE `user_inventory` DISABLE KEYS */;
-INSERT INTO `user_inventory` VALUES (1,1,41,1,'2025-05-24 20:35:09'),(2,1,49,1,'2025-05-24 20:35:09'),(4,1,63,1,'2025-05-24 20:36:26'),(5,1,71,1,'2025-05-24 20:36:26'),(7,1,41,1,'2025-05-24 20:41:56'),(8,1,49,1,'2025-05-24 20:41:56'),(9,1,63,1,'2025-05-24 20:41:56'),(10,1,71,1,'2025-05-24 20:41:56'),(11,1,85,1,'2025-05-24 20:41:56'),(12,1,90,1,'2025-05-24 20:41:56');
 /*!40000 ALTER TABLE `user_inventory` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -530,7 +518,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Jorge','jorgecastrot2005@gmail.com','$2y$12$xo9KGsfSo2C8kLddntcOquUyme0CX3IaHX0PUiPbpiZY.Rrb.dIhO',7452,'free',NULL,'light','en','2025-05-16 18:41:14','2025-05-24 09:04:28');
+INSERT INTO `users` VALUES (1,'Jorge','jorgecastrot2005@gmail.com','$2y$12$xo9KGsfSo2C8kLddntcOquUyme0CX3IaHX0PUiPbpiZY.Rrb.dIhO',7452,'free',NULL,'light','en','2025-05-16 18:41:14','2025-05-25 07:58:35');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -541,14 +529,3 @@ UNLOCK TABLES;
 --
 -- Dumping routines for database 'u343618305_habitus_zone'
 --
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
-
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2025-05-24 22:52:19
