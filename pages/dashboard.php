@@ -119,7 +119,7 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
                                     $imagePath = $item['image_path'];
                                     $webpPath = preg_replace('/\.(jpg|jpeg|png|gif)$/i', '.webp', $imagePath);
                                     ?>
-                                    <img src="<?php echo htmlspecialchars($webpPath); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
+                                    <img src="../<?php echo htmlspecialchars($webpPath); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                                     <div class="item-price">
                                         <img src="../images/icons/hcoin-small.webp" alt="HCoin">
                                         <span><?php echo $item['price']; ?></span>
