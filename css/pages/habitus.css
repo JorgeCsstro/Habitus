@@ -1,4 +1,4 @@
-/* habitus.css - Isometric room system styling */
+/* habitus.css - Fixed isometric room system styling */
 
 /* Main content container */
 .habitus-content {
@@ -106,138 +106,161 @@
     background-color: #fff;
     border-radius: 15px;
     box-shadow: 0 5px 15px rgba(141, 91, 76, 0.08);
-    padding: 20px;
+    padding: 40px;
     position: relative;
     overflow: hidden;
     border: 1px solid #e9e2d9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Isometric room */
+/* Isometric room - FIXED */
 .isometric-room {
     position: relative;
-    width: 600px;
-    height: 600px;
-    margin: 50px auto;
-    transform: rotateX(60deg) rotateZ(-45deg);
+    width: 500px;
+    height: 500px;
     transform-style: preserve-3d;
 }
 
-/* Room floor */
+/* Room floor - FIXED */
 .room-floor {
     position: absolute;
-    width: 500px;
-    height: 500px;
-    background: linear-gradient(45deg, #f0d78c, #ffd700);
-    transform: translateZ(0);
+    width: 400px;
+    height: 400px;
+    background: #d4d4d4;
+    transform: rotateX(60deg) rotateZ(45deg) translateZ(-100px);
+    left: 50px;
+    top: 150px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Room walls */
+/* Room walls - FIXED */
 .room-wall-left {
     position: absolute;
-    width: 500px;
-    height: 250px;
-    background: linear-gradient(to top, #e0e0e0, #f5f5f5);
+    width: 400px;
+    height: 300px;
+    background: linear-gradient(to bottom, #9ac99a, #7fb77f);
+    transform: rotateX(90deg) rotateY(0deg) translateZ(150px) translateX(0px);
+    left: 50px;
+    top: 0px;
     transform-origin: bottom;
-    transform: rotateX(90deg);
-    top: -250px;
-    left: 0;
 }
 
 .room-wall-right {
     position: absolute;
-    width: 250px;
-    height: 500px;
-    background: linear-gradient(to right, #d0d0d0, #e8e8e8);
+    width: 300px;
+    height: 400px;
+    background: linear-gradient(to left, #6fa86f, #5f9a5f);
+    transform: rotateY(90deg) rotateX(0deg) translateZ(150px) translateY(0px);
+    left: 350px;
+    top: 50px;
     transform-origin: left;
-    transform: rotateY(90deg);
-    top: 0;
-    right: -250px;
 }
 
-/* Room door */
+/* Room door - FIXED */
 .room-door {
     position: absolute;
     width: 80px;
     height: 150px;
-    background: linear-gradient(to top, #8B4513, #A0522D);
+    background: linear-gradient(to bottom, #8B6B4A, #6B5131);
+    transform: rotateX(90deg) rotateY(0deg) translateZ(75px);
+    left: 100px;
+    top: 75px;
     transform-origin: bottom;
-    transform: rotateX(90deg);
-    top: -150px;
-    left: 50px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.room-door::before {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 50px;
+    background: #5a93b3;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 2px solid #6B5131;
 }
 
 .room-door::after {
     content: '';
     position: absolute;
-    width: 15px;
-    height: 15px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: #FFD700;
-    right: 10px;
+    right: 15px;
     top: 50%;
     transform: translateY(-50%);
 }
 
-/* Grid overlay */
+/* Grid overlay - FIXED */
 .room-grid {
     position: absolute;
-    width: 100%;
-    height: 100%;
+    width: 400px;
+    height: 400px;
     pointer-events: none;
-    z-index: 1;
+    z-index: 10;
+    transform: rotateX(60deg) rotateZ(45deg) translateZ(-99px);
+    left: 50px;
+    top: 150px;
 }
 
 .grid-cell {
     position: absolute;
-    width: 25px;
-    height: 25px;
+    width: 20px;
+    height: 20px;
     border: 1px solid rgba(0, 0, 0, 0.1);
     pointer-events: all;
     transition: all 0.2s;
 }
 
 .grid-cell:hover {
-    background-color: rgba(106, 141, 127, 0.2);
+    background-color: rgba(106, 141, 127, 0.3);
+    border-color: rgba(106, 141, 127, 0.5);
 }
 
 .grid-cell.drag-over {
-    background-color: rgba(106, 141, 127, 0.4);
+    background-color: rgba(106, 141, 127, 0.5);
     border-color: #6a8d7f;
 }
 
 .grid-cell.non-placeable {
-    background-color: rgba(161, 92, 92, 0.1);
+    background-color: rgba(161, 92, 92, 0.2);
     pointer-events: none;
 }
 
-/* Placed items */
+/* Placed items container - FIXED */
 .placed-items {
     position: absolute;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
+    width: 400px;
+    height: 400px;
+    transform: rotateX(60deg) rotateZ(45deg) translateZ(-98px);
+    left: 50px;
+    top: 150px;
+    z-index: 15;
 }
 
 .placed-item {
     position: absolute;
     cursor: pointer;
     transition: all 0.2s;
+    transform-style: preserve-3d;
 }
 
 .placed-item:hover {
     filter: brightness(1.1);
+    transform: translateZ(5px);
 }
 
 .placed-item.selected {
-    outline: 2px solid #6a8d7f;
-    outline-offset: 2px;
+    filter: drop-shadow(0 0 5px #6a8d7f);
 }
 
 .placed-item img {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     object-fit: contain;
     pointer-events: none;
 }

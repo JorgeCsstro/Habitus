@@ -241,15 +241,5 @@ $inventory = $availableInventory;
     <!-- Scripts -->
     <script src="../js/main.js"></script>
     <script src="../js/habitus-room.js"></script>
-    <script>
-        // Initialize room data
-        const roomData = <?php echo json_encode($roomData); ?>;
-        const placedItems = <?php echo json_encode($placedItems); ?>;
-        
-        // Initialize the room when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeHabitusRoom(roomData, placedItems);
-        });
-    </script>
 </body>
 </html>

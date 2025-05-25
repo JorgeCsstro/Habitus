@@ -1,4 +1,4 @@
-// habitus-room.js - Isometric room system with grid-based placement
+// habitus-room.js - Fixed isometric room system with proper grid placement
 
 // Room state
 let currentRoom = null;
@@ -11,9 +11,9 @@ let contextMenuItem = null;
 
 // Grid configuration
 const GRID_SIZE = 20; // 20x20 grid
-const CELL_SIZE = 25; // Size of each grid cell in pixels
-const ROOM_WIDTH = 500;
-const ROOM_HEIGHT = 500;
+const CELL_SIZE = 20; // Size of each grid cell in pixels
+const ROOM_WIDTH = 400;
+const ROOM_HEIGHT = 400;
 
 // Initialize the Habitus room
 function initializeHabitusRoom(roomData, items) {
@@ -34,9 +34,32 @@ function initializeHabitusRoom(roomData, items) {
         document.getElementById('room-floor').style.backgroundColor = roomData.floor_color;
     }
     if (roomData.wall_color) {
-        document.getElementById('wall-left').style.backgroundColor = roomData.wall_color;
-        document.getElementById('wall-right').style.backgroundColor = roomData.wall_color;
+        const leftWall = document.getElementById('wall-left');
+        const rightWall = document.getElementById('wall-right');
+        if (leftWall) {
+            leftWall.style.background = `linear-gradient(to bottom, ${roomData.wall_color}, ${adjustColor(roomData.wall_color, -20)})`;
+        }
+        if (rightWall) {
+            rightWall.style.background = `linear-gradient(to left, ${adjustColor(roomData.wall_color, -10)}, ${adjustColor(roomData.wall_color, -30)})`;
+        }
     }
+}
+
+// Adjust color brightness
+function adjustColor(color, amount) {
+    const usePound = color[0] === '#';
+    const col = usePound ? color.slice(1) : color;
+    const num = parseInt(col, 16);
+    let r = (num >> 16) + amount;
+    if (r > 255) r = 255;
+    else if (r < 0) r = 0;
+    let g = ((num >> 8) & 0x00FF) + amount;
+    if (g > 255) g = 255;
+    else if (g < 0) g = 0;
+    let b = (num & 0x0000FF) + amount;
+    if (b > 255) b = 255;
+    else if (b < 0) b = 0;
+    return (usePound ? '#' : '') + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
 }
 
 // Create the grid overlay
@@ -51,18 +74,18 @@ function createGrid() {
             cell.dataset.x = x;
             cell.dataset.y = y;
             
-            // Calculate isometric position
-            const isoPos = cartesianToIsometric(x * CELL_SIZE, y * CELL_SIZE);
-            cell.style.left = isoPos.x + 'px';
-            cell.style.top = isoPos.y + 'px';
+            // Position cells in grid
+            cell.style.left = (x * CELL_SIZE) + 'px';
+            cell.style.top = (y * CELL_SIZE) + 'px';
             
-            // Mark door area as non-placeable
+            // Mark door area as non-placeable (left wall, low position)
             if (isDoorArea(x, y)) {
                 cell.classList.add('non-placeable');
             }
             
             // Add drop listeners
             cell.addEventListener('dragover', handleDragOver);
+            cell.addEventListener('dragleave', handleDragLeave);
             cell.addEventListener('drop', handleDrop);
             
             gridContainer.appendChild(cell);
@@ -70,27 +93,10 @@ function createGrid() {
     }
 }
 
-// Convert cartesian coordinates to isometric
-function cartesianToIsometric(x, y) {
-    return {
-        x: (x - y) + ROOM_WIDTH / 2,
-        y: (x + y) / 2
-    };
-}
-
-// Convert isometric coordinates to cartesian
-function isometricToCartesian(x, y) {
-    const adjustedX = x - ROOM_WIDTH / 2;
-    return {
-        x: (adjustedX + 2 * y) / 2,
-        y: (2 * y - adjustedX) / 2
-    };
-}
-
 // Check if coordinates are in door area
 function isDoorArea(x, y) {
-    // Door is on the left wall, around grid position 2-4, 0-3
-    return x >= 2 && x <= 4 && y >= 0 && y <= 3;
+    // Door is on the left wall, around grid position 2-5, 10-15
+    return x >= 2 && x <= 5 && y >= 10 && y <= 15;
 }
 
 // Load placed items into the room
@@ -112,10 +118,9 @@ function createPlacedItem(item) {
     itemDiv.dataset.gridX = item.grid_x;
     itemDiv.dataset.gridY = item.grid_y;
     
-    // Calculate position
-    const isoPos = cartesianToIsometric(item.grid_x * CELL_SIZE, item.grid_y * CELL_SIZE);
-    itemDiv.style.left = isoPos.x + 'px';
-    itemDiv.style.top = isoPos.y + 'px';
+    // Position on grid
+    itemDiv.style.left = (item.grid_x * CELL_SIZE) + 'px';
+    itemDiv.style.top = (item.grid_y * CELL_SIZE) + 'px';
     itemDiv.style.transform = `rotate(${item.rotation || 0}deg)`;
     itemDiv.style.zIndex = item.z_index || 1;
     
@@ -143,10 +148,10 @@ function setupEventListeners() {
     
     // Deselect item on room click
     document.getElementById('isometric-room').addEventListener('click', function(e) {
-        if (e.target.classList.contains('isometric-room') || 
-            e.target.classList.contains('room-floor') ||
-            e.target.classList.contains('room-wall-left') ||
-            e.target.classList.contains('room-wall-right')) {
+        if (e.target.classList.contains('grid-cell') || 
+            e.target.id === 'room-floor' ||
+            e.target.id === 'wall-left' ||
+            e.target.id === 'wall-right') {
             deselectItem();
         }
     });
@@ -175,6 +180,13 @@ function handleDragOver(e) {
     }
     
     return false;
+}
+
+function handleDragLeave(e) {
+    const cell = e.target.closest('.grid-cell');
+    if (cell) {
+        cell.classList.remove('drag-over');
+    }
 }
 
 function handleDrop(e) {
