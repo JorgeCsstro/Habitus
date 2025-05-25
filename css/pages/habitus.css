@@ -1,4 +1,4 @@
-/* habitus.css - Fixed isometric room system styling */
+/* habitus.css - Fixed isometric room system with proper 3D view */
 
 /* Main content container */
 .habitus-content {
@@ -115,102 +115,115 @@
     justify-content: center;
 }
 
-/* Isometric room - FIXED */
+/* Isometric room container */
 .isometric-room {
     position: relative;
-    width: 500px;
-    height: 500px;
+    width: 400px;
+    height: 400px;
+    transform: rotateX(60deg) rotateZ(-45deg);
     transform-style: preserve-3d;
 }
 
-/* Room floor - FIXED */
+/* Room floor */
 .room-floor {
     position: absolute;
-    width: 400px;
-    height: 400px;
-    background: #d4d4d4;
-    transform: rotateX(60deg) rotateZ(45deg) translateZ(-100px);
-    left: 50px;
-    top: 150px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    height: 300px;
+    background: #e8e8e8;
+    background-image: 
+        linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    top: 0;
+    left: 0;
+    
+    transform-origin: top left;
 }
 
-/* Room walls - FIXED */
+/* Left wall */
 .room-wall-left {
     position: absolute;
-    width: 400px;
-    height: 300px;
-    background: linear-gradient(to bottom, #9ac99a, #7fb77f);
-    transform: rotateX(90deg) rotateY(0deg) translateZ(150px) translateX(0px);
-    left: 50px;
-    top: 0px;
-    transform-origin: bottom;
+    width: 300px;
+    height: 200px;
+    background: linear-gradient(to bottom, #9ac99a 0%, #7fb77f 100%);
+    top: -200px;
+    left: 0;
+    transform: rotateX(-90deg);
+    transform-origin: bottom left;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
+/* Right wall */
 .room-wall-right {
     position: absolute;
-    width: 300px;
-    height: 400px;
-    background: linear-gradient(to left, #6fa86f, #5f9a5f);
-    transform: rotateY(90deg) rotateX(0deg) translateZ(150px) translateY(0px);
-    left: 350px;
-    top: 50px;
-    transform-origin: left;
+    width: 200px;
+    height: 300px;
+    background: linear-gradient(to right, #6fa86f 0%, #5f9a5f 100%);
+    left: 300px;
+    transform: rotateY(-90deg);
+    transform-origin: top left;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
-/* Room door - FIXED */
+/* Door on left wall */
 .room-door {
     position: absolute;
-    width: 80px;
-    height: 150px;
-    background: linear-gradient(to bottom, #8B6B4A, #6B5131);
-    transform: rotateX(90deg) rotateY(0deg) translateZ(75px);
-    left: 100px;
-    top: 75px;
-    transform-origin: bottom;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    width: 60px;
+    height: 120px;
+    background: linear-gradient(to bottom, #8B6347 0%, #654321 100%);
+    top: -50px;
+    left: 40px; 
+    box-shadow: 
+        inset -2px 0 4px rgba(0, 0, 0, 0.3),
+        inset 2px 0 4px rgba(0, 0, 0, 0.3);
+    transform: rotateX(-90deg) translateY(-66px);
 }
 
+/* Door window */
 .room-door::before {
     content: '';
     position: absolute;
     width: 30px;
-    height: 50px;
-    background: #5a93b3;
+    height: 35px;
+    background: rgba(135, 206, 235, 0.6);
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    border: 2px solid #6B5131;
+    border: 3px solid #4a3c28;
 }
 
+/* Door knob */
 .room-door::after {
     content: '';
     position: absolute;
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #FFD700;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
+    background: radial-gradient(circle at 30% 30%, #FFD700, #B8860B);
+    right: 12px;
+    top: 65px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-/* Grid overlay - FIXED */
+/* Grid overlay */
 .room-grid {
     position: absolute;
-    width: 400px;
-    height: 400px;
+    width: 300px;
+    height: 300px;
+    top: 0;
+    left: 0;
+    transform: rotateX(90deg);
+    transform-origin: top left;
     pointer-events: none;
-    z-index: 10;
-    transform: rotateX(60deg) rotateZ(45deg) translateZ(-99px);
-    left: 50px;
-    top: 150px;
+    display: grid;
+    grid-template-columns: repeat(20, 1fr);
+    grid-template-rows: repeat(20, 1fr);
 }
 
 .grid-cell {
-    position: absolute;
-    width: 20px;
-    height: 20px;
     border: 1px solid rgba(0, 0, 0, 0.1);
     pointer-events: all;
     transition: all 0.2s;
@@ -231,27 +244,29 @@
     pointer-events: none;
 }
 
-/* Placed items container - FIXED */
+/* Placed items container */
 .placed-items {
     position: absolute;
-    width: 400px;
-    height: 400px;
-    transform: rotateX(60deg) rotateZ(45deg) translateZ(-98px);
-    left: 50px;
-    top: 150px;
-    z-index: 15;
+    width: 300px;
+    height: 300px;
+    top: 0;
+    left: 0;
+    transform: rotateX(90deg);
+    transform-origin: top left;
+    pointer-events: none;
 }
 
 .placed-item {
     position: absolute;
     cursor: pointer;
     transition: all 0.2s;
-    transform-style: preserve-3d;
+    pointer-events: all;
+    transform: rotateX(-90deg) translateZ(1px);
 }
 
 .placed-item:hover {
     filter: brightness(1.1);
-    transform: translateZ(5px);
+    transform: rotateX(-90deg) translateZ(5px);
 }
 
 .placed-item.selected {
@@ -262,7 +277,7 @@
     width: 40px;
     height: 40px;
     object-fit: contain;
-    pointer-events: none;
+    display: block;
 }
 
 /* Room controls */

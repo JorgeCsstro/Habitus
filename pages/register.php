@@ -194,29 +194,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         <div class="auth-decoration">
             <div class="decoration-content">
-                <h2>Start Your Productivity Journey</h2>
-                <p>Join thousands of users gamifying their daily tasks</p>
+                <h2>Transform Your Daily Tasks</h2>
+                <p>Gamify your life and turn productivity into rewards</p>
                 
                 <div class="decoration-features">
                     <div class="decoration-feature">
                         <div class="feature-icon">
-                            <img src="../images/icons/tasks-feature-white.svg" alt="Tasks Icon">
+                            <img src="../images/icons/tasks-icon-light.webp" alt="Tasks Icon">
                         </div>
-                        <div class="feature-text">Custom Task Creation</div>
+                        <div class="feature-text">Track Daily Tasks</div>
                     </div>
                     
                     <div class="decoration-feature">
                         <div class="feature-icon">
-                            <img src="../images/icons/streak-feature-white.svg" alt="Streak Icon">
+                            <img src="../images/icons/hcoin-icon-light.webp" alt="HCoin Icon">
                         </div>
-                        <div class="feature-text">Build Streaks</div>
+                        <div class="feature-text">Earn HCoins</div>
                     </div>
                     
                     <div class="decoration-feature">
                         <div class="feature-icon">
-                            <img src="../images/icons/customize-feature-white.svg" alt="Customize Icon">
+                            <img src="../images/icons/home-icon-light.webp" alt="Habitus Icon">
                         </div>
-                        <div class="feature-text">Customize Your Space</div>
+                        <div class="feature-text">Build Your Habitus</div>
                     </div>
                 </div>
             </div>

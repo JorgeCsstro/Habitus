@@ -87,7 +87,7 @@ if (isset($_SESSION['user_id'])) {
             
             <div class="benefits-container">
                 <div class="benefit-card">
-                    <div class="benefit-img" style="background-image: url('images/landing/benefit-motivation.jpg');"></div>
+                    <div class="benefit-img" style="background-image: url('images/index-intro/motivate.webp');"></div>
                     <div class="benefit-content">
                         <h3>Stay Motivated</h3>
                         <p>Transform everyday tasks into rewarding experiences. Our unique gamification system keeps you motivated by providing tangible rewards for your accomplishments.</p>
@@ -95,7 +95,7 @@ if (isset($_SESSION['user_id'])) {
                 </div>
                 
                 <div class="benefit-card">
-                    <div class="benefit-img" style="background-image: url('images/landing/benefit-progress.jpg');"></div>
+                    <div class="benefit-img" style="background-image: url('images/index-intro/track.webp');"></div>
                     <div class="benefit-content">
                         <h3>Track Real Progress</h3>
                         <p>See your growth in real-time with intuitive progress trackers. Maintain streaks, complete challenges, and witness your improvements day by day.</p>
@@ -103,7 +103,7 @@ if (isset($_SESSION['user_id'])) {
                 </div>
                 
                 <div class="benefit-card">
-                    <div class="benefit-img" style="background-image: url('images/landing/benefit-personalize.jpg');"></div>
+                    <div class="benefit-img" style="background-image: url('images/index-intro/housing.webp');"></div>
                     <div class="benefit-content">
                         <h3>Your Personal Sanctuary</h3>
                         <p>Create a digital space that reflects your achievements. Customize your Habitus with items earned through consistent habit building and goal completion.</p>
@@ -119,7 +119,7 @@ if (isset($_SESSION['user_id'])) {
             <div class="features-grid">
                 <div class="feature">
                     <div class="feature-icon">
-                        <img src="images/icons/dailies-icon-dark.webp" alt="Dailies Icon">
+                        <img src="images/icons/dailies-icon-light.webp" alt="Dailies Icon">
                     </div>
                     <div class="feature-text">
                         <h3>Customizable Daily Tasks</h3>
@@ -129,7 +129,7 @@ if (isset($_SESSION['user_id'])) {
                 
                 <div class="feature">
                     <div class="feature-icon">
-                        <img src="images/icons/goals-icon-dark.webp" alt="Goals Icon">
+                        <img src="images/icons/goals-icon-light.webp" alt="Goals Icon">
                     </div>
                     <div class="feature-text">
                         <h3>Long-term Goals</h3>
@@ -139,7 +139,7 @@ if (isset($_SESSION['user_id'])) {
                 
                 <div class="feature">
                     <div class="feature-icon">
-                        <img src="images/icons/challenge-icon-dark.webp" alt="Challenge Icon">
+                        <img src="images/icons/challenge-icon-light.webp" alt="Challenge Icon">
                     </div>
                     <div class="feature-text">
                         <h3>Special Challenges</h3>
@@ -149,7 +149,7 @@ if (isset($_SESSION['user_id'])) {
                 
                 <div class="feature">
                     <div class="feature-icon">
-                        <img src="images/icons/hcoin-icon-dark.webp" alt="HCoin Icon">
+                        <img src="images/icons/hcoin-icon-light.webp" alt="HCoin Icon">
                     </div>
                     <div class="feature-text">
                         <h3>HCoin Rewards</h3>
@@ -159,7 +159,7 @@ if (isset($_SESSION['user_id'])) {
                 
                 <div class="feature">
                     <div class="feature-icon">
-                        <img src="images/icons/home-icon-dark.webp" alt="Home Icon">
+                        <img src="images/icons/home-icon-light.webp" alt="Home Icon">
                     </div>
                     <div class="feature-text">
                         <h3>Personalized Habitus</h3>
@@ -167,15 +167,15 @@ if (isset($_SESSION['user_id'])) {
                     </div>
                 </div>
                 
-                <div class="feature">
+                <!-- <div class="feature">
                     <div class="feature-icon">
-                        <img src="images/icons/dashboard-icon-dark.webp" alt="Dashboard Icon">
+                        <img src="images/icons/dashboard-icon-light.webp" alt="Dashboard Icon">
                     </div>
                     <div class="feature-text">
                         <h3>Adaptable Dashboard</h3>
                         <p>Arrange your dashboard to suit your workflow. Prioritize the components that matter most to your productivity.</p>
                     </div>
-                </div>
+                </div> -->
             </div>
         </section>
 
@@ -187,7 +187,7 @@ if (isset($_SESSION['user_id'])) {
                 <div class="step">
                     <div class="step-number">1</div>
                     <div class="step-icon">
-                        <img src="images/icons/create-tasks.svg" alt="Create Tasks">
+                        <img src="images/icons/tasks-icon-light.webp" alt="Create Tasks">
                     </div>
                     <h3>Create Tasks</h3>
                     <p>Set up dailies, goals, and challenges based on your real-life objectives</p>
@@ -196,7 +196,7 @@ if (isset($_SESSION['user_id'])) {
                 <div class="step">
                     <div class="step-number">2</div>
                     <div class="step-icon">
-                        <img src="images/icons/complete-earn.svg" alt="Complete and Earn">
+                        <img src="images/icons/hcoin-icon-light.webp" alt="Complete and Earn">
                     </div>
                     <h3>Complete & Earn</h3>
                     <p>Finish tasks to earn HCoins and build streaks for bonus rewards</p>
@@ -205,7 +205,7 @@ if (isset($_SESSION['user_id'])) {
                 <div class="step">
                     <div class="step-number">3</div>
                     <div class="step-icon">
-                        <img src="images/icons/customize.svg" alt="Customize">
+                        <img src="images/icons/edit-icon-light.webp" alt="Customize">
                     </div>
                     <h3>Customize</h3>
                     <p>Spend your HCoins on items to personalize your virtual habitus</p>
@@ -214,7 +214,7 @@ if (isset($_SESSION['user_id'])) {
                 <div class="step">
                     <div class="step-number">4</div>
                     <div class="step-icon">
-                        <img src="images/icons/grow.svg" alt="Grow">
+                        <img src="images/icons/challenge-icon-light.webp" alt="Grow">
                     </div>
                     <h3>Grow</h3>
                     <p>Build lasting habits, achieve goals, and watch your virtual space evolve</p>
