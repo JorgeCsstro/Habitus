@@ -1,5 +1,5 @@
 <?php
-// pages/habitus.php
+// pages/habitus.php - Enhanced with item size support
 
 // Include necessary files
 require_once '../php/include/config.php';
@@ -66,8 +66,8 @@ $stmt = $conn->prepare($placedItemsQuery);
 $stmt->execute([$roomId]);
 $placedItems = $stmt->fetchAll();
 
-// Get user's inventory
-$inventoryQuery = "SELECT ui.*, si.name, si.image_path, si.category_id, ic.name as category
+// Get user's inventory with item sizes
+$inventoryQuery = "SELECT ui.*, si.name, si.image_path, si.category_id, si.grid_width, si.grid_height, ic.name as category
                   FROM user_inventory ui
                   JOIN shop_items si ON ui.item_id = si.id
                   JOIN item_categories ic ON si.category_id = ic.id
@@ -92,6 +92,19 @@ foreach ($inventory as $item) {
     }
 }
 $inventory = $availableInventory;
+
+// Define default item sizes (can be moved to database)
+$itemSizes = [
+    'wooden_chair' => ['width' => 1, 'height' => 1],
+    'simple_table' => ['width' => 2, 'height' => 2],
+    'bookshelf' => ['width' => 1, 'height' => 2],
+    'cozy_sofa' => ['width' => 3, 'height' => 2],
+    'potted_plant' => ['width' => 1, 'height' => 1],
+    'floor_lamp' => ['width' => 1, 'height' => 1],
+    'picture_frame' => ['width' => 1, 'height' => 1],
+    'cactus' => ['width' => 1, 'height' => 1],
+    'wall_clock' => ['width' => 1, 'height' => 1]
+];
 ?>
 
 <!DOCTYPE html>
@@ -186,6 +199,12 @@ $inventory = $availableInventory;
                                 <p class="empty-inventory">Your inventory is empty. Visit the shop to buy items!</p>
                             <?php else: ?>
                                 <?php foreach ($inventory as $item): ?>
+                                    <?php
+                                    // Get item size
+                                    $itemBaseName = strtolower(preg_replace('/\.(jpg|png|webp|gif)$/i', '', basename($item['image_path'])));
+                                    $itemWidth = isset($item['grid_width']) ? $item['grid_width'] : (isset($itemSizes[$itemBaseName]['width']) ? $itemSizes[$itemBaseName]['width'] : 1);
+                                    $itemHeight = isset($item['grid_height']) ? $item['grid_height'] : (isset($itemSizes[$itemBaseName]['height']) ? $itemSizes[$itemBaseName]['height'] : 1);
+                                    ?>
                                     <div class="inventory-item" 
                                          data-id="<?php echo $item['id']; ?>"
                                          data-item-id="<?php echo $item['item_id']; ?>"
@@ -201,6 +220,9 @@ $inventory = $availableInventory;
                                                 <span class="item-quantity">x<?php echo $item['quantity']; ?></span>
                                             <?php endif; ?>
                                         </div>
+                                        <?php if ($itemWidth > 1 || $itemHeight > 1): ?>
+                                            <div class="item-size-badge"><?php echo $itemWidth; ?>x<?php echo $itemHeight; ?></div>
+                                        <?php endif; ?>
                                     </div>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -241,5 +263,15 @@ $inventory = $availableInventory;
     <!-- Scripts -->
     <script src="../js/main.js"></script>
     <script src="../js/habitus-room.js"></script>
+    <script>
+        // Initialize the room with enhanced features
+        document.addEventListener('DOMContentLoaded', function() {
+            const roomData = <?php echo json_encode($roomData); ?>;
+            const placedItems = <?php echo json_encode($placedItems); ?>;
+            
+            // Initialize the enhanced room system
+            initializeHabitusRoom(roomData, placedItems);
+        });
+    </script>
 </body>
 </html>

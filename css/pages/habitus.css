@@ -213,9 +213,8 @@
     position: absolute;
     width: 300px;
     height: 300px;
-    top: 0;
+    top: -30px;
     left: 0;
-    transform: rotateX(90deg);
     transform-origin: top left;
     pointer-events: none;
     display: grid;
@@ -601,6 +600,246 @@
     border-left: 4px solid #5d7b8a;
 }
 
+/* Scrollbar styling */
+.inventory-items::-webkit-scrollbar {
+    width: 6px;
+}
+
+.inventory-items::-webkit-scrollbar-track {
+    background: #f5f1ea;
+}
+
+.inventory-items::-webkit-scrollbar-thumb {
+    background-color: #d6cfc7;
+    border-radius: 3px;
+}
+
+.inventory-items::-webkit-scrollbar-thumb:hover {
+    background-color: #c5bcb3;
+}
+
+/* Grid cell states for multi-cell items */
+.grid-cell.drag-over {
+    background-color: rgba(106, 141, 127, 0.4) !important;
+    border-color: #6a8d7f !important;
+    box-shadow: inset 0 0 10px rgba(106, 141, 127, 0.3);
+}
+
+.grid-cell.drag-invalid {
+    background-color: rgba(161, 92, 92, 0.4) !important;
+    border-color: #a15c5c !important;
+    box-shadow: inset 0 0 10px rgba(161, 92, 92, 0.3);
+}
+
+/* Drag preview for items */
+.drag-preview {
+    position: absolute;
+    pointer-events: none;
+    border: 2px dashed #6a8d7f;
+    background-color: rgba(106, 141, 127, 0.1);
+    border-radius: 4px;
+    transition: none !important;
+}
+
+.drag-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0.8;
+}
+
+/* Enhanced placed items for multi-grid support */
+.placed-item {
+    position: absolute;
+    cursor: move;
+    transition: all 0.2s;
+    pointer-events: all;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-origin: center center;
+}
+
+.placed-item img {
+    width: 90%;
+    height: 90%;
+    object-fit: contain;
+    display: block;
+}
+
+.placed-item:hover {
+    filter: brightness(1.1);
+    z-index: 999 !important;
+}
+
+.placed-item.selected {
+    filter: drop-shadow(0 0 8px #6a8d7f);
+    outline: 2px solid #6a8d7f;
+    outline-offset: 2px;
+}
+
+.placed-item[draggable="true"] {
+    cursor: grab;
+}
+
+.placed-item[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+/* Grid visibility toggle */
+.room-grid {
+    transition: opacity 0.3s;
+}
+
+.room-grid[style*="display: none"] {
+    opacity: 0;
+}
+
+.room-grid[style*="display: block"] {
+    opacity: 1;
+}
+
+/* Enhanced inventory items */
+.inventory-item {
+    position: relative;
+    user-select: none;
+}
+
+.inventory-item::after {
+    content: attr(data-size);
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: rgba(45, 41, 38, 0.8);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: none;
+}
+
+.inventory-item[data-size]::after {
+    display: block;
+}
+
+/* Item placement indicators */
+.placed-items {
+    position: relative;
+}
+
+/* Rotation animation */
+.placed-item {
+    transition: transform 0.3s ease;
+}
+
+/* Z-index visualization */
+.placed-item::before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+    filter: blur(4px);
+    opacity: 0.5;
+}
+
+/* Context menu enhancements */
+.item-context-menu {
+    border: 1px solid #e9e2d9;
+}
+
+.item-context-menu button {
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.item-context-menu button::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.item-context-menu button:nth-child(1)::before {
+    background-image: url('../images/icons/rotate.svg');
+}
+
+.item-context-menu button:nth-child(2)::before {
+    background-image: url('../images/icons/layer-up.svg');
+}
+
+.item-context-menu button:nth-child(3)::before {
+    background-image: url('../images/icons/layer-down.svg');
+}
+
+.item-context-menu button:nth-child(4)::before {
+    background-image: url('../images/icons/trash.svg');
+}
+
+/* Room floor grid pattern enhancement */
+.room-floor {
+    background-image: 
+        linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-position: -1px -1px;
+}
+
+/* Improved grid cell styling */
+.grid-cell {
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.15s ease;
+    background-color: transparent;
+}
+
+.grid-cell:hover:not(.non-placeable):not(.drag-over):not(.drag-invalid) {
+    background-color: rgba(141, 91, 76, 0.1);
+    border-color: rgba(141, 91, 76, 0.3);
+}
+
+/* Save indicator */
+.save-room-btn.saving::after {
+    content: '';
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-left: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Item size indicators in inventory */
+.inventory-item .item-size-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(45, 41, 38, 0.8);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
     .habitus-editor {
@@ -620,20 +859,15 @@
     }
 }
 
-/* Scrollbar styling */
-.inventory-items::-webkit-scrollbar {
-    width: 6px;
-}
-
-.inventory-items::-webkit-scrollbar-track {
-    background: #f5f1ea;
-}
-
-.inventory-items::-webkit-scrollbar-thumb {
-    background-color: #d6cfc7;
-    border-radius: 3px;
-}
-
-.inventory-items::-webkit-scrollbar-thumb:hover {
-    background-color: #c5bcb3;
+/* Responsive room grid for smaller screens */
+@media (max-width: 768px) {
+    .room-grid {
+        transform: scale(0.8);
+        transform-origin: top left;
+    }
+    
+    .isometric-room {
+        width: 320px;
+        height: 320px;
+    }
 }
