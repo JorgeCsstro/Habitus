@@ -63,16 +63,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Begin transaction
                     $conn->beginTransaction();
                     
-                    // Register user
-                    $insertQuery = "INSERT INTO users (username, email, password, created_at) VALUES (?, ?, ?, NOW())";
+                    // Register user - let created_at be auto-generated
+                    $insertQuery = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
                     $stmt = $conn->prepare($insertQuery);
                     $stmt->execute([$username, $email, $hashed_password]);
                     
                     // Get the user ID
                     $userId = $conn->lastInsertId();
                     
-                    // Create default room for the user
-                    $createRoom = "INSERT INTO rooms (user_id, name, layout_json) VALUES (?, 'My First Room', '{}')";
+                    // Create default room for the user (without layout_json as it doesn't exist in rooms table)
+                    $createRoom = "INSERT INTO rooms (user_id, name) VALUES (?, 'My First Room')";
                     $roomStmt = $conn->prepare($createRoom);
                     $roomStmt->execute([$userId]);
                     

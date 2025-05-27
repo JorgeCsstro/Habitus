@@ -87,7 +87,7 @@ try {
     $stmt = $conn->prepare($insertTransaction);
     $stmt->execute([
         $_SESSION['user_id'], 
-        $planPrices[$plan] * 100, // Store in cents
+        $planPrices[$plan] * 100,
         $transactionDesc
     ]);
     
