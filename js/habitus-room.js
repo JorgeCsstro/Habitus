@@ -1,4 +1,4 @@
-// habitus-room.js - Fixed isometric room system with proper grid placement
+// habitus-room.js - Enhanced isometric room system with 6x6 grid and wall placement
 
 // Room state
 let currentRoom = null;
@@ -10,26 +10,28 @@ let currentRotation = 0;
 let contextMenuItem = null;
 let dragPreview = null;
 let currentDragData = null;
+let currentSurface = 'floor'; // Current placement surface: 'floor', 'wall-left', 'wall-right'
 
-// Grid configuration
-const GRID_SIZE = 20; // 20x20 grid
-const CELL_SIZE = 20; // Size of each grid cell in pixels
-const ROOM_WIDTH = 400;
-const ROOM_HEIGHT = 400;
+// Grid configuration - Updated to 6x6
+const GRID_SIZE = 6; // 6x6 grid
+const CELL_SIZE = 60; // Size of each grid cell in pixels (larger for 6x6)
+const ROOM_WIDTH = 360; // 6 * 60
+const ROOM_HEIGHT = 360; // 6 * 60
+const WALL_HEIGHT = 4; // Wall is 4 cells high
 
-// Item size definitions
+// Item size definitions (can be loaded from database)
 const ITEM_SIZES = {
-    // Furniture
-    'wooden_chair': { width: 1, height: 1 },
-    'simple_table': { width: 2, height: 2 },
-    'bookshelf': { width: 1, height: 2 },
-    'cozy_sofa': { width: 3, height: 2 },
+    // Floor Furniture
+    'wooden_chair': { width: 1, height: 1, surfaces: ['floor'] },
+    'simple_table': { width: 2, height: 2, surfaces: ['floor'] },
+    'bookshelf': { width: 1, height: 2, surfaces: ['floor', 'wall-left', 'wall-right'] },
+    'cozy_sofa': { width: 3, height: 2, surfaces: ['floor'] },
     // Decorations
-    'potted_plant': { width: 1, height: 1 },
-    'floor_lamp': { width: 1, height: 1 },
-    'picture_frame': { width: 1, height: 1 },
-    'cactus': { width: 1, height: 1 },
-    'wall_clock': { width: 1, height: 1 }
+    'potted_plant': { width: 1, height: 1, surfaces: ['floor'] },
+    'floor_lamp': { width: 1, height: 1, surfaces: ['floor'] },
+    'picture_frame': { width: 1, height: 1, surfaces: ['wall-left', 'wall-right'] },
+    'cactus': { width: 1, height: 1, surfaces: ['floor'] },
+    'wall_clock': { width: 1, height: 1, surfaces: ['wall-left', 'wall-right'] }
 };
 
 // Initialize the Habitus room
@@ -40,8 +42,8 @@ function initializeHabitusRoom(roomData, items) {
     // Ensure room structure exists
     ensureRoomStructure();
     
-    // Create grid
-    createGrid();
+    // Create grids for all surfaces
+    createAllGrids();
     
     // Load placed items
     loadPlacedItems();
@@ -86,8 +88,12 @@ function ensureRoomStructure() {
                 <div class="room-wall-right" id="wall-right"></div>
                 <div class="room-door"></div>
             </div>
-            <div class="room-grid" id="room-grid"></div>
-            <div class="placed-items" id="placed-items"></div>
+            <div class="room-grid-floor" id="room-grid-floor"></div>
+            <div class="room-grid-wall-left" id="room-grid-wall-left"></div>
+            <div class="room-grid-wall-right" id="room-grid-wall-right"></div>
+            <div class="placed-items-floor" id="placed-items-floor"></div>
+            <div class="placed-items-wall-left" id="placed-items-wall-left"></div>
+            <div class="placed-items-wall-right" id="placed-items-wall-right"></div>
         `;
     }
 }
@@ -111,17 +117,29 @@ function adjustColor(color, amount) {
 
 // Create drag preview element
 function createDragPreview() {
-    dragPreview = document.createElement('div');
-    dragPreview.className = 'drag-preview';
-    dragPreview.style.display = 'none';
-    dragPreview.style.position = 'absolute';
-    dragPreview.style.pointerEvents = 'none';
-    document.getElementById('placed-items').appendChild(dragPreview);
+    // Create preview for each surface
+    ['floor', 'wall-left', 'wall-right'].forEach(surface => {
+        const container = document.getElementById(`placed-items-${surface}`);
+        if (container) {
+            let preview = container.querySelector('.drag-preview');
+            if (!preview) {
+                preview = document.createElement('div');
+                preview.className = 'drag-preview';
+                preview.style.display = 'none';
+                preview.style.position = 'absolute';
+                preview.style.pointerEvents = 'none';
+                container.appendChild(preview);
+            }
+        }
+    });
+    
+    // Set main drag preview reference
+    dragPreview = document.querySelector('.drag-preview');
 }
 
-// Get item size from name
-function getItemSize(itemName) {
-    if (!itemName) return { width: 1, height: 1 };
+// Get item configuration
+function getItemConfig(itemName) {
+    if (!itemName) return { width: 1, height: 1, surfaces: ['floor'] };
     
     // Extract base name from image path if needed
     const baseName = itemName.toLowerCase().replace(/\.(jpg|png|webp|gif)$/i, '').split('/').pop();
@@ -131,23 +149,34 @@ function getItemSize(itemName) {
         return ITEM_SIZES[baseName];
     }
     
-    // Default size
-    return { width: 1, height: 1 };
+    // Default config
+    return { width: 1, height: 1, surfaces: ['floor'] };
 }
 
-// Create the grid overlay
-function createGrid() {
-    const gridContainer = document.getElementById('room-grid');
+// Create all grids (floor and walls)
+function createAllGrids() {
+    // Create floor grid
+    createGrid('floor', GRID_SIZE, GRID_SIZE);
+    
+    // Create wall grids (4 cells high)
+    createGrid('wall-left', GRID_SIZE, WALL_HEIGHT);
+    createGrid('wall-right', WALL_HEIGHT, GRID_SIZE);
+}
+
+// Create a grid for a specific surface
+function createGrid(surface, width, height) {
+    const gridContainer = document.getElementById(`room-grid-${surface}`);
     if (!gridContainer) return;
     
     gridContainer.innerHTML = '';
     
-    for (let y = 0; y < GRID_SIZE; y++) {
-        for (let x = 0; x < GRID_SIZE; x++) {
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
             const cell = document.createElement('div');
             cell.className = 'grid-cell';
             cell.dataset.x = x;
             cell.dataset.y = y;
+            cell.dataset.surface = surface;
             
             // Position cells in grid
             cell.style.left = (x * CELL_SIZE) + 'px';
@@ -155,8 +184,8 @@ function createGrid() {
             cell.style.width = CELL_SIZE + 'px';
             cell.style.height = CELL_SIZE + 'px';
             
-            // Mark door area as non-placeable (left wall, low position)
-            if (isDoorArea(x, y)) {
+            // Mark door area as non-placeable (on left wall)
+            if (surface === 'wall-left' && isDoorArea(x, y)) {
                 cell.classList.add('non-placeable');
             }
             
@@ -171,39 +200,55 @@ function createGrid() {
     }
 }
 
-// Check if coordinates are in door area
+// Check if coordinates are in door area (on left wall)
 function isDoorArea(x, y) {
-    // Door is on the left wall, around grid position 4-7, 16-19
-    return x >= 4 && x <= 7 && y >= 0 && y <= 3;
+    // Door is on the left wall, column 1, bottom 2 rows
+    return x === 1 && y >= 2;
 }
 
 // Check if area is available for item placement
-function isAreaAvailable(x, y, width, height, excludeItemId = null) {
+function isAreaAvailable(x, y, width, height, surface, excludeItemId = null) {
+    // Get grid dimensions based on surface
+    let maxX, maxY;
+    if (surface === 'floor') {
+        maxX = GRID_SIZE;
+        maxY = GRID_SIZE;
+    } else if (surface === 'wall-left') {
+        maxX = GRID_SIZE;
+        maxY = WALL_HEIGHT;
+    } else if (surface === 'wall-right') {
+        maxX = WALL_HEIGHT;
+        maxY = GRID_SIZE;
+    }
+    
     // Check bounds
-    if (x < 0 || y < 0 || x + width > GRID_SIZE || y + height > GRID_SIZE) {
+    if (x < 0 || y < 0 || x + width > maxX || y + height > maxY) {
         return false;
     }
     
-    // Check door area
-    for (let dy = 0; dy < height; dy++) {
-        for (let dx = 0; dx < width; dx++) {
-            if (isDoorArea(x + dx, y + dy)) {
-                return false;
+    // Check door area (only on left wall)
+    if (surface === 'wall-left') {
+        for (let dy = 0; dy < height; dy++) {
+            for (let dx = 0; dx < width; dx++) {
+                if (isDoorArea(x + dx, y + dy)) {
+                    return false;
+                }
             }
         }
     }
     
-    // Check collision with other items
+    // Check collision with other items on the same surface
     for (const item of placedItems) {
+        if (item.surface !== surface) continue; // Skip items on other surfaces
         if (excludeItemId && item.id === excludeItemId) continue;
         
-        const itemSize = getItemSize(item.image_path || item.name);
+        const itemConfig = getItemConfig(item.image_path || item.name);
         
         // Check if rectangles overlap
         if (!(x + width <= item.grid_x || 
-              x >= item.grid_x + itemSize.width ||
+              x >= item.grid_x + itemConfig.width ||
               y + height <= item.grid_y || 
-              y >= item.grid_y + itemSize.height)) {
+              y >= item.grid_y + itemConfig.height)) {
             return false;
         }
     }
@@ -213,17 +258,24 @@ function isAreaAvailable(x, y, width, height, excludeItemId = null) {
 
 // Load placed items into the room
 function loadPlacedItems() {
-    const itemsContainer = document.getElementById('placed-items');
-    if (!itemsContainer) return;
+    // Clear items from all surfaces
+    ['floor', 'wall-left', 'wall-right'].forEach(surface => {
+        const container = document.getElementById(`placed-items-${surface}`);
+        if (container) {
+            const existingItems = container.querySelectorAll('.placed-item');
+            existingItems.forEach(item => item.remove());
+        }
+    });
     
-    // Clear only placed items, preserve drag preview
-    const existingItems = itemsContainer.querySelectorAll('.placed-item');
-    existingItems.forEach(item => item.remove());
-    
+    // Place items on appropriate surfaces
     placedItems.forEach(item => {
         const itemElement = createPlacedItem(item);
         if (itemElement) {
-            itemsContainer.appendChild(itemElement);
+            const surface = item.surface || 'floor'; // Default to floor if not specified
+            const container = document.getElementById(`placed-items-${surface}`);
+            if (container) {
+                container.appendChild(itemElement);
+            }
         }
     });
 }
@@ -235,14 +287,15 @@ function createPlacedItem(item) {
     itemDiv.dataset.id = item.id;
     itemDiv.dataset.gridX = item.grid_x;
     itemDiv.dataset.gridY = item.grid_y;
+    itemDiv.dataset.surface = item.surface || 'floor';
     
-    const itemSize = getItemSize(item.image_path || item.name);
+    const itemConfig = getItemConfig(item.image_path || item.name);
     
     // Position and size on grid
     itemDiv.style.left = (item.grid_x * CELL_SIZE) + 'px';
     itemDiv.style.top = (item.grid_y * CELL_SIZE) + 'px';
-    itemDiv.style.width = (itemSize.width * CELL_SIZE) + 'px';
-    itemDiv.style.height = (itemSize.height * CELL_SIZE) + 'px';
+    itemDiv.style.width = (itemConfig.width * CELL_SIZE) + 'px';
+    itemDiv.style.height = (itemConfig.height * CELL_SIZE) + 'px';
     itemDiv.style.transform = `rotate(${item.rotation || 0}deg)`;
     itemDiv.style.zIndex = item.z_index || 1;
     
@@ -265,10 +318,11 @@ function createPlacedItem(item) {
     return itemDiv;
 }
 
-// Handle cell click (for debugging)
+// Handle cell click (for debugging and surface switching)
 function handleCellClick(e) {
     if (e.shiftKey) {
-        console.log(`Cell clicked: ${e.target.dataset.x}, ${e.target.dataset.y}`);
+        const cell = e.target;
+        console.log(`Cell clicked: ${cell.dataset.surface} [${cell.dataset.x}, ${cell.dataset.y}]`);
     }
 }
 
@@ -296,9 +350,10 @@ function setupEventListeners() {
     
     // Global drag end handler
     document.addEventListener('dragend', function(e) {
-        if (dragPreview) {
-            dragPreview.style.display = 'none';
-        }
+        // Hide all drag previews
+        document.querySelectorAll('.drag-preview').forEach(preview => {
+            preview.style.display = 'none';
+        });
         
         // Clear all drag states
         document.querySelectorAll('.grid-cell').forEach(cell => {
@@ -353,6 +408,7 @@ function handleItemDragStart(e) {
         itemDataId: placedItem.item_id,
         image: placedItem.image_path,
         name: placedItem.name,
+        surface: placedItem.surface || 'floor',
         isReposition: true,
         originalId: itemId
     };
@@ -382,7 +438,14 @@ function handleDragOver(e) {
     
     const gridX = parseInt(cell.dataset.x);
     const gridY = parseInt(cell.dataset.y);
-    const itemSize = getItemSize(currentDragData.image || currentDragData.name);
+    const surface = cell.dataset.surface;
+    const itemConfig = getItemConfig(currentDragData.image || currentDragData.name);
+    
+    // Check if item can be placed on this surface
+    if (!currentDragData.isReposition && !itemConfig.surfaces.includes(surface)) {
+        e.dataTransfer.dropEffect = 'none';
+        return false;
+    }
     
     // Clear previous hover states
     document.querySelectorAll('.grid-cell').forEach(c => {
@@ -391,12 +454,12 @@ function handleDragOver(e) {
     
     // Check if placement is valid
     const excludeId = currentDragData.isReposition ? currentDragData.originalId : null;
-    const isValid = isAreaAvailable(gridX, gridY, itemSize.width, itemSize.height, excludeId);
+    const isValid = isAreaAvailable(gridX, gridY, itemConfig.width, itemConfig.height, surface, excludeId);
     
     // Highlight affected cells
-    for (let dy = 0; dy < itemSize.height; dy++) {
-        for (let dx = 0; dx < itemSize.width; dx++) {
-            const targetCell = document.querySelector(`[data-x="${gridX + dx}"][data-y="${gridY + dy}"]`);
+    for (let dy = 0; dy < itemConfig.height; dy++) {
+        for (let dx = 0; dx < itemConfig.width; dx++) {
+            const targetCell = document.querySelector(`[data-surface="${surface}"][data-x="${gridX + dx}"][data-y="${gridY + dy}"]`);
             if (targetCell) {
                 targetCell.classList.add(isValid ? 'drag-over' : 'drag-invalid');
             }
@@ -404,14 +467,15 @@ function handleDragOver(e) {
     }
     
     // Update drag preview position
-    if (dragPreview) {
-        dragPreview.style.display = 'block';
-        dragPreview.style.left = (gridX * CELL_SIZE) + 'px';
-        dragPreview.style.top = (gridY * CELL_SIZE) + 'px';
-        dragPreview.style.width = (itemSize.width * CELL_SIZE) + 'px';
-        dragPreview.style.height = (itemSize.height * CELL_SIZE) + 'px';
-        dragPreview.innerHTML = `<img src="../${currentDragData.image}" alt="${currentDragData.name}">`;
-        dragPreview.style.opacity = isValid ? '0.7' : '0.3';
+    const preview = document.querySelector(`#placed-items-${surface} .drag-preview`);
+    if (preview) {
+        preview.style.display = 'block';
+        preview.style.left = (gridX * CELL_SIZE) + 'px';
+        preview.style.top = (gridY * CELL_SIZE) + 'px';
+        preview.style.width = (itemConfig.width * CELL_SIZE) + 'px';
+        preview.style.height = (itemConfig.height * CELL_SIZE) + 'px';
+        preview.innerHTML = `<img src="../${currentDragData.image}" alt="${currentDragData.name}">`;
+        preview.style.opacity = isValid ? '0.7' : '0.3';
     }
     
     e.dataTransfer.dropEffect = isValid ? 'copy' : 'none';
@@ -435,17 +499,24 @@ function handleDrop(e) {
     const cell = e.target.closest('.grid-cell');
     if (!cell) return;
     
-    // Get grid coordinates
+    // Get grid coordinates and surface
     const gridX = parseInt(cell.dataset.x);
     const gridY = parseInt(cell.dataset.y);
+    const surface = cell.dataset.surface;
     
     // Get item data
     const isReposition = e.dataTransfer.getData('isReposition') === 'true';
-    const itemSize = getItemSize(currentDragData.image || currentDragData.name);
+    const itemConfig = getItemConfig(currentDragData.image || currentDragData.name);
+    
+    // Check if item can be placed on this surface
+    if (!isReposition && !itemConfig.surfaces.includes(surface)) {
+        showNotification('This item cannot be placed on this surface!', 'warning');
+        return;
+    }
     
     // Check if area is available
     const excludeId = isReposition ? currentDragData.originalId : null;
-    if (!isAreaAvailable(gridX, gridY, itemSize.width, itemSize.height, excludeId)) {
+    if (!isAreaAvailable(gridX, gridY, itemConfig.width, itemConfig.height, surface, excludeId)) {
         showNotification('Cannot place item here!', 'warning');
         return;
     }
@@ -454,16 +525,27 @@ function handleDrop(e) {
         // Update existing item position
         const itemToMove = placedItems.find(i => i.id == currentDragData.originalId);
         if (itemToMove) {
+            const oldSurface = itemToMove.surface || 'floor';
             itemToMove.grid_x = gridX;
             itemToMove.grid_y = gridY;
+            itemToMove.surface = surface;
             
-            // Update visual position
+            // Move visual element to new surface if needed
             const itemElement = document.querySelector(`[data-id="${currentDragData.originalId}"]`);
             if (itemElement) {
                 itemElement.style.left = (gridX * CELL_SIZE) + 'px';
                 itemElement.style.top = (gridY * CELL_SIZE) + 'px';
                 itemElement.dataset.gridX = gridX;
                 itemElement.dataset.gridY = gridY;
+                itemElement.dataset.surface = surface;
+                
+                // Move to new container if surface changed
+                if (oldSurface !== surface) {
+                    const newContainer = document.getElementById(`placed-items-${surface}`);
+                    if (newContainer) {
+                        newContainer.appendChild(itemElement);
+                    }
+                }
             }
             
             showNotification('Item moved!', 'success');
@@ -476,8 +558,9 @@ function handleDrop(e) {
             item_id: currentDragData.itemDataId,
             grid_x: gridX,
             grid_y: gridY,
+            surface: surface,
             rotation: 0,
-            z_index: placedItems.length + 1,
+            z_index: placedItems.filter(i => i.surface === surface).length + 1,
             image_path: currentDragData.image,
             name: currentDragData.name
         };
@@ -487,7 +570,10 @@ function handleDrop(e) {
         
         // Create and add element
         const itemElement = createPlacedItem(newItem);
-        document.getElementById('placed-items').appendChild(itemElement);
+        const container = document.getElementById(`placed-items-${surface}`);
+        if (container) {
+            container.appendChild(itemElement);
+        }
         
         showNotification('Item placed! Remember to save your layout.', 'info');
     }
@@ -495,9 +581,9 @@ function handleDrop(e) {
     // Clear drag state
     isDragging = false;
     currentDragData = null;
-    if (dragPreview) {
-        dragPreview.style.display = 'none';
-    }
+    document.querySelectorAll('.drag-preview').forEach(preview => {
+        preview.style.display = 'none';
+    });
     document.querySelectorAll('.grid-cell').forEach(c => {
         c.classList.remove('drag-over', 'drag-invalid');
     });
@@ -589,8 +675,10 @@ function rotateItem() {
 function moveToFront() {
     if (!contextMenuItem) return;
     
-    // Get highest z-index
-    const maxZ = Math.max(...placedItems.map(i => i.z_index || 0));
+    const surface = contextMenuItem.dataset.surface;
+    
+    // Get highest z-index for this surface
+    const maxZ = Math.max(...placedItems.filter(i => i.surface === surface).map(i => i.z_index || 0));
     contextMenuItem.style.zIndex = maxZ + 1;
     
     // Update in data
@@ -607,11 +695,12 @@ function moveToFront() {
 function moveToBack() {
     if (!contextMenuItem) return;
     
+    const surface = contextMenuItem.dataset.surface;
     contextMenuItem.style.zIndex = 1;
     
-    // Update z-indices for all items
+    // Update z-indices for all items on same surface
     placedItems.forEach(item => {
-        if (item.id != contextMenuItem.dataset.id && item.z_index > 0) {
+        if (item.surface === surface && item.id != contextMenuItem.dataset.id && item.z_index > 0) {
             item.z_index++;
         }
     });
@@ -624,7 +713,7 @@ function moveToBack() {
     }
     
     // Apply z-index changes
-    document.querySelectorAll('.placed-item').forEach(el => {
+    document.querySelectorAll(`.placed-item[data-surface="${surface}"]`).forEach(el => {
         const elItem = placedItems.find(i => i.id == el.dataset.id);
         if (elItem) {
             el.style.zIndex = elItem.z_index;
@@ -655,15 +744,42 @@ function removeItem() {
 // Toggle grid visibility
 function toggleGrid() {
     gridVisible = !gridVisible;
-    const grid = document.getElementById('room-grid');
-    if (grid) {
-        grid.style.display = gridVisible ? 'block' : 'none';
-    }
+    ['floor', 'wall-left', 'wall-right'].forEach(surface => {
+        const grid = document.getElementById(`room-grid-${surface}`);
+        if (grid) {
+            grid.style.display = gridVisible ? 'block' : 'none';
+        }
+    });
 }
 
-// Rotate view (placeholder)
-function rotateView() {
-    showNotification('View rotation coming soon!', 'info');
+// Switch surface view
+function switchSurface(surface) {
+    currentSurface = surface;
+    
+    // Update button states
+    document.querySelectorAll('.surface-toggle').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.surface === surface) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Show/hide grids based on selection
+    ['floor', 'wall-left', 'wall-right'].forEach(s => {
+        const grid = document.getElementById(`room-grid-${s}`);
+        const items = document.getElementById(`placed-items-${s}`);
+        if (grid && items) {
+            if (s === surface || surface === 'all') {
+                grid.style.opacity = '1';
+                items.style.opacity = '1';
+            } else {
+                grid.style.opacity = '0.3';
+                items.style.opacity = '0.3';
+            }
+        }
+    });
+    
+    showNotification(`Viewing: ${surface === 'all' ? 'All surfaces' : surface}`, 'info');
 }
 
 // Filter inventory items
@@ -699,6 +815,7 @@ function saveRoom() {
             inventory_id: item.inventory_id,
             grid_x: item.grid_x,
             grid_y: item.grid_y,
+            surface: item.surface || 'floor',
             rotation: item.rotation || 0,
             z_index: item.z_index || 1
         }))
@@ -757,9 +874,15 @@ function clearRoom() {
     }
     
     placedItems = [];
-    document.getElementById('placed-items').innerHTML = '';
+    ['floor', 'wall-left', 'wall-right'].forEach(surface => {
+        const container = document.getElementById(`placed-items-${surface}`);
+        if (container) {
+            const items = container.querySelectorAll('.placed-item');
+            items.forEach(item => item.remove());
+        }
+    });
     
-    // Re-add drag preview
+    // Re-add drag previews
     createDragPreview();
     
     showNotification('Room cleared', 'info');
@@ -877,7 +1000,7 @@ function showNotification(message, type = 'info') {
 // Make functions globally available
 window.initializeHabitusRoom = initializeHabitusRoom;
 window.toggleGrid = toggleGrid;
-window.rotateView = rotateView;
+window.switchSurface = switchSurface;
 window.filterInventory = filterInventory;
 window.saveRoom = saveRoom;
 window.clearRoom = clearRoom;

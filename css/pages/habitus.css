@@ -1,4 +1,4 @@
-/* habitus.css - Fixed isometric room system with proper grid alignment */
+/* habitus.css - Enhanced isometric room with 6x6 grid and wall grids */
 
 /* Main content container */
 .habitus-content {
@@ -115,57 +115,56 @@
     justify-content: center;
 }
 
-/* Isometric room container - FIXED POSITIONING */
+/* Isometric room container - Enhanced for 6x6 grid */
 .isometric-room {
     position: relative;
-    width: 600px;
-    height: 600px;
-    /* Remove the transform from here - we'll apply it to inner elements */
+    width: 700px;
+    height: 700px;
 }
 
 /* Room base (floor + walls container) */
 .room-base {
     position: absolute;
-    width: 400px;
-    height: 400px;
-    top: 150px;
-    left: 100px;
+    width: 360px; /* 6 cells * 60px */
+    height: 360px; /* 6 cells * 60px */
+    top: 200px;
+    left: 170px;
     transform: rotateX(60deg) rotateZ(-45deg);
     transform-style: preserve-3d;
 }
 
-/* Room floor - FIXED */
+/* Room floor - 6x6 grid */
 .room-floor {
     position: absolute;
-    width: 400px;
-    height: 400px;
+    width: 360px;
+    height: 360px;
     background: #FFD700;
     background-image: 
         linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
-    background-size: 20px 20px;
+    background-size: 60px 60px; /* Cell size for 6x6 */
     background-position: -1px -1px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-/* Left wall - FIXED */
+/* Left wall - with grid */
 .room-wall-left {
     position: absolute;
-    width: 400px;
-    height: 250px;
+    width: 360px;
+    height: 240px; /* 4 cells high */
     background: linear-gradient(to bottom, #E0E0E0, #D0D0D0);
     transform: rotateX(90deg);
     transform-origin: top;
     box-shadow: inset 0 0 30px rgba(0,0,0,0.1);
 }
 
-/* Right wall - FIXED */
+/* Right wall - with grid */
 .room-wall-right {
     position: absolute;
-    width: 250px;
-    height: 400px;
+    width: 240px; /* 4 cells high */
+    height: 360px;
     background: linear-gradient(to left, #D0D0D0, #C0C0C0);
-    transform: rotateY(-90deg) translateZ(-400px);
+    transform: rotateY(-90deg) translateZ(-360px);
     transform-origin: left;
     box-shadow: inset 0 0 30px rgba(0,0,0,0.15);
 }
@@ -176,11 +175,12 @@
     width: 60px;
     height: 120px;
     background: linear-gradient(to bottom, #8B6347, #654321);
-    left: 80px;
+    left: 60px; /* Second column */
     bottom: 0;
-    transform: rotateX(-90deg) translateZ(-400px);
+    transform: rotateX(-90deg) translateZ(-360px);
     transform-origin: bottom;
     box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+    z-index: 10;
 }
 
 .room-door::before {
@@ -190,26 +190,51 @@
     height: 8px;
     background: #FFD700;
     border-radius: 50%;
-    right: 40px;
+    right: 10px;
     top: 60px;
     box-shadow: 0 0 5px rgba(255,215,0,0.5);
 }
 
-/* Grid overlay - FIXED POSITIONING */
-.room-grid {
+/* Grid overlays - Floor grid */
+.room-grid-floor {
     position: absolute;
-    width: 400px;
-    height: 400px;
+    width: 360px;
+    height: 360px;
     pointer-events: none;
     transform: rotateX(60deg) rotateZ(-45deg);
-    top: 150px;
-    left: 100px;
+    top: 200px;
+    left: 170px;
 }
 
+/* Grid overlays - Left wall grid */
+.room-grid-wall-left {
+    position: absolute;
+    width: 360px;
+    height: 240px;
+    pointer-events: none;
+    transform: rotateX(60deg) rotateZ(-45deg) rotateX(-90deg);
+    transform-origin: top;
+    top: 109px;
+    left: 42px;
+}
+
+/* Grid overlays - Right wall grid */
+.room-grid-wall-right {
+    position: absolute;
+    width: 240px;
+    height: 360px;
+    pointer-events: none;
+    transform: rotateX(60deg) rotateZ(-45deg) rotateY(-90deg) translateZ(-360px);
+    transform-origin: left;
+    top: 264px;
+    left: 222px;
+}
+
+/* Grid cells - 60px for 6x6 grid */
 .grid-cell {
     position: absolute;
-    width: 20px;
-    height: 20px;
+    width: 60px;
+    height: 60px;
     border: 1px solid rgba(0, 0, 0, 0.1);
     pointer-events: all;
     transition: all 0.15s;
@@ -242,24 +267,59 @@
     cursor: not-allowed;
 }
 
-/* Placed items container - FIXED */
-.placed-items {
-    position: absolute;
-    width: 400px;
-    height: 400px;
-    pointer-events: none;
-    top: 100px;
-    left: 100px;
+/* Grid cell surface indicator */
+.grid-cell[data-surface="floor"] {
+    /* Default floor style */
 }
 
-/* Placed item - FIXED */
+.grid-cell[data-surface="wall-left"] {
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+.grid-cell[data-surface="wall-right"] {
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Placed items containers for each surface */
+.placed-items-floor {
+    position: absolute;
+    width: 360px;
+    height: 360px;
+    pointer-events: none;
+    transform: rotateX(60deg) rotateZ(-45deg);
+    top: 200px;
+    left: 170px;
+}
+
+.placed-items-wall-left {
+    position: absolute;
+    width: 360px;
+    height: 240px;
+    pointer-events: none;
+    transform: rotateX(60deg) rotateZ(-45deg) rotateX(90deg);
+    transform-origin: top;
+    top: 200px;
+    left: 170px;
+}
+
+.placed-items-wall-right {
+    position: absolute;
+    width: 240px;
+    height: 360px;
+    pointer-events: none;
+    transform: rotateX(60deg) rotateZ(-45deg) rotateY(-90deg) translateZ(-360px);
+    transform-origin: left;
+    top: 200px;
+    left: 170px;
+}
+
+/* Placed item */
 .placed-item {
     position: absolute;
     pointer-events: all;
     cursor: move;
     transition: filter 0.2s, transform 0.2s;
     transform-origin: center bottom;
-    /* Items will be positioned using left/top based on grid coordinates */
 }
 
 .placed-item img {
@@ -273,7 +333,6 @@
 
 .placed-item:hover {
     filter: brightness(1.1) drop-shadow(0 2px 8px rgba(0,0,0,0.2));
-    transform: translateZ(2px);
 }
 
 .placed-item.selected {
@@ -340,6 +399,18 @@
 .room-controls button img {
     width: 16px;
     height: 16px;
+}
+
+/* Surface toggle buttons */
+.surface-toggle {
+    background: white !important;
+    border: 2px solid #e9e2d9 !important;
+}
+
+.surface-toggle.active {
+    background: #8d5b4c !important;
+    color: white !important;
+    border-color: #8d5b4c !important;
 }
 
 /* Inventory panel */
@@ -457,6 +528,38 @@
     border-radius: 3px;
     font-size: 0.7rem;
     font-weight: 600;
+}
+
+/* Item surface compatibility indicator */
+.item-surface-badge {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    display: flex;
+    gap: 2px;
+}
+
+.surface-icon {
+    width: 14px;
+    height: 14px;
+    background: rgba(141, 91, 76, 0.2);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.surface-icon.floor { 
+    background: #FFD700; 
+    color: #8B6914; 
+    title: "Floor";
+}
+.surface-icon.wall { 
+    background: #E0E0E0; 
+    color: #666; 
+    title: "Wall";
 }
 
 .empty-inventory {
@@ -668,7 +771,7 @@
 
 .debug-mode .grid-cell::after {
     content: attr(data-x) "," attr(data-y);
-    font-size: 8px;
+    font-size: 10px;
     position: absolute;
     top: 2px;
     left: 2px;

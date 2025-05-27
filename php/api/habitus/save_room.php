@@ -1,5 +1,5 @@
 <?php
-// php/api/habitus/save_room.php
+// php/api/habitus/save_room.php - Updated to handle surface parameter
 
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';
@@ -50,11 +50,20 @@ try {
         $inventoryId = intval($item['inventory_id']);
         $gridX = intval($item['grid_x']);
         $gridY = intval($item['grid_y']);
+        $surface = isset($item['surface']) ? $item['surface'] : 'floor';
         $rotation = intval($item['rotation']);
         $zIndex = intval($item['z_index']);
         
+        // Validate surface value
+        if (!in_array($surface, ['floor', 'wall-left', 'wall-right'])) {
+            throw new Exception("Invalid surface value: " . $surface);
+        }
+        
         // Verify inventory item belongs to user
-        $inventoryQuery = "SELECT id FROM user_inventory WHERE id = ? AND user_id = ?";
+        $inventoryQuery = "SELECT ui.id, si.allowed_surfaces 
+                          FROM user_inventory ui 
+                          JOIN shop_items si ON ui.item_id = si.id 
+                          WHERE ui.id = ? AND ui.user_id = ?";
         $stmt = $conn->prepare($inventoryQuery);
         $stmt->execute([$inventoryId, $_SESSION['user_id']]);
         
@@ -62,11 +71,20 @@ try {
             throw new Exception("Invalid inventory item");
         }
         
-        // Insert placed item
-        $insertQuery = "INSERT INTO placed_items (room_id, inventory_id, grid_x, grid_y, rotation, z_index) 
-                       VALUES (?, ?, ?, ?, ?, ?)";
+        $inventoryData = $stmt->fetch();
+        
+        // Check if item can be placed on this surface
+        $allowedSurfaces = explode(',', $inventoryData['allowed_surfaces'] ?? 'floor');
+        if (!in_array($surface, $allowedSurfaces)) {
+            throw new Exception("Item cannot be placed on " . $surface);
+        }
+        
+        // Insert placed item with surface
+        $insertQuery = "INSERT INTO placed_items 
+                       (room_id, inventory_id, surface, grid_x, grid_y, rotation, z_index) 
+                       VALUES (?, ?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($insertQuery);
-        $stmt->execute([$roomId, $inventoryId, $gridX, $gridY, $rotation, $zIndex]);
+        $stmt->execute([$roomId, $inventoryId, $surface, $gridX, $gridY, $rotation, $zIndex]);
         
         // If this was a temporary item, store the new ID
         if (isset($item['id']) && strpos($item['id'], 'temp_') === 0) {
