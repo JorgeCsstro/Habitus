@@ -22,14 +22,6 @@ function getUserData($userId) {
 }
 
 /**
- * Check if a user is logged in
- * @return bool - True if logged in, false otherwise
- */
-function isLoggedIn() {
-    return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
-}
-
-/**
  * Get user's daily tasks
  * @param int $userId - User ID
  * @return array - User's daily tasks

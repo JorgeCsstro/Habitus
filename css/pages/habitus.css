@@ -1,4 +1,4 @@
-/* habitus.css - Fixed isometric room system with proper 3D view */
+/* habitus.css - Fixed isometric room system with proper grid alignment */
 
 /* Main content container */
 .habitus-content {
@@ -115,57 +115,59 @@
     justify-content: center;
 }
 
-/* Isometric room container */
+/* Isometric room container - FIXED POSITIONING */
 .isometric-room {
     position: relative;
+    width: 600px;
+    height: 600px;
+    /* Remove the transform from here - we'll apply it to inner elements */
+}
+
+/* Room base (floor + walls container) */
+.room-base {
+    position: absolute;
     width: 400px;
     height: 400px;
+    top: 150px;
+    left: 100px;
     transform: rotateX(60deg) rotateZ(-45deg);
     transform-style: preserve-3d;
 }
 
-/* Room floor */
+/* Room floor - FIXED */
 .room-floor {
     position: absolute;
-    width: 300px;
-    height: 300px;
-    background: #e8e8e8;
+    width: 400px;
+    height: 400px;
+    background: #FFD700;
     background-image: 
-        linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
-        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
-        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+        linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
     background-size: 20px 20px;
-    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-    top: 0;
-    left: 0;
-    
-    transform-origin: top left;
+    background-position: -1px -1px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-/* Left wall */
+/* Left wall - FIXED */
 .room-wall-left {
     position: absolute;
-    width: 300px;
-    height: 200px;
-    background: linear-gradient(to bottom, #9ac99a 0%, #7fb77f 100%);
-    top: -200px;
-    left: 0;
-    transform: rotateX(-90deg);
-    transform-origin: bottom left;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    height: 250px;
+    background: linear-gradient(to bottom, #E0E0E0, #D0D0D0);
+    transform: rotateX(90deg);
+    transform-origin: top;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.1);
 }
 
-/* Right wall */
+/* Right wall - FIXED */
 .room-wall-right {
     position: absolute;
-    width: 200px;
-    height: 300px;
-    background: linear-gradient(to right, #6fa86f 0%, #5f9a5f 100%);
-    left: 300px;
-    transform: rotateY(-90deg);
-    transform-origin: top left;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.15);
+    width: 250px;
+    height: 400px;
+    background: linear-gradient(to left, #D0D0D0, #C0C0C0);
+    transform: rotateY(-90deg) translateZ(-400px);
+    transform-origin: left;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.15);
 }
 
 /* Door on left wall */
@@ -173,110 +175,134 @@
     position: absolute;
     width: 60px;
     height: 120px;
-    background: linear-gradient(to bottom, #8B6347 0%, #654321 100%);
-    top: -50px;
-    left: 40px; 
-    box-shadow: 
-        inset -2px 0 4px rgba(0, 0, 0, 0.3),
-        inset 2px 0 4px rgba(0, 0, 0, 0.3);
-    transform: rotateX(-90deg) translateY(-66px);
+    background: linear-gradient(to bottom, #8B6347, #654321);
+    left: 80px;
+    bottom: 0;
+    transform: rotateX(-90deg) translateZ(-400px);
+    transform-origin: bottom;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
 }
 
-/* Door window */
 .room-door::before {
-    content: '';
-    position: absolute;
-    width: 30px;
-    height: 35px;
-    background: rgba(135, 206, 235, 0.6);
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 3px solid #4a3c28;
-}
-
-/* Door knob */
-.room-door::after {
     content: '';
     position: absolute;
     width: 8px;
     height: 8px;
+    background: #FFD700;
     border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #FFD700, #B8860B);
-    right: 12px;
-    top: 65px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    right: 40px;
+    top: 60px;
+    box-shadow: 0 0 5px rgba(255,215,0,0.5);
 }
 
-/* Grid overlay */
+/* Grid overlay - FIXED POSITIONING */
 .room-grid {
     position: absolute;
-    width: 300px;
-    height: 300px;
-    top: -30px;
-    left: 0;
-    transform-origin: top left;
+    width: 400px;
+    height: 400px;
     pointer-events: none;
-    display: grid;
-    grid-template-columns: repeat(20, 1fr);
-    grid-template-rows: repeat(20, 1fr);
+    transform: rotateX(60deg) rotateZ(-45deg);
+    top: 150px;
+    left: 100px;
 }
 
 .grid-cell {
+    position: absolute;
+    width: 20px;
+    height: 20px;
     border: 1px solid rgba(0, 0, 0, 0.1);
     pointer-events: all;
-    transition: all 0.2s;
+    transition: all 0.15s;
+    cursor: pointer;
 }
 
 .grid-cell:hover {
     background-color: rgba(106, 141, 127, 0.3);
     border-color: rgba(106, 141, 127, 0.5);
+    z-index: 100;
 }
 
 .grid-cell.drag-over {
-    background-color: rgba(106, 141, 127, 0.5);
-    border-color: #6a8d7f;
+    background-color: rgba(106, 141, 127, 0.5) !important;
+    border-color: #6a8d7f !important;
+    box-shadow: 0 0 10px rgba(106, 141, 127, 0.5);
+    z-index: 101;
+}
+
+.grid-cell.drag-invalid {
+    background-color: rgba(161, 92, 92, 0.5) !important;
+    border-color: #a15c5c !important;
+    box-shadow: 0 0 10px rgba(161, 92, 92, 0.5);
+    z-index: 101;
 }
 
 .grid-cell.non-placeable {
-    background-color: rgba(161, 92, 92, 0.2);
+    background-color: rgba(0, 0, 0, 0.1);
     pointer-events: none;
+    cursor: not-allowed;
 }
 
-/* Placed items container */
+/* Placed items container - FIXED */
 .placed-items {
     position: absolute;
-    width: 300px;
-    height: 300px;
-    top: 0;
-    left: 0;
-    transform: rotateX(90deg);
-    transform-origin: top left;
+    width: 400px;
+    height: 400px;
     pointer-events: none;
+    top: 100px;
+    left: 100px;
 }
 
+/* Placed item - FIXED */
 .placed-item {
     position: absolute;
-    cursor: pointer;
-    transition: all 0.2s;
     pointer-events: all;
-    transform: rotateX(-90deg) translateZ(1px);
-}
-
-.placed-item:hover {
-    filter: brightness(1.1);
-    transform: rotateX(-90deg) translateZ(5px);
-}
-
-.placed-item.selected {
-    filter: drop-shadow(0 0 5px #6a8d7f);
+    cursor: move;
+    transition: filter 0.2s, transform 0.2s;
+    transform-origin: center bottom;
+    /* Items will be positioned using left/top based on grid coordinates */
 }
 
 .placed-item img {
-    width: 40px;
-    height: 40px;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
     display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.placed-item:hover {
+    filter: brightness(1.1) drop-shadow(0 2px 8px rgba(0,0,0,0.2));
+    transform: translateZ(2px);
+}
+
+.placed-item.selected {
+    filter: drop-shadow(0 0 10px #6a8d7f);
+    outline: 2px solid #6a8d7f;
+    outline-offset: 2px;
+    z-index: 1000 !important;
+}
+
+.placed-item.dragging {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Drag preview */
+.drag-preview {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0.7;
+    z-index: 9999;
+    border: 2px dashed #6a8d7f;
+    background-color: rgba(106, 141, 127, 0.1);
+    border-radius: 4px;
+}
+
+.drag-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 /* Room controls */
@@ -287,7 +313,7 @@
     transform: translateX(-50%);
     display: flex;
     gap: 10px;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     padding: 10px;
     border-radius: 25px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -384,6 +410,7 @@
     margin-bottom: 10px;
     cursor: grab;
     transition: all 0.2s;
+    position: relative;
 }
 
 .inventory-item:hover {
@@ -401,6 +428,8 @@
     height: 40px;
     object-fit: contain;
     margin-right: 10px;
+    user-select: none;
+    -webkit-user-drag: none;
 }
 
 .item-info {
@@ -416,6 +445,18 @@
 .item-quantity {
     font-size: 0.8rem;
     color: #8d8580;
+}
+
+.item-size-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(45, 41, 38, 0.8);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 600;
 }
 
 .empty-inventory {
@@ -455,10 +496,11 @@
     position: fixed;
     background: white;
     border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
     padding: 5px;
-    z-index: 1000;
+    z-index: 10000;
     min-width: 150px;
+    border: 1px solid #e9e2d9;
 }
 
 .item-context-menu button {
@@ -471,6 +513,7 @@
     cursor: pointer;
     transition: all 0.2s;
     color: #2d2926;
+    font-size: 0.9rem;
 }
 
 .item-context-menu button:hover {
@@ -486,7 +529,7 @@
     width: 100%;
     height: 100%;
     background-color: rgba(45, 41, 38, 0.5);
-    z-index: 1000;
+    z-index: 10000;
     justify-content: center;
     align-items: center;
 }
@@ -564,7 +607,7 @@
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 2000;
+    z-index: 20000;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -600,7 +643,7 @@
     border-left: 4px solid #5d7b8a;
 }
 
-/* Scrollbar styling */
+/* Scrollbar */
 .inventory-items::-webkit-scrollbar {
     width: 6px;
 }
@@ -618,226 +661,18 @@
     background-color: #c5bcb3;
 }
 
-/* Grid cell states for multi-cell items */
-.grid-cell.drag-over {
-    background-color: rgba(106, 141, 127, 0.4) !important;
-    border-color: #6a8d7f !important;
-    box-shadow: inset 0 0 10px rgba(106, 141, 127, 0.3);
+/* Grid helpers for debugging */
+.debug-mode .grid-cell {
+    border: 1px solid rgba(255, 0, 0, 0.3);
 }
 
-.grid-cell.drag-invalid {
-    background-color: rgba(161, 92, 92, 0.4) !important;
-    border-color: #a15c5c !important;
-    box-shadow: inset 0 0 10px rgba(161, 92, 92, 0.3);
-}
-
-/* Drag preview for items */
-.drag-preview {
+.debug-mode .grid-cell::after {
+    content: attr(data-x) "," attr(data-y);
+    font-size: 8px;
     position: absolute;
-    pointer-events: none;
-    border: 2px dashed #6a8d7f;
-    background-color: rgba(106, 141, 127, 0.1);
-    border-radius: 4px;
-    transition: none !important;
-}
-
-.drag-preview img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    opacity: 0.8;
-}
-
-/* Enhanced placed items for multi-grid support */
-.placed-item {
-    position: absolute;
-    cursor: move;
-    transition: all 0.2s;
-    pointer-events: all;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transform-origin: center center;
-}
-
-.placed-item img {
-    width: 90%;
-    height: 90%;
-    object-fit: contain;
-    display: block;
-}
-
-.placed-item:hover {
-    filter: brightness(1.1);
-    z-index: 999 !important;
-}
-
-.placed-item.selected {
-    filter: drop-shadow(0 0 8px #6a8d7f);
-    outline: 2px solid #6a8d7f;
-    outline-offset: 2px;
-}
-
-.placed-item[draggable="true"] {
-    cursor: grab;
-}
-
-.placed-item[draggable="true"]:active {
-    cursor: grabbing;
-}
-
-/* Grid visibility toggle */
-.room-grid {
-    transition: opacity 0.3s;
-}
-
-.room-grid[style*="display: none"] {
-    opacity: 0;
-}
-
-.room-grid[style*="display: block"] {
-    opacity: 1;
-}
-
-/* Enhanced inventory items */
-.inventory-item {
-    position: relative;
-    user-select: none;
-}
-
-.inventory-item::after {
-    content: attr(data-size);
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    background: rgba(45, 41, 38, 0.8);
-    color: white;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    display: none;
-}
-
-.inventory-item[data-size]::after {
-    display: block;
-}
-
-/* Item placement indicators */
-.placed-items {
-    position: relative;
-}
-
-/* Rotation animation */
-.placed-item {
-    transition: transform 0.3s ease;
-}
-
-/* Z-index visualization */
-.placed-item::before {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80%;
-    height: 4px;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 50%;
-    filter: blur(4px);
-    opacity: 0.5;
-}
-
-/* Context menu enhancements */
-.item-context-menu {
-    border: 1px solid #e9e2d9;
-}
-
-.item-context-menu button {
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.item-context-menu button::before {
-    content: '';
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-}
-
-.item-context-menu button:nth-child(1)::before {
-    background-image: url('../images/icons/rotate.svg');
-}
-
-.item-context-menu button:nth-child(2)::before {
-    background-image: url('../images/icons/layer-up.svg');
-}
-
-.item-context-menu button:nth-child(3)::before {
-    background-image: url('../images/icons/layer-down.svg');
-}
-
-.item-context-menu button:nth-child(4)::before {
-    background-image: url('../images/icons/trash.svg');
-}
-
-/* Room floor grid pattern enhancement */
-.room-floor {
-    background-image: 
-        linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
-    background-size: 20px 20px;
-    background-position: -1px -1px;
-}
-
-/* Improved grid cell styling */
-.grid-cell {
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    transition: all 0.15s ease;
-    background-color: transparent;
-}
-
-.grid-cell:hover:not(.non-placeable):not(.drag-over):not(.drag-invalid) {
-    background-color: rgba(141, 91, 76, 0.1);
-    border-color: rgba(141, 91, 76, 0.3);
-}
-
-/* Save indicator */
-.save-room-btn.saving::after {
-    content: '';
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    margin-left: 8px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Item size indicators in inventory */
-.inventory-item .item-size-badge {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: rgba(45, 41, 38, 0.8);
-    color: white;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 2px;
+    top: 2px;
+    left: 2px;
+    color: rgba(0, 0, 0, 0.5);
 }
 
 /* Responsive */
@@ -848,7 +683,7 @@
     }
     
     .room-container {
-        height: 600px;
+        height: 700px;
         overflow: auto;
     }
     
@@ -859,15 +694,12 @@
     }
 }
 
-/* Responsive room grid for smaller screens */
 @media (max-width: 768px) {
-    .room-grid {
+    .isometric-room {
         transform: scale(0.8);
-        transform-origin: top left;
     }
     
-    .isometric-room {
-        width: 320px;
-        height: 320px;
+    .room-container {
+        padding: 20px;
     }
 }
