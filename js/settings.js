@@ -433,33 +433,6 @@ function updateNotificationPreference(type, enabled) {
 }
 
 /**
- * Export user data
- */
-function exportUserData() {
-    showNotification('Preparing your data export...');
-    
-    fetch('../php/api/user/export_data.php')
-        .then(response => response.blob())
-        .then(blob => {
-            // Create download link
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `habitus_zone_data_${Date.now()}.json`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            a.remove();
-            
-            showNotification('Data exported successfully');
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('Error exporting data', 'error');
-        });
-}
-
-/**
  * Show notification
  * @param {string} message - Notification message
  * @param {string} type - Notification type (success, error, warning, info)

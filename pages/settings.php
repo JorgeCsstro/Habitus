@@ -179,7 +179,7 @@ $themes = [
                     <div class="settings-group">
                         <button class="setting-button" onclick="showChangePasswordModal()">
                             <span class="button-icon">
-                                <img src="../images/icons/lock.webp" alt="Password">
+                                <img src="../images/icons/key-icon-light.webp" alt="Password">
                             </span>
                             <div class="button-text">
                                 <span class="button-title">Change Password</span>
@@ -233,23 +233,6 @@ $themes = [
                             <input type="checkbox" id="task-reminders" checked onchange="toggleTaskReminders(this.checked)">
                             <span class="toggle-switch"></span>
                         </label>
-                    </div>
-                </div>
-
-                <!-- Privacy Section -->
-                <div class="settings-section">
-                    <h2>Privacy</h2>
-                    <div class="settings-group">
-                        <button class="setting-button" onclick="exportUserData()">
-                            <span class="button-icon">
-                                <img src="../images/icons/download.webp" alt="Export">
-                            </span>
-                            <div class="button-text">
-                                <span class="button-title">Export My Data</span>
-                                <span class="button-description">Download all your data in JSON format</span>
-                            </div>
-                            <span class="button-arrow">›</span>
-                        </button>
                     </div>
                 </div>
             </div>
