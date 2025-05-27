@@ -184,8 +184,8 @@ function createGrid(surface, width, height) {
             cell.style.width = CELL_SIZE + 'px';
             cell.style.height = CELL_SIZE + 'px';
             
-            // Mark door area as non-placeable (on left wall)
-            if (surface === 'wall-left' && isDoorArea(x, y)) {
+            // Mark door area as non-placeable (on left wall and floor entrance)
+            if (isDoorArea(x, y, surface)) {
                 cell.classList.add('non-placeable');
             }
             
@@ -200,10 +200,20 @@ function createGrid(surface, width, height) {
     }
 }
 
-// Check if coordinates are in door area (on left wall)
-function isDoorArea(x, y) {
-    // Door is on the left wall, column 1, bottom 2 rows
-    return x === 1 && y >= 2;
+// Check if coordinates are in door area (on left wall and floor in front)
+function isDoorArea(x, y, surface) {
+    // Door configuration:
+    // - Left wall: column 1 (x=1), bottom 2 rows (y=2,3)
+    // - Floor entrance: column 1 (x=1), first row (y=0) - to keep entrance clear
+    
+    if (surface === 'wall-left') {
+        return x === 1 && y >= 2;
+    }
+    // Block the floor cell in front of the door entrance
+    if (surface === 'floor') {
+        return x === 1 && y === 0;
+    }
+    return false;
 }
 
 // Check if area is available for item placement
@@ -226,13 +236,11 @@ function isAreaAvailable(x, y, width, height, surface, excludeItemId = null) {
         return false;
     }
     
-    // Check door area (only on left wall)
-    if (surface === 'wall-left') {
-        for (let dy = 0; dy < height; dy++) {
-            for (let dx = 0; dx < width; dx++) {
-                if (isDoorArea(x + dx, y + dy)) {
-                    return false;
-                }
+    // Check door area (on left wall and floor entrance)
+    for (let dy = 0; dy < height; dy++) {
+        for (let dx = 0; dx < width; dx++) {
+            if (isDoorArea(x + dx, y + dy, surface)) {
+                return false;
             }
         }
     }
@@ -322,7 +330,11 @@ function createPlacedItem(item) {
 function handleCellClick(e) {
     if (e.shiftKey) {
         const cell = e.target;
-        console.log(`Cell clicked: ${cell.dataset.surface} [${cell.dataset.x}, ${cell.dataset.y}]`);
+        const surface = cell.dataset.surface;
+        const x = parseInt(cell.dataset.x);
+        const y = parseInt(cell.dataset.y);
+        const isBlocked = isDoorArea(x, y, surface);
+        console.log(`Cell clicked: ${surface} [${x}, ${y}] - ${isBlocked ? 'BLOCKED (door area)' : 'Available'}`);
     }
 }
 

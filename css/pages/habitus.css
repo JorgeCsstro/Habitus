@@ -195,6 +195,19 @@
     box-shadow: 0 0 5px rgba(255,215,0,0.5);
 }
 
+/* Door mat/entrance area on floor (visual indicator) */
+.room-floor::after {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: rgba(139, 99, 71, 0.3);
+    border: 2px dashed rgba(139, 99, 71, 0.5);
+    left: 60px; /* Second column */
+    top: 0; /* First row */
+    pointer-events: none;
+}
+
 /* Grid overlays - Floor grid */
 .room-grid-floor {
     position: absolute;
