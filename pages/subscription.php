@@ -252,21 +252,21 @@ foreach ($plans as $plan) {
                     <div class="benefits-grid">
                         <div class="benefit">
                             <div class="benefit-icon">
-                                <img src="../images/icons/no-ads.webp" alt="No Ads">
+                                <img src="../images/icons/ads-icon-light.webp" alt="No Ads">
                             </div>
                             <h3>Ad-Free Experience</h3>
                             <p>Focus on your tasks without any distractions or interruptions</p>
                         </div>
                         <div class="benefit">
                             <div class="benefit-icon">
-                                <img src="../images/icons/exclusive.webp" alt="Exclusive">
+                                <img src="../images/icons/exclusive-icon-light.webp" alt="Exclusive">
                             </div>
                             <h3>Exclusive Content</h3>
                             <p>Access special items and themes not available to free users</p>
                         </div>
                         <div class="benefit">
                             <div class="benefit-icon">
-                                <img src="../images/icons/support.webp" alt="Support">
+                                <img src="../images/icons/support-icon-light.webp" alt="Support">
                             </div>
                             <h3>Support Development</h3>
                             <p>Help us continue improving and adding new features</p>
