@@ -1,5 +1,5 @@
 <?php
-// pages/habitus.php - Enhanced with item size support
+// pages/habitus.php - Enhanced with item size and 3D height support
 
 // Include necessary files
 require_once '../php/include/config.php';
@@ -66,8 +66,8 @@ $stmt = $conn->prepare($placedItemsQuery);
 $stmt->execute([$roomId]);
 $placedItems = $stmt->fetchAll();
 
-// Get user's inventory with item sizes
-$inventoryQuery = "SELECT ui.*, si.name, si.image_path, si.category_id, si.grid_width, si.grid_height, ic.name as category
+// Get user's inventory with item sizes and 3D heights
+$inventoryQuery = "SELECT ui.*, si.name, si.image_path, si.category_id, si.grid_width, si.grid_height, si.height_3d, ic.name as category
                   FROM user_inventory ui
                   JOIN shop_items si ON ui.item_id = si.id
                   JOIN item_categories ic ON si.category_id = ic.id
@@ -93,17 +93,17 @@ foreach ($inventory as $item) {
 }
 $inventory = $availableInventory;
 
-// Define default item sizes (can be moved to database)
-$itemSizes = [
-    'wooden_chair' => ['width' => 1, 'height' => 1],
-    'simple_table' => ['width' => 2, 'height' => 2],
-    'bookshelf' => ['width' => 1, 'height' => 2],
-    'cozy_sofa' => ['width' => 3, 'height' => 2],
-    'potted_plant' => ['width' => 1, 'height' => 1],
-    'floor_lamp' => ['width' => 1, 'height' => 1],
-    'picture_frame' => ['width' => 1, 'height' => 1],
-    'cactus' => ['width' => 1, 'height' => 1],
-    'wall_clock' => ['width' => 1, 'height' => 1]
+// Define default item configurations with 3D heights (fallback for items not in DB)
+$itemConfigs = [
+    'wooden_chair' => ['width' => 1, 'height' => 1, 'height3d' => 2],
+    'simple_table' => ['width' => 2, 'height' => 2, 'height3d' => 3],
+    'bookshelf' => ['width' => 1, 'height' => 2, 'height3d' => 4],
+    'cozy_sofa' => ['width' => 3, 'height' => 2, 'height3d' => 2],
+    'potted_plant' => ['width' => 1, 'height' => 1, 'height3d' => 1],
+    'floor_lamp' => ['width' => 1, 'height' => 1, 'height3d' => 4],
+    'picture_frame' => ['width' => 1, 'height' => 1, 'height3d' => 0],
+    'cactus' => ['width' => 1, 'height' => 1, 'height3d' => 1],
+    'wall_clock' => ['width' => 1, 'height' => 1, 'height3d' => 0]
 ];
 ?>
 
@@ -159,25 +159,11 @@ $itemSizes = [
                 <div class="habitus-editor">
                     <div class="room-container">
                         <div id="isometric-room" class="isometric-room">
-                            <!-- Grid overlay -->
-                            <div class="room-grid" id="room-grid"></div>
-                            <!-- Floor -->
-                            <div class="room-floor" id="room-floor"></div>
-                            <!-- Left wall -->
-                            <div class="room-wall-left" id="wall-left"></div>
-                            <!-- Right wall -->
-                            <div class="room-wall-right" id="wall-right"></div>
-                            <!-- Door (non-placeable area) -->
-                            <div class="room-door"></div>
-                            <!-- Placed items container -->
-                            <div class="placed-items" id="placed-items"></div>
+                            <!-- Room structure will be created by JavaScript -->
                         </div>
                         
                         <!-- Room controls -->
                         <div class="room-controls">
-                            <!-- <button class="grid-toggle" onclick="toggleGrid()">
-                                <img src="../images/icons/grid.svg" alt="Toggle Grid"> Grid
-                            </button> -->
                             <button class="rotate-view" onclick="rotateView()">
                                 <img src="../images/icons/rotate.svg" alt="Rotate"> Rotate View
                             </button>
@@ -200,10 +186,13 @@ $itemSizes = [
                             <?php else: ?>
                                 <?php foreach ($inventory as $item): ?>
                                     <?php
-                                    // Get item size
+                                    // Get item configuration
                                     $itemBaseName = strtolower(preg_replace('/\.(jpg|png|webp|gif)$/i', '', basename($item['image_path'])));
-                                    $itemWidth = isset($item['grid_width']) ? $item['grid_width'] : (isset($itemSizes[$itemBaseName]['width']) ? $itemSizes[$itemBaseName]['width'] : 1);
-                                    $itemHeight = isset($item['grid_height']) ? $item['grid_height'] : (isset($itemSizes[$itemBaseName]['height']) ? $itemSizes[$itemBaseName]['height'] : 1);
+                                    
+                                    // Get dimensions from database or fallback
+                                    $itemWidth = $item['grid_width'] ?? ($itemConfigs[$itemBaseName]['width'] ?? 1);
+                                    $itemHeight = $item['grid_height'] ?? ($itemConfigs[$itemBaseName]['height'] ?? 1);
+                                    $itemHeight3d = $item['height_3d'] ?? ($itemConfigs[$itemBaseName]['height3d'] ?? 1);
                                     ?>
                                     <div class="inventory-item" 
                                          data-id="<?php echo $item['id']; ?>"
@@ -222,6 +211,9 @@ $itemSizes = [
                                         </div>
                                         <?php if ($itemWidth > 1 || $itemHeight > 1): ?>
                                             <div class="item-size-badge"><?php echo $itemWidth; ?>x<?php echo $itemHeight; ?></div>
+                                        <?php endif; ?>
+                                        <?php if ($itemHeight3d > 0): ?>
+                                            <div class="item-height-badge">H:<?php echo $itemHeight3d; ?></div>
                                         <?php endif; ?>
                                     </div>
                                 <?php endforeach; ?>
@@ -269,7 +261,7 @@ $itemSizes = [
             const roomData = <?php echo json_encode($roomData); ?>;
             const placedItems = <?php echo json_encode($placedItems); ?>;
             
-            // Initialize the enhanced room system
+            // Initialize the enhanced room system with 3D heights
             initializeHabitusRoom(roomData, placedItems);
         });
     </script>

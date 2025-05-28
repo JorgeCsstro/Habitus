@@ -224,7 +224,6 @@ CREATE TABLE `placed_items` (
 
 LOCK TABLES `placed_items` WRITE;
 /*!40000 ALTER TABLE `placed_items` DISABLE KEYS */;
-INSERT INTO `placed_items` VALUES (1,1,14,'floor',9,7,0,1,'2025-05-27 18:00:31');
 /*!40000 ALTER TABLE `placed_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -467,7 +466,7 @@ CREATE TABLE `transactions` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -476,7 +475,7 @@ CREATE TABLE `transactions` (
 
 LOCK TABLES `transactions` WRITE;
 /*!40000 ALTER TABLE `transactions` DISABLE KEYS */;
-INSERT INTO `transactions` VALUES (1,1,10,'Completed Daily: Halloo Claude','earn',1,'task','2025-05-17 21:46:34'),(2,1,10,'Completed Daily: Hola 2','earn',2,'task','2025-05-17 22:59:06'),(3,1,23,'Completed Goal: Holaaaa','earn',6,'task','2025-05-18 15:47:34'),(4,1,140,'Completed Challenge: Halloo','earn',10,'task','2025-05-19 20:54:06'),(5,1,80,'Completed Challenge: ffffffffff','earn',15,'task','2025-05-20 21:02:16'),(6,1,140,'Completed Challenge: gfgdg','earn',16,'task','2025-05-20 21:22:00'),(7,1,80,'Completed Challenge: ddddd','earn',21,'task','2025-05-20 21:31:28'),(8,1,50,'Purchased: Wooden Chair','spend',1,'shop','2025-05-27 17:58:32');
+INSERT INTO `transactions` VALUES (1,1,10,'Completed Daily: Halloo Claude','earn',1,'task','2025-05-17 21:46:34'),(2,1,10,'Completed Daily: Hola 2','earn',2,'task','2025-05-17 22:59:06'),(3,1,23,'Completed Goal: Holaaaa','earn',6,'task','2025-05-18 15:47:34'),(4,1,140,'Completed Challenge: Halloo','earn',10,'task','2025-05-19 20:54:06'),(5,1,80,'Completed Challenge: ffffffffff','earn',15,'task','2025-05-20 21:02:16'),(6,1,140,'Completed Challenge: gfgdg','earn',16,'task','2025-05-20 21:22:00'),(7,1,80,'Completed Challenge: ddddd','earn',21,'task','2025-05-20 21:31:28'),(8,1,50,'Purchased: Wooden Chair','spend',1,'shop','2025-05-27 17:58:32'),(9,1,300,'Purchased: Cozy Sofa','spend',4,'shop','2025-05-28 17:15:17'),(10,1,100,'Purchased: Simple Table','spend',2,'shop','2025-05-28 17:15:17'),(11,1,50,'Purchased: Wooden Chair','spend',1,'shop','2025-05-28 17:15:17');
 /*!40000 ALTER TABLE `transactions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -524,7 +523,7 @@ CREATE TABLE `user_inventory` (
   KEY `item_id` (`item_id`),
   CONSTRAINT `user_inventory_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `user_inventory_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `shop_items` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -533,7 +532,7 @@ CREATE TABLE `user_inventory` (
 
 LOCK TABLES `user_inventory` WRITE;
 /*!40000 ALTER TABLE `user_inventory` DISABLE KEYS */;
-INSERT INTO `user_inventory` VALUES (14,1,1,1,'2025-05-27 17:58:32');
+INSERT INTO `user_inventory` VALUES (14,1,1,2,'2025-05-27 17:58:32'),(15,1,4,1,'2025-05-28 17:15:17'),(16,1,2,1,'2025-05-28 17:15:17');
 /*!40000 ALTER TABLE `user_inventory` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -568,7 +567,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Jorge','jorgecastrot2005@gmail.com','$2y$12$xo9KGsfSo2C8kLddntcOquUyme0CX3IaHX0PUiPbpiZY.Rrb.dIhO',7402,'free',NULL,'light','en','2025-05-16 18:41:14','2025-05-27 21:32:18');
+INSERT INTO `users` VALUES (1,'Jorge','jorgecastrot2005@gmail.com','$2y$12$xo9KGsfSo2C8kLddntcOquUyme0CX3IaHX0PUiPbpiZY.Rrb.dIhO',6952,'free',NULL,'light','en','2025-05-16 18:41:14','2025-05-28 17:14:59');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -589,4 +588,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-28  0:02:46
+-- Dump completed on 2025-05-28 19:51:39

@@ -1,4 +1,4 @@
-// habitus-room.js - Enhanced isometric room system with 6x6 grid and wall placement
+// habitus-room.js - Enhanced isometric room system with 6x6 grid, wall placement, and 3D item heights
 
 // Room state
 let currentRoom = null;
@@ -18,20 +18,75 @@ const CELL_SIZE = 60; // Size of each grid cell in pixels (larger for 6x6)
 const ROOM_WIDTH = 360; // 6 * 60
 const ROOM_HEIGHT = 360; // 6 * 60
 const WALL_HEIGHT = 4; // Wall is 4 cells high
+const HEIGHT_UNIT = 20; // Pixels per unit of 3D height
 
-// Item size definitions (can be loaded from database)
-const ITEM_SIZES = {
+// Item configuration with 3D heights
+const ITEM_CONFIGS = {
     // Floor Furniture
-    'wooden_chair': { width: 1, height: 1, surfaces: ['floor'] },
-    'simple_table': { width: 2, height: 2, surfaces: ['floor'] },
-    'bookshelf': { width: 1, height: 2, surfaces: ['floor', 'wall-left', 'wall-right'] },
-    'cozy_sofa': { width: 3, height: 2, surfaces: ['floor'] },
+    'wooden_chair': { 
+        width: 1, 
+        height: 1, 
+        surfaces: ['floor'], 
+        height3d: 2, // Chair seat height
+        category: 'furniture'
+    },
+    'simple_table': { 
+        width: 2, 
+        height: 2, 
+        surfaces: ['floor'], 
+        height3d: 3, // Table height
+        category: 'furniture'
+    },
+    'bookshelf': { 
+        width: 1, 
+        height: 2, 
+        surfaces: ['floor', 'wall-left', 'wall-right'], 
+        height3d: 4, // Tall bookshelf
+        category: 'furniture'
+    },
+    'cozy_sofa': { 
+        width: 3, 
+        height: 2, 
+        surfaces: ['floor'], 
+        height3d: 2, // Sofa seat height
+        category: 'furniture'
+    },
     // Decorations
-    'potted_plant': { width: 1, height: 1, surfaces: ['floor'] },
-    'floor_lamp': { width: 1, height: 1, surfaces: ['floor'] },
-    'picture_frame': { width: 1, height: 1, surfaces: ['wall-left', 'wall-right'] },
-    'cactus': { width: 1, height: 1, surfaces: ['floor'] },
-    'wall_clock': { width: 1, height: 1, surfaces: ['wall-left', 'wall-right'] }
+    'potted_plant': { 
+        width: 1, 
+        height: 1, 
+        surfaces: ['floor'], 
+        height3d: 1, // Small plant
+        category: 'decorations'
+    },
+    'floor_lamp': { 
+        width: 1, 
+        height: 1, 
+        surfaces: ['floor'], 
+        height3d: 4, // Tall floor lamp
+        category: 'decorations'
+    },
+    'picture_frame': { 
+        width: 1, 
+        height: 1, 
+        surfaces: ['wall-left', 'wall-right'], 
+        height3d: 0, // Flat on wall
+        category: 'decorations'
+    },
+    'cactus': { 
+        width: 1, 
+        height: 1, 
+        surfaces: ['floor'], 
+        height3d: 1, // Small cactus
+        category: 'decorations'
+    },
+    'wall_clock': { 
+        width: 1, 
+        height: 1, 
+        surfaces: ['wall-left', 'wall-right'], 
+        height3d: 0, // Flat on wall
+        category: 'decorations'
+    }
 };
 
 // Initialize the Habitus room
@@ -139,18 +194,18 @@ function createDragPreview() {
 
 // Get item configuration
 function getItemConfig(itemName) {
-    if (!itemName) return { width: 1, height: 1, surfaces: ['floor'] };
+    if (!itemName) return { width: 1, height: 1, surfaces: ['floor'], height3d: 1 };
     
     // Extract base name from image path if needed
     const baseName = itemName.toLowerCase().replace(/\.(jpg|png|webp|gif)$/i, '').split('/').pop();
     
-    // Check predefined sizes
-    if (ITEM_SIZES[baseName]) {
-        return ITEM_SIZES[baseName];
+    // Check predefined configurations
+    if (ITEM_CONFIGS[baseName]) {
+        return ITEM_CONFIGS[baseName];
     }
     
     // Default config
-    return { width: 1, height: 1, surfaces: ['floor'] };
+    return { width: 1, height: 1, surfaces: ['floor'], height3d: 1 };
 }
 
 // Create all grids (floor and walls)
@@ -288,7 +343,7 @@ function loadPlacedItems() {
     });
 }
 
-// Create a placed item element
+// Create a placed item element with 3D height
 function createPlacedItem(item) {
     const itemDiv = document.createElement('div');
     itemDiv.className = 'placed-item';
@@ -299,20 +354,52 @@ function createPlacedItem(item) {
     
     const itemConfig = getItemConfig(item.image_path || item.name);
     
+    // Set 3D height attribute
+    itemDiv.dataset.height = itemConfig.height3d || 1;
+    
     // Position and size on grid
     itemDiv.style.left = (item.grid_x * CELL_SIZE) + 'px';
     itemDiv.style.top = (item.grid_y * CELL_SIZE) + 'px';
     itemDiv.style.width = (itemConfig.width * CELL_SIZE) + 'px';
     itemDiv.style.height = (itemConfig.height * CELL_SIZE) + 'px';
-    itemDiv.style.transform = `rotate(${item.rotation || 0}deg)`;
+    
+    // Apply rotation
+    const rotation = item.rotation || 0;
+    itemDiv.style.transform = `rotate(${rotation}deg) translateZ(${itemConfig.height3d * HEIGHT_UNIT}px)`;
     itemDiv.style.zIndex = item.z_index || 1;
+    
+    // Create 3D container
+    const container3d = document.createElement('div');
+    container3d.className = 'item-3d-container';
+    
+    // Add shadow for depth effect
+    const shadow = document.createElement('div');
+    shadow.className = 'item-shadow';
+    container3d.appendChild(shadow);
+    
+    // Create 3D sides for items with height (only on floor items)
+    if (itemConfig.height3d > 0 && item.surface === 'floor') {
+        // Front side
+        const frontSide = document.createElement('div');
+        frontSide.className = 'item-side item-side-front';
+        frontSide.style.height = (itemConfig.height3d * HEIGHT_UNIT) + 'px';
+        container3d.appendChild(frontSide);
+        
+        // Right side
+        const rightSide = document.createElement('div');
+        rightSide.className = 'item-side item-side-right';
+        rightSide.style.width = (itemConfig.height3d * HEIGHT_UNIT) + 'px';
+        container3d.appendChild(rightSide);
+    }
     
     // Create image
     const img = document.createElement('img');
     img.src = '../' + item.image_path;
     img.alt = item.name;
     img.draggable = false;
-    itemDiv.appendChild(img);
+    container3d.appendChild(img);
+    
+    itemDiv.appendChild(container3d);
     
     // Add event listeners
     itemDiv.addEventListener('click', selectItem);
@@ -500,6 +587,7 @@ function handleDragOver(e) {
         preview.style.height = (itemConfig.height * CELL_SIZE) + 'px';
         preview.innerHTML = `<img src="../${currentDragData.image}" alt="${currentDragData.name}">`;
         preview.style.opacity = isValid ? '0.7' : '0.3';
+        preview.style.transform = `translateZ(${itemConfig.height3d * HEIGHT_UNIT}px)`;
     }
     
     e.dataTransfer.dropEffect = isValid ? 'copy' : 'none';
@@ -708,9 +796,13 @@ function hideContextMenu() {
 function rotateItem() {
     if (!contextMenuItem) return;
     
-    const currentRotation = parseInt(contextMenuItem.style.transform.replace(/[^0-9-]/g, '')) || 0;
+    const itemConfig = getItemConfig(contextMenuItem.querySelector('img').alt);
+    const currentRotation = parseInt(contextMenuItem.style.transform.match(/rotate\((\d+)deg\)/) ? 
+                                     contextMenuItem.style.transform.match(/rotate\((\d+)deg\)/)[1] : 0);
     const newRotation = (currentRotation + 90) % 360;
-    contextMenuItem.style.transform = `rotate(${newRotation}deg)`;
+    
+    // Apply rotation with 3D height
+    contextMenuItem.style.transform = `rotate(${newRotation}deg) translateZ(${itemConfig.height3d * HEIGHT_UNIT}px)`;
     
     // Update in data
     const itemId = contextMenuItem.dataset.id;
