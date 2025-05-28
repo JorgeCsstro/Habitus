@@ -217,6 +217,8 @@
     transform: rotateX(60deg) rotateZ(-45deg);
     top: 200px;
     left: 170px;
+    display: none;
+    transition: opacity 0.3s ease;
 }
 
 /* Grid overlays - Left wall grid */
@@ -229,6 +231,8 @@
     transform-origin: top;
     top: 109px;
     left: 42px;
+    display: none;
+    transition: opacity 0.3s ease;
 }
 
 /* Grid overlays - Right wall grid */
@@ -241,6 +245,20 @@
     transform-origin: left;
     top: 264px;
     left: 222px;
+    display: none;
+    transition: opacity 0.3s ease;
+}
+
+/* Show grids when dragging */
+.isometric-room.dragging .room-grid-floor,
+.isometric-room.dragging .room-grid-wall-left,
+.isometric-room.dragging .room-grid-wall-right {
+    display: block;
+}
+
+/* Add smooth transition to room for dragging state */
+.isometric-room {
+    transition: none; /* Prevent unwanted transitions on the room itself */
 }
 
 /* Grid cells - 60px for 6x6 grid */

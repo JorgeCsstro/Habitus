@@ -175,9 +175,9 @@ $itemSizes = [
                         
                         <!-- Room controls -->
                         <div class="room-controls">
-                            <button class="grid-toggle" onclick="toggleGrid()">
+                            <!-- <button class="grid-toggle" onclick="toggleGrid()">
                                 <img src="../images/icons/grid.svg" alt="Toggle Grid"> Grid
-                            </button>
+                            </button> -->
                             <button class="rotate-view" onclick="rotateView()">
                                 <img src="../images/icons/rotate.svg" alt="Rotate"> Rotate View
                             </button>

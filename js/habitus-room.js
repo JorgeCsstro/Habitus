@@ -398,6 +398,12 @@ function startDrag(e) {
     };
     
     isDragging = true;
+    
+    // Show grid when dragging starts
+    const room = document.getElementById('isometric-room');
+    if (room) {
+        room.classList.add('dragging');
+    }
 }
 
 // Handle dragging of already placed items
