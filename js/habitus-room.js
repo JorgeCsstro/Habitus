@@ -435,6 +435,12 @@ function handleItemDragStart(e) {
     item.classList.add('dragging');
     
     isDragging = true;
+    
+    // Show grid when dragging starts
+    const room = document.getElementById('isometric-room');
+    if (room) {
+        room.classList.add('dragging');
+    }
 }
 
 function handleItemDragEnd(e) {

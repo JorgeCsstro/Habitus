@@ -218,6 +218,7 @@
     top: 200px;
     left: 170px;
     display: none;
+    opacity: 0;
     transition: opacity 0.3s ease;
 }
 
@@ -232,6 +233,7 @@
     top: 109px;
     left: 42px;
     display: none;
+    opacity: 0;
     transition: opacity 0.3s ease;
 }
 
@@ -246,6 +248,7 @@
     top: 264px;
     left: 222px;
     display: none;
+    opacity: 0;
     transition: opacity 0.3s ease;
 }
 
@@ -254,6 +257,8 @@
 .isometric-room.dragging .room-grid-wall-left,
 .isometric-room.dragging .room-grid-wall-right {
     display: block;
+    opacity: 1;
+    pointer-events: all;
 }
 
 /* Add smooth transition to room for dragging state */
