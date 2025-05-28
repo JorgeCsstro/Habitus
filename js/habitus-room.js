@@ -611,6 +611,12 @@ function handleDrop(e) {
     document.querySelectorAll('.grid-cell').forEach(c => {
         c.classList.remove('drag-over', 'drag-invalid');
     });
+
+    // Show grid when dragging starts
+    const room = document.getElementById('isometric-room');
+    if (room) {
+        room.classList.remove('dragging');
+    }
 }
 
 // Select an item
