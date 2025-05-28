@@ -100,7 +100,7 @@ $categories = $categoryStmt->fetchAll();
                                 <div class="shop-item" onclick="addToCart(<?php echo $item['id']; ?>, '<?php echo htmlspecialchars($item['name']); ?>', <?php echo $item['price']; ?>, '<?php echo $item['image_path']; ?>', this)">
                                     <img src="../<?php echo $item['image_path']; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                                     <div class="shop-item-price">
-                                        <img src="../images/icons/hcoin.svg" alt="HCoin">
+                                        <img src="../images/icons/hcoin-icon-light.webp" alt="HCoin">
                                         <span><?php echo number_format($item['price']); ?></span>
                                     </div>
                                 </div>
@@ -121,7 +121,7 @@ $categories = $categoryStmt->fetchAll();
                                 <div class="shop-item" onclick="addToCart(<?php echo $item['id']; ?>, '<?php echo htmlspecialchars($item['name']); ?>', <?php echo $item['price']; ?>, '<?php echo $item['image_path']; ?>', this)">
                                     <img src="../<?php echo $item['image_path']; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                                     <div class="shop-item-price">
-                                        <img src="../images/icons/hcoin.svg" alt="HCoin">
+                                        <img src="../images/icons/hcoin-icon-light.webp" alt="HCoin">
                                         <span><?php echo number_format($item['price']); ?></span>
                                     </div>
                                 </div>
@@ -141,7 +141,7 @@ $categories = $categoryStmt->fetchAll();
                                 <div class="shop-item" onclick="addToCart(<?php echo $item['id']; ?>, '<?php echo htmlspecialchars($item['name']); ?>', <?php echo $item['price']; ?>, '<?php echo $item['image_path']; ?>', this)">
                                     <img src="../<?php echo $item['image_path']; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                                     <div class="shop-item-price">
-                                        <img src="../images/icons/hcoin.svg" alt="HCoin">
+                                        <img src="../images/icons/hcoin-icon-light.webp" alt="HCoin">
                                         <span><?php echo number_format($item['price']); ?></span>
                                     </div>
                                 </div>
@@ -170,7 +170,7 @@ $categories = $categoryStmt->fetchAll();
                             <div class="cart-total-row">
                                 <span>Total:</span>
                                 <div class="cart-total-price">
-                                    <img src="../images/icons/hcoin.svg" alt="HCoin">
+                                    <img src="../images/icons/hcoin-icon-light.webp" alt="HCoin">
                                     <span id="cart-total">0</span>
                                 </div>
                             </div>
