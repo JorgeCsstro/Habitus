@@ -1,4 +1,4 @@
-/* habitus.css - Enhanced isometric room with 6x6 grid and wall grids */
+/* habitus.css - Enhanced isometric room with 6x6 grid and undistorted images */
 
 /* Main content container */
 .habitus-content {
@@ -349,15 +349,15 @@
     left: 170px;
 }
 
-/* Placed item */
 .placed-item {
     position: absolute;
     pointer-events: all;
     cursor: move;
-    transition: filter 0.2s, transform 0.2s;
-    transform-origin: center bottom;
+    transition: filter 0.2s;
+    transform-style: preserve-3d;
 }
 
+/* CRITICAL FIX: Counter-rotate images to prevent distortion */
 .placed-item img {
     width: 100%;
     height: 100%;
@@ -365,17 +365,41 @@
     display: block;
     user-select: none;
     -webkit-user-drag: none;
+    /* Counter the isometric transform to keep images undistorted */
+    transform: rotateZ(45deg) rotateX(-60deg) scale(1, 4);
+    /* Adjust transform origin for proper positioning */
+    transform-origin: center center;
+}
+
+/* Adjust image transform for wall items */
+.placed-items-wall-left .placed-item img {
+    transform: rotateZ(45deg) rotateX(-60deg) rotateY(90deg) scale(1.224, 0.707);
+}
+
+.placed-items-wall-right .placed-item img {
+    transform: rotateZ(45deg) rotateX(-60deg) rotateX(90deg) scale(1.224, 0.707);
 }
 
 .placed-item:hover {
-    filter: brightness(1.1) drop-shadow(0 2px 8px rgba(0,0,0,0.2));
+    filter: brightness(1.1) drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+    z-index: 1000;
 }
 
 .placed-item.selected {
-    filter: drop-shadow(0 0 10px #6a8d7f);
-    outline: 2px solid #6a8d7f;
-    outline-offset: 2px;
-    z-index: 1000 !important;
+    filter: drop-shadow(0 0 15px #6a8d7f);
+    z-index: 1001 !important;
+}
+
+.placed-item.selected::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border: 2px solid #6a8d7f;
+    border-radius: 4px;
+    pointer-events: none;
 }
 
 .placed-item.dragging {
@@ -383,7 +407,7 @@
     pointer-events: none;
 }
 
-/* Drag preview */
+/* Drag preview - also with counter-rotated image */
 .drag-preview {
     position: absolute;
     pointer-events: none;
@@ -398,7 +422,8 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
-    transform: rotateZ(-30px);
+    /* Same counter-rotation as placed items */
+    transform: rotateZ(45deg) rotateX(-60deg) scale(1.224, 0.707);
 }
 
 /* Room controls */
@@ -841,5 +866,11 @@
     
     .room-container {
         padding: 20px;
+    }
+    
+    /* Adjust counter-rotation for smaller screens */
+    .placed-item img,
+    .drag-preview img {
+        transform: rotateZ(45deg) rotateX(-60deg) scale(1.0, 0.58);
     }
 }

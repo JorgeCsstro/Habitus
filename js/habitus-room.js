@@ -1,4 +1,4 @@
-// habitus-room.js - Enhanced isometric room system with 6x6 grid and wall placement
+// habitus-room.js - Enhanced isometric room system with proper image handling
 
 // Room state
 let currentRoom = null;
@@ -296,6 +296,7 @@ function createPlacedItem(item) {
     itemDiv.dataset.gridX = item.grid_x;
     itemDiv.dataset.gridY = item.grid_y;
     itemDiv.dataset.surface = item.surface || 'floor';
+    itemDiv.dataset.rotation = item.rotation || 0;
     
     const itemConfig = getItemConfig(item.image_path || item.name);
     
@@ -304,6 +305,7 @@ function createPlacedItem(item) {
     itemDiv.style.top = (item.grid_y * CELL_SIZE) + 'px';
     itemDiv.style.width = (itemConfig.width * CELL_SIZE) + 'px';
     itemDiv.style.height = (itemConfig.height * CELL_SIZE) + 'px';
+    // Apply rotation to the container, not the image
     itemDiv.style.transform = `rotate(${item.rotation || 0}deg)`;
     itemDiv.style.zIndex = item.z_index || 1;
     
@@ -708,9 +710,12 @@ function hideContextMenu() {
 function rotateItem() {
     if (!contextMenuItem) return;
     
-    const currentRotation = parseInt(contextMenuItem.style.transform.replace(/[^0-9-]/g, '')) || 0;
+    const currentRotation = parseInt(contextMenuItem.dataset.rotation) || 0;
     const newRotation = (currentRotation + 90) % 360;
+    
+    // Apply rotation to the container
     contextMenuItem.style.transform = `rotate(${newRotation}deg)`;
+    contextMenuItem.dataset.rotation = newRotation;
     
     // Update in data
     const itemId = contextMenuItem.dataset.id;
