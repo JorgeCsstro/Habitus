@@ -611,13 +611,34 @@ function handleDrop(e) {
     document.querySelectorAll('.grid-cell').forEach(c => {
         c.classList.remove('drag-over', 'drag-invalid');
     });
+}
 
-    // Show grid when dragging starts
+// Global drag end handler
+document.addEventListener('dragend', function(e) {
+    // Hide all drag previews
+    document.querySelectorAll('.drag-preview').forEach(preview => {
+        preview.style.display = 'none';
+    });
+    
+    // Clear all drag states
+    document.querySelectorAll('.grid-cell').forEach(cell => {
+        cell.classList.remove('drag-over', 'drag-invalid');
+    });
+    
+    // Reset placed item dragging state
+    document.querySelectorAll('.placed-item.dragging').forEach(item => {
+        item.classList.remove('dragging');
+    });
+    
+    // Hide grid when dragging ends (regardless of where drop occurred)
     const room = document.getElementById('isometric-room');
     if (room) {
         room.classList.remove('dragging');
     }
-}
+    
+    isDragging = false;
+    currentDragData = null;
+});
 
 // Select an item
 function selectItem(e) {
@@ -769,17 +790,6 @@ function removeItem() {
         hideContextMenu();
         showNotification('Item removed', 'info');
     }
-}
-
-// Toggle grid visibility
-function toggleGrid() {
-    gridVisible = !gridVisible;
-    ['floor', 'wall-left', 'wall-right'].forEach(surface => {
-        const grid = document.getElementById(`room-grid-${surface}`);
-        if (grid) {
-            grid.style.display = gridVisible ? 'block' : 'none';
-        }
-    });
 }
 
 // Switch surface view
