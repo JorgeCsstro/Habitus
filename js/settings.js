@@ -191,13 +191,6 @@ function showChangePasswordModal() {
 }
 
 /**
- * Show change email modal
- */
-function showChangeEmailModal() {
-    document.getElementById('email-modal').style.display = 'flex';
-}
-
-/**
  * Show delete account modal
  */
 function showDeleteAccountModal() {

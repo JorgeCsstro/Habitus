@@ -188,17 +188,6 @@ $themes = [
                             <span class="button-arrow">›</span>
                         </button>
                         
-                        <button class="setting-button" onclick="showChangeEmailModal()">
-                            <span class="button-icon">
-                                <img src="../images/icons/email.webp" alt="Email">
-                            </span>
-                            <div class="button-text">
-                                <span class="button-title">Change Email</span>
-                                <span class="button-description">Update your email address</span>
-                            </div>
-                            <span class="button-arrow">›</span>
-                        </button>
-                        
                         <button class="setting-button danger" onclick="showDeleteAccountModal()">
                             <span class="button-icon">
                                 <img src="../images/icons/trash.webp" alt="Delete">
@@ -264,33 +253,6 @@ $themes = [
                     <div class="form-actions">
                         <button type="button" class="cancel-btn" onclick="closeModal('password-modal')">Cancel</button>
                         <button type="submit" class="save-btn">Update Password</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Change Email Modal -->
-    <div id="email-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Change Email</h2>
-                <button class="close-modal" onclick="closeModal('email-modal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="change-email-form">
-                    <div class="form-group">
-                        <label for="new-email">New Email Address</label>
-                        <input type="email" id="new-email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email-password">Password</label>
-                        <input type="password" id="email-password" required>
-                        <span class="field-hint">Enter your password to confirm</span>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="cancel-btn" onclick="closeModal('email-modal')">Cancel</button>
-                        <button type="submit" class="save-btn">Update Email</button>
                     </div>
                 </form>
             </div>
