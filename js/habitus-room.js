@@ -315,14 +315,14 @@ function createPlacedItem(item) {
     
     const itemConfig = getItemConfig(item.image_path || item.name);
     
-    // Position and size on grid
+    // For wall items, don't swap width/height - the CSS transform handles orientation
     itemDiv.style.left = (item.grid_x * CELL_SIZE) + 'px';
     itemDiv.style.top = (item.grid_y * CELL_SIZE) + 'px';
     itemDiv.style.width = (itemConfig.width * CELL_SIZE) + 'px';
     itemDiv.style.height = (itemConfig.height * CELL_SIZE) + 'px';
     
-    // Apply rotation to the container
-    if (item.rotation) {
+    // Apply rotation only for floor items
+    if ((item.surface === 'floor') && item.rotation) {
         itemDiv.style.transform = `rotate(${item.rotation}deg)`;
         itemDiv.style.transformOrigin = 'center center';
     }
