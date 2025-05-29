@@ -284,7 +284,7 @@ CREATE TABLE `shop_items` (
   KEY `idx_grid_size` (`grid_width`,`grid_height`),
   CONSTRAINT `shop_items_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `item_categories` (`id`),
   CONSTRAINT `chk_grid_size` CHECK (((`grid_width` > 0) and (`grid_height` > 0)))
-) ENGINE=InnoDB AUTO_INCREMENT=96 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=99 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -293,7 +293,7 @@ CREATE TABLE `shop_items` (
 
 LOCK TABLES `shop_items` WRITE;
 /*!40000 ALTER TABLE `shop_items` DISABLE KEYS */;
-INSERT INTO `shop_items` VALUES (1,1,'Wooden Chair','A comfortable wooden chair','images/items/furniture/wooden_chair.webp',50,'common',1,1,'floor',1,1,'2025-05-24 20:35:09'),(2,1,'Simple Table','A basic wooden table','images/items/furniture/simple_table.webp',100,'common',2,2,'floor',1,1,'2025-05-24 20:35:09'),(3,1,'Bookshelf','Store your favorite books','images/items/furniture/bookshelf.webp',150,'common',1,2,'floor,wall-left,wall-right',0,1,'2025-05-24 20:35:09'),(4,1,'Cozy Sofa','A comfortable sofa for relaxing','images/items/furniture/cozy_sofa.webp',300,'uncommon',3,2,'floor',1,1,'2025-05-24 20:35:09'),(5,3,'Potted Plant','Brings life to your room','images/items/decorations/potted_plant.webp',30,'common',1,1,'floor',1,1,'2025-05-24 20:35:09'),(6,3,'Floor Lamp','Ambient lighting','images/items/decorations/floor_lamp.webp',120,'uncommon',1,1,'floor',1,1,'2025-05-24 20:35:09'),(7,3,'Picture Frame','Display your memories','images/items/decorations/picture_frame.webp',40,'common',1,1,'floor,wall-left,wall-right',0,1,'2025-05-24 20:35:09'),(8,3,'Cactus','Low maintenance plant','images/items/decorations/cactus.webp',25,'common',1,1,'floor',0,1,'2025-05-24 20:35:09'),(9,3,'Wall Clock','Keep track of time','images/items/decorations/wall_clock.webp',80,'common',1,1,'floor,wall-left,wall-right',0,1,'2025-05-24 20:36:26');
+INSERT INTO `shop_items` VALUES (1,1,'Wooden Chair','A comfortable wooden chair','images/items/furniture/wooden_chair.webp',50,'common',1,1,'floor',1,1,'2025-05-24 20:35:09'),(2,1,'Simple Table','A basic wooden table','images/items/furniture/simple_table.webp',100,'common',2,2,'floor',1,1,'2025-05-24 20:35:09'),(3,1,'Bookshelf','Store your favorite books','images/items/furniture/bookshelf.webp',150,'common',1,2,'floor,wall-left,wall-right',0,1,'2025-05-24 20:35:09'),(4,1,'Cozy Sofa','A comfortable sofa for relaxing','images/items/furniture/cozy_sofa.webp',300,'uncommon',3,2,'floor',1,1,'2025-05-24 20:35:09'),(5,3,'Potted Plant','Brings life to your room','images/items/decorations/potted_plant.webp',30,'common',1,1,'floor',1,1,'2025-05-24 20:35:09'),(6,3,'Floor Lamp','Ambient lighting','images/items/decorations/floor_lamp.webp',120,'uncommon',1,1,'floor',1,1,'2025-05-24 20:35:09'),(7,3,'Picture Frame','Display your memories','images/items/decorations/picture_frame.webp',40,'common',1,1,'floor,wall-left,wall-right',0,1,'2025-05-24 20:35:09'),(8,3,'Cactus','Low maintenance plant','images/items/decorations/cactus.webp',25,'common',1,1,'floor',0,1,'2025-05-24 20:35:09'),(9,3,'Wall Clock','Keep track of time','images/items/decorations/wall_clock.webp',80,'common',1,1,'wall-left,wall-right',0,1,'2025-05-24 20:36:26'),(96,3,'Wall Mirror','Reflects light and makes room feel bigger','images/items/decorations/wall_mirror.webp',60,'common',1,1,'wall-left,wall-right',0,1,'2025-05-29 17:04:03'),(97,3,'Wall Shelf','Small shelf for decorative items','images/items/decorations/wall_shelf.webp',45,'common',2,1,'wall-left,wall-right',0,1,'2025-05-29 17:04:03'),(98,3,'Painting','Beautiful landscape painting','images/items/decorations/painting.webp',90,'uncommon',2,1,'wall-left,wall-right',0,1,'2025-05-29 17:04:03');
 /*!40000 ALTER TABLE `shop_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -466,7 +466,7 @@ CREATE TABLE `transactions` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -475,7 +475,7 @@ CREATE TABLE `transactions` (
 
 LOCK TABLES `transactions` WRITE;
 /*!40000 ALTER TABLE `transactions` DISABLE KEYS */;
-INSERT INTO `transactions` VALUES (1,1,10,'Completed Daily: Halloo Claude','earn',1,'task','2025-05-17 21:46:34'),(2,1,10,'Completed Daily: Hola 2','earn',2,'task','2025-05-17 22:59:06'),(3,1,23,'Completed Goal: Holaaaa','earn',6,'task','2025-05-18 15:47:34'),(4,1,140,'Completed Challenge: Halloo','earn',10,'task','2025-05-19 20:54:06'),(5,1,80,'Completed Challenge: ffffffffff','earn',15,'task','2025-05-20 21:02:16'),(6,1,140,'Completed Challenge: gfgdg','earn',16,'task','2025-05-20 21:22:00'),(7,1,80,'Completed Challenge: ddddd','earn',21,'task','2025-05-20 21:31:28'),(8,1,50,'Purchased: Wooden Chair','spend',1,'shop','2025-05-27 17:58:32'),(9,1,300,'Purchased: Cozy Sofa','spend',4,'shop','2025-05-28 17:15:17'),(10,1,100,'Purchased: Simple Table','spend',2,'shop','2025-05-28 17:15:17'),(11,1,50,'Purchased: Wooden Chair','spend',1,'shop','2025-05-28 17:15:17');
+INSERT INTO `transactions` VALUES (1,1,10,'Completed Daily: Halloo Claude','earn',1,'task','2025-05-17 21:46:34'),(2,1,10,'Completed Daily: Hola 2','earn',2,'task','2025-05-17 22:59:06'),(3,1,23,'Completed Goal: Holaaaa','earn',6,'task','2025-05-18 15:47:34'),(4,1,140,'Completed Challenge: Halloo','earn',10,'task','2025-05-19 20:54:06'),(5,1,80,'Completed Challenge: ffffffffff','earn',15,'task','2025-05-20 21:02:16'),(6,1,140,'Completed Challenge: gfgdg','earn',16,'task','2025-05-20 21:22:00'),(7,1,80,'Completed Challenge: ddddd','earn',21,'task','2025-05-20 21:31:28'),(8,1,50,'Purchased: Wooden Chair','spend',1,'shop','2025-05-27 17:58:32'),(9,1,300,'Purchased: Cozy Sofa','spend',4,'shop','2025-05-28 17:15:17'),(10,1,100,'Purchased: Simple Table','spend',2,'shop','2025-05-28 17:15:17'),(11,1,50,'Purchased: Wooden Chair','spend',1,'shop','2025-05-28 17:15:17'),(12,1,40,'Purchased: Picture Frame','spend',7,'shop','2025-05-29 16:53:31');
 /*!40000 ALTER TABLE `transactions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -523,7 +523,7 @@ CREATE TABLE `user_inventory` (
   KEY `item_id` (`item_id`),
   CONSTRAINT `user_inventory_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `user_inventory_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `shop_items` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -532,7 +532,7 @@ CREATE TABLE `user_inventory` (
 
 LOCK TABLES `user_inventory` WRITE;
 /*!40000 ALTER TABLE `user_inventory` DISABLE KEYS */;
-INSERT INTO `user_inventory` VALUES (14,1,1,2,'2025-05-27 17:58:32'),(15,1,4,1,'2025-05-28 17:15:17'),(16,1,2,1,'2025-05-28 17:15:17');
+INSERT INTO `user_inventory` VALUES (14,1,1,2,'2025-05-27 17:58:32'),(15,1,4,1,'2025-05-28 17:15:17'),(16,1,2,1,'2025-05-28 17:15:17'),(17,1,7,1,'2025-05-29 16:53:31');
 /*!40000 ALTER TABLE `user_inventory` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -567,7 +567,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Jorge','jorgecastrot2005@gmail.com','$2y$12$xo9KGsfSo2C8kLddntcOquUyme0CX3IaHX0PUiPbpiZY.Rrb.dIhO',6952,'free',NULL,'light','en','2025-05-16 18:41:14','2025-05-28 17:14:59');
+INSERT INTO `users` VALUES (1,'Jorge','jorgecastrot2005@gmail.com','$2y$12$xo9KGsfSo2C8kLddntcOquUyme0CX3IaHX0PUiPbpiZY.Rrb.dIhO',6912,'free',NULL,'light','en','2025-05-16 18:41:14','2025-05-29 16:47:33');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -588,4 +588,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-28 19:51:39
+-- Dump completed on 2025-05-29 23:52:59
