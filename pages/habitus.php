@@ -184,6 +184,7 @@ $itemSizes = [
                             <button class="filter-btn" data-filter="floors" onclick="filterInventory('floors')">Floors</button>
                         </div>
                         
+                        <!-- Replace the inventory items section in habitus.php with this updated version -->
                         <div class="inventory-items" id="inventory-items">
                             <?php if (empty($inventory)): ?>
                                 <p class="empty-inventory">Your inventory is empty. Visit the shop to buy items!</p>
@@ -192,8 +193,11 @@ $itemSizes = [
                                     <?php
                                     // Get item size
                                     $itemBaseName = strtolower(preg_replace('/\.(jpg|png|webp|gif)$/i', '', basename($item['image_path'])));
-                                    $itemWidth = isset($item['grid_width']) ? $item['grid_width'] : (isset($itemSizes[$itemBaseName]['width']) ? $itemSizes[$itemBaseName]['width'] : 1);
-                                    $itemHeight = isset($item['grid_height']) ? $item['grid_height'] : (isset($itemSizes[$itemBaseName]['height']) ? $itemSizes[$itemBaseName]['height'] : 1);
+                                    $itemWidth = isset($item['grid_width']) ? $item['grid_width'] : 1;
+                                    $itemHeight = isset($item['grid_height']) ? $item['grid_height'] : 1;
+                                    
+                                    // Get allowed surfaces
+                                    $allowedSurfaces = isset($item['allowed_surfaces']) ? explode(',', $item['allowed_surfaces']) : ['floor'];
                                     ?>
                                     <div class="inventory-item" 
                                          data-id="<?php echo $item['id']; ?>"
@@ -201,6 +205,7 @@ $itemSizes = [
                                          data-category="<?php echo strtolower($item['category']); ?>"
                                          data-image="<?php echo $item['image_path']; ?>"
                                          data-name="<?php echo htmlspecialchars($item['name']); ?>"
+                                         data-allowed-surfaces="<?php echo htmlspecialchars($item['allowed_surfaces'] ?? 'floor'); ?>"
                                          draggable="true"
                                          ondragstart="startDrag(event)">
                                         <img src="../<?php echo $item['image_path']; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
@@ -213,6 +218,16 @@ $itemSizes = [
                                         <?php if ($itemWidth > 1 || $itemHeight > 1): ?>
                                             <div class="item-size-badge"><?php echo $itemWidth; ?>x<?php echo $itemHeight; ?></div>
                                         <?php endif; ?>
+                                        
+                                        <!-- Surface compatibility indicators -->
+                                        <div class="item-surface-badge">
+                                            <?php if (in_array('floor', $allowedSurfaces)): ?>
+                                                <span class="surface-icon floor" title="Can be placed on floor">F</span>
+                                            <?php endif; ?>
+                                            <?php if (in_array('wall-left', $allowedSurfaces) || in_array('wall-right', $allowedSurfaces)): ?>
+                                                <span class="surface-icon wall" title="Can be placed on walls">W</span>
+                                            <?php endif; ?>
+                                        </div>
                                     </div>
                                 <?php endforeach; ?>
                             <?php endif; ?>

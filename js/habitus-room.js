@@ -144,6 +144,21 @@ function getItemConfig(itemName) {
     // Extract base name from image path if needed
     const baseName = itemName.toLowerCase().replace(/\.(jpg|png|webp|gif)$/i, '').split('/').pop();
     
+    // Updated item configurations with proper surface support
+    const ITEM_SIZES = {
+        // Floor Furniture
+        'wooden_chair': { width: 1, height: 1, surfaces: ['floor'] },
+        'simple_table': { width: 2, height: 2, surfaces: ['floor'] },
+        'bookshelf': { width: 1, height: 2, surfaces: ['floor', 'wall-left', 'wall-right'] },
+        'cozy_sofa': { width: 3, height: 2, surfaces: ['floor'] },
+        // Decorations
+        'potted_plant': { width: 1, height: 1, surfaces: ['floor'] },
+        'floor_lamp': { width: 1, height: 1, surfaces: ['floor'] },
+        'picture_frame': { width: 1, height: 1, surfaces: ['floor', 'wall-left', 'wall-right'] },
+        'cactus': { width: 1, height: 1, surfaces: ['floor'] },
+        'wall_clock': { width: 1, height: 1, surfaces: ['floor', 'wall-left', 'wall-right'] }
+    };
+    
     // Check predefined sizes
     if (ITEM_SIZES[baseName]) {
         return ITEM_SIZES[baseName];
@@ -305,8 +320,13 @@ function createPlacedItem(item) {
     itemDiv.style.top = (item.grid_y * CELL_SIZE) + 'px';
     itemDiv.style.width = (itemConfig.width * CELL_SIZE) + 'px';
     itemDiv.style.height = (itemConfig.height * CELL_SIZE) + 'px';
-    // Apply rotation to the container, not the image
-    itemDiv.style.transform = `rotate(${item.rotation || 0}deg)`;
+    
+    // Apply rotation to the container
+    if (item.rotation) {
+        itemDiv.style.transform = `rotate(${item.rotation}deg)`;
+        itemDiv.style.transformOrigin = 'center center';
+    }
+    
     itemDiv.style.zIndex = item.z_index || 1;
     
     // Create image
@@ -713,8 +733,9 @@ function rotateItem() {
     const currentRotation = parseInt(contextMenuItem.dataset.rotation) || 0;
     const newRotation = (currentRotation + 90) % 360;
     
-    // Apply rotation to the container
+    // Apply rotation to the container with proper transform origin
     contextMenuItem.style.transform = `rotate(${newRotation}deg)`;
+    contextMenuItem.style.transformOrigin = 'center center';
     contextMenuItem.dataset.rotation = newRotation;
     
     // Update in data
@@ -1042,6 +1063,99 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
+function debugWallPlacement() {
+    console.log('=== Wall Placement Debug ===');
+    
+    // Check grid positions
+    const leftWallGrid = document.getElementById('room-grid-wall-left');
+    const rightWallGrid = document.getElementById('room-grid-wall-right');
+    const leftWallItems = document.getElementById('placed-items-wall-left');
+    const rightWallItems = document.getElementById('placed-items-wall-right');
+    
+    console.log('Left Wall Grid:', leftWallGrid?.getBoundingClientRect());
+    console.log('Right Wall Grid:', rightWallGrid?.getBoundingClientRect());
+    console.log('Left Wall Items:', leftWallItems?.getBoundingClientRect());
+    console.log('Right Wall Items:', rightWallItems?.getBoundingClientRect());
+    
+    // Check placed items on walls
+    const wallItems = placedItems.filter(item => item.surface !== 'floor');
+    console.log('Wall Items:', wallItems);
+    
+    // Toggle debug mode
+    document.getElementById('isometric-room').classList.toggle('debug-mode');
+}
+
+function testWallAlignment() {
+    console.log('=== Testing Wall Grid Alignment ===');
+    
+    // Get all grids and item containers
+    const elements = {
+        'Left Wall Grid': document.getElementById('room-grid-wall-left'),
+        'Left Wall Items': document.getElementById('placed-items-wall-left'),
+        'Right Wall Grid': document.getElementById('room-grid-wall-right'),
+        'Right Wall Items': document.getElementById('placed-items-wall-right')
+    };
+    
+    // Check if positions match
+    for (const [name, element] of Object.entries(elements)) {
+        if (element) {
+            const computed = window.getComputedStyle(element);
+            console.log(`${name}:`, {
+                top: computed.top,
+                left: computed.left,
+                transform: computed.transform,
+                transformOrigin: computed.transformOrigin
+            });
+        }
+    }
+    
+    // Visual test: Add colored borders to see alignment
+    const leftGrid = document.getElementById('room-grid-wall-left');
+    const leftItems = document.getElementById('placed-items-wall-left');
+    const rightGrid = document.getElementById('room-grid-wall-right');
+    const rightItems = document.getElementById('placed-items-wall-right');
+    
+    if (leftGrid) leftGrid.style.border = '2px solid red';
+    if (leftItems) leftItems.style.border = '2px dashed blue';
+    if (rightGrid) rightGrid.style.border = '2px solid green';
+    if (rightItems) rightItems.style.border = '2px dashed orange';
+    
+    // Make grids visible
+    document.getElementById('isometric-room').classList.add('dragging');
+    
+    console.log('Red solid = Left Wall Grid, Blue dashed = Left Wall Items');
+    console.log('Green solid = Right Wall Grid, Orange dashed = Right Wall Items');
+    console.log('Borders should overlap exactly if alignment is correct.');
+}
+
+// Add test item to specific wall position
+function testPlaceWallItem(surface = 'wall-left', x = 0, y = 0) {
+    // Create a test item
+    const testItem = {
+        id: 'test_' + Date.now(),
+        inventory_id: 'test',
+        item_id: 'test',
+        grid_x: x,
+        grid_y: y,
+        surface: surface,
+        rotation: 0,
+        z_index: 100,
+        image_path: 'images/items/decorations/wall_clock.webp',
+        name: 'Test Wall Item'
+    };
+    
+    // Add to placed items
+    placedItems.push(testItem);
+    
+    // Create and add element
+    const itemElement = createPlacedItem(testItem);
+    const container = document.getElementById(`placed-items-${surface}`);
+    if (container) {
+        container.appendChild(itemElement);
+        console.log(`Test item placed at ${surface} [${x}, ${y}]`);
+    }
+}
+
 // Make functions globally available
 window.initializeHabitusRoom = initializeHabitusRoom;
 window.toggleGrid = toggleGrid;
@@ -1059,3 +1173,6 @@ window.moveToFront = moveToFront;
 window.moveToBack = moveToBack;
 window.removeItem = removeItem;
 window.startDrag = startDrag;
+window.debugWallPlacement = debugWallPlacement;
+window.testWallAlignment = testWallAlignment;
+window.testPlaceWallItem = testPlaceWallItem;
