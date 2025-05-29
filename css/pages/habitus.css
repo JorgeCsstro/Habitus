@@ -857,6 +857,167 @@
     border: 2px dashed blue;
 }
 
+/* Add to habitus.css - Rotation indicator styles */
+
+/* Rotation indicator on inventory items */
+.rotation-indicator {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 18px;
+    height: 18px;
+    background: rgba(45, 41, 38, 0.8);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.rotation-indicator:hover {
+    opacity: 1;
+}
+
+.rotation-indicator img {
+    width: 12px;
+    height: 12px;
+    filter: brightness(10);
+}
+
+/* Visual feedback during rotation */
+.placed-item.rotating {
+    animation: rotateAnimation 0.3s ease-out;
+}
+
+@keyframes rotateAnimation {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Rotation preview on hover */
+.item-context-menu button:first-child::before {
+    content: '↻ ';
+    font-size: 1.1rem;
+    margin-right: 3px;
+}
+
+/* Rotation notification style */
+.notification.rotation {
+    border-left: 4px solid #c4a356;
+}
+
+/* Update the rotation system info in room controls */
+.room-controls .rotation-info {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    color: #5a5755;
+}
+
+.room-controls .rotation-info img {
+    width: 14px;
+    height: 14px;
+    opacity: 0.7;
+}
+
+/* Loading state for image rotation */
+.placed-item.loading-rotation {
+    pointer-events: none;
+}
+
+.placed-item.loading-rotation::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #8d5b4c;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Inventory item rotation state indicator */
+.inventory-item[data-rotation-variants] {
+    background: linear-gradient(135deg, #fbf8f5 0%, #f5f1ea 100%);
+}
+
+/* Rotation angle display on selected items */
+.placed-item.selected .rotation-angle {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(45, 41, 38, 0.9);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Visual guide for rotation directions */
+.rotation-guide {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(141, 91, 76, 0.1);
+    display: none;
+}
+
+.rotation-guide.show {
+    display: block;
+}
+
+.rotation-guide h4 {
+    margin: 0 0 10px 0;
+    color: #2d2926;
+    font-size: 0.9rem;
+}
+
+.rotation-guide-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.rotation-guide-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+    color: #5a5755;
+}
+
+.rotation-guide-item .angle {
+    font-weight: 600;
+    color: #8d5b4c;
+    min-width: 30px;
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
     .habitus-editor {

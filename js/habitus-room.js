@@ -10,14 +10,22 @@ let currentRotation = 0;
 let contextMenuItem = null;
 let dragPreview = null;
 let currentDragData = null;
-let currentSurface = 'floor'; // Current placement surface: 'floor', 'wall-left', 'wall-right'
+let currentSurface = 'floor';
+let itemRotationData = {}; // Store rotation variants for each item
 
-// Grid configuration - Updated to 6x6
-const GRID_SIZE = 6; // 6x6 grid
-const CELL_SIZE = 60; // Size of each grid cell in pixels (larger for 6x6)
-const ROOM_WIDTH = 360; // 6 * 60
-const ROOM_HEIGHT = 360; // 6 * 60
-const WALL_HEIGHT = 4; // Wall is 4 cells high
+// Grid configuration - 6x6
+const GRID_SIZE = 6;
+const CELL_SIZE = 60;
+const ROOM_WIDTH = 360;
+const ROOM_HEIGHT = 360;
+const WALL_HEIGHT = 4;
+
+const ROTATION_ANGLES = {
+    0: 0,    // back-right (default)
+    90: 1,   // back-left
+    180: 2,  // front-left
+    270: 3   // front-right
+};
 
 // Item size definitions (can be loaded from database)
 const ITEM_SIZES = {
@@ -35,9 +43,10 @@ const ITEM_SIZES = {
 };
 
 // Initialize the Habitus room
-function initializeHabitusRoom(roomData, items) {
+function initializeHabitusRoom(roomData, items, rotationData = {}) {
     currentRoom = roomData;
     placedItems = items || [];
+    itemRotationData = rotationData;
     
     // Ensure room structure exists
     ensureRoomStructure();
@@ -54,7 +63,7 @@ function initializeHabitusRoom(roomData, items) {
     // Create drag preview element
     createDragPreview();
     
-    // Load room customizations (walls, floor)
+    // Load room customizations
     if (roomData.floor_color) {
         const floor = document.querySelector('.room-floor');
         if (floor) {
@@ -312,29 +321,33 @@ function createPlacedItem(item) {
     itemDiv.dataset.gridY = item.grid_y;
     itemDiv.dataset.surface = item.surface || 'floor';
     itemDiv.dataset.rotation = item.rotation || 0;
+    itemDiv.dataset.itemId = item.item_id;
     
     const itemConfig = getItemConfig(item.image_path || item.name);
     
-    // For wall items, don't swap width/height - the CSS transform handles orientation
+    // Position and size on grid
     itemDiv.style.left = (item.grid_x * CELL_SIZE) + 'px';
     itemDiv.style.top = (item.grid_y * CELL_SIZE) + 'px';
     itemDiv.style.width = (itemConfig.width * CELL_SIZE) + 'px';
     itemDiv.style.height = (itemConfig.height * CELL_SIZE) + 'px';
-    
-    // Apply rotation only for floor items
-    if ((item.surface === 'floor') && item.rotation) {
-        itemDiv.style.transform = `rotate(${item.rotation}deg)`;
-        itemDiv.style.transformOrigin = 'center center';
-    }
-    
     itemDiv.style.zIndex = item.z_index || 1;
     
-    // Create image
+    // Create image with rotation variant
     const img = document.createElement('img');
-    img.src = '../' + item.image_path;
+    
+    // Get rotation variants for this item
+    const rotationVariants = item.rotation_variants || itemRotationData[item.item_id];
+    const imagePath = getRotatedImagePath(item.image_path, item.rotation || 0, rotationVariants);
+    
+    img.src = '../' + imagePath;
     img.alt = item.name;
     img.draggable = false;
     itemDiv.appendChild(img);
+    
+    // Store rotation data
+    if (rotationVariants) {
+        itemDiv.dataset.rotationVariants = JSON.stringify(rotationVariants);
+    }
     
     // Add event listeners
     itemDiv.addEventListener('click', selectItem);
@@ -410,12 +423,17 @@ function startDrag(e) {
     e.dataTransfer.setData('image', item.dataset.image);
     e.dataTransfer.setData('name', item.dataset.name);
     
+    // Get rotation variants if available
+    const rotationVariants = item.dataset.rotationVariants ? 
+        JSON.parse(item.dataset.rotationVariants) : null;
+    
     // Store drag data
     currentDragData = {
         itemId: item.dataset.id,
         itemDataId: item.dataset.itemId,
         image: item.dataset.image,
         name: item.dataset.name,
+        rotationVariants: rotationVariants,
         isReposition: false
     };
     
@@ -597,7 +615,7 @@ function handleDrop(e) {
             showNotification('Item moved!', 'success');
         }
     } else {
-        // Create new placed item
+        // Create new placed item with rotation variants
         const newItem = {
             id: 'temp_' + Date.now(),
             inventory_id: currentDragData.itemId,
@@ -608,7 +626,8 @@ function handleDrop(e) {
             rotation: 0,
             z_index: placedItems.filter(i => i.surface === surface).length + 1,
             image_path: currentDragData.image,
-            name: currentDragData.name
+            name: currentDragData.name,
+            rotation_variants: currentDragData.rotationVariants
         };
         
         // Add to placed items
@@ -625,6 +644,10 @@ function handleDrop(e) {
     }
     
     // Clear drag state
+    clearDragState();
+}
+
+function clearDragState() {
     isDragging = false;
     currentDragData = null;
     document.querySelectorAll('.drag-preview').forEach(preview => {
@@ -633,6 +656,11 @@ function handleDrop(e) {
     document.querySelectorAll('.grid-cell').forEach(c => {
         c.classList.remove('drag-over', 'drag-invalid');
     });
+    
+    const room = document.getElementById('isometric-room');
+    if (room) {
+        room.classList.remove('dragging');
+    }
 }
 
 // Global drag end handler
@@ -726,6 +754,19 @@ function hideContextMenu() {
     contextMenuItem = null;
 }
 
+function getRotatedImagePath(basePath, rotation, rotationVariants) {
+    // If no rotation variants available, return base path
+    if (!rotationVariants || rotationVariants.length === 0) {
+        return basePath;
+    }
+    
+    // Get the rotation index (0-3)
+    const rotationIndex = ROTATION_ANGLES[rotation] || 0;
+    
+    // Return the appropriate variant or fallback to base path
+    return rotationVariants[rotationIndex] || basePath;
+}
+
 // Rotate selected item
 function rotateItem() {
     if (!contextMenuItem) return;
@@ -733,10 +774,28 @@ function rotateItem() {
     const currentRotation = parseInt(contextMenuItem.dataset.rotation) || 0;
     const newRotation = (currentRotation + 90) % 360;
     
-    // Apply rotation to the container with proper transform origin
-    contextMenuItem.style.transform = `rotate(${newRotation}deg)`;
-    contextMenuItem.style.transformOrigin = 'center center';
+    // Update rotation data
     contextMenuItem.dataset.rotation = newRotation;
+    
+    // Get rotation variants
+    let rotationVariants = null;
+    try {
+        rotationVariants = JSON.parse(contextMenuItem.dataset.rotationVariants || '[]');
+    } catch (e) {
+        console.warn('No rotation variants for this item');
+    }
+    
+    // Update the image if variants exist
+    const img = contextMenuItem.querySelector('img');
+    if (img && rotationVariants && rotationVariants.length > 0) {
+        const itemId = contextMenuItem.dataset.id;
+        const item = placedItems.find(i => i.id == itemId);
+        
+        if (item) {
+            const newImagePath = getRotatedImagePath(item.image_path, newRotation, rotationVariants);
+            img.src = '../' + newImagePath;
+        }
+    }
     
     // Update in data
     const itemId = contextMenuItem.dataset.id;
@@ -746,6 +805,7 @@ function rotateItem() {
     }
     
     hideContextMenu();
+    showNotification(`Item rotated to ${newRotation}°`, 'info');
 }
 
 // Move item to front

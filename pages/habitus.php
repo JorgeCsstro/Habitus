@@ -1,5 +1,5 @@
 <?php
-// pages/habitus.php - Enhanced with item size support
+// pages/habitus.php - Enhanced with rotation variants support
 
 // Include necessary files
 require_once '../php/include/config.php';
@@ -54,8 +54,9 @@ foreach ($rooms as $room) {
     }
 }
 
-// Get placed items for this room
-$placedItemsQuery = "SELECT pi.*, ui.item_id, si.name, si.image_path, si.category_id, ic.name as category_name
+// Get placed items for this room with rotation variants
+$placedItemsQuery = "SELECT pi.*, ui.item_id, si.name, si.image_path, si.category_id, 
+                    si.rotation_variants, ic.name as category_name
                     FROM placed_items pi
                     JOIN user_inventory ui ON pi.inventory_id = ui.id
                     JOIN shop_items si ON ui.item_id = si.id
@@ -66,8 +67,17 @@ $stmt = $conn->prepare($placedItemsQuery);
 $stmt->execute([$roomId]);
 $placedItems = $stmt->fetchAll();
 
-// Get user's inventory with item sizes
-$inventoryQuery = "SELECT ui.*, si.name, si.image_path, si.category_id, si.grid_width, si.grid_height, ic.name as category
+// Process rotation variants for placed items
+foreach ($placedItems as &$item) {
+    if (!empty($item['rotation_variants'])) {
+        $item['rotation_variants'] = json_decode($item['rotation_variants'], true);
+    }
+}
+
+// Get user's inventory with rotation variants
+$inventoryQuery = "SELECT ui.*, si.name, si.image_path, si.category_id, 
+                  si.grid_width, si.grid_height, si.rotation_variants,
+                  si.allowed_surfaces, ic.name as category
                   FROM user_inventory ui
                   JOIN shop_items si ON ui.item_id = si.id
                   JOIN item_categories ic ON si.category_id = ic.id
@@ -76,6 +86,13 @@ $inventoryQuery = "SELECT ui.*, si.name, si.image_path, si.category_id, si.grid_
 $stmt = $conn->prepare($inventoryQuery);
 $stmt->execute([$_SESSION['user_id']]);
 $inventory = $stmt->fetchAll();
+
+// Process rotation variants for inventory
+foreach ($inventory as &$item) {
+    if (!empty($item['rotation_variants'])) {
+        $item['rotation_variants'] = json_decode($item['rotation_variants'], true);
+    }
+}
 
 // Filter out items that are already placed (unless quantity > 1)
 $availableInventory = [];
@@ -93,18 +110,13 @@ foreach ($inventory as $item) {
 }
 $inventory = $availableInventory;
 
-// Define default item sizes (can be moved to database)
-$itemSizes = [
-    'wooden_chair' => ['width' => 1, 'height' => 1],
-    'simple_table' => ['width' => 2, 'height' => 2],
-    'bookshelf' => ['width' => 1, 'height' => 2],
-    'cozy_sofa' => ['width' => 3, 'height' => 2],
-    'potted_plant' => ['width' => 1, 'height' => 1],
-    'floor_lamp' => ['width' => 1, 'height' => 1],
-    'picture_frame' => ['width' => 1, 'height' => 1],
-    'cactus' => ['width' => 1, 'height' => 1],
-    'wall_clock' => ['width' => 1, 'height' => 1]
-];
+// Create rotation data map for JavaScript
+$rotationDataMap = [];
+foreach ($inventory as $item) {
+    if (!empty($item['rotation_variants'])) {
+        $rotationDataMap[$item['item_id']] = $item['rotation_variants'];
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -159,18 +171,7 @@ $itemSizes = [
                 <div class="habitus-editor">
                     <div class="room-container">
                         <div id="isometric-room" class="isometric-room">
-                            <!-- Grid overlay -->
-                            <div class="room-grid" id="room-grid"></div>
-                            <!-- Floor -->
-                            <div class="room-floor" id="room-floor"></div>
-                            <!-- Left wall -->
-                            <div class="room-wall-left" id="wall-left"></div>
-                            <!-- Right wall -->
-                            <div class="room-wall-right" id="wall-right"></div>
-                            <!-- Door (non-placeable area) -->
-                            <div class="room-door"></div>
-                            <!-- Placed items container -->
-                            <div class="placed-items" id="placed-items"></div>
+                            <!-- Room structure will be created by JavaScript -->
                         </div>
                     </div>
                     
@@ -184,7 +185,6 @@ $itemSizes = [
                             <button class="filter-btn" data-filter="floors" onclick="filterInventory('floors')">Floors</button>
                         </div>
                         
-                        <!-- Replace the inventory items section in habitus.php with this updated version -->
                         <div class="inventory-items" id="inventory-items">
                             <?php if (empty($inventory)): ?>
                                 <p class="empty-inventory">Your inventory is empty. Visit the shop to buy items!</p>
@@ -192,12 +192,14 @@ $itemSizes = [
                                 <?php foreach ($inventory as $item): ?>
                                     <?php
                                     // Get item size
-                                    $itemBaseName = strtolower(preg_replace('/\.(jpg|png|webp|gif)$/i', '', basename($item['image_path'])));
                                     $itemWidth = isset($item['grid_width']) ? $item['grid_width'] : 1;
                                     $itemHeight = isset($item['grid_height']) ? $item['grid_height'] : 1;
                                     
                                     // Get allowed surfaces
                                     $allowedSurfaces = isset($item['allowed_surfaces']) ? explode(',', $item['allowed_surfaces']) : ['floor'];
+                                    
+                                    // Get rotation variants
+                                    $rotationVariants = !empty($item['rotation_variants']) ? $item['rotation_variants'] : [];
                                     ?>
                                     <div class="inventory-item" 
                                          data-id="<?php echo $item['id']; ?>"
@@ -206,6 +208,9 @@ $itemSizes = [
                                          data-image="<?php echo $item['image_path']; ?>"
                                          data-name="<?php echo htmlspecialchars($item['name']); ?>"
                                          data-allowed-surfaces="<?php echo htmlspecialchars($item['allowed_surfaces'] ?? 'floor'); ?>"
+                                         <?php if (!empty($rotationVariants)): ?>
+                                         data-rotation-variants='<?php echo json_encode($rotationVariants); ?>'
+                                         <?php endif; ?>
                                          draggable="true"
                                          ondragstart="startDrag(event)">
                                         <img src="../<?php echo $item['image_path']; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
@@ -217,6 +222,13 @@ $itemSizes = [
                                         </div>
                                         <?php if ($itemWidth > 1 || $itemHeight > 1): ?>
                                             <div class="item-size-badge"><?php echo $itemWidth; ?>x<?php echo $itemHeight; ?></div>
+                                        <?php endif; ?>
+                                        
+                                        <!-- Rotation indicator if item has variants -->
+                                        <?php if (!empty($rotationVariants)): ?>
+                                            <div class="rotation-indicator" title="This item can be rotated">
+                                                <img src="../images/icons/rotate.svg" alt="Rotatable">
+                                            </div>
                                         <?php endif; ?>
                                         
                                         <!-- Surface compatibility indicators -->
@@ -269,13 +281,14 @@ $itemSizes = [
     <script src="../js/main.js"></script>
     <script src="../js/habitus-room.js"></script>
     <script>
-        // Initialize the room with enhanced features
+        // Initialize the room with rotation variants support
         document.addEventListener('DOMContentLoaded', function() {
             const roomData = <?php echo json_encode($roomData); ?>;
             const placedItems = <?php echo json_encode($placedItems); ?>;
+            const rotationData = <?php echo json_encode($rotationDataMap); ?>;
             
-            // Initialize the enhanced room system
-            initializeHabitusRoom(roomData, placedItems);
+            // Initialize the enhanced room system with rotation data
+            initializeHabitusRoom(roomData, placedItems, rotationData);
         });
     </script>
 </body>
