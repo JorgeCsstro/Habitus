@@ -9,7 +9,7 @@
     grid-gap: 20px;
     padding: 20px;
     overflow-y: auto;
-    background-color: #eaeaea; /* Darker background for more contrast */
+    background-color: #f9f5f0;
 }
 
 /* Panel Placements */
@@ -46,7 +46,7 @@
     font-family: 'Quicksand', sans-serif;
 }
 
-/* Task Items with More Visible Borders */
+/* Task Items */
 .daily-item, .goal-item, .challenge-item {
     display: flex;
     align-items: center;
@@ -55,14 +55,14 @@
     background-color: #ffffff;
     margin-bottom: 10px;
     transition: all 0.2s;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+    border: 1px solid #e9e2d9;
+    box-shadow: 0 2px 5px rgba(141, 91, 76, 0.05);
 }
 
 .daily-item:hover, .goal-item:hover, .challenge-item:hover {
     background-color: #f8f8f8;
-    border-color: #d0d0d0;
-    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.05);
+    border-color: #d6cfc7;
+    box-shadow: 0 3px 7px rgba(141, 91, 76, 0.1);
 }
 
 .daily-item.completed, .goal-item.completed, .challenge-item.completed {
@@ -72,7 +72,7 @@
 
 .daily-bullet, .goal-bullet, .challenge-bullet {
     margin-right: 10px;
-    color: #333;
+    color: #8d5b4c;
 }
 
 .daily-title, .goal-title, .challenge-title {
@@ -80,18 +80,18 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: #333;
+    color: #2d2926;
 }
 
 .daily-dots, .goal-dots, .challenge-dots {
     flex: 1;
-    border-bottom: 1px dotted #ccc;
+    border-bottom: 1px dotted #d6cfc7;
     margin: 0 5px;
 }
 
 .daily-time {
     margin-right: 10px;
-    color: #888;
+    color: #8d8580;
     font-size: 0.85rem;
 }
 
@@ -99,7 +99,7 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    border: 1px solid #ddd;
+    border: 1px solid #e9e2d9;
     background-color: white;
     display: flex;
     justify-content: center;
@@ -109,12 +109,12 @@
 }
 
 .complete-button:hover {
-    background-color: #f5f5f5;
+    background-color: #f5f1ea;
 }
 
 .complete-button.completed {
-    background-color: #4CAF50;
-    border-color: #4CAF50;
+    background-color: #6a8d7f;
+    border-color: #6a8d7f;
 }
 
 .complete-button img {
@@ -141,27 +141,35 @@
     aspect-ratio: 1/1;
     border-radius: 8px;
     overflow: hidden;
-    background-color: #f5f5f5;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    background-color: #f5f1ea;
+    border: 1px solid #e9e2d9;
+    box-shadow: 0 2px 5px rgba(141, 91, 76, 0.05);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.shop-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(141, 91, 76, 0.1);
 }
 
 .shop-item img {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    padding: 10px;
 }
 
 .item-price {
     position: absolute;
     bottom: 5px;
     left: 5px;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(255, 255, 255, 0.95);
     border-radius: 12px;
     padding: 3px 8px;
     display: flex;
     align-items: center;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(141, 91, 76, 0.2);
 }
 
 .item-price img {
@@ -173,30 +181,38 @@
 .item-price span {
     font-size: 0.8rem;
     font-weight: 600;
-    color: #333;
+    color: #2d2926;
     font-family: 'Quicksand', sans-serif;
 }
 
 /* Habitus Preview */
 .habitus-preview {
-    width: calc(100% - 10px);
-    aspect-ratio: 1/1;
-    background-color: #f5f5f5;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f1ea;
     border-radius: 8px;
     overflow: hidden;
-    margin: 5px auto 15px;
-    border: 1px solid #e0e0e0;
+    position: relative;
+}
+
+.habitus-room-container {
+    width: 100%;
+    height: 100%;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+/* Dashboard Room Preview */
 .dashboard-room {
-    width: 100%;
-    height: 100%;
+    width: 300px;
+    height: 300px;
     position: relative;
-    transform: scale(0.45); /* Scale down for dashboard */
+    transform: scale(0.8);
     transform-origin: center center;
 }
 
@@ -267,6 +283,7 @@
     box-shadow: 0 0 5px rgba(255,215,0,0.5);
 }
 
+/* Placed Items Containers */
 .dashboard-room .placed-items-floor {
     position: absolute;
     width: 360px;
@@ -321,6 +338,10 @@
     translate: 10px -15px;
 }
 
+.dashboard-room .placed-items-wall-left .placed-item img {
+    /* Wall left items don't need rotation as they're already flat */
+}
+
 .dashboard-room .placed-items-wall-right .placed-item img {
     transform: rotateZ(165deg) rotateX(105deg) rotate(-135deg) rotateY(280deg) scale(1.4);
 }
@@ -331,160 +352,49 @@
     transform: none;
 }
 
-.habitus-preview img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-/* Habitus Room Container */
-.habitus-room-container {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    position: relative;
-}
-
 /* Specifically for the habitus panel */
 .habitus-panel .panel-content {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 10px;
+    padding: 20px;
     overflow: hidden;
 }
 
-/* Enhanced Isometric Room */
-.default-room {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    perspective: 1000px;
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .dashboard-content {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto;
+    }
+    
+    .habitus-panel {
+        grid-column: 1 / span 2;
+        grid-row: 3;
+    }
+    
+    .dashboard-room {
+        transform: scale(0.7);
+    }
 }
 
-.room-isometric {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    transform-style: preserve-3d;
-    transform: rotateX(55deg) rotateZ(-45deg);
-}
-
-.room-floor {
-    position: absolute;
-    width: 80%;
-    height: 80%;
-    bottom: 10%;
-    left: 10%;
-    background: linear-gradient(45deg, #f0d78c, #ffd700);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.room-wall-left {
-    position: absolute;
-    width: 80%;
-    height: 40%;
-    left: 10%;
-    bottom: 10%;
-    background: linear-gradient(to top, #e0e0e0, #f5f5f5);
-    transform-origin: bottom;
-    transform: rotateX(90deg) translateY(40%);
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
-}
-
-.room-wall-right {
-    position: absolute;
-    width: 40%;
-    height: 80%;
-    right: 10%;
-    bottom: 10%;
-    background: linear-gradient(to right, #d0d0d0, #e8e8e8);
-    transform-origin: left;
-    transform: rotateY(90deg) translateX(-40%);
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
-}
-
-.room-window {
-    position: absolute;
-    width: 25%;
-    height: 20%;
-    left: 40%;
-    top: 10%;
-    background: linear-gradient(to bottom, #a5d8ff, #87ceeb);
-    border: 3px solid white;
-    transform-origin: bottom;
-    transform: rotateX(90deg) translateY(40%);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.room-window::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.7);
-    top: 50%;
-    left: 0;
-}
-
-.room-window::before {
-    content: '';
-    position: absolute;
-    width: 1px;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.7);
-    left: 50%;
-    top: 0;
-}
-
-.room-door {
-    position: absolute;
-    width: 16%;
-    height: 30%;
-    left: 20%;
-    top: 20%;
-    background: linear-gradient(to top, #8B4513, #A0522D);
-    transform-origin: bottom;
-    transform: rotateX(90deg) translateY(40%);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-}
-
-.room-door::after {
-    content: '';
-    position: absolute;
-    width: 15%;
-    height: 15%;
-    border-radius: 50%;
-    background: #FFD700;
-    right: 10%;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-.room-selector {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.room-thumbnail {
-    width: 50px;
-    height: 50px;
-    border-radius: 8px;
-    overflow: hidden;
-    cursor: pointer;
-    border: 2px solid transparent;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.room-thumbnail.active {
-    border-color: #4CAF50;
-}
-
-.room-thumbnail img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+@media (max-width: 768px) {
+    .dashboard-content {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+    
+    .dailies-panel,
+    .shop-panel,
+    .goals-panel,
+    .challenges-panel,
+    .habitus-panel {
+        grid-column: 1;
+        grid-row: auto;
+    }
+    
+    .dashboard-room {
+        transform: scale(0.6);
+    }
 }

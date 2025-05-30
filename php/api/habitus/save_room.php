@@ -1,5 +1,5 @@
 <?php
-// php/api/habitus/save_room.php - Updated to handle surface parameter
+// php/api/habitus/save_room.php - Fixed version with coordinate validation
 
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';
@@ -33,6 +33,50 @@ if ($stmt->rowCount() === 0) {
     exit;
 }
 
+// Grid configuration constants
+define('GRID_SIZE', 6);
+define('WALL_HEIGHT', 4);
+
+// Function to check if position is in door area
+function isDoorArea($x, $y, $surface) {
+    // Door configuration:
+    // - Left wall: column 1 (x=1), bottom 2 rows (y=2,3)
+    // - Floor entrance: column 1 (x=1), first row (y=0)
+    
+    if ($surface === 'wall-left') {
+        return $x === 1 && $y >= 2;
+    }
+    if ($surface === 'floor') {
+        return $x === 1 && $y === 0;
+    }
+    return false;
+}
+
+// Function to get bounds for surface
+function getBoundsForSurface($surface) {
+    if ($surface === 'floor') {
+        return ['maxX' => GRID_SIZE, 'maxY' => GRID_SIZE];
+    } else if ($surface === 'wall-left') {
+        return ['maxX' => GRID_SIZE, 'maxY' => WALL_HEIGHT];
+    } else if ($surface === 'wall-right') {
+        return ['maxX' => WALL_HEIGHT, 'maxY' => GRID_SIZE];
+    }
+    return ['maxX' => GRID_SIZE, 'maxY' => GRID_SIZE];
+}
+
+// Function to get item size
+function getItemSize($itemId, $conn) {
+    $query = "SELECT grid_width, grid_height FROM shop_items WHERE id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->execute([$itemId]);
+    $result = $stmt->fetch();
+    
+    return [
+        'width' => $result['grid_width'] ?? 1,
+        'height' => $result['grid_height'] ?? 1
+    ];
+}
+
 try {
     // Begin transaction
     $conn->beginTransaction();
@@ -44,8 +88,9 @@ try {
     
     // Map to store new IDs for temporary items
     $itemIds = [];
+    $skippedItems = [];
     
-    // Insert new placed items
+    // Insert new placed items with validation
     foreach ($items as $item) {
         $inventoryId = intval($item['inventory_id']);
         $gridX = intval($item['grid_x']);
@@ -56,11 +101,12 @@ try {
         
         // Validate surface value
         if (!in_array($surface, ['floor', 'wall-left', 'wall-right'])) {
-            throw new Exception("Invalid surface value: " . $surface);
+            $skippedItems[] = "Invalid surface: " . $surface;
+            continue;
         }
         
-        // Verify inventory item belongs to user
-        $inventoryQuery = "SELECT ui.id, si.allowed_surfaces 
+        // Get item data to check size and allowed surfaces
+        $inventoryQuery = "SELECT ui.id, ui.item_id, si.allowed_surfaces, si.grid_width, si.grid_height, si.name
                           FROM user_inventory ui 
                           JOIN shop_items si ON ui.item_id = si.id 
                           WHERE ui.id = ? AND ui.user_id = ?";
@@ -68,18 +114,49 @@ try {
         $stmt->execute([$inventoryId, $_SESSION['user_id']]);
         
         if ($stmt->rowCount() === 0) {
-            throw new Exception("Invalid inventory item");
+            $skippedItems[] = "Invalid inventory item: " . $inventoryId;
+            continue;
         }
         
         $inventoryData = $stmt->fetch();
+        $itemWidth = $inventoryData['grid_width'] ?? 1;
+        $itemHeight = $inventoryData['grid_height'] ?? 1;
         
         // Check if item can be placed on this surface
         $allowedSurfaces = explode(',', $inventoryData['allowed_surfaces'] ?? 'floor');
         if (!in_array($surface, $allowedSurfaces)) {
-            throw new Exception("Item cannot be placed on " . $surface);
+            $skippedItems[] = $inventoryData['name'] . " cannot be placed on " . $surface;
+            continue;
         }
         
-        // Insert placed item with surface
+        // Get bounds for the surface
+        $bounds = getBoundsForSurface($surface);
+        
+        // Check if position is within bounds
+        if ($gridX < 0 || $gridY < 0 || 
+            $gridX + $itemWidth > $bounds['maxX'] || 
+            $gridY + $itemHeight > $bounds['maxY']) {
+            $skippedItems[] = $inventoryData['name'] . " is out of bounds at position (" . $gridX . "," . $gridY . ")";
+            continue;
+        }
+        
+        // Check if any part of the item is in door area
+        $inDoorArea = false;
+        for ($dy = 0; $dy < $itemHeight; $dy++) {
+            for ($dx = 0; $dx < $itemWidth; $dx++) {
+                if (isDoorArea($gridX + $dx, $gridY + $dy, $surface)) {
+                    $inDoorArea = true;
+                    break 2;
+                }
+            }
+        }
+        
+        if ($inDoorArea) {
+            $skippedItems[] = $inventoryData['name'] . " would block the door at position (" . $gridX . "," . $gridY . ")";
+            continue;
+        }
+        
+        // Insert placed item
         $insertQuery = "INSERT INTO placed_items 
                        (room_id, inventory_id, surface, grid_x, grid_y, rotation, z_index) 
                        VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -95,11 +172,18 @@ try {
     // Commit transaction
     $conn->commit();
     
-    echo json_encode([
+    $response = [
         'success' => true,
         'message' => 'Room layout saved successfully',
         'item_ids' => $itemIds
-    ]);
+    ];
+    
+    if (!empty($skippedItems)) {
+        $response['warnings'] = $skippedItems;
+        $response['message'] .= ' (Some items were skipped due to invalid placement)';
+    }
+    
+    echo json_encode($response);
     
 } catch (Exception $e) {
     // Rollback on error

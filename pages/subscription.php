@@ -332,42 +332,44 @@ foreach ($plans as $plan) {
                     <h3 id="selected-plan-name">Plan Name</h3>
                     <p id="selected-plan-price">Price</p>
                 </div>
-                
+                                
                 <form id="payment-form">
-                    <div class="form-group">
-                        <label for="card-number">Card Number</label>
-                        <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19" required>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="card-expiry">Expiry Date</label>
-                            <input type="text" id="card-expiry" placeholder="MM/YY" maxlength="5" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="card-cvc">CVC</label>
-                            <input type="text" id="card-cvc" placeholder="123" maxlength="4" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="card-name">Name on Card</label>
-                        <input type="text" id="card-name" placeholder="John Doe" required>
-                    </div>
-                    
+                    <!-- Stripe Elements will be inserted here -->
+                    <div id="payment-element"></div>
+                                
                     <div class="payment-security">
                         <img src="../images/icons/lock.webp" alt="Secure">
-                        <span>Your payment information is encrypted and secure</span>
+                        <span>Secured by Stripe. We never store your payment details.</span>
                     </div>
-                    
-                    <button type="submit" class="submit-payment-btn">Subscribe Now</button>
+                                
+                    <!-- Error messages -->
+                    <div id="payment-message" class="hidden"></div>
+                                
+                    <button type="submit" id="submit-payment-btn" class="submit-payment-btn">
+                        <span id="button-text">Subscribe Now</span>
+                        <span id="spinner" class="hidden">Processing...</span>
+                    </button>
                 </form>
+                                
+                <!-- Payment method logos -->
+                <div class="payment-methods">
+                    <img src="../images/payment/visa.svg" alt="Visa" title="Visa">
+                    <img src="../images/payment/mastercard.svg" alt="Mastercard" title="Mastercard">
+                    <img src="../images/payment/amex.svg" alt="American Express" title="American Express">
+                    <img src="../images/payment/apple-pay.svg" alt="Apple Pay" title="Apple Pay">
+                    <img src="../images/payment/google-pay.svg" alt="Google Pay" title="Google Pay">
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Scripts -->
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        // Initialize Stripe with your publishable key
+        const stripe = Stripe('<?php echo STRIPE_PUBLISHABLE_KEY; ?>');
+    </script>
     <script src="../js/main.js"></script>
-    <script src="../js/subscription.js"></script>
+    <script src="../js/subscription-stripe.js"></script>
 </body>
 </html>

@@ -148,14 +148,9 @@ if ($room) {
                         <div class="shop-grid">
                             <?php foreach ($featuredItems as $item): ?>
                                 <div class="shop-item">
-                                    <?php
-                                    // Convert image path to WebP
-                                    $imagePath = $item['image_path'];
-                                    $webpPath = preg_replace('/\.(jpg|jpeg|png|gif)$/i', '.webp', $imagePath);
-                                    ?>
-                                    <img src="../<?php echo htmlspecialchars($webpPath); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
+                                    <img src="../<?php echo htmlspecialchars($item['image_path']); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                                     <div class="item-price">
-                                        <img src="../images/icons/hcoin-small.webp" alt="HCoin">
+                                        <img src="../images/icons/hcoin-icon-light.webp" alt="HCoin">
                                         <span><?php echo $item['price']; ?></span>
                                     </div>
                                 </div>
@@ -178,16 +173,7 @@ if ($room) {
                     </div>
                     <div class="panel-content">
                         <div class="habitus-preview">
-                            <?php if ($habitusData && isset($habitusData['preview_image'])): ?>
-                                <?php
-                                // Convert preview image to WebP
-                                $previewImage = $habitusData['preview_image'];
-                                $webpPreview = preg_replace('/\.(jpg|jpeg|png|gif)$/i', '.webp', $previewImage);
-                                ?>
-                                <img src="<?php echo htmlspecialchars($webpPreview); ?>" alt="Habitus Preview">
-                            <?php else: ?>
-                                <div id="dashboard-room-container" class="habitus-room-container"></div>
-                            <?php endif; ?>
+                            <div id="dashboard-room-container" class="habitus-room-container"></div>
                         </div>
                     </div>
                     <div class="panel-footer">
@@ -272,13 +258,16 @@ if ($room) {
     <!-- JavaScript -->
     <script src="../js/main.js"></script>
     <script src="../js/dashboard.js"></script>
-    <!-- Habitus Room Script -->
-    <script src="../js/habitus-room.js"></script>
+    <!-- Dashboard Habitus Preview Script -->
+    <script src="../js/dashboard-habitus.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize the isometric room
+            // Initialize the dashboard room preview
+            const roomData = <?php echo json_encode($roomData); ?>;
+            const placedItems = <?php echo json_encode($placedItems); ?>;
+            
             if (document.getElementById('dashboard-room-container')) {
-                initializeHabitusRoom(<?php echo json_encode($habitusData); ?>, <?php echo json_encode($placedItems); ?>);
+                initializeDashboardRoom(roomData, placedItems);
             }
         });
     </script>

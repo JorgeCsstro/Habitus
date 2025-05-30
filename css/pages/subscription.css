@@ -526,6 +526,122 @@
     box-shadow: 0 4px 10px rgba(106, 141, 127, 0.2);
 }
 
+#payment-element {
+    margin-bottom: 20px;
+    min-height: 200px;
+}
+
+#payment-element.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.payment-methods {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e9e2d9;
+}
+
+.payment-methods img {
+    height: 30px;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.payment-methods img:hover {
+    opacity: 1;
+}
+
+#payment-message {
+    background-color: #efe2e2;
+    color: #a15c5c;
+    border: 1px solid #e0d0d0;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+#payment-message.hidden {
+    display: none;
+}
+
+#spinner {
+    display: inline-block;
+}
+
+#spinner.hidden {
+    display: none;
+}
+
+#button-text.hidden {
+    display: none;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #8d5b4c;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+/* Stripe iframe responsive */
+.StripeElement iframe {
+    height: 40px !important;
+}
+
+/* Success animation */
+@keyframes checkmark {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.payment-success {
+    text-align: center;
+    padding: 40px;
+}
+
+.payment-success .checkmark {
+    width: 80px;
+    height: 80px;
+    background-color: #6a8d7f;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    animation: checkmark 0.5s ease-out;
+}
+
+.payment-success .checkmark svg {
+    width: 40px;
+    height: 40px;
+    stroke: white;
+    stroke-width: 3;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .subscription-plans {
