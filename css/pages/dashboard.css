@@ -209,10 +209,10 @@
 
 /* Dashboard Room Preview */
 .dashboard-room {
-    width: 300px;
-    height: 300px;
     position: relative;
-    transform: scale(0.8);
+    width: 360px;
+    height: 360px;
+    transform: scale(0.7);
     transform-origin: center center;
 }
 
@@ -220,9 +220,9 @@
     position: absolute;
     width: 360px;
     height: 360px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotateX(60deg) rotateZ(-45deg);
+    top: 200px;
+    left: 170px;
+    transform: rotateX(60deg) rotateZ(-45deg);
     transform-style: preserve-3d;
 }
 
@@ -235,6 +235,7 @@
         linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
     background-size: 60px 60px;
+    background-position: -1px -1px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
@@ -289,9 +290,9 @@
     width: 360px;
     height: 360px;
     pointer-events: none;
-    transform: translate(-50%, -50%) rotateX(60deg) rotateZ(315deg);
-    top: 50%;
-    left: 50%;
+    transform: rotateX(60deg) rotateZ(315deg);
+    top: 195px;
+    left: 170px;
 }
 
 .dashboard-room .placed-items-wall-left {
@@ -299,10 +300,10 @@
     width: 360px;
     height: 240px;
     pointer-events: none;
-    transform: translate(-50%, -50%) rotateX(60deg) rotateZ(-45deg) rotateX(-90deg);
+    transform: rotateX(60deg) rotateZ(-45deg) rotateX(-90deg);
     transform-origin: top;
-    top: calc(50% - 125px);
-    left: calc(50% - 128px);
+    top: 110px;
+    left: 40px;
 }
 
 .dashboard-room .placed-items-wall-right {
@@ -310,10 +311,10 @@
     width: 240px;
     height: 360px;
     pointer-events: none;
-    transform: translate(-50%, -50%) rotateX(60deg) rotateZ(-45deg) rotateY(-90deg) translateZ(-360px);
+    transform: rotateX(60deg) rotateZ(-45deg) rotateY(-90deg) translateZ(-360px);
     transform-origin: left;
-    top: calc(50% + 18px);
-    left: calc(50% + 52px);
+    top: 264px;
+    left: 222px;
 }
 
 /* Dashboard placed items (non-interactive) */
@@ -334,15 +335,16 @@
 
 /* Counter-rotate images for proper display */
 .dashboard-room .placed-items-floor .placed-item img {
-    transform: rotateZ(45deg) rotateX(-60deg) scale(1.414, 0.816);
+    transform: rotateZ(40deg) rotateY(55deg) rotateX(0deg) rotate(5deg) scale(2);   
+    translate: 10px -15px;
 }
 
 .dashboard-room .placed-items-wall-left .placed-item img {
-    transform: none;
+    /* No transform needed for left wall items */
 }
 
 .dashboard-room .placed-items-wall-right .placed-item img {
-    transform: none;
+    transform: rotateZ(165deg) rotateX(105deg) rotate(-135deg) rotateY(280deg) scale(1.4);
 }
 
 /* No hover effects for dashboard items */

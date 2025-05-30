@@ -48,29 +48,21 @@ if ($room) {
     $roomId = $room['id'];
     $roomData = $room;
     
-    // Get placed items for this room
-    $placedItemsQuery = "SELECT pi.*, ui.item_id, si.name, si.image_path, si.rotation_variants,
+    // Get placed items for this room - EXACT same query as habitus.php
+    $placedItemsQuery = "SELECT pi.*, ui.item_id, si.name, si.image_path, si.category_id, 
+                        si.rotation_variants, ic.name as category_name,
                         pi.surface, pi.grid_x, pi.grid_y, pi.rotation, pi.z_index
                         FROM placed_items pi
                         JOIN user_inventory ui ON pi.inventory_id = ui.id
                         JOIN shop_items si ON ui.item_id = si.id
+                        JOIN item_categories ic ON si.category_id = ic.id
                         WHERE pi.room_id = ?
                         ORDER BY pi.z_index";
     $stmt = $conn->prepare($placedItemsQuery);
     $stmt->execute([$roomId]);
     $placedItems = $stmt->fetchAll();
-    // Add this debug check after loading placed items to see what's being loaded:
-    error_log("Dashboard items loaded: " . json_encode(array_map(function($item) {
-        return [
-            'name' => $item['name'],
-            'grid_x' => $item['grid_x'],
-            'grid_y' => $item['grid_y'],
-            'surface' => $item['surface'],
-            'rotation' => $item['rotation']
-        ];
-    }, $placedItems)));
     
-    // Process rotation variants
+    // Process rotation variants for placed items
     foreach ($placedItems as &$item) {
         if (!empty($item['rotation_variants'])) {
             $item['rotation_variants'] = json_decode($item['rotation_variants'], true);
@@ -96,6 +88,8 @@ if ($room) {
     
     <!-- Page-specific CSS -->
     <link rel="stylesheet" href="../css/pages/dashboard.css">
+    <!-- Add habitus CSS for proper room styling -->
+    <link rel="stylesheet" href="../css/pages/habitus.css">
     
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
 </head>
@@ -184,7 +178,11 @@ if ($room) {
                     </div>
                     <div class="panel-content">
                         <div class="habitus-preview">
-                            <div id="dashboard-room-container" class="habitus-room-container"></div>
+                            <div id="dashboard-room-container" class="habitus-room-container">
+                                <div id="isometric-room" class="isometric-room">
+                                    <!-- Room structure will be created by JavaScript -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="panel-footer">
@@ -269,17 +267,18 @@ if ($room) {
     <!-- JavaScript -->
     <script src="../js/main.js"></script>
     <script src="../js/dashboard.js"></script>
-    <!-- Dashboard Habitus Preview Script -->
-    <script src="../js/dashboard-habitus.js"></script>
+    <!-- Include habitus room script for proper room functionality -->
+    <script src="../js/habitus-room.js"></script>
+    
+    <!-- Initialize the room using the same system as habitus.php -->
     <script>
+        // Initialize dashboard room when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize the dashboard room preview
             const roomData = <?php echo json_encode($roomData); ?>;
             const placedItems = <?php echo json_encode($placedItems); ?>;
             
-            if (document.getElementById('dashboard-room-container')) {
-                initializeDashboardRoom(roomData, placedItems);
-            }
+            // Use the same initialization as habitus.php but target the dashboard container
+            initializeHabitusRoom(roomData, placedItems, {}, 'dashboard-room-container');
         });
     </script>
 </body>
