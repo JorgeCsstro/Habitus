@@ -150,10 +150,13 @@ function createDragPreview() {
 function getItemConfig(itemName) {
     if (!itemName) return { width: 1, height: 1, surfaces: ['floor'] };
     
-    // Extract base name from image path if needed
+    // Extract base name from image path
     const baseName = itemName.toLowerCase().replace(/\.(jpg|png|webp|gif)$/i, '').split('/').pop();
     
-    // Updated item configurations with proper surface support
+    // Remove rotation suffixes if present (NEW FIX)
+    const cleanName = baseName.replace(/-(back|front)-(left|right)$/, '');
+    
+    // Item configurations using clean names
     const ITEM_SIZES = {
         // Floor Furniture
         'wooden_chair': { width: 1, height: 1, surfaces: ['floor'] },
@@ -165,12 +168,15 @@ function getItemConfig(itemName) {
         'floor_lamp': { width: 1, height: 1, surfaces: ['floor'] },
         'picture_frame': { width: 1, height: 1, surfaces: ['floor', 'wall-left', 'wall-right'] },
         'cactus': { width: 1, height: 1, surfaces: ['floor'] },
-        'wall_clock': { width: 1, height: 1, surfaces: ['floor', 'wall-left', 'wall-right'] }
+        'wall_clock': { width: 1, height: 1, surfaces: ['floor', 'wall-left', 'wall-right'] },
+        'wall_mirror': { width: 1, height: 1, surfaces: ['wall-left', 'wall-right'] },
+        'wall_shelf': { width: 2, height: 1, surfaces: ['wall-left', 'wall-right'] },
+        'painting': { width: 2, height: 1, surfaces: ['wall-left', 'wall-right'] }
     };
     
-    // Check predefined sizes
-    if (ITEM_SIZES[baseName]) {
-        return ITEM_SIZES[baseName];
+    // Check predefined sizes using clean name
+    if (ITEM_SIZES[cleanName]) {
+        return ITEM_SIZES[cleanName];
     }
     
     // Default config
@@ -332,16 +338,34 @@ function createPlacedItem(item) {
     itemDiv.style.height = (itemConfig.height * CELL_SIZE) + 'px';
     itemDiv.style.zIndex = item.z_index || 1;
     
-    // Create image with rotation variant
+    // Create image with rotation handling
     const img = document.createElement('img');
     
-    // Get rotation variants for this item
-    const rotationVariants = item.rotation_variants || itemRotationData[item.item_id];
-    const imagePath = getRotatedImagePath(item.image_path, item.rotation || 0, rotationVariants);
+    // Get or generate rotation variants
+    let rotationVariants = item.rotation_variants || itemRotationData[item.item_id];
+    
+    // If no rotation variants provided, try to generate them
+    if (!rotationVariants && item.image_path) {
+        rotationVariants = generateRotationVariants(item.image_path);
+    }
+    
+    // Get the correct image path for current rotation
+    const imagePath = getRotatedImagePath(
+        normalizeImagePath(item.image_path), 
+        item.rotation || 0, 
+        rotationVariants
+    );
     
     img.src = '../' + imagePath;
     img.alt = item.name;
     img.draggable = false;
+    
+    // Handle image load errors
+    img.onerror = function() {
+        console.warn(`Failed to load image: ${imagePath}, falling back to base image`);
+        this.src = '../' + normalizeImagePath(item.image_path);
+    };
+    
     itemDiv.appendChild(img);
     
     // Store rotation data
@@ -754,6 +778,19 @@ function hideContextMenu() {
     contextMenuItem = null;
 }
 
+// NEW: Function to normalize image paths and handle rotation suffixes
+function normalizeImagePath(imagePath) {
+    // If the path already has a rotation suffix, extract the base path
+    const rotationPattern = /-(back|front)-(left|right)(?=\.(jpg|png|webp|gif))/i;
+    
+    if (rotationPattern.test(imagePath)) {
+        // Remove the rotation suffix to get base path
+        return imagePath.replace(rotationPattern, '');
+    }
+    
+    return imagePath;
+}
+
 function getRotatedImagePath(basePath, rotation, rotationVariants) {
     // If no rotation variants available, return base path
     if (!rotationVariants || rotationVariants.length === 0) {
@@ -765,6 +802,32 @@ function getRotatedImagePath(basePath, rotation, rotationVariants) {
     
     // Return the appropriate variant or fallback to base path
     return rotationVariants[rotationIndex] || basePath;
+}
+
+// NEW: Function to generate rotation variants from base or suffixed path
+function generateRotationVariants(imagePath) {
+    // Get the normalized base path
+    const basePath = normalizeImagePath(imagePath);
+    
+    // Extract directory, filename, and extension
+    const pathParts = basePath.split('/');
+    const filename = pathParts.pop();
+    const directory = pathParts.join('/');
+    
+    const nameWithoutExt = filename.replace(/\.(jpg|png|webp|gif)$/i, '');
+    const extension = filename.match(/\.(jpg|png|webp|gif)$/i);
+    
+    if (!extension) return [imagePath]; // Fallback if no extension found
+    
+    const ext = extension[0];
+    
+    // Generate 4 rotation variants
+    return [
+        `${directory}/${nameWithoutExt}-back-right${ext}`,    // 0°
+        `${directory}/${nameWithoutExt}-back-left${ext}`,     // 90°
+        `${directory}/${nameWithoutExt}-front-left${ext}`,    // 180°
+        `${directory}/${nameWithoutExt}-front-right${ext}`    // 270°
+    ];
 }
 
 // Rotate selected item
@@ -782,7 +845,13 @@ function rotateItem() {
     try {
         rotationVariants = JSON.parse(contextMenuItem.dataset.rotationVariants || '[]');
     } catch (e) {
-        console.warn('No rotation variants for this item');
+        // If no rotation variants, try to generate them
+        const itemId = contextMenuItem.dataset.id;
+        const item = placedItems.find(i => i.id == itemId);
+        if (item && item.image_path) {
+            rotationVariants = generateRotationVariants(item.image_path);
+            contextMenuItem.dataset.rotationVariants = JSON.stringify(rotationVariants);
+        }
     }
     
     // Update the image if variants exist
@@ -792,8 +861,21 @@ function rotateItem() {
         const item = placedItems.find(i => i.id == itemId);
         
         if (item) {
-            const newImagePath = getRotatedImagePath(item.image_path, newRotation, rotationVariants);
+            const newImagePath = getRotatedImagePath(
+                normalizeImagePath(item.image_path), 
+                newRotation, 
+                rotationVariants
+            );
+            
+            // Update image with error handling
+            const oldSrc = img.src;
             img.src = '../' + newImagePath;
+            
+            img.onerror = function() {
+                console.warn(`Failed to load rotated image: ${newImagePath}, keeping current image`);
+                this.src = oldSrc;
+                this.onerror = null; // Prevent infinite loop
+            };
         }
     }
     
@@ -806,6 +888,41 @@ function rotateItem() {
     
     hideContextMenu();
     showNotification(`Item rotated to ${newRotation}°`, 'info');
+}
+
+function preloadRotationImages(items) {
+    items.forEach(item => {
+        if (item.rotation_variants) {
+            item.rotation_variants.forEach(imagePath => {
+                const img = new Image();
+                img.src = '../' + imagePath;
+            });
+        } else if (item.image_path) {
+            // Generate and preload rotation variants
+            const variants = generateRotationVariants(item.image_path);
+            variants.forEach(imagePath => {
+                const img = new Image();
+                img.src = '../' + imagePath;
+            });
+        }
+    });
+}
+
+function debugImagePaths() {
+    console.log('=== Image Path Debug ===');
+    
+    placedItems.forEach(item => {
+        console.log(`Item ${item.id}:`);
+        console.log(`  Original path: ${item.image_path}`);
+        console.log(`  Normalized path: ${normalizeImagePath(item.image_path)}`);
+        console.log(`  Rotation variants:`, item.rotation_variants || generateRotationVariants(item.image_path));
+        console.log(`  Current rotation: ${item.rotation || 0}°`);
+        
+        const rotationVariants = item.rotation_variants || generateRotationVariants(item.image_path);
+        const currentPath = getRotatedImagePath(normalizeImagePath(item.image_path), item.rotation || 0, rotationVariants);
+        console.log(`  Current image path: ${currentPath}`);
+        console.log('---');
+    });
 }
 
 // Move item to front
@@ -1218,7 +1335,6 @@ function testPlaceWallItem(surface = 'wall-left', x = 0, y = 0) {
 
 // Make functions globally available
 window.initializeHabitusRoom = initializeHabitusRoom;
-window.toggleGrid = toggleGrid;
 window.switchSurface = switchSurface;
 window.filterInventory = filterInventory;
 window.saveRoom = saveRoom;
@@ -1236,3 +1352,7 @@ window.startDrag = startDrag;
 window.debugWallPlacement = debugWallPlacement;
 window.testWallAlignment = testWallAlignment;
 window.testPlaceWallItem = testPlaceWallItem;
+window.normalizeImagePath = normalizeImagePath;
+window.generateRotationVariants = generateRotationVariants;
+window.preloadRotationImages = preloadRotationImages;
+window.debugImagePaths = debugImagePaths;
