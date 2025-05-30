@@ -79,6 +79,9 @@ function isDoorArea(x, y, surface) {
     // - Left wall: column 1 (x=1), bottom 2 rows (y=2,3)
     // - Floor entrance: column 1 (x=1), first row (y=0)
     
+    x = parseInt(x);
+    y = parseInt(y);
+    
     if (surface === 'wall-left') {
         return x === 1 && y >= 2;
     }
@@ -113,6 +116,12 @@ function loadDashboardItems(placedItems) {
     
     // Place items
     sortedItems.forEach(item => {
+        // Double-check door area constraint
+        if (isDoorArea(item.grid_x, item.grid_y, item.surface || 'floor')) {
+            console.warn(`Skipping item in door area: ${item.name} at ${item.grid_x},${item.grid_y}`);
+            return;
+        }
+        
         const itemElement = createDashboardItem(item);
         if (itemElement) {
             const surface = item.surface || 'floor';
@@ -124,6 +133,7 @@ function loadDashboardItems(placedItems) {
     });
 }
 
+// Update the counter-rotation styles in createDashboardItem:
 function createDashboardItem(item) {
     const itemDiv = document.createElement('div');
     itemDiv.className = 'placed-item';
@@ -140,9 +150,11 @@ function createDashboardItem(item) {
     // Create image
     const img = document.createElement('img');
     
-    // Handle rotation variants
+    // Get the correct image path based on rotation
     let imagePath = normalizeImagePath(item.image_path);
-    if (item.rotation_variants && item.rotation !== undefined && item.rotation !== null) {
+    
+    // Only use rotation variants if rotation is not 0
+    if (item.rotation && item.rotation !== 0 && item.rotation_variants) {
         try {
             const variants = typeof item.rotation_variants === 'string' 
                 ? JSON.parse(item.rotation_variants) 
@@ -163,8 +175,7 @@ function createDashboardItem(item) {
     
     // Handle image load errors
     img.onerror = function() {
-        console.warn(`Failed to load image: ${imagePath}`);
-        // Try base image as fallback
+        console.warn(`Failed to load image: ${imagePath}, falling back to base image`);
         this.src = '../' + normalizeImagePath(item.image_path);
     };
     

@@ -54,9 +54,10 @@ foreach ($rooms as $room) {
     }
 }
 
-// Get placed items for this room with rotation variants
+// Update the $placedItemsQuery to match dashboard.php:
 $placedItemsQuery = "SELECT pi.*, ui.item_id, si.name, si.image_path, si.category_id, 
-                    si.rotation_variants, ic.name as category_name
+                    si.rotation_variants, ic.name as category_name,
+                    pi.surface, pi.grid_x, pi.grid_y, pi.rotation, pi.z_index
                     FROM placed_items pi
                     JOIN user_inventory ui ON pi.inventory_id = ui.id
                     JOIN shop_items si ON ui.item_id = si.id

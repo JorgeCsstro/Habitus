@@ -334,16 +334,15 @@
 
 /* Counter-rotate images for proper display */
 .dashboard-room .placed-items-floor .placed-item img {
-    transform: rotateZ(40deg) rotateY(55deg) rotateX(0deg) rotate(5deg) scale(2);   
-    translate: 10px -15px;
+    transform: rotateZ(45deg) rotateX(-60deg) scale(1.414, 0.816);
 }
 
 .dashboard-room .placed-items-wall-left .placed-item img {
-    /* Wall left items don't need rotation as they're already flat */
+    transform: none;
 }
 
 .dashboard-room .placed-items-wall-right .placed-item img {
-    transform: rotateZ(165deg) rotateX(105deg) rotate(-135deg) rotateY(280deg) scale(1.4);
+    transform: none;
 }
 
 /* No hover effects for dashboard items */

@@ -49,7 +49,8 @@ if ($room) {
     $roomData = $room;
     
     // Get placed items for this room
-    $placedItemsQuery = "SELECT pi.*, ui.item_id, si.name, si.image_path, si.rotation_variants
+    $placedItemsQuery = "SELECT pi.*, ui.item_id, si.name, si.image_path, si.rotation_variants,
+                        pi.surface, pi.grid_x, pi.grid_y, pi.rotation, pi.z_index
                         FROM placed_items pi
                         JOIN user_inventory ui ON pi.inventory_id = ui.id
                         JOIN shop_items si ON ui.item_id = si.id
@@ -58,6 +59,16 @@ if ($room) {
     $stmt = $conn->prepare($placedItemsQuery);
     $stmt->execute([$roomId]);
     $placedItems = $stmt->fetchAll();
+    // Add this debug check after loading placed items to see what's being loaded:
+    error_log("Dashboard items loaded: " . json_encode(array_map(function($item) {
+        return [
+            'name' => $item['name'],
+            'grid_x' => $item['grid_x'],
+            'grid_y' => $item['grid_y'],
+            'surface' => $item['surface'],
+            'rotation' => $item['rotation']
+        ];
+    }, $placedItems)));
     
     // Process rotation variants
     foreach ($placedItems as &$item) {

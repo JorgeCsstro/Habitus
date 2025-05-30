@@ -156,6 +156,11 @@ try {
             continue;
         }
         
+        if (isDoorArea($gridX, $gridY, $surface)) {
+            $skippedItems[] = $inventoryData['name'] . " cannot be placed in door area";
+            continue;
+        }
+
         // Insert placed item
         $insertQuery = "INSERT INTO placed_items 
                        (room_id, inventory_id, surface, grid_x, grid_y, rotation, z_index) 
