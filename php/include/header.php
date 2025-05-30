@@ -21,7 +21,7 @@
             <span class="notification-badge"><?php echo $unreadCount; ?></span>
             <?php endif; ?>
         </div>
-        <a href="profile.php" class="profile-button" title="Profile settings">
+        <a href="settings.php" class="profile-button" title="Profile settings">
             <img src="../images/icons/profile-icon-light.webp" alt="Profile">
         </a>
     </div>

@@ -8,7 +8,11 @@ require_once '../../include/functions.php';
 require_once '../../../vendor/autoload.php';
 
 // Set Stripe API key
-\Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
+if (file_exists(__DIR__ . '/../../../.env')) {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../../../');
+    $dotenv->load();
+}
+\Stripe\Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
 
 // Enable CORS if needed
 header('Content-Type: application/json');
