@@ -32,6 +32,40 @@ $featuredItems = getFeaturedShopItems();
 
 // Get user's habitus data
 $habitusData = getUserHabitusData($_SESSION['user_id']);
+
+// Get the first room data with placed items for dashboard preview
+$roomId = 0;
+$roomData = null;
+$placedItems = [];
+
+// Get user's first room
+$roomsQuery = "SELECT * FROM rooms WHERE user_id = ? ORDER BY id LIMIT 1";
+$stmt = $conn->prepare($roomsQuery);
+$stmt->execute([$_SESSION['user_id']]);
+$room = $stmt->fetch();
+
+if ($room) {
+    $roomId = $room['id'];
+    $roomData = $room;
+    
+    // Get placed items for this room
+    $placedItemsQuery = "SELECT pi.*, ui.item_id, si.name, si.image_path, si.rotation_variants
+                        FROM placed_items pi
+                        JOIN user_inventory ui ON pi.inventory_id = ui.id
+                        JOIN shop_items si ON ui.item_id = si.id
+                        WHERE pi.room_id = ?
+                        ORDER BY pi.z_index";
+    $stmt = $conn->prepare($placedItemsQuery);
+    $stmt->execute([$roomId]);
+    $placedItems = $stmt->fetchAll();
+    
+    // Process rotation variants
+    foreach ($placedItems as &$item) {
+        if (!empty($item['rotation_variants'])) {
+            $item['rotation_variants'] = json_decode($item['rotation_variants'], true);
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -239,12 +273,12 @@ $habitusData = getUserHabitusData($_SESSION['user_id']);
     <script src="../js/main.js"></script>
     <script src="../js/dashboard.js"></script>
     <!-- Habitus Room Script -->
-    <script src="../js/habitus-house.js"></script>
+    <script src="../js/habitus-room.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize the isometric room
             if (document.getElementById('dashboard-room-container')) {
-                initHabitusRoom('dashboard-room-container');
+                initializeHabitusRoom(<?php echo json_encode($habitusData); ?>, <?php echo json_encode($placedItems); ?>);
             }
         });
     </script>
