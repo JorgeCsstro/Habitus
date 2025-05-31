@@ -11,10 +11,11 @@ let contextMenuItem = null;
 let dragPreview = null;
 let currentDragData = null;
 let currentSurface = 'floor';
-let itemRotationData = {}; // Store rotation variants for each item
-let isDashboardMode = false; // Flag to track if we're in dashboard mode
-let debugMode = false; // Debug mode flag
+let itemRotationData = {};
+let isDashboardMode = false;
+let debugMode = false;
 
+// FIXED: Hold-to-drag variables
 let holdTimer = null;
 let holdStartTime = 0;
 let isHolding = false;
@@ -24,6 +25,7 @@ let holdIndicator = null;
 let dragGhost = null;
 let flyingItems = new Set();
 let lastMousePosition = { x: 0, y: 0 };
+let dragStartPosition = { x: 0, y: 0 };
 
 // Grid configuration - 6x6
 const GRID_SIZE = 6;
@@ -31,8 +33,7 @@ const CELL_SIZE = 60;
 const ROOM_WIDTH = 360;
 const ROOM_HEIGHT = 360;
 const WALL_HEIGHT = 4;
-const HOLD_DURATION = 800;
-
+const HOLD_DURATION = 600; // FIXED: Reduced from 800ms to 600ms for better responsiveness
 const ROTATION_ANGLES = {
     0: 0,    // back-right (default)
     90: 1,   // back-left
@@ -57,13 +58,11 @@ const ITEM_SIZES = {
 
 // Initialize the Habitus room
 function initializeHabitusRoom(roomData, items, rotationData = {}) {
-    // FIXED: Add validation for required data
     if (!roomData) {
         console.error('initializeHabitusRoom: roomData is required');
         return;
     }
     
-    // FIXED: Detect if we're in dashboard mode
     const roomElement = document.getElementById('isometric-room');
     isDashboardMode = roomElement && roomElement.closest('.dashboard-room') !== null;
     
@@ -78,7 +77,7 @@ function initializeHabitusRoom(roomData, items, rotationData = {}) {
     placedItems = items || [];
     itemRotationData = rotationData || {};
     
-    // FIXED: Validate placed items data
+    // Validate placed items data
     placedItems = placedItems.filter(item => {
         const isValid = item && 
                        typeof item.grid_x !== 'undefined' && 
@@ -97,32 +96,16 @@ function initializeHabitusRoom(roomData, items, rotationData = {}) {
         createHoldIndicator();
         createFloatingMenu();
         setupEnhancedEventListeners();
-        /* console.log('🎮 Set up enhanced interactive controls'); */
+        console.log('🎮 Set up enhanced interactive controls');
     }
     
     // Load placed items
     loadPlacedItems();
     applyRoomCustomizations(roomData);
     
-    // Load room customizations
-    if (roomData.floor_color) {
-        const floor = document.querySelector('.room-floor');
-        if (floor) {
-            floor.style.backgroundColor = roomData.floor_color;
-        }
-    }
-    if (roomData.wall_color) {
-        const leftWall = document.querySelector('.room-wall-left');
-        const rightWall = document.querySelector('.room-wall-right');
-        if (leftWall) {
-            leftWall.style.background = `linear-gradient(to bottom, ${roomData.wall_color}, ${adjustColor(roomData.wall_color, -20)})`;
-        }
-        if (rightWall) {
-            rightWall.style.background = `linear-gradient(to left, ${adjustColor(roomData.wall_color, -10)}, ${adjustColor(roomData.wall_color, -30)})`;
-        }
-    }
     return true;
 }
+
 
 function debugLog(...args) {
     if (debugMode || isDashboardMode) {
@@ -138,97 +121,6 @@ function debugWarn(...args) {
     console.warn('[Habitus Room WARNING]', ...args);
 }
 
-/* // Initialize the Habitus room with enhanced error handling
-function initializeHabitusRoom(roomData, items, rotationData = {}) {
-    /* debugLog('🏠 Initializing Habitus Room');
-    
-    // Enhanced validation
-    if (!roomData) {
-        debugError('❌ roomData is required but not provided');
-        return false;
-    }
-    
-    if (!Array.isArray(items)) {
-        debugError('❌ items must be an array, got:', typeof items);
-        return false;
-    }
-    
-    // Detect dashboard mode
-    const roomElement = document.getElementById('isometric-room');
-    if (!roomElement) {
-        debugError('❌ Room element #isometric-room not found');
-        return false;
-    }
-    
-    isDashboardMode = roomElement.closest('.dashboard-room') !== null;
-    debugMode = window.location.search.includes('debug=1') || isDashboardMode;
-    
-    /* debugLog('📊 Initialization Details:', {
-        roomData: roomData,
-        itemCount: items.length,
-        isDashboardMode: isDashboardMode,
-        debugMode: debugMode,
-        rotationDataKeys: Object.keys(rotationData || {})
-    }); 
-    
-    currentRoom = roomData;
-    placedItems = items || [];
-    itemRotationData = rotationData || {};
-    
-    // Validate and clean placed items data
-    const originalCount = placedItems.length;
-    placedItems = placedItems.filter(item => {
-        const isValid = item && 
-                       typeof item.grid_x !== 'undefined' && 
-                       typeof item.grid_y !== 'undefined' &&
-                       item.image_path;
-        
-        if (!isValid) {
-            debugWarn('🗑️ Filtering out invalid item:', item);
-        }
-        return isValid;
-    });
-    
-    if (placedItems.length !== originalCount) {
-        debugWarn(`⚠️ Filtered out ${originalCount - placedItems.length} invalid items`);
-    }
-    
-    /* debugLog(`✅ Processing ${placedItems.length} valid items`); 
-    
-    // Ensure room structure exists
-    if (!ensureRoomStructure()) {
-        debugError('❌ Failed to create room structure');
-        return false;
-    }
-    
-    // Only create grids if not in dashboard mode
-    if (!isDashboardMode) {
-        createAllGrids();
-        /* debugLog('🔧 Created interactive grids'); 
-    } else {
-        /* debugLog('📱 Dashboard mode - skipping interactive grids'); 
-    }
-    
-    // Load placed items
-    const itemsLoaded = loadPlacedItems();
-    /* debugLog(`📦 Loaded ${itemsLoaded} items`); 
-    
-    // Only set up interactive event listeners if not in dashboard mode
-    if (!isDashboardMode) {
-        setupEventListeners();
-        createDragPreview();
-        /* debugLog('🎮 Set up interactive controls'); 
-    } else {
-        /* debugLog('📱 Dashboard mode - skipping interactive controls'); 
-    }
-    
-    // Apply room customizations
-    applyRoomCustomizations(roomData);
-    
-    /* debugLog('✅ Room initialization completed successfully'); 
-    return true;
-} */
-
 // Hold indicator for drag and drop
 function createHoldIndicator() {
     if (holdIndicator) return;
@@ -236,6 +128,30 @@ function createHoldIndicator() {
     holdIndicator = document.createElement('div');
     holdIndicator.className = 'hold-to-drag-indicator';
     holdIndicator.innerHTML = '<div class="hold-progress"></div>';
+    holdIndicator.style.cssText = `
+        position: fixed;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        z-index: 10000;
+        pointer-events: none;
+        border: 3px solid rgba(106, 141, 127, 0.3);
+    `;
+    
+    const progress = holdIndicator.querySelector('.hold-progress');
+    progress.style.cssText = `
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        right: 3px;
+        bottom: 3px;
+        border-radius: 50%;
+        background: conic-gradient(#6a8d7f 0deg, transparent 0deg);
+        transition: none;
+    `;
+    
     document.body.appendChild(holdIndicator);
 }
 
@@ -261,17 +177,20 @@ function createFloatingMenu() {
     `;
     
     document.body.appendChild(floatingMenu);
-    
-    // Add menu button listeners
     floatingMenu.addEventListener('click', handleMenuAction);
 }
 
 function setupEnhancedEventListeners() {
-    // Remove old context menu listeners and add new hold-to-drag
+    // Remove old event listeners first
+    document.removeEventListener('mousedown', handleMouseDown);
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+    
+    // Add new event listeners
     document.addEventListener('mousedown', handleMouseDown);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-    document.addEventListener('contextmenu', preventContextMenu); // Disable right-click menu
+    document.addEventListener('contextmenu', preventContextMenu);
     
     // Touch support for mobile
     document.addEventListener('touchstart', handleTouchStart, { passive: false });
@@ -305,6 +224,11 @@ function handleMouseDown(e) {
     if (!placedItem || isDashboardMode) return;
     
     e.preventDefault();
+    e.stopPropagation();
+    
+    // Store initial position for movement detection
+    dragStartPosition = { x: e.clientX, y: e.clientY };
+    
     startHold(placedItem, e);
 }
 
@@ -320,23 +244,31 @@ function startHold(item, e) {
     // Show hold indicator
     showHoldIndicator(e.clientX, e.clientY);
     
-    // Start progress animation
-    const progress = holdIndicator.querySelector('.hold-progress');
+    // Start progress animation with smoother updates
     let progressAngle = 0;
     
     holdTimer = setInterval(() => {
         const elapsed = Date.now() - holdStartTime;
         progressAngle = (elapsed / HOLD_DURATION) * 360;
         
-        if (progress && progress.querySelector('::before')) {
-            progress.style.setProperty('--progress', `${progressAngle}deg`);
-        }
+        // Update progress indicator
+        updateHoldProgress(progressAngle);
         
         if (elapsed >= HOLD_DURATION) {
             completeHold();
         }
-    }, 16); // ~60fps
+    }, 16); // 60fps for smooth animation
 }
+
+function updateHoldProgress(angle) {
+    if (!holdIndicator) return;
+    
+    const progress = holdIndicator.querySelector('.hold-progress');
+    if (progress) {
+        progress.style.background = `conic-gradient(#6a8d7f 0deg, #6a8d7f ${angle}deg, transparent ${angle}deg)`;
+    }
+}
+
 
 // Complete hold and start drag
 function completeHold() {
@@ -348,24 +280,61 @@ function completeHold() {
     // Mark item as being held
     heldItem.classList.add('being-held');
     
+    // FIXED: Show grids when starting drag
+    showGridsForDragging();
+    
     // Show floating menu
     showFloatingMenu();
     
     // Create drag ghost
     createDragGhost();
     
-    // Add hold instruction
-    addHoldInstruction();
+    // Set dragging state
+    isDragging = true;
     
     showActionFeedback(heldItem, 'Item picked up - drag to move');
+}
+
+function showGridsForDragging() {
+    const room = document.getElementById('isometric-room');
+    if (room) {
+        room.classList.add('dragging');
+    }
+    
+    // Make all grids visible with proper opacity
+    ['floor', 'wall-left', 'wall-right'].forEach(surface => {
+        const grid = document.getElementById(`room-grid-${surface}`);
+        if (grid) {
+            grid.style.display = 'block';
+            grid.style.opacity = '1';
+        }
+    });
+}
+
+function hideGridsForDragging() {
+    const room = document.getElementById('isometric-room');
+    if (room) {
+        room.classList.remove('dragging');
+    }
+    
+    // Hide grids if not in permanent view mode
+    if (!gridVisible) {
+        ['floor', 'wall-left', 'wall-right'].forEach(surface => {
+            const grid = document.getElementById(`room-grid-${surface}`);
+            if (grid) {
+                grid.style.display = 'none';
+                grid.style.opacity = '0';
+            }
+        });
+    }
 }
 
 // Show hold indicator
 function showHoldIndicator(x, y) {
     if (!holdIndicator) return;
     
-    holdIndicator.style.left = x - 30 + 'px';
-    holdIndicator.style.top = y - 30 + 'px';
+    holdIndicator.style.left = (x - 30) + 'px';
+    holdIndicator.style.top = (y - 30) + 'px';
     holdIndicator.style.display = 'block';
 }
 
@@ -382,10 +351,17 @@ function createDragGhost() {
     
     dragGhost = heldItem.cloneNode(true);
     dragGhost.className = 'drag-ghost';
-    dragGhost.style.position = 'fixed';
-    dragGhost.style.pointerEvents = 'none';
-    dragGhost.style.zIndex = '10000';
-    
+    dragGhost.style.cssText = `
+        position: fixed;
+        pointer-events: none;
+        z-index: 10000;
+        opacity: 0.8;
+        transform: scale(0.9);
+        filter: brightness(1.1);
+        transition: none;
+        border: 2px dashed #6a8d7f;
+        border-radius: 4px;
+    `;
     
     document.body.appendChild(dragGhost);
     updateDragGhost(lastMousePosition.x, lastMousePosition.y);
@@ -393,7 +369,7 @@ function createDragGhost() {
 
 // Update drag ghost position
 function updateDragGhost(x, y) {
-    if (!dragGhost) return;
+    if (!dragGhost || !heldItem) return;
     
     const rect = heldItem.getBoundingClientRect();
     dragGhost.style.left = (x - rect.width / 2) + 'px';
@@ -402,31 +378,91 @@ function updateDragGhost(x, y) {
 
 // Mouse move handler
 function handleMouseMove(e) {
-    lastMousePosition = { x: e.clientX, y: e.clientY };
+    const currentPos = { x: e.clientX, y: e.clientY };
     
     if (isHolding && !heldItem.classList.contains('being-held')) {
-        // Update hold indicator position
+        // Update hold indicator position smoothly
         if (holdIndicator && holdIndicator.style.display === 'block') {
-            holdIndicator.style.left = e.clientX - 30 + 'px';
-            holdIndicator.style.top = e.clientY - 30 + 'px';
+            holdIndicator.style.left = (currentPos.x - 30) + 'px';
+            holdIndicator.style.top = (currentPos.y - 30) + 'px';
         }
         
-        // Check if mouse moved too far - cancel hold
-        const startDistance = Math.sqrt(
-            Math.pow(e.clientX - lastMousePosition.x, 2) + 
-            Math.pow(e.clientY - lastMousePosition.y, 2)
+        // Check if mouse moved too far - cancel hold (FIXED: more forgiving threshold)
+        const distance = Math.sqrt(
+            Math.pow(currentPos.x - dragStartPosition.x, 2) + 
+            Math.pow(currentPos.y - dragStartPosition.y, 2)
         );
         
-        if (startDistance > 10) {
+        if (distance > 15) { // FIXED: Increased from 10 to 15 pixels
             cancelHold();
         }
     } else if (heldItem && heldItem.classList.contains('being-held')) {
-        // Update drag ghost and floating menu
-        updateDragGhost(e.clientX, e.clientY);
+        // FIXED: Smooth drag ghost updates
+        updateDragGhost(currentPos.x, currentPos.y);
         updateFloatingMenuPosition();
         
-        // Check for drop zones
-        checkDropZone(e);
+        // FIXED: Improved drop zone checking with debouncing
+        checkDropZoneSmooth(e);
+    }
+    
+    lastMousePosition = currentPos;
+}
+
+function checkDropZoneSmooth(e) {
+    // Clear previous highlights
+    document.querySelectorAll('.grid-cell').forEach(cell => {
+        cell.classList.remove('drag-over', 'invalid-drop');
+    });
+    
+    const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
+    const gridCell = elementUnder ? elementUnder.closest('.grid-cell') : null;
+    
+    if (gridCell && heldItem) {
+        const dropResult = findDropZone(e);
+        const itemConfig = getItemConfig(heldItem.querySelector('img').src);
+        
+        // FIXED: Highlight all affected cells with smooth animation
+        for (let dy = 0; dy < itemConfig.height; dy++) {
+            for (let dx = 0; dx < itemConfig.width; dx++) {
+                const targetCell = document.querySelector(
+                    `[data-surface="${dropResult.surface}"][data-x="${dropResult.gridX + dx}"][data-y="${dropResult.gridY + dy}"]`
+                );
+                if (targetCell) {
+                    targetCell.classList.add(dropResult.valid ? 'drag-over' : 'invalid-drop');
+                }
+            }
+        }
+        
+        // FIXED: Update drag preview on the correct surface
+        updateDragPreview(dropResult);
+    }
+}
+
+function updateDragPreview(dropResult) {
+    if (!dropResult || !heldItem) return;
+    
+    // Hide all previews first
+    document.querySelectorAll('.drag-preview').forEach(preview => {
+        preview.style.display = 'none';
+    });
+    
+    // Show preview on the correct surface
+    const preview = document.querySelector(`#placed-items-${dropResult.surface} .drag-preview`);
+    if (preview) {
+        const itemConfig = getItemConfig(heldItem.querySelector('img').src);
+        
+        preview.style.display = 'block';
+        preview.style.left = (dropResult.gridX * CELL_SIZE) + 'px';
+        preview.style.top = (dropResult.gridY * CELL_SIZE) + 'px';
+        preview.style.width = (itemConfig.width * CELL_SIZE) + 'px';
+        preview.style.height = (itemConfig.height * CELL_SIZE) + 'px';
+        preview.style.opacity = dropResult.valid ? '0.7' : '0.3';
+        preview.style.borderColor = dropResult.valid ? '#6a8d7f' : '#a15c5c';
+        
+        const img = heldItem.querySelector('img');
+        if (img) {
+            preview.innerHTML = `<img src="${img.src}" alt="${img.alt}">`;
+        }
     }
 }
 
@@ -487,7 +523,11 @@ function cancelHold() {
         heldItem = null;
     }
     
+    // FIXED: Hide grids when canceling
+    hideGridsForDragging();
+    
     isHolding = false;
+    isDragging = false;
 }
 
 // Complete drag and drop
@@ -502,9 +542,15 @@ function completeDragDrop(e) {
         removeFromFlying(heldItem);
         showActionFeedback(heldItem, 'Item moved successfully');
     } else {
-        // Invalid drop - mark as flying
-        addToFlying(heldItem);
-        showActionFeedback(heldItem, 'Invalid position - item is floating');
+        // Invalid drop - return to original position or mark as flying
+        const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
+        if (elementUnder && elementUnder.closest('.grid-cell')) {
+            addToFlying(heldItem);
+            showActionFeedback(heldItem, 'Invalid position - item is floating');
+        } else {
+            // Dropped outside grid - return to original position
+            showActionFeedback(heldItem, 'Item returned to original position');
+        }
     }
     
     // Clean up
@@ -526,6 +572,11 @@ function findDropZone(e) {
     
     const itemConfig = getItemConfig(heldItem.querySelector('img').src);
     const itemId = heldItem.dataset.id;
+    
+    // Check surface compatibility
+    if (!itemConfig.surfaces.includes(surface)) {
+        return { valid: false, gridX, gridY, surface, reason: 'Surface not compatible' };
+    }
     
     // Check if placement is valid
     const isValid = isAreaAvailable(gridX, gridY, itemConfig.width, itemConfig.height, surface, itemId);
@@ -619,18 +670,34 @@ function updateFlyingWarning() {
 
 // Finalize drag and drop
 function finalizeDragDrop() {
+    // Clean up drag ghost
     if (dragGhost) {
         dragGhost.remove();
         dragGhost = null;
     }
     
+    // Remove being-held state
     if (heldItem) {
         heldItem.classList.remove('being-held');
     }
     
+    // FIXED: Hide grids after drag
+    hideGridsForDragging();
+    
+    // Clear all highlights
+    document.querySelectorAll('.grid-cell').forEach(cell => {
+        cell.classList.remove('drag-over', 'invalid-drop');
+    });
+    
+    // Hide all drag previews
+    document.querySelectorAll('.drag-preview').forEach(preview => {
+        preview.style.display = 'none';
+    });
+    
     // Keep floating menu open for further actions
     updateFloatingMenuPosition();
     
+    isDragging = false;
     isHolding = false;
 }
 
@@ -676,7 +743,7 @@ function hideFloatingMenu() {
         heldItem.classList.remove('selected');
         heldItem = null;
     }
-}
+}   
 
 // Handle menu actions
 function handleMenuAction(e) {
@@ -799,15 +866,11 @@ function removeHeldItem() {
 function ensureRoomStructure() {
     const room = document.getElementById('isometric-room');
     if (!room) {
-        debugError('❌ Room container not found');
+        console.error('❌ Room container not found');
         return false;
     }
     
-    // Check if structure already exists
     if (!room.querySelector('.room-base')) {
-        /* debugLog('🏗️ Creating room structure'); */
-        
-        // Clear and rebuild room structure
         room.innerHTML = `
             <div class="room-base">
                 <div class="room-floor" id="room-floor"></div>
@@ -822,35 +885,18 @@ function ensureRoomStructure() {
             <div class="placed-items-wall-left" id="placed-items-wall-left"></div>
             <div class="placed-items-wall-right" id="placed-items-wall-right"></div>
         `;
-    } else {
-        /* debugLog('🏗️ Room structure already exists'); */
-    }
-    
-    // Verify all required containers exist
-    const requiredContainers = [
-        'room-floor', 'wall-left', 'wall-right',
-        'placed-items-floor', 'placed-items-wall-left', 'placed-items-wall-right'
-    ];
-    
-    for (const containerId of requiredContainers) {
-        if (!document.getElementById(containerId)) {
-            debugError(`❌ Required container missing: ${containerId}`);
-            return false;
-        }
     }
     
     return true;
 }
 
+// Apply room customizations
 function applyRoomCustomizations(roomData) {
-    /* debugLog('🎨 Applying room customizations'); */
-    
     try {
         if (roomData.floor_color) {
             const floor = document.querySelector('.room-floor');
             if (floor) {
                 floor.style.backgroundColor = roomData.floor_color;
-                /* debugLog('🎨 Applied floor color:', roomData.floor_color); */
             }
         }
         
@@ -859,15 +905,13 @@ function applyRoomCustomizations(roomData) {
             const rightWall = document.querySelector('.room-wall-right');
             if (leftWall) {
                 leftWall.style.background = `linear-gradient(to bottom, ${roomData.wall_color}, ${adjustColor(roomData.wall_color, -20)})`;
-                /* debugLog('🎨 Applied left wall color:', roomData.wall_color); */
             }
             if (rightWall) {
                 rightWall.style.background = `linear-gradient(to left, ${adjustColor(roomData.wall_color, -10)}, ${adjustColor(roomData.wall_color, -30)})`;
-                /* debugLog('🎨 Applied right wall color:', roomData.wall_color); */
             }
         }
     } catch (error) {
-        debugError('❌ Error applying room customizations:', error);
+        console.error('❌ Error applying room customizations:', error);
     }
 }
 
@@ -890,10 +934,8 @@ function adjustColor(color, amount) {
 
 // Create drag preview element
 function createDragPreview() {
-    // Only create drag previews if not in dashboard mode
     if (isDashboardMode) return;
     
-    // Create preview for each surface
     ['floor', 'wall-left', 'wall-right'].forEach(surface => {
         const container = document.getElementById(`placed-items-${surface}`);
         if (container) {
@@ -909,7 +951,6 @@ function createDragPreview() {
         }
     });
     
-    // Set main drag preview reference
     dragPreview = document.querySelector('.drag-preview');
 }
 
@@ -917,48 +958,23 @@ function createDragPreview() {
 function getItemConfig(itemName) {
     if (!itemName) return { width: 1, height: 1, surfaces: ['floor'] };
     
-    // Extract base name from image path
     const baseName = itemName.toLowerCase().replace(/\.(jpg|png|webp|gif)$/i, '').split('/').pop();
-    
-    // Remove rotation suffixes if present
     const cleanName = baseName.replace(/-(back|front)-(left|right)$/, '');
     
-    // Item configurations using clean names
-    const ITEM_SIZES = {
-        // Floor Furniture
-        'wooden_chair': { width: 1, height: 1, surfaces: ['floor'] },
-        'simple_table': { width: 2, height: 2, surfaces: ['floor'] },
-        'bookshelf': { width: 1, height: 2, surfaces: ['floor', 'wall-left', 'wall-right'] },
-        'cozy_sofa': { width: 3, height: 2, surfaces: ['floor'] },
-        // Decorations
-        'potted_plant': { width: 1, height: 1, surfaces: ['floor'] },
-        'floor_lamp': { width: 1, height: 1, surfaces: ['floor'] },
-        'picture_frame': { width: 1, height: 1, surfaces: ['floor', 'wall-left', 'wall-right'] },
-        'cactus': { width: 1, height: 1, surfaces: ['floor'] },
-        'wall_clock': { width: 1, height: 1, surfaces: ['floor', 'wall-left', 'wall-right'] },
-        'wall_mirror': { width: 1, height: 1, surfaces: ['wall-left', 'wall-right'] },
-        'wall_shelf': { width: 2, height: 1, surfaces: ['wall-left', 'wall-right'] },
-        'painting': { width: 2, height: 1, surfaces: ['wall-left', 'wall-right'] }
-    };
-    
-    // Check predefined sizes using clean name
     if (ITEM_SIZES[cleanName]) {
         return ITEM_SIZES[cleanName];
     }
     
-    // Default config
     return { width: 1, height: 1, surfaces: ['floor'] };
 }
 
 // Create all grids (floor and walls)
 function createAllGrids() {
-    // Create floor grid
     createGrid('floor', GRID_SIZE, GRID_SIZE);
-    
-    // Create wall grids (4 cells high)
     createGrid('wall-left', GRID_SIZE, WALL_HEIGHT);
     createGrid('wall-right', WALL_HEIGHT, GRID_SIZE);
 }
+
 
 // Create a grid for a specific surface
 function createGrid(surface, width, height) {
@@ -975,22 +991,18 @@ function createGrid(surface, width, height) {
             cell.dataset.y = y;
             cell.dataset.surface = surface;
             
-            // Position cells in grid
             cell.style.left = (x * CELL_SIZE) + 'px';
             cell.style.top = (y * CELL_SIZE) + 'px';
             cell.style.width = CELL_SIZE + 'px';
             cell.style.height = CELL_SIZE + 'px';
             
-            // Mark door area as non-placeable (on left wall and floor entrance)
             if (isDoorArea(x, y, surface)) {
                 cell.classList.add('non-placeable');
             }
             
-            // Add drop listeners
             cell.addEventListener('dragover', handleDragOver);
             cell.addEventListener('dragleave', handleDragLeave);
             cell.addEventListener('drop', handleDrop);
-            cell.addEventListener('click', handleCellClick);
             
             gridContainer.appendChild(cell);
         }
@@ -1015,7 +1027,6 @@ function isDoorArea(x, y, surface) {
 
 // Check if area is available for item placement
 function isAreaAvailable(x, y, width, height, surface, excludeItemId = null) {
-    // Get grid dimensions based on surface
     let maxX, maxY;
     if (surface === 'floor') {
         maxX = GRID_SIZE;
@@ -1028,12 +1039,10 @@ function isAreaAvailable(x, y, width, height, surface, excludeItemId = null) {
         maxY = GRID_SIZE;
     }
     
-    // Check bounds
     if (x < 0 || y < 0 || x + width > maxX || y + height > maxY) {
         return false;
     }
     
-    // Check door area (on left wall and floor entrance)
     for (let dy = 0; dy < height; dy++) {
         for (let dx = 0; dx < width; dx++) {
             if (isDoorArea(x + dx, y + dy, surface)) {
@@ -1042,14 +1051,12 @@ function isAreaAvailable(x, y, width, height, surface, excludeItemId = null) {
         }
     }
     
-    // Check collision with other items on the same surface
     for (const item of placedItems) {
-        if (item.surface !== surface) continue; // Skip items on other surfaces
+        if (item.surface !== surface) continue;
         if (excludeItemId && item.id === excludeItemId) continue;
         
         const itemConfig = getItemConfig(item.image_path || item.name);
         
-        // Check if rectangles overlap
         if (!(x + width <= item.grid_x || 
               x >= item.grid_x + itemConfig.width ||
               y + height <= item.grid_y || 
@@ -1062,7 +1069,6 @@ function isAreaAvailable(x, y, width, height, surface, excludeItemId = null) {
 }
 
 // Load placed items into the room
-// Load placed items with enhanced debugging
 function loadPlacedItems() {
     /* debugLog('📦 Loading placed items'); */
     
@@ -1081,7 +1087,7 @@ function loadPlacedItems() {
         /* debugLog(`🗑️ Cleared ${clearedCount} existing items`); */
     }
     
-    let loadedCount = 0;
+    let loadedCount = 0;    
     let errorCount = 0;
     
     // Place items on appropriate surfaces
@@ -1306,6 +1312,7 @@ function startDrag(e) {
     if (room) {
         room.classList.add('dragging');
     }
+    showGridsForDragging();
 }
 
 // Handle dragging of already placed items
@@ -1523,6 +1530,7 @@ function clearDragState() {
     if (room) {
         room.classList.remove('dragging');
     }
+    hideGridsForDragging();
 }
 
 // Global drag end handler
@@ -2013,6 +2021,7 @@ function handleTouchStart(e) {
         const placedItem = touch.target.closest('.placed-item');
         if (placedItem && !isDashboardMode) {
             e.preventDefault();
+            dragStartPosition = { x: touch.clientX, y: touch.clientY };
             startHold(placedItem, { clientX: touch.clientX, clientY: touch.clientY });
         }
     }
@@ -2300,6 +2309,7 @@ window.normalizeImagePath = normalizeImagePath;
 window.generateRotationVariants = generateRotationVariants;
 window.preloadRotationImages = preloadRotationImages;
 window.debugImagePaths = debugImagePaths;
+
 window.habitusDebug = {
     getCurrentRoom: () => currentRoom,
     getPlacedItems: () => placedItems,

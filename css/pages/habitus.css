@@ -208,6 +208,16 @@
     pointer-events: none;
 }
 
+.room-grid-floor,
+.room-grid-wall-left,
+.room-grid-wall-right {
+    position: absolute;
+    pointer-events: none;
+    display: none; /* Hidden by default */
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
 /* Grid overlays - Floor grid */
 .room-grid-floor {
     position: absolute;
@@ -256,8 +266,8 @@
 .isometric-room.dragging .room-grid-floor,
 .isometric-room.dragging .room-grid-wall-left,
 .isometric-room.dragging .room-grid-wall-right {
-    display: block;
-    opacity: 1;
+    display: block !important;
+    opacity: 1 !important;
     pointer-events: all;
 }
 
@@ -283,6 +293,12 @@
     border-color: #6a8d7f !important;
     box-shadow: 0 0 10px rgba(106, 141, 127, 0.5);
     z-index: 101;
+    animation: dragOverPulse 1s infinite ease-in-out;
+}
+
+@keyframes dragOverPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 0.8; }
 }
 
 .grid-cell.drag-invalid {
@@ -425,12 +441,14 @@
     border: 2px dashed #6a8d7f;
     background-color: rgba(106, 141, 127, 0.1);
     border-radius: 4px;
+    transition: all 0.1s ease;
 }
 
 .drag-preview img {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    opacity: 0.8;
 }
 
 /* Room controls */
@@ -1021,12 +1039,10 @@
 
 /* Enhanced Habitus CSS - Hold to Drag System */
 
+/* CHECK IF ERRORS */
 /* Hold to drag loading circle */
 .hold-to-drag-indicator {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: fixed;
     width: 60px;
     height: 60px;
     border-radius: 50%;
@@ -1034,6 +1050,7 @@
     display: none;
     z-index: 10000;
     pointer-events: none;
+    border: 3px solid rgba(106, 141, 127, 0.3);
 }
 
 .hold-to-drag-indicator::before {
@@ -1068,12 +1085,12 @@
 /* Progress circle animation */
 .hold-progress {
     position: absolute;
-    top: 5px;
-    left: 5px;
-    right: 5px;
-    bottom: 5px;
-    border: 3px solid rgba(106, 141, 127, 0.2);
+    top: 3px;
+    left: 3px;
+    right: 3px;
+    bottom: 3px;
     border-radius: 50%;
+    background: conic-gradient(#6a8d7f 0deg, transparent 0deg);
     transition: none;
 }
 
@@ -1256,12 +1273,14 @@
 
 /* Invalid drop zone styling */
 .grid-cell.invalid-drop {
-    background-color: rgba(161, 92, 92, 0.3) !important;
+    background-color: rgba(161, 92, 92, 0.5) !important;
     border-color: #a15c5c !important;
-    animation: shake 0.5s ease-in-out;
+    box-shadow: 0 0 10px rgba(161, 92, 92, 0.5);
+    z-index: 101;
+    animation: invalidDropShake 0.5s ease-in-out;
 }
 
-@keyframes shake {
+@keyframes invalidDropShake {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-2px); }
     75% { transform: translateX(2px); }
@@ -1275,7 +1294,9 @@
     opacity: 0.8;
     transform: scale(0.9);
     filter: brightness(1.1);
-    transition: all 0.1s ease;
+    transition: none;
+    border: 2px dashed #6a8d7f;
+    border-radius: 4px;
 }
 
 /* Hold instruction tooltip */
