@@ -178,16 +178,9 @@ if ($room) {
                     </div>
                     <div class="panel-content">
                         <div class="habitus-preview">
-                            <?php if ($habitusData && isset($habitusData['preview_image'])): ?>
-                                <?php
-                                // Convert preview image to WebP
-                                $previewImage = $habitusData['preview_image'];
-                                $webpPreview = preg_replace('/\.(jpg|jpeg|png|gif)$/i', '.webp', $previewImage);
-                                ?>
-                                <img src="<?php echo htmlspecialchars($webpPreview); ?>" alt="Habitus Preview">
-                            <?php else: ?>
-                                <div id="dashboard-room-container" class="habitus-room-container"></div>
-                            <?php endif; ?>
+                            <div class="dashboard-room">
+                                <div id="isometric-room" class="isometric-room"></div>
+                            </div>
                         </div>
                     </div>
                     <div class="panel-footer">
@@ -273,14 +266,25 @@ if ($room) {
     <script src="../js/main.js"></script>
     <script src="../js/dashboard.js"></script>
     <!-- Habitus Room Script -->
-    <script src="../js/habitus-room.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize the isometric room
-            if (document.getElementById('dashboard-room-container')) {
-                initializeHabitusRoom(<?php echo json_encode($habitusData); ?>, <?php echo json_encode($placedItems); ?>);
+            const roomData = <?php echo json_encode($roomData); ?> || null;
+            const placedItems = <?php echo json_encode($placedItems); ?> || [];
+            
+            // Build rotationDataMap from placedItems (like habitus.php)
+            const rotationData = {};
+            placedItems.forEach(item => {
+                if (item.rotation_variants) {
+                    rotationData[item.item_id] = item.rotation_variants;
+                }
+            });
+        
+            if (roomData) {
+                initializeHabitusRoom(roomData, placedItems, rotationData);
             }
         });
     </script>
+    <script src="../js/habitus-room.js"></script>
+    
 </body>
 </html>
