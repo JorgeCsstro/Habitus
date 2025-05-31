@@ -1,28 +1,23 @@
-// habitus-room.js - Enhanced isometric room system with proper image handling
+// habitus-room.js - Fixed isometric room system with proper drag and drop
 
 // Room state
 let currentRoom = null;
 let selectedItem = null;
 let isDragging = false;
 let placedItems = [];
-let gridVisible = true;
-let currentRotation = 0;
-let contextMenuItem = null;
-let dragPreview = null;
+let gridVisible = false; // FIXED: Start with grids hidden
 let currentDragData = null;
-let currentSurface = 'floor';
 let itemRotationData = {};
 let isDashboardMode = false;
 let debugMode = false;
 
-// FIXED: Hold-to-drag variables
+// FIXED: Hold-to-drag variables (cleaned up)
 let holdTimer = null;
 let holdStartTime = 0;
 let isHolding = false;
 let heldItem = null;
 let floatingMenu = null;
 let holdIndicator = null;
-let dragGhost = null;
 let flyingItems = new Set();
 let lastMousePosition = { x: 0, y: 0 };
 let dragStartPosition = { x: 0, y: 0 };
@@ -36,7 +31,7 @@ const CELL_SIZE = 60;
 const ROOM_WIDTH = 360;
 const ROOM_HEIGHT = 360;
 const WALL_HEIGHT = 4;
-const HOLD_DURATION = 600; // FIXED: Reduced from 800ms to 600ms for better responsiveness
+const HOLD_DURATION = 600;
 const ROTATION_ANGLES = {
     0: 0,    // back-right (default)
     90: 1,   // back-left
@@ -44,35 +39,18 @@ const ROTATION_ANGLES = {
     270: 3   // front-right
 };
 
-// Item size definitions (can be loaded from database)
+// Item size definitions
 const ITEM_SIZES = {
-    // Floor Furniture
     'wooden_chair': { width: 1, height: 1, surfaces: ['floor'] },
     'simple_table': { width: 2, height: 2, surfaces: ['floor'] },
     'bookshelf': { width: 1, height: 2, surfaces: ['floor', 'wall-left', 'wall-right'] },
     'cozy_sofa': { width: 3, height: 2, surfaces: ['floor'] },
-    // Decorations
     'potted_plant': { width: 1, height: 1, surfaces: ['floor'] },
     'floor_lamp': { width: 1, height: 1, surfaces: ['floor'] },
     'picture_frame': { width: 1, height: 1, surfaces: ['wall-left', 'wall-right'] },
     'cactus': { width: 1, height: 1, surfaces: ['floor'] },
     'wall_clock': { width: 1, height: 1, surfaces: ['wall-left', 'wall-right'] }
 };
-
-document.addEventListener('click', function(e) {
-    if (!e.target.closest('.floating-action-menu') && 
-        !e.target.closest('.placed-item') && 
-        !isDragging) {
-        hideFloatingMenu();
-    }
-});
-
-// Add escape key to hide menu
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        hideFloatingMenu();
-    }
-});
 
 // Initialize the Habitus room
 function initializeHabitusRoom(roomData, items, rotationData = {}) {
@@ -84,8 +62,8 @@ function initializeHabitusRoom(roomData, items, rotationData = {}) {
     const roomElement = document.getElementById('isometric-room');
     isDashboardMode = roomElement && roomElement.closest('.dashboard-room') !== null;
     
-    console.log('Initializing Habitus Room:', {
-        roomData,
+    console.log('🏠 Initializing Habitus Room:', {
+        roomData: roomData.name,
         itemCount: (items || []).length,
         isDashboardMode,
         rotationDataKeys: Object.keys(rotationData || {})
@@ -107,869 +85,25 @@ function initializeHabitusRoom(roomData, items, rotationData = {}) {
     // Ensure room structure exists
     ensureRoomStructure();
     
-    // Only create grids if not in dashboard mode
+    // Only create interactive elements if not in dashboard mode
     if (!isDashboardMode) {
         createAllGrids();
         createDragPreview();
         createHoldIndicator();
         createFloatingMenu();
-        setupEnhancedEventListeners();
-        console.log('🎮 Set up enhanced interactive controls');
+        setupEventListeners();
+        console.log('🎮 Interactive controls enabled');
     }
     
     // Load placed items
     loadPlacedItems();
     applyRoomCustomizations(roomData);
     
+    console.log('✅ Room initialization complete');
     return true;
 }
 
-
-function debugLog(...args) {
-    if (debugMode || isDashboardMode) {
-        console.log('[Habitus Room]', ...args);
-    }
-}
-
-function debugError(...args) {
-    console.error('[Habitus Room ERROR]', ...args);
-}
-
-function debugWarn(...args) {
-    console.warn('[Habitus Room WARNING]', ...args);
-}
-
-// Hold indicator for drag and drop
-function createHoldIndicator() {
-    if (holdIndicator) return;
-    
-    holdIndicator = document.createElement('div');
-    holdIndicator.className = 'hold-to-drag-indicator';
-    holdIndicator.innerHTML = '<div class="hold-progress"></div>';
-    holdIndicator.style.cssText = `
-        position: fixed;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: rgba(0, 0, 0, 0.8);
-        display: none;
-        z-index: 10000;
-        pointer-events: none;
-        border: 3px solid rgba(106, 141, 127, 0.3);
-    `;
-    
-    const progress = holdIndicator.querySelector('.hold-progress');
-    progress.style.cssText = `
-        position: absolute;
-        top: 3px;
-        left: 3px;
-        right: 3px;
-        bottom: 3px;
-        border-radius: 50%;
-        background: conic-gradient(#6a8d7f 0deg, transparent 0deg);
-        transition: none;
-    `;
-    
-    document.body.appendChild(holdIndicator);
-}
-
-// Create floating action menu
-function createFloatingMenu() {
-    if (floatingMenu) return;
-    
-    floatingMenu = document.createElement('div');
-    floatingMenu.className = 'floating-action-menu';
-    floatingMenu.innerHTML = `
-        <button class="menu-button rotate" data-action="rotate">
-            <span>Rotate Item</span>
-        </button>
-        <button class="menu-button front" data-action="front">
-            <span>Bring to Front</span>
-        </button>
-        <button class="menu-button back" data-action="back">
-            <span>Send to Back</span>
-        </button>
-        <button class="menu-button remove" data-action="remove">
-            <span>Remove Item</span>
-        </button>
-    `;
-    
-    document.body.appendChild(floatingMenu);
-    floatingMenu.addEventListener('click', handleMenuAction);
-}
-
-function setupEnhancedEventListeners() {
-    // Remove old event listeners first
-    document.removeEventListener('mousedown', handleMouseDown);
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
-    
-    // Add new event listeners
-    document.addEventListener('mousedown', handleMouseDown);
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-    document.addEventListener('contextmenu', preventContextMenu);
-    
-    // Touch support for mobile
-    document.addEventListener('touchstart', handleTouchStart, { passive: false });
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', handleTouchEnd);
-    
-    // Hide floating menu when clicking elsewhere
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.floating-action-menu') && !e.target.closest('.placed-item.being-held')) {
-            hideFloatingMenu();
-        }
-    });
-    
-    // Clean up on page unload
-    window.addEventListener('beforeunload', cleanup);
-}
-
-// Prevent right-click context menu
-function preventContextMenu(e) {
-    if (e.target.closest('.placed-item')) {
-        e.preventDefault();
-        return false;
-    }
-}
-
-// Enhanced mouse down handler
-function handleMouseDown(e) {
-    if (e.button !== 0) return; // Only left mouse button
-    
-    const placedItem = e.target.closest('.placed-item');
-    if (!placedItem || isDashboardMode) return;
-    
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // Store initial position and time for movement detection
-    dragStartPosition = { x: e.clientX, y: e.clientY };
-    clickStartTime = Date.now();
-    hasMovedDuringHold = false;
-    isActualDrag = false;
-    
-    startHold(placedItem, e);
-}
-
-
-// Start hold timer
-function startHold(item, e) {
-    if (isHolding) return;
-    
-    isHolding = true;
-    heldItem = item;
-    holdStartTime = Date.now();
-    lastMousePosition = { x: e.clientX, y: e.clientY };
-    
-    // Show hold indicator
-    showHoldIndicator(e.clientX, e.clientY);
-    
-    // Start progress animation with smoother updates
-    let progressAngle = 0;
-    
-    holdTimer = setInterval(() => {
-        const elapsed = Date.now() - holdStartTime;
-        progressAngle = (elapsed / HOLD_DURATION) * 360;
-        
-        // Update progress indicator
-        updateHoldProgress(progressAngle);
-        
-        if (elapsed >= HOLD_DURATION) {
-            completeHold();
-        }
-    }, 16); // 60fps for smooth animation
-}
-
-function updateHoldProgress(angle) {
-    if (!holdIndicator) return;
-    
-    const progress = holdIndicator.querySelector('.hold-progress');
-    if (progress) {
-        progress.style.background = `conic-gradient(#6a8d7f 0deg, #6a8d7f ${angle}deg, transparent ${angle}deg)`;
-    }
-}
-
-
-// Complete hold and start drag
-function completeHold() {
-    if (!heldItem) return;
-    
-    clearInterval(holdTimer);
-    hideHoldIndicator();
-    
-    // Mark item as being held
-    heldItem.classList.add('being-held');
-    
-    // Show grids when starting drag
-    showGridsForDragging();
-    
-    // DON'T show floating menu here - only show during drag if needed
-    // showFloatingMenu(); // REMOVED
-    
-    // Create drag ghost
-    createDragGhost();
-    
-    // Set dragging state
-    isDragging = true;
-    isActualDrag = true;
-    
-    showActionFeedback(heldItem, 'Item picked up - drag to move');
-}
-
-function showGridsForDragging() {
-    const room = document.getElementById('isometric-room');
-    if (room) {
-        room.classList.add('dragging');
-    }
-    
-    // Make all grids visible with proper opacity
-    ['floor', 'wall-left', 'wall-right'].forEach(surface => {
-        const grid = document.getElementById(`room-grid-${surface}`);
-        if (grid) {
-            grid.style.display = 'block';
-            grid.style.opacity = '1';
-        }
-    });
-}
-
-function hideGridsForDragging() {
-    const room = document.getElementById('isometric-room');
-    if (room) {
-        room.classList.remove('dragging');
-    }
-    
-    // Hide grids if not in permanent view mode
-    if (!gridVisible) {
-        ['floor', 'wall-left', 'wall-right'].forEach(surface => {
-            const grid = document.getElementById(`room-grid-${surface}`);
-            if (grid) {
-                grid.style.display = 'none';
-                grid.style.opacity = '0';
-            }
-        });
-    }
-}
-
-// Show hold indicator
-function showHoldIndicator(x, y) {
-    if (!holdIndicator) return;
-    
-    holdIndicator.style.left = (x - 30) + 'px';
-    holdIndicator.style.top = (y - 30) + 'px';
-    holdIndicator.style.display = 'block';
-}
-
-// Hide hold indicator
-function hideHoldIndicator() {
-    if (holdIndicator) {
-        holdIndicator.style.display = 'none';
-    }
-}
-
-// Create drag ghost
-function createDragGhost() {
-    if (!heldItem) return;
-    
-    dragGhost = heldItem.cloneNode(true);
-    dragGhost.className = 'drag-ghost';
-    dragGhost.style.cssText = `
-        position: fixed;
-        pointer-events: none;
-        z-index: 10000;
-        opacity: 0.8;
-        transform: scale(0.9);
-        filter: brightness(1.1);
-        transition: none;
-        border: 2px dashed #6a8d7f;
-        border-radius: 4px;
-    `;
-    
-    document.body.appendChild(dragGhost);
-    updateDragGhost(lastMousePosition.x, lastMousePosition.y);
-}
-
-// Update drag ghost position
-function updateDragGhost(x, y) {
-    if (!dragGhost || !heldItem) return;
-    
-    const rect = heldItem.getBoundingClientRect();
-    dragGhost.style.left = (x - rect.width / 2) + 'px';
-    dragGhost.style.top = (y - rect.height / 2) + 'px';
-}
-
-// Mouse move handler
-function handleMouseMove(e) {
-    const currentPos = { x: e.clientX, y: e.clientY };
-    
-    if (isHolding && !heldItem.classList.contains('being-held')) {
-        // Update hold indicator position smoothly
-        if (holdIndicator && holdIndicator.style.display === 'block') {
-            holdIndicator.style.left = (currentPos.x - 30) + 'px';
-            holdIndicator.style.top = (currentPos.y - 30) + 'px';
-        }
-        
-        // Check if mouse moved too far - this indicates drag intention
-        const distance = Math.sqrt(
-            Math.pow(currentPos.x - dragStartPosition.x, 2) + 
-            Math.pow(currentPos.y - dragStartPosition.y, 2)
-        );
-        
-        if (distance > 15) {
-            hasMovedDuringHold = true;
-            // Don't cancel hold, but mark as actual drag intention
-        }
-        
-        if (distance > 25) { // Cancel if moved too far without completing hold
-            cancelHold();
-        }
-    } else if (heldItem && heldItem.classList.contains('being-held')) {
-        // This is actual dragging
-        isActualDrag = true;
-        updateDragGhost(currentPos.x, currentPos.y);
-        checkDropZoneSmooth(e);
-    }
-    
-    lastMousePosition = currentPos;
-}
-
-function checkDropZoneSmooth(e) {
-    // Clear previous highlights
-    document.querySelectorAll('.grid-cell').forEach(cell => {
-        cell.classList.remove('drag-over', 'invalid-drop');
-    });
-    
-    const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
-    const gridCell = elementUnder ? elementUnder.closest('.grid-cell') : null;
-    
-    if (gridCell && heldItem) {
-        const dropResult = findDropZone(e);
-        const itemConfig = getItemConfig(heldItem.querySelector('img').src);
-        
-        // FIXED: Highlight all affected cells with smooth animation
-        for (let dy = 0; dy < itemConfig.height; dy++) {
-            for (let dx = 0; dx < itemConfig.width; dx++) {
-                const targetCell = document.querySelector(
-                    `[data-surface="${dropResult.surface}"][data-x="${dropResult.gridX + dx}"][data-y="${dropResult.gridY + dy}"]`
-                );
-                if (targetCell) {
-                    targetCell.classList.add(dropResult.valid ? 'drag-over' : 'invalid-drop');
-                }
-            }
-        }
-        
-        // FIXED: Update drag preview on the correct surface
-        updateDragPreview(dropResult);
-    }
-}
-
-function updateDragPreview(dropResult) {
-    if (!dropResult || !heldItem) return;
-    
-    // Hide all previews first
-    document.querySelectorAll('.drag-preview').forEach(preview => {
-        preview.style.display = 'none';
-    });
-    
-    // Show preview on the correct surface
-    const preview = document.querySelector(`#placed-items-${dropResult.surface} .drag-preview`);
-    if (preview) {
-        const itemConfig = getItemConfig(heldItem.querySelector('img').src);
-        
-        preview.style.display = 'block';
-        preview.style.left = (dropResult.gridX * CELL_SIZE) + 'px';
-        preview.style.top = (dropResult.gridY * CELL_SIZE) + 'px';
-        preview.style.width = (itemConfig.width * CELL_SIZE) + 'px';
-        preview.style.height = (itemConfig.height * CELL_SIZE) + 'px';
-        preview.style.opacity = dropResult.valid ? '0.7' : '0.3';
-        preview.style.borderColor = dropResult.valid ? '#6a8d7f' : '#a15c5c';
-        
-        const img = heldItem.querySelector('img');
-        if (img) {
-            preview.innerHTML = `<img src="${img.src}" alt="${img.alt}">`;
-        }
-    }
-}
-
-function checkDropZone(e) {
-    // Visual feedback during drag
-    const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
-    const gridCell = elementUnder ? elementUnder.closest('.grid-cell') : null;
-    
-    // Clear previous highlights
-    document.querySelectorAll('.grid-cell').forEach(cell => {
-        cell.classList.remove('drag-over', 'invalid-drop');
-    });
-    
-    if (gridCell) {
-        const dropResult = findDropZone(e);
-        const itemConfig = getItemConfig(heldItem.querySelector('img').src);
-        
-        // Highlight affected cells
-        for (let dy = 0; dy < itemConfig.height; dy++) {
-            for (let dx = 0; dx < itemConfig.width; dx++) {
-                const targetCell = document.querySelector(
-                    `[data-surface="${dropResult.surface}"][data-x="${dropResult.gridX + dx}"][data-y="${dropResult.gridY + dy}"]`
-                );
-                if (targetCell) {
-                    targetCell.classList.add(dropResult.valid ? 'drag-over' : 'invalid-drop');
-                }
-            }
-        }
-    }
-}
-
-// Mouse up handler
-function handleMouseUp(e) {
-    if (isHolding && heldItem) {
-        const holdDuration = Date.now() - clickStartTime;
-        
-        if (heldItem.classList.contains('being-held')) {
-            // Complete drag and drop
-            completeDragDrop(e);
-        } else {
-            // This was a click or incomplete hold
-            if (!hasMovedDuringHold && holdDuration < HOLD_DURATION) {
-                // This was a simple click - show menu
-                handleItemClick(heldItem, e);
-            }
-            // Cancel the hold
-            cancelHold();
-        }
-    }
-}
-
-// NEW: Handle item click (non-drag)
-function handleItemClick(itemElement, e) {
-    if (!itemElement) return;
-    
-    // Select the item
-    deselectItem();
-    itemElement.classList.add('selected');
-    selectedItem = itemElement;
-    heldItem = itemElement;
-    
-    // Show floating menu at click position
-    showFloatingMenuAtPosition(e.clientX, e.clientY);
-    
-    showActionFeedback(itemElement, 'Item selected');
-}
-
-// NEW: Show floating menu at specific position
-function showFloatingMenuAtPosition(x, y) {
-    if (!floatingMenu || !heldItem) return;
-    
-    floatingMenu.classList.add('show');
-    
-    const menuWidth = 140;
-    const menuHeight = 160;
-    
-    let left = x + 10;
-    let top = y;
-    
-    // Adjust if menu would go off screen
-    if (left + menuWidth > window.innerWidth) {
-        left = x - menuWidth - 10;
-    }
-    
-    if (top + menuHeight > window.innerHeight) {
-        top = window.innerHeight - menuHeight - 10;
-    }
-    
-    floatingMenu.style.left = left + 'px';
-    floatingMenu.style.top = top + 'px';
-}
-
-// Cancel hold
-function cancelHold() {
-    clearInterval(holdTimer);
-    hideHoldIndicator();
-    hideFloatingMenu();
-    
-    if (dragGhost) {
-        dragGhost.remove();
-        dragGhost = null;
-    }
-    
-    if (heldItem) {
-        heldItem.classList.remove('being-held');
-        // Don't reset heldItem here if it was a simple click
-        if (isActualDrag) {
-            heldItem = null;
-        }
-    }
-    
-    // Hide grids when canceling
-    hideGridsForDragging();
-    
-    isHolding = false;
-    isDragging = false;
-    isActualDrag = false;
-    hasMovedDuringHold = false;
-}
-
-// Complete drag and drop
-function completeDragDrop(e) {
-    if (!heldItem) return;
-    
-    const dropResult = findDropZone(e);
-    
-    if (dropResult.valid) {
-        // Valid drop - update item position
-        updateItemPosition(heldItem, dropResult);
-        removeFromFlying(heldItem);
-        showActionFeedback(heldItem, 'Item moved successfully');
-        
-        // Show menu after successful drop
-        setTimeout(() => {
-            if (heldItem) {
-                showFloatingMenuAfterDrop();
-            }
-        }, 100);
-        
-    } else {
-        // Invalid drop - return to original position or mark as flying
-        const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
-        if (elementUnder && elementUnder.closest('.grid-cell')) {
-            addToFlying(heldItem);
-            showActionFeedback(heldItem, 'Invalid position - item is floating');
-        } else {
-            // Dropped outside grid - return to original position
-            showActionFeedback(heldItem, 'Item returned to original position');
-        }
-    }
-    
-    // Clean up
-    finalizeDragDrop();
-    hideGridsForDragging();
-}
-
-// NEW: Show floating menu after drop
-function showFloatingMenuAfterDrop() {
-    if (!floatingMenu || !heldItem) return;
-    
-    floatingMenu.classList.add('show');
-    updateFloatingMenuPosition();
-}
-
-// Find drop zone under cursor
-function findDropZone(e) {
-    const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
-    const gridCell = elementUnder ? elementUnder.closest('.grid-cell') : null;
-    
-    if (!gridCell) {
-        return { valid: false, reason: 'Not over grid' };
-    }
-    
-    const gridX = parseInt(gridCell.dataset.x);
-    const gridY = parseInt(gridCell.dataset.y);
-    const surface = gridCell.dataset.surface;
-    
-    const itemConfig = getItemConfig(heldItem.querySelector('img').src);
-    const itemId = heldItem.dataset.id;
-    
-    // Check surface compatibility
-    if (!itemConfig.surfaces.includes(surface)) {
-        return { valid: false, gridX, gridY, surface, reason: 'Surface not compatible' };
-    }
-    
-    // Check if placement is valid
-    const isValid = isAreaAvailable(gridX, gridY, itemConfig.width, itemConfig.height, surface, itemId);
-    
-    return {
-        valid: isValid,
-        gridX: gridX,
-        gridY: gridY,
-        surface: surface,
-        reason: isValid ? 'Valid placement' : 'Position occupied or invalid'
-    };
-}
-
-// Update item position
-function updateItemPosition(itemElement, dropResult) {
-    const itemId = itemElement.dataset.id;
-    const item = placedItems.find(i => i.id == itemId);
-    
-    if (item) {
-        const oldSurface = item.surface || 'floor';
-        
-        // Update data
-        item.grid_x = dropResult.gridX;
-        item.grid_y = dropResult.gridY;
-        item.surface = dropResult.surface;
-        
-        // Update visual position
-        itemElement.style.left = (dropResult.gridX * CELL_SIZE) + 'px';
-        itemElement.style.top = (dropResult.gridY * CELL_SIZE) + 'px';
-        itemElement.dataset.gridX = dropResult.gridX;
-        itemElement.dataset.gridY = dropResult.gridY;
-        itemElement.dataset.surface = dropResult.surface;
-        
-        // Move to new container if surface changed
-        if (oldSurface !== dropResult.surface) {
-            const newContainer = document.getElementById(`placed-items-${dropResult.surface}`);
-            if (newContainer) {
-                newContainer.appendChild(itemElement);
-            }
-        }
-    }
-}
-
-// Add item to flying state
-function addToFlying(itemElement) {
-    const itemId = itemElement.dataset.id;
-    flyingItems.add(itemId);
-    itemElement.classList.add('flying');
-    updateFlyingWarning();
-}
-
-// Remove item from flying state
-function removeFromFlying(itemElement) {
-    const itemId = itemElement.dataset.id;
-    flyingItems.delete(itemId);
-    itemElement.classList.remove('flying');
-    updateFlyingWarning();
-}
-
-// Update flying items warning
-function updateFlyingWarning() {
-    let warning = document.querySelector('.flying-items-warning');
-    
-    if (flyingItems.size > 0) {
-        if (!warning) {
-            warning = document.createElement('div');
-            warning.className = 'flying-items-warning';
-            document.body.appendChild(warning);
-        }
-        
-        warning.innerHTML = `${flyingItems.size} item(s) in invalid positions - they will be removed when you save`;
-        warning.classList.add('show');
-        
-        // Update save button
-        const saveBtn = document.querySelector('.save-room-btn');
-        if (saveBtn) {
-            saveBtn.classList.add('has-flying');
-        }
-    } else {
-        if (warning) {
-            warning.classList.remove('show');
-        }
-        
-        // Reset save button
-        const saveBtn = document.querySelector('.save-room-btn');
-        if (saveBtn) {
-            saveBtn.classList.remove('has-flying');
-        }
-    }
-}
-
-// Finalize drag and drop
-function finalizeDragDrop() {
-    // Clean up drag ghost
-    if (dragGhost) {
-        dragGhost.remove();
-        dragGhost = null;
-    }
-    
-    // Remove being-held state but keep item selected
-    if (heldItem) {
-        heldItem.classList.remove('being-held');
-        heldItem.classList.add('selected'); // Keep selected for menu
-        selectedItem = heldItem; // Keep as selected item
-    }
-    
-    // Hide grids after drag
-    hideGridsForDragging();
-    
-    // Clear all highlights
-    document.querySelectorAll('.grid-cell').forEach(cell => {
-        cell.classList.remove('drag-over', 'invalid-drop');
-    });
-    
-    // Hide all drag previews
-    document.querySelectorAll('.drag-preview').forEach(preview => {
-        preview.style.display = 'none';
-    });
-    
-    isDragging = false;
-    isHolding = false;
-    isActualDrag = false;
-}
-
-// Show floating menu
-function showFloatingMenu() {
-    if (!floatingMenu || !heldItem) return;
-    
-    floatingMenu.classList.add('show');
-    updateFloatingMenuPosition();
-}
-
-// Update floating menu position
-function updateFloatingMenuPosition() {
-    if (!floatingMenu || !heldItem) return;
-    
-    const itemRect = heldItem.getBoundingClientRect();
-    const menuWidth = 140;
-    const menuHeight = 160;
-    
-    let left = itemRect.right + 10;
-    let top = itemRect.top;
-    
-    // Adjust if menu would go off screen
-    if (left + menuWidth > window.innerWidth) {
-        left = itemRect.left - menuWidth - 10;
-    }
-    
-    if (top + menuHeight > window.innerHeight) {
-        top = window.innerHeight - menuHeight - 10;
-    }
-    
-    floatingMenu.style.left = left + 'px';
-    floatingMenu.style.top = top + 'px';
-}
-
-// Hide floating menu
-function hideFloatingMenu() {
-    if (floatingMenu) {
-        floatingMenu.classList.remove('show');
-    }
-    
-    // Only clear selected item if explicitly hiding menu
-    if (heldItem && !isDragging) {
-        heldItem.classList.remove('selected');
-        heldItem = null;
-        selectedItem = null;
-    }
-}
-
-// Handle menu actions
-function handleMenuAction(e) {
-    if (!e.target.closest('.menu-button') || !heldItem) return;
-    
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const action = e.target.closest('.menu-button').dataset.action;
-    
-    switch (action) {
-        case 'rotate':
-            rotateHeldItem();
-            break;
-        case 'front':
-            moveHeldItemToFront();
-            break;
-        case 'back':
-            moveHeldItemToBack();
-            break;
-        case 'remove':
-            removeHeldItem();
-            return; // removeHeldItem handles its own cleanup
-    }
-    
-    // Hide menu after action (except remove which handles its own cleanup)
-    setTimeout(() => {
-        hideFloatingMenu();
-    }, 1000); // Keep menu visible for 1 second after action
-}
-
-// Rotate held item
-function rotateHeldItem() {
-    if (!heldItem) return;
-    
-    const currentRotation = parseInt(heldItem.dataset.rotation) || 0;
-    const newRotation = (currentRotation + 90) % 360;
-    
-    heldItem.dataset.rotation = newRotation;
-    
-    // Update rotation data
-    const itemId = heldItem.dataset.id;
-    const item = placedItems.find(i => i.id == itemId);
-    if (item) {
-        item.rotation = newRotation;
-        
-        // Update image if rotation variants exist
-        updateItemRotationImage(heldItem, item, newRotation);
-    }
-    
-    showActionFeedback(heldItem, `Rotated to ${newRotation}°`);
-}
-
-// Move held item to front
-function moveHeldItemToFront() {
-    if (!heldItem) return;
-    
-    const surface = heldItem.dataset.surface;
-    const maxZ = Math.max(...placedItems.filter(i => i.surface === surface).map(i => i.z_index || 0));
-    
-    heldItem.style.zIndex = maxZ + 1;
-    
-    const itemId = heldItem.dataset.id;
-    const item = placedItems.find(i => i.id == itemId);
-    if (item) {
-        item.z_index = maxZ + 1;
-    }
-    
-    showActionFeedback(heldItem, 'Moved to front');
-}
-
-// Move held item to back
-function moveHeldItemToBack() {
-    if (!heldItem) return;
-    
-    const surface = heldItem.dataset.surface;
-    heldItem.style.zIndex = 1;
-    
-    // Update z-indices for all items on same surface
-    placedItems.forEach(item => {
-        if (item.surface === surface && item.id != heldItem.dataset.id && item.z_index > 0) {
-            item.z_index++;
-        }
-    });
-    
-    const itemId = heldItem.dataset.id;
-    const item = placedItems.find(i => i.id == itemId);
-    if (item) {
-        item.z_index = 1;
-    }
-    
-    // Apply z-index changes
-    document.querySelectorAll(`.placed-item[data-surface="${surface}"]`).forEach(el => {
-        const elItem = placedItems.find(i => i.id == el.dataset.id);
-        if (elItem) {
-            el.style.zIndex = elItem.z_index;
-        }
-    });
-    
-    showActionFeedback(heldItem, 'Moved to back');
-}
-
-// Remove held item
-function removeHeldItem() {
-    if (!heldItem) return;
-    
-    if (confirm('Remove this item from the room?')) {
-        const itemId = heldItem.dataset.id;
-        
-        // Remove from flying items if present
-        removeFromFlying(heldItem);
-        
-        // Remove from array
-        placedItems = placedItems.filter(i => i.id != itemId);
-        
-        // Remove element
-        heldItem.remove();
-        
-        // Clean up references
-        hideFloatingMenu();
-        heldItem = null;
-        selectedItem = null;
-        
-        showActionFeedback(document.body, 'Item removed');
-    }
-}
-
-// Ensure room structure exists
+// FIXED: Ensure room structure exists
 function ensureRoomStructure() {
     const room = document.getElementById('isometric-room');
     if (!room) {
@@ -1039,49 +173,12 @@ function adjustColor(color, amount) {
     return (usePound ? '#' : '') + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
 }
 
-// Create drag preview element
-function createDragPreview() {
-    if (isDashboardMode) return;
-    
-    ['floor', 'wall-left', 'wall-right'].forEach(surface => {
-        const container = document.getElementById(`placed-items-${surface}`);
-        if (container) {
-            let preview = container.querySelector('.drag-preview');
-            if (!preview) {
-                preview = document.createElement('div');
-                preview.className = 'drag-preview';
-                preview.style.display = 'none';
-                preview.style.position = 'absolute';
-                preview.style.pointerEvents = 'none';
-                container.appendChild(preview);
-            }
-        }
-    });
-    
-    dragPreview = document.querySelector('.drag-preview');
-}
-
-// Get item configuration
-function getItemConfig(itemName) {
-    if (!itemName) return { width: 1, height: 1, surfaces: ['floor'] };
-    
-    const baseName = itemName.toLowerCase().replace(/\.(jpg|png|webp|gif)$/i, '').split('/').pop();
-    const cleanName = baseName.replace(/-(back|front)-(left|right)$/, '');
-    
-    if (ITEM_SIZES[cleanName]) {
-        return ITEM_SIZES[cleanName];
-    }
-    
-    return { width: 1, height: 1, surfaces: ['floor'] };
-}
-
-// Create all grids (floor and walls)
+// FIXED: Create all grids (floor and walls)
 function createAllGrids() {
     createGrid('floor', GRID_SIZE, GRID_SIZE);
     createGrid('wall-left', GRID_SIZE, WALL_HEIGHT);
     createGrid('wall-right', WALL_HEIGHT, GRID_SIZE);
 }
-
 
 // Create a grid for a specific surface
 function createGrid(surface, width, height) {
@@ -1108,7 +205,6 @@ function createGrid(surface, width, height) {
             }
             
             cell.addEventListener('dragover', handleDragOver);
-            cell.addEventListener('dragleave', handleDragLeave);
             cell.addEventListener('drop', handleDrop);
             
             gridContainer.appendChild(cell);
@@ -1116,20 +212,714 @@ function createGrid(surface, width, height) {
     }
 }
 
-// Check if coordinates are in door area (on left wall and floor in front)
+// Check if coordinates are in door area
 function isDoorArea(x, y, surface) {
-    // Door configuration:
-    // - Left wall: column 1 (x=1), bottom 2 rows (y=2,3)
-    // - Floor entrance: column 1 (x=1), first row (y=0) - to keep entrance clear
-    
     if (surface === 'wall-left') {
         return x === 1 && y >= 2;
     }
-    // Block the floor cell in front of the door entrance
     if (surface === 'floor') {
         return x === 1 && y === 0;
     }
     return false;
+}
+
+// FIXED: Create drag preview element
+function createDragPreview() {
+    if (isDashboardMode) return;
+    
+    ['floor', 'wall-left', 'wall-right'].forEach(surface => {
+        const container = document.getElementById(`placed-items-${surface}`);
+        if (container) {
+            let preview = container.querySelector('.drag-preview');
+            if (!preview) {
+                preview = document.createElement('div');
+                preview.className = 'drag-preview';
+                preview.style.cssText = `
+                    position: absolute;
+                    pointer-events: none;
+                    opacity: 0.7;
+                    z-index: 9999;
+                    border: 2px dashed #6a8d7f;
+                    background-color: rgba(106, 141, 127, 0.1);
+                    border-radius: 4px;
+                    display: none;
+                `;
+                container.appendChild(preview);
+            }
+        }
+    });
+}
+
+// Hold indicator for drag and drop
+function createHoldIndicator() {
+    if (holdIndicator) return;
+    
+    holdIndicator = document.createElement('div');
+    holdIndicator.className = 'hold-to-drag-indicator';
+    holdIndicator.innerHTML = '<div class="hold-progress"></div>';
+    document.body.appendChild(holdIndicator);
+}
+
+// Create floating action menu
+function createFloatingMenu() {
+    if (floatingMenu) return;
+    
+    floatingMenu = document.createElement('div');
+    floatingMenu.className = 'floating-action-menu';
+    floatingMenu.innerHTML = `
+        <button class="menu-button rotate" data-action="rotate">
+            <span>Rotate Item</span>
+        </button>
+        <button class="menu-button front" data-action="front">
+            <span>Bring to Front</span>
+        </button>
+        <button class="menu-button back" data-action="back">
+            <span>Send to Back</span>
+        </button>
+        <button class="menu-button remove" data-action="remove">
+            <span>Remove Item</span>
+        </button>
+    `;
+    
+    document.body.appendChild(floatingMenu);
+    floatingMenu.addEventListener('click', handleMenuAction);
+}
+
+// FIXED: Set up event listeners
+function setupEventListeners() {
+    if (isDashboardMode) return;
+    
+    // FIXED: Clean event listener setup
+    document.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('contextmenu', preventContextMenu);
+    
+    // Hide floating menu when clicking elsewhere
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.floating-action-menu') && 
+            !e.target.closest('.placed-item.being-held') &&
+            !e.target.closest('.placed-item.selected')) {
+            hideFloatingMenu();
+        }
+    });
+    
+    // Global drag end handler - FIXED: Ensure cleanup
+    document.addEventListener('dragend', function(e) {
+        clearDragState(); // FIXED: Always clear drag state
+    });
+    
+    // Escape key to hide menu
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            hideFloatingMenu();
+            cancelHold();
+        }
+    });
+}
+
+// Prevent right-click context menu
+function preventContextMenu(e) {
+    if (e.target.closest('.placed-item')) {
+        e.preventDefault();
+        return false;
+    }
+}
+
+// FIXED: Enhanced mouse down handler
+function handleMouseDown(e) {
+    if (e.button !== 0) return; // Only left mouse button
+    
+    const placedItem = e.target.closest('.placed-item');
+    if (!placedItem || isDashboardMode) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    dragStartPosition = { x: e.clientX, y: e.clientY };
+    clickStartTime = Date.now();
+    hasMovedDuringHold = false;
+    isActualDrag = false;
+    
+    startHold(placedItem, e);
+}
+
+// Start hold timer
+function startHold(item, e) {
+    if (isHolding) return;
+    
+    isHolding = true;
+    heldItem = item;
+    holdStartTime = Date.now();
+    lastMousePosition = { x: e.clientX, y: e.clientY };
+    
+    showHoldIndicator(e.clientX, e.clientY);
+    
+    let progressAngle = 0;
+    
+    holdTimer = setInterval(() => {
+        const elapsed = Date.now() - holdStartTime;
+        progressAngle = (elapsed / HOLD_DURATION) * 360;
+        
+        updateHoldProgress(progressAngle);
+        
+        if (elapsed >= HOLD_DURATION) {
+            completeHold();
+        }
+    }, 16);
+}
+
+function updateHoldProgress(angle) {
+    if (!holdIndicator) return;
+    
+    const progress = holdIndicator.querySelector('.hold-progress');
+    if (progress) {
+        progress.style.background = `conic-gradient(#6a8d7f 0deg, #6a8d7f ${angle}deg, transparent ${angle}deg)`;
+    }
+}
+
+// Complete hold and start drag
+function completeHold() {
+    if (!heldItem) return;
+    
+    clearInterval(holdTimer);
+    hideHoldIndicator();
+    
+    heldItem.classList.add('being-held');
+    showGridsForDragging(); // FIXED: Show grids when drag starts
+    
+    isDragging = true;
+    isActualDrag = true;
+    
+    showActionFeedback(heldItem, 'Item picked up - drag to move');
+}
+
+// FIXED: Show grids for dragging
+function showGridsForDragging() {
+    const room = document.getElementById('isometric-room');
+    if (room) {
+        room.classList.add('dragging');
+    }
+}
+
+// FIXED: Hide grids for dragging
+function hideGridsForDragging() {
+    const room = document.getElementById('isometric-room');
+    if (room) {
+        room.classList.remove('dragging');
+    }
+    
+    // Clear all grid highlights
+    document.querySelectorAll('.grid-cell').forEach(cell => {
+        cell.classList.remove('drag-over', 'drag-invalid');
+    });
+    
+    // Hide all drag previews
+    document.querySelectorAll('.drag-preview').forEach(preview => {
+        preview.style.display = 'none';
+    });
+}
+
+// Show hold indicator
+function showHoldIndicator(x, y) {
+    if (!holdIndicator) return;
+    
+    holdIndicator.style.left = (x - 30) + 'px';
+    holdIndicator.style.top = (y - 30) + 'px';
+    holdIndicator.style.display = 'block';
+}
+
+// Hide hold indicator
+function hideHoldIndicator() {
+    if (holdIndicator) {
+        holdIndicator.style.display = 'none';
+    }
+}
+
+// FIXED: Mouse move handler
+function handleMouseMove(e) {
+    const currentPos = { x: e.clientX, y: e.clientY };
+    
+    if (isHolding && !heldItem.classList.contains('being-held')) {
+        // Update hold indicator position
+        if (holdIndicator && holdIndicator.style.display === 'block') {
+            holdIndicator.style.left = (currentPos.x - 30) + 'px';
+            holdIndicator.style.top = (currentPos.y - 30) + 'px';
+        }
+        
+        // Check if mouse moved too far
+        const distance = Math.sqrt(
+            Math.pow(currentPos.x - dragStartPosition.x, 2) + 
+            Math.pow(currentPos.y - dragStartPosition.y, 2)
+        );
+        
+        if (distance > 15) {
+            hasMovedDuringHold = true;
+        }
+        
+        if (distance > 25) {
+            cancelHold();
+        }
+    } else if (heldItem && heldItem.classList.contains('being-held')) {
+        isActualDrag = true;
+        checkDropZone(e);
+    }
+    
+    lastMousePosition = currentPos;
+}
+
+// FIXED: Check drop zone with proper highlighting
+function checkDropZone(e) {
+    // Clear previous highlights
+    document.querySelectorAll('.grid-cell').forEach(cell => {
+        cell.classList.remove('drag-over', 'drag-invalid');
+    });
+    
+    const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
+    const gridCell = elementUnder ? elementUnder.closest('.grid-cell') : null;
+    
+    if (gridCell && heldItem) {
+        const dropResult = findDropZone(e);
+        const itemConfig = getItemConfig(heldItem.querySelector('img').src);
+        
+        // Highlight all affected cells
+        for (let dy = 0; dy < itemConfig.height; dy++) {
+            for (let dx = 0; dx < itemConfig.width; dx++) {
+                const targetCell = document.querySelector(
+                    `[data-surface="${dropResult.surface}"][data-x="${dropResult.gridX + dx}"][data-y="${dropResult.gridY + dy}"]`
+                );
+                if (targetCell) {
+                    targetCell.classList.add(dropResult.valid ? 'drag-over' : 'drag-invalid');
+                }
+            }
+        }
+        
+        updateDragPreview(dropResult);
+    }
+}
+
+// FIXED: Update drag preview
+function updateDragPreview(dropResult) {
+    if (!dropResult || !heldItem) return;
+    
+    // Hide all previews first
+    document.querySelectorAll('.drag-preview').forEach(preview => {
+        preview.style.display = 'none';
+    });
+    
+    // Show preview on the correct surface
+    const preview = document.querySelector(`#placed-items-${dropResult.surface} .drag-preview`);
+    if (preview) {
+        const itemConfig = getItemConfig(heldItem.querySelector('img').src);
+        
+        preview.style.display = 'block';
+        preview.style.left = (dropResult.gridX * CELL_SIZE) + 'px';
+        preview.style.top = (dropResult.gridY * CELL_SIZE) + 'px';
+        preview.style.width = (itemConfig.width * CELL_SIZE) + 'px';
+        preview.style.height = (itemConfig.height * CELL_SIZE) + 'px';
+        preview.style.opacity = dropResult.valid ? '0.7' : '0.3';
+        preview.style.borderColor = dropResult.valid ? '#6a8d7f' : '#a15c5c';
+        
+        const img = heldItem.querySelector('img');
+        if (img) {
+            preview.innerHTML = `<img src="${img.src}" alt="${img.alt}">`;
+        }
+    }
+}
+
+// FIXED: Mouse up handler
+function handleMouseUp(e) {
+    if (isHolding && heldItem) {
+        const holdDuration = Date.now() - clickStartTime;
+        
+        if (heldItem.classList.contains('being-held')) {
+            completeDragDrop(e); // FIXED: Complete drag and drop
+        } else {
+            if (!hasMovedDuringHold && holdDuration < HOLD_DURATION) {
+                handleItemClick(heldItem, e);
+            }
+            cancelHold();
+        }
+    }
+}
+
+// Handle item click (non-drag)
+function handleItemClick(itemElement, e) {
+    if (!itemElement) return;
+    
+    deselectItem();
+    itemElement.classList.add('selected');
+    selectedItem = itemElement;
+    heldItem = itemElement;
+    
+    showFloatingMenuAtPosition(e.clientX, e.clientY);
+    showActionFeedback(itemElement, 'Item selected');
+}
+
+// Show floating menu at specific position
+function showFloatingMenuAtPosition(x, y) {
+    if (!floatingMenu || !heldItem) return;
+    
+    floatingMenu.classList.add('show');
+    
+    const menuWidth = 140;
+    const menuHeight = 160;
+    
+    let left = x + 10;
+    let top = y;
+    
+    if (left + menuWidth > window.innerWidth) {
+        left = x - menuWidth - 10;
+    }
+    
+    if (top + menuHeight > window.innerHeight) {
+        top = window.innerHeight - menuHeight - 10;
+    }
+    
+    floatingMenu.style.left = left + 'px';
+    floatingMenu.style.top = top + 'px';
+}
+
+// FIXED: Cancel hold with proper cleanup
+function cancelHold() {
+    clearInterval(holdTimer);
+    hideHoldIndicator();
+    hideFloatingMenu();
+    
+    if (heldItem) {
+        heldItem.classList.remove('being-held');
+        if (isActualDrag) {
+            heldItem = null;
+        }
+    }
+    
+    hideGridsForDragging(); // FIXED: Always hide grids when canceling
+    
+    isHolding = false;
+    isDragging = false;
+    isActualDrag = false;
+    hasMovedDuringHold = false;
+}
+
+// FIXED: Complete drag and drop with proper cleanup
+function completeDragDrop(e) {
+    if (!heldItem) return;
+    
+    const dropResult = findDropZone(e);
+    
+    if (dropResult.valid) {
+        updateItemPosition(heldItem, dropResult);
+        removeFromFlying(heldItem);
+        showActionFeedback(heldItem, 'Item moved successfully');
+        
+        setTimeout(() => {
+            if (heldItem) {
+                showFloatingMenuAfterDrop();
+            }
+        }, 100);
+        
+    } else {
+        const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
+        if (elementUnder && elementUnder.closest('.grid-cell')) {
+            addToFlying(heldItem);
+            showActionFeedback(heldItem, 'Invalid position - item is floating');
+        } else {
+            showActionFeedback(heldItem, 'Item returned to original position');
+        }
+    }
+    
+    finalizeDragDrop(); // FIXED: Always finalize and cleanup
+}
+
+// Show floating menu after drop
+function showFloatingMenuAfterDrop() {
+    if (!floatingMenu || !heldItem) return;
+    
+    floatingMenu.classList.add('show');
+    updateFloatingMenuPosition();
+}
+
+// Update floating menu position
+function updateFloatingMenuPosition() {
+    if (!floatingMenu || !heldItem) return;
+    
+    const itemRect = heldItem.getBoundingClientRect();
+    const menuWidth = 140;
+    const menuHeight = 160;
+    
+    let left = itemRect.right + 10;
+    let top = itemRect.top;
+    
+    if (left + menuWidth > window.innerWidth) {
+        left = itemRect.left - menuWidth - 10;
+    }
+    
+    if (top + menuHeight > window.innerHeight) {
+        top = window.innerHeight - menuHeight - 10;
+    }
+    
+    floatingMenu.style.left = left + 'px';
+    floatingMenu.style.top = top + 'px';
+}
+
+// Find drop zone under cursor
+function findDropZone(e) {
+    const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
+    const gridCell = elementUnder ? elementUnder.closest('.grid-cell') : null;
+    
+    if (!gridCell) {
+        return { valid: false, reason: 'Not over grid' };
+    }
+    
+    const gridX = parseInt(gridCell.dataset.x);
+    const gridY = parseInt(gridCell.dataset.y);
+    const surface = gridCell.dataset.surface;
+    
+    const itemConfig = getItemConfig(heldItem.querySelector('img').src);
+    const itemId = heldItem.dataset.id;
+    
+    if (!itemConfig.surfaces.includes(surface)) {
+        return { valid: false, gridX, gridY, surface, reason: 'Surface not compatible' };
+    }
+    
+    const isValid = isAreaAvailable(gridX, gridY, itemConfig.width, itemConfig.height, surface, itemId);
+    
+    return {
+        valid: isValid,
+        gridX: gridX,
+        gridY: gridY,
+        surface: surface,
+        reason: isValid ? 'Valid placement' : 'Position occupied or invalid'
+    };
+}
+
+// Update item position
+function updateItemPosition(itemElement, dropResult) {
+    const itemId = itemElement.dataset.id;
+    const item = placedItems.find(i => i.id == itemId);
+    
+    if (item) {
+        const oldSurface = item.surface || 'floor';
+        
+        item.grid_x = dropResult.gridX;
+        item.grid_y = dropResult.gridY;
+        item.surface = dropResult.surface;
+        
+        itemElement.style.left = (dropResult.gridX * CELL_SIZE) + 'px';
+        itemElement.style.top = (dropResult.gridY * CELL_SIZE) + 'px';
+        itemElement.dataset.gridX = dropResult.gridX;
+        itemElement.dataset.gridY = dropResult.gridY;
+        itemElement.dataset.surface = dropResult.surface;
+        
+        if (oldSurface !== dropResult.surface) {
+            const newContainer = document.getElementById(`placed-items-${dropResult.surface}`);
+            if (newContainer) {
+                newContainer.appendChild(itemElement);
+            }
+        }
+    }
+}
+
+// FIXED: Finalize drag and drop with complete cleanup
+function finalizeDragDrop() {
+    if (heldItem) {
+        heldItem.classList.remove('being-held');
+        heldItem.classList.add('selected');
+        selectedItem = heldItem;
+    }
+    
+    hideGridsForDragging(); // FIXED: Always hide grids
+    
+    isDragging = false;
+    isHolding = false;
+    isActualDrag = false;
+}
+
+// Hide floating menu
+function hideFloatingMenu() {
+    if (floatingMenu) {
+        floatingMenu.classList.remove('show');
+    }
+    
+    if (heldItem && !isDragging) {
+        heldItem.classList.remove('selected');
+        heldItem = null;
+        selectedItem = null;
+    }
+}
+
+// Handle menu actions
+function handleMenuAction(e) {
+    if (!e.target.closest('.menu-button') || !heldItem) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const action = e.target.closest('.menu-button').dataset.action;
+    
+    switch (action) {
+        case 'rotate':
+            rotateHeldItem();
+            break;
+        case 'front':
+            moveHeldItemToFront();
+            break;
+        case 'back':
+            moveHeldItemToBack();
+            break;
+        case 'remove':
+            removeHeldItem();
+            return;
+    }
+    
+    setTimeout(() => {
+        hideFloatingMenu();
+    }, 1000);
+}
+
+// Rotate held item
+function rotateHeldItem() {
+    if (!heldItem) return;
+    
+    const currentRotation = parseInt(heldItem.dataset.rotation) || 0;
+    const newRotation = (currentRotation + 90) % 360;
+    
+    heldItem.dataset.rotation = newRotation;
+    
+    const itemId = heldItem.dataset.id;
+    const item = placedItems.find(i => i.id == itemId);
+    if (item) {
+        item.rotation = newRotation;
+        updateItemRotationImage(heldItem, item, newRotation);
+    }
+    
+    showActionFeedback(heldItem, `Rotated to ${newRotation}°`);
+}
+
+// Move held item to front
+function moveHeldItemToFront() {
+    if (!heldItem) return;
+    
+    const surface = heldItem.dataset.surface;
+    const maxZ = Math.max(...placedItems.filter(i => i.surface === surface).map(i => i.z_index || 0));
+    
+    heldItem.style.zIndex = maxZ + 1;
+    
+    const itemId = heldItem.dataset.id;
+    const item = placedItems.find(i => i.id == itemId);
+    if (item) {
+        item.z_index = maxZ + 1;
+    }
+    
+    showActionFeedback(heldItem, 'Moved to front');
+}
+
+// Move held item to back
+function moveHeldItemToBack() {
+    if (!heldItem) return;
+    
+    const surface = heldItem.dataset.surface;
+    heldItem.style.zIndex = 1;
+    
+    placedItems.forEach(item => {
+        if (item.surface === surface && item.id != heldItem.dataset.id && item.z_index > 0) {
+            item.z_index++;
+        }
+    });
+    
+    const itemId = heldItem.dataset.id;
+    const item = placedItems.find(i => i.id == itemId);
+    if (item) {
+        item.z_index = 1;
+    }
+    
+    document.querySelectorAll(`.placed-item[data-surface="${surface}"]`).forEach(el => {
+        const elItem = placedItems.find(i => i.id == el.dataset.id);
+        if (elItem) {
+            el.style.zIndex = elItem.z_index;
+        }
+    });
+    
+    showActionFeedback(heldItem, 'Moved to back');
+}
+
+// Remove held item
+function removeHeldItem() {
+    if (!heldItem) return;
+    
+    if (confirm('Remove this item from the room?')) {
+        const itemId = heldItem.dataset.id;
+        
+        removeFromFlying(heldItem);
+        placedItems = placedItems.filter(i => i.id != itemId);
+        heldItem.remove();
+        
+        hideFloatingMenu();
+        heldItem = null;
+        selectedItem = null;
+        
+        showActionFeedback(document.body, 'Item removed');
+    }
+}
+
+// Add item to flying state
+function addToFlying(itemElement) {
+    const itemId = itemElement.dataset.id;
+    flyingItems.add(itemId);
+    itemElement.classList.add('flying');
+    updateFlyingWarning();
+}
+
+// Remove item from flying state
+function removeFromFlying(itemElement) {
+    const itemId = itemElement.dataset.id;
+    flyingItems.delete(itemId);
+    itemElement.classList.remove('flying');
+    updateFlyingWarning();
+}
+
+// Update flying items warning
+function updateFlyingWarning() {
+    let warning = document.querySelector('.flying-items-warning');
+    
+    if (flyingItems.size > 0) {
+        if (!warning) {
+            warning = document.createElement('div');
+            warning.className = 'flying-items-warning';
+            document.body.appendChild(warning);
+        }
+        
+        warning.innerHTML = `${flyingItems.size} item(s) in invalid positions - they will be removed when you save`;
+        warning.classList.add('show');
+        
+        const saveBtn = document.querySelector('.save-room-btn');
+        if (saveBtn) {
+            saveBtn.classList.add('has-flying');
+        }
+    } else {
+        if (warning) {
+            warning.classList.remove('show');
+        }
+        
+        const saveBtn = document.querySelector('.save-room-btn');
+        if (saveBtn) {
+            saveBtn.classList.remove('has-flying');
+        }
+    }
+}
+
+// Get item configuration
+function getItemConfig(itemName) {
+    if (!itemName) return { width: 1, height: 1, surfaces: ['floor'] };
+    
+    const baseName = itemName.toLowerCase().replace(/\.(jpg|png|webp|gif)$/i, '').split('/').pop();
+    const cleanName = baseName.replace(/-(back|front)-(left|right)$/, '');
+    
+    if (ITEM_SIZES[cleanName]) {
+        return ITEM_SIZES[cleanName];
+    }
+    
+    return { width: 1, height: 1, surfaces: ['floor'] };
 }
 
 // Check if area is available for item placement
@@ -1177,32 +967,23 @@ function isAreaAvailable(x, y, width, height, surface, excludeItemId = null) {
 
 // Load placed items into the room
 function loadPlacedItems() {
-    /* debugLog('📦 Loading placed items'); */
+    console.log('📦 Loading placed items');
     
-    // Clear items from all surfaces
-    let clearedCount = 0;
     ['floor', 'wall-left', 'wall-right'].forEach(surface => {
         const container = document.getElementById(`placed-items-${surface}`);
         if (container) {
             const existingItems = container.querySelectorAll('.placed-item');
-            clearedCount += existingItems.length;
             existingItems.forEach(item => item.remove());
         }
     });
     
-    if (clearedCount > 0) {
-        /* debugLog(`🗑️ Cleared ${clearedCount} existing items`); */
-    }
-    
     let loadedCount = 0;    
     let errorCount = 0;
     
-    // Place items on appropriate surfaces
     placedItems.forEach((item, index) => {
         try {
-            // Enhanced validation
             if (!item || typeof item.grid_x === 'undefined' || typeof item.grid_y === 'undefined') {
-                debugWarn(`⚠️ Skipping invalid item at index ${index}:`, item);
+                console.warn(`⚠️ Skipping invalid item at index ${index}:`, item);
                 errorCount++;
                 return;
             }
@@ -1214,31 +995,29 @@ function loadPlacedItems() {
                 if (container) {
                     container.appendChild(itemElement);
                     loadedCount++;
-                    /* debugLog(`📦 Placed item ${item.id} "${item.name}" on ${surface} at [${item.grid_x}, ${item.grid_y}]`); */
                 } else {
-                    debugError(`❌ Container not found for surface: ${surface}`);
+                    console.error(`❌ Container not found for surface: ${surface}`);
                     errorCount++;
                 }
             } else {
-                debugError(`❌ Failed to create element for item:`, item);
+                console.error(`❌ Failed to create element for item:`, item);
                 errorCount++;
             }
         } catch (error) {
-            debugError(`❌ Error loading item at index ${index}:`, error, item);
+            console.error(`❌ Error loading item at index ${index}:`, error, item);
             errorCount++;
         }
     });
     
-    /* debugLog(`📊 Loading summary: ${loadedCount} loaded, ${errorCount} errors`); */
+    console.log(`📊 Loading summary: ${loadedCount} loaded, ${errorCount} errors`);
     return loadedCount;
 }
 
 // Create a placed item element
 function createPlacedItem(item) {
     try {
-        // Enhanced validation
         if (!item || !item.id || typeof item.grid_x === 'undefined' || typeof item.grid_y === 'undefined') {
-            debugError('❌ Invalid item data for createPlacedItem:', item);
+            console.error('❌ Invalid item data for createPlacedItem:', item);
             return null;
         }
         
@@ -1253,25 +1032,20 @@ function createPlacedItem(item) {
         
         const itemConfig = getItemConfig(item.image_path || item.name);
         
-        // Position and size on grid
         itemDiv.style.left = (item.grid_x * CELL_SIZE) + 'px';
         itemDiv.style.top = (item.grid_y * CELL_SIZE) + 'px';
         itemDiv.style.width = (itemConfig.width * CELL_SIZE) + 'px';
         itemDiv.style.height = (itemConfig.height * CELL_SIZE) + 'px';
         itemDiv.style.zIndex = item.z_index || 1;
         
-        // Create image element
         const img = document.createElement('img');
         
-        // Get rotation variants
         let rotationVariants = item.rotation_variants || itemRotationData[item.item_id];
         
-        // If no rotation variants provided, try to generate them
         if (!rotationVariants && item.image_path) {
             rotationVariants = generateRotationVariants(item.image_path);
         }
         
-        // Get the correct image path for current rotation
         const imagePath = getRotatedImagePath(
             normalizeImagePath(item.image_path), 
             item.rotation || 0, 
@@ -1282,34 +1056,16 @@ function createPlacedItem(item) {
         img.alt = item.name || 'Item';
         img.draggable = false;
         
-        // Enhanced error handling for image loading
         img.onerror = function() {
-            debugWarn(`⚠️ Failed to load image: ${imagePath}, falling back to base image`);
+            console.warn(`⚠️ Failed to load image: ${imagePath}, falling back to base image`);
             const fallbackPath = '../' + normalizeImagePath(item.image_path);
             if (this.src !== fallbackPath) {
                 this.src = fallbackPath;
-            } else {
-                debugError(`❌ Both primary and fallback images failed for item: ${item.name}`);
-                // Create a placeholder
-                this.style.display = 'none';
-                const placeholder = document.createElement('div');
-                placeholder.style.cssText = `
-                    width: 100%; height: 100%; background: #ddd; 
-                    display: flex; align-items: center; justify-content: center;
-                    font-size: 10px; color: #666; text-align: center;
-                `;
-                placeholder.textContent = item.name || 'Item';
-                itemDiv.appendChild(placeholder);
             }
-        };
-        
-        img.onload = function() {
-            /* debugLog(`✅ Image loaded successfully: ${imagePath}`); */
         };
         
         itemDiv.appendChild(img);
         
-        // Store rotation data
         if (rotationVariants) {
             itemDiv.dataset.rotationVariants = JSON.stringify(rotationVariants);
         }
@@ -1317,77 +1073,21 @@ function createPlacedItem(item) {
         // Only add interactive event listeners if not in dashboard mode
         if (!isDashboardMode) {
             itemDiv.addEventListener('click', selectItem);
-            itemDiv.addEventListener('contextmenu', showContextMenu);
-            
-            // Make placed items draggable for repositioning
             itemDiv.draggable = true;
             itemDiv.addEventListener('dragstart', handleItemDragStart);
-            itemDiv.addEventListener('dragend', handleItemDragEnd);
         }
         
         return itemDiv;
         
     } catch (error) {
-        debugError('❌ Error in createPlacedItem:', error, item);
+        console.error('❌ Error in createPlacedItem:', error, item);
         return null;
     }
 }
 
-// Handle cell click (for debugging and surface switching)
-function handleCellClick(e) {
-    if (e.shiftKey) {
-        const cell = e.target;
-        const surface = cell.dataset.surface;
-        const x = parseInt(cell.dataset.x);
-        const y = parseInt(cell.dataset.y);
-        const isBlocked = isDoorArea(x, y, surface);
-        console.log(`Cell clicked: ${surface} [${x}, ${y}] - ${isBlocked ? 'BLOCKED (door area)' : 'Available'}`);
-    }
-}
+// REMOVED UNUSED FUNCTIONS AND CONSOLIDATED DRAG HANDLERS
 
-// Set up event listeners
-function setupEventListeners() {
-    // Only set up interactive listeners if not in dashboard mode
-    if (isDashboardMode) return;
-    
-    // Close context menu on click outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.item-context-menu') && !e.target.closest('.placed-item')) {
-            hideContextMenu();
-        }
-    });
-    
-    // Deselect item on room click
-    const room = document.getElementById('isometric-room');
-    if (room) {
-        room.addEventListener('click', function(e) {
-            if (e.target.classList.contains('grid-cell') || 
-                e.target.classList.contains('room-floor') ||
-                e.target.classList.contains('room-wall-left') ||
-                e.target.classList.contains('room-wall-right')) {
-                deselectItem();
-            }
-        });
-    }
-    
-    // Global drag end handler
-    document.addEventListener('dragend', function(e) {
-        // Hide all drag previews
-        document.querySelectorAll('.drag-preview').forEach(preview => {
-            preview.style.display = 'none';
-        });
-        
-        // Clear all drag states
-        document.querySelectorAll('.grid-cell').forEach(cell => {
-            cell.classList.remove('drag-over', 'drag-invalid');
-        });
-        
-        isDragging = false;
-        currentDragData = null;
-    });
-}
-
-// Drag and drop handlers
+// Traditional drag and drop for inventory items
 function startDrag(e) {
     const item = e.target.closest('.inventory-item');
     if (!item) return;
@@ -1398,11 +1098,9 @@ function startDrag(e) {
     e.dataTransfer.setData('image', item.dataset.image);
     e.dataTransfer.setData('name', item.dataset.name);
     
-    // Get rotation variants if available
     const rotationVariants = item.dataset.rotationVariants ? 
         JSON.parse(item.dataset.rotationVariants) : null;
     
-    // Store drag data
     currentDragData = {
         itemId: item.dataset.id,
         itemDataId: item.dataset.itemId,
@@ -1413,12 +1111,6 @@ function startDrag(e) {
     };
     
     isDragging = true;
-    
-    // Show grid when dragging starts
-    const room = document.getElementById('isometric-room');
-    if (room) {
-        room.classList.add('dragging');
-    }
     showGridsForDragging();
 }
 
@@ -1436,7 +1128,6 @@ function handleItemDragStart(e) {
     e.dataTransfer.setData('placedItemId', itemId);
     e.dataTransfer.setData('isReposition', 'true');
     
-    // Store drag data
     currentDragData = {
         itemId: placedItem.inventory_id,
         itemDataId: placedItem.item_id,
@@ -1447,23 +1138,9 @@ function handleItemDragStart(e) {
         originalId: itemId
     };
     
-    // Make item semi-transparent
     item.classList.add('dragging');
-    
     isDragging = true;
-    
-    // Show grid when dragging starts
-    const room = document.getElementById('isometric-room');
-    if (room) {
-        room.classList.add('dragging');
-    }
-}
-
-function handleItemDragEnd(e) {
-    const item = e.target.closest('.placed-item');
-    if (item) {
-        item.classList.remove('dragging');
-    }
+    showGridsForDragging();
 }
 
 function handleDragOver(e) {
@@ -1481,22 +1158,18 @@ function handleDragOver(e) {
     const surface = cell.dataset.surface;
     const itemConfig = getItemConfig(currentDragData.image || currentDragData.name);
     
-    // Check if item can be placed on this surface
     if (!currentDragData.isReposition && !itemConfig.surfaces.includes(surface)) {
         e.dataTransfer.dropEffect = 'none';
         return false;
     }
     
-    // Clear previous hover states
     document.querySelectorAll('.grid-cell').forEach(c => {
         c.classList.remove('drag-over', 'drag-invalid');
     });
     
-    // Check if placement is valid
     const excludeId = currentDragData.isReposition ? currentDragData.originalId : null;
     const isValid = isAreaAvailable(gridX, gridY, itemConfig.width, itemConfig.height, surface, excludeId);
     
-    // Highlight affected cells
     for (let dy = 0; dy < itemConfig.height; dy++) {
         for (let dx = 0; dx < itemConfig.width; dx++) {
             const targetCell = document.querySelector(`[data-surface="${surface}"][data-x="${gridX + dx}"][data-y="${gridY + dy}"]`);
@@ -1506,7 +1179,6 @@ function handleDragOver(e) {
         }
     }
     
-    // Update drag preview position
     const preview = document.querySelector(`#placed-items-${surface} .drag-preview`);
     if (preview) {
         preview.style.display = 'block';
@@ -1522,14 +1194,6 @@ function handleDragOver(e) {
     return false;
 }
 
-function handleDragLeave(e) {
-    // Don't clear if we're still over a grid cell
-    const relatedTarget = e.relatedTarget;
-    if (relatedTarget && relatedTarget.classList && relatedTarget.classList.contains('grid-cell')) {
-        return;
-    }
-}
-
 function handleDrop(e) {
     if (e.stopPropagation) {
         e.stopPropagation();
@@ -1537,32 +1201,32 @@ function handleDrop(e) {
     e.preventDefault();
     
     const cell = e.target.closest('.grid-cell');
-    if (!cell) return;
+    if (!cell) {
+        clearDragState(); // FIXED: Clear state even on invalid drop
+        return;
+    }
     
-    // Get grid coordinates and surface
     const gridX = parseInt(cell.dataset.x);
     const gridY = parseInt(cell.dataset.y);
     const surface = cell.dataset.surface;
     
-    // Get item data
     const isReposition = e.dataTransfer.getData('isReposition') === 'true';
     const itemConfig = getItemConfig(currentDragData.image || currentDragData.name);
     
-    // Check if item can be placed on this surface
     if (!isReposition && !itemConfig.surfaces.includes(surface)) {
         showNotification('This item cannot be placed on this surface!', 'warning');
+        clearDragState(); // FIXED: Clear state
         return;
     }
     
-    // Check if area is available
     const excludeId = isReposition ? currentDragData.originalId : null;
     if (!isAreaAvailable(gridX, gridY, itemConfig.width, itemConfig.height, surface, excludeId)) {
         showNotification('Cannot place item here!', 'warning');
+        clearDragState(); // FIXED: Clear state
         return;
     }
     
     if (isReposition) {
-        // Update existing item position
         const itemToMove = placedItems.find(i => i.id == currentDragData.originalId);
         if (itemToMove) {
             const oldSurface = itemToMove.surface || 'floor';
@@ -1570,7 +1234,6 @@ function handleDrop(e) {
             itemToMove.grid_y = gridY;
             itemToMove.surface = surface;
             
-            // Move visual element to new surface if needed
             const itemElement = document.querySelector(`[data-id="${currentDragData.originalId}"]`);
             if (itemElement) {
                 itemElement.style.left = (gridX * CELL_SIZE) + 'px';
@@ -1579,7 +1242,6 @@ function handleDrop(e) {
                 itemElement.dataset.gridY = gridY;
                 itemElement.dataset.surface = surface;
                 
-                // Move to new container if surface changed
                 if (oldSurface !== surface) {
                     const newContainer = document.getElementById(`placed-items-${surface}`);
                     if (newContainer) {
@@ -1591,7 +1253,6 @@ function handleDrop(e) {
             showNotification('Item moved!', 'success');
         }
     } else {
-        // Create new placed item with rotation variants
         const newItem = {
             id: 'temp_' + Date.now(),
             inventory_id: currentDragData.itemId,
@@ -1606,10 +1267,8 @@ function handleDrop(e) {
             rotation_variants: currentDragData.rotationVariants
         };
         
-        // Add to placed items
         placedItems.push(newItem);
         
-        // Create and add element
         const itemElement = createPlacedItem(newItem);
         const container = document.getElementById(`placed-items-${surface}`);
         if (container) {
@@ -1619,62 +1278,28 @@ function handleDrop(e) {
         showNotification('Item placed! Remember to save your layout.', 'info');
     }
     
-    // Clear drag state
-    clearDragState();
+    clearDragState(); // FIXED: Always clear drag state
 }
 
+// FIXED: Clear drag state with complete cleanup
 function clearDragState() {
     isDragging = false;
     currentDragData = null;
-    document.querySelectorAll('.drag-preview').forEach(preview => {
-        preview.style.display = 'none';
-    });
-    document.querySelectorAll('.grid-cell').forEach(c => {
-        c.classList.remove('drag-over', 'drag-invalid');
-    });
     
-    const room = document.getElementById('isometric-room');
-    if (room) {
-        room.classList.remove('dragging');
-    }
-    hideGridsForDragging();
-}
-
-// Global drag end handler
-document.addEventListener('dragend', function(e) {
-    // Hide all drag previews
-    document.querySelectorAll('.drag-preview').forEach(preview => {
-        preview.style.display = 'none';
-    });
-    
-    // Clear all drag states
-    document.querySelectorAll('.grid-cell').forEach(cell => {
-        cell.classList.remove('drag-over', 'drag-invalid');
-    });
+    hideGridsForDragging(); // FIXED: Always hide grids
     
     // Reset placed item dragging state
     document.querySelectorAll('.placed-item.dragging').forEach(item => {
         item.classList.remove('dragging');
     });
-    
-    // Hide grid when dragging ends (regardless of where drop occurred)
-    const room = document.getElementById('isometric-room');
-    if (room) {
-        room.classList.remove('dragging');
-    }
-    
-    isDragging = false;
-    currentDragData = null;
-});
+}
 
 // Select an item
 function selectItem(e) {
     e.stopPropagation();
     
-    // Deselect previous item
     deselectItem();
     
-    // Select new item
     const item = e.target.closest('.placed-item');
     if (item) {
         item.classList.add('selected');
@@ -1688,54 +1313,12 @@ function deselectItem() {
         selectedItem.classList.remove('selected');
         selectedItem = null;
     }
-    hideContextMenu();
 }
 
-// Show context menu
-function showContextMenu(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const item = e.target.closest('.placed-item');
-    if (!item) return;
-    
-    selectItem(e);
-    contextMenuItem = item;
-    
-    let menu = document.getElementById('item-context-menu');
-    if (!menu) {
-        // Create context menu if it doesn't exist
-        menu = document.createElement('div');
-        menu.id = 'item-context-menu';
-        menu.className = 'item-context-menu';
-        menu.innerHTML = `
-            <button onclick="rotateItem()">Rotate</button>
-            <button onclick="moveToFront()">Bring to Front</button>
-            <button onclick="moveToBack()">Send to Back</button>
-            <button onclick="removeItem()">Remove</button>
-        `;
-        document.body.appendChild(menu);
-    }
-    
-    menu.style.display = 'block';
-    menu.style.left = e.pageX + 'px';
-    menu.style.top = e.pageY + 'px';
-}
-
-// Hide context menu
-function hideContextMenu() {
-    const menu = document.getElementById('item-context-menu');
-    if (menu) {
-        menu.style.display = 'none';
-    }
-    contextMenuItem = null;
-}
-
-// NEW: Function to normalize image paths and handle rotation suffixes
+// Image handling functions
 function normalizeImagePath(imagePath) {
     if (!imagePath) return '';
     
-    // If the path already has a rotation suffix, extract the base path
     const rotationPattern = /-(back|front)-(left|right)(?=\.(jpg|png|webp|gif))/i;
     
     if (rotationPattern.test(imagePath)) {
@@ -1754,7 +1337,6 @@ function getRotatedImagePath(basePath, rotation, rotationVariants) {
     return rotationVariants[rotationIndex] || basePath;
 }
 
-// NEW: Function to generate rotation variants from base or suffixed path
 function generateRotationVariants(imagePath) {
     if (!imagePath) return [];
     
@@ -1771,43 +1353,26 @@ function generateRotationVariants(imagePath) {
     const ext = extension[0];
     
     return [
-        `${directory}/${nameWithoutExt}-back-right${ext}`,    // 0°
-        `${directory}/${nameWithoutExt}-back-left${ext}`,     // 90°
-        `${directory}/${nameWithoutExt}-front-left${ext}`,    // 180°
-        `${directory}/${nameWithoutExt}-front-right${ext}`    // 270°
+        `${directory}/${nameWithoutExt}-back-right${ext}`,
+        `${directory}/${nameWithoutExt}-back-left${ext}`,
+        `${directory}/${nameWithoutExt}-front-left${ext}`,
+        `${directory}/${nameWithoutExt}-front-right${ext}`
     ];
 }
 
-// Rotate selected item
-function rotateItem() {
-    if (!contextMenuItem) return;
-    
-    const currentRotation = parseInt(contextMenuItem.dataset.rotation) || 0;
-    const newRotation = (currentRotation + 90) % 360;
-    
-    // Update rotation data
-    contextMenuItem.dataset.rotation = newRotation;
-    
-    // Get rotation variants
+function updateItemRotationImage(itemElement, item, newRotation) {
     let rotationVariants = null;
     try {
-        rotationVariants = JSON.parse(contextMenuItem.dataset.rotationVariants || '[]');
+        rotationVariants = JSON.parse(itemElement.dataset.rotationVariants || '[]');
     } catch (e) {
-        // If no rotation variants, try to generate them
-        const itemId = contextMenuItem.dataset.id;
-        const item = placedItems.find(i => i.id == itemId);
         if (item && item.image_path) {
             rotationVariants = generateRotationVariants(item.image_path);
-            contextMenuItem.dataset.rotationVariants = JSON.stringify(rotationVariants);
+            itemElement.dataset.rotationVariants = JSON.stringify(rotationVariants);
         }
     }
     
-    // Update the image if variants exist
-    const img = contextMenuItem.querySelector('img');
+    const img = itemElement.querySelector('img');
     if (img && rotationVariants && rotationVariants.length > 0) {
-        const itemId = contextMenuItem.dataset.id;
-        const item = placedItems.find(i => i.id == itemId);
-        
         if (item) {
             const newImagePath = getRotatedImagePath(
                 normalizeImagePath(item.image_path), 
@@ -1815,173 +1380,39 @@ function rotateItem() {
                 rotationVariants
             );
             
-            // Update image with error handling
             const oldSrc = img.src;
             img.src = '../' + newImagePath;
             
             img.onerror = function() {
                 console.warn(`Failed to load rotated image: ${newImagePath}, keeping current image`);
                 this.src = oldSrc;
-                this.onerror = null; // Prevent infinite loop
+                this.onerror = null;
             };
         }
     }
+}
+
+// FIXED: Toggle grid visibility
+function toggleGrid() {
+    gridVisible = !gridVisible;
+    const room = document.getElementById('isometric-room');
     
-    // Update in data
-    const itemId = contextMenuItem.dataset.id;
-    const item = placedItems.find(i => i.id == itemId);
-    if (item) {
-        item.rotation = newRotation;
+    if (gridVisible) {
+        room.classList.add('grid-visible');
+    } else {
+        room.classList.remove('grid-visible');
     }
     
-    hideContextMenu();
-    showNotification(`Item rotated to ${newRotation}°`, 'info');
-}
-
-function preloadRotationImages(items) {
-    items.forEach(item => {
-        if (item.rotation_variants) {
-            item.rotation_variants.forEach(imagePath => {
-                const img = new Image();
-                img.src = '../' + imagePath;
-            });
-        } else if (item.image_path) {
-            // Generate and preload rotation variants
-            const variants = generateRotationVariants(item.image_path);
-            variants.forEach(imagePath => {
-                const img = new Image();
-                img.src = '../' + imagePath;
-            });
-        }
-    });
-}
-
-function debugImagePaths() {
-    console.log('=== Image Path Debug ===');
-    
-    placedItems.forEach(item => {
-        console.log(`Item ${item.id}:`);
-        console.log(`  Original path: ${item.image_path}`);
-        console.log(`  Normalized path: ${normalizeImagePath(item.image_path)}`);
-        console.log(`  Rotation variants:`, item.rotation_variants || generateRotationVariants(item.image_path));
-        console.log(`  Current rotation: ${item.rotation || 0}°`);
-        
-        const rotationVariants = item.rotation_variants || generateRotationVariants(item.image_path);
-        const currentPath = getRotatedImagePath(normalizeImagePath(item.image_path), item.rotation || 0, rotationVariants);
-        console.log(`  Current image path: ${currentPath}`);
-        console.log('---');
-    });
-}
-
-// Move item to front
-function moveToFront() {
-    if (!contextMenuItem) return;
-    
-    const surface = contextMenuItem.dataset.surface;
-    
-    // Get highest z-index for this surface
-    const maxZ = Math.max(...placedItems.filter(i => i.surface === surface).map(i => i.z_index || 0));
-    contextMenuItem.style.zIndex = maxZ + 1;
-    
-    // Update in data
-    const itemId = contextMenuItem.dataset.id;
-    const item = placedItems.find(i => i.id == itemId);
-    if (item) {
-        item.z_index = maxZ + 1;
-    }
-    
-    hideContextMenu();
-}
-
-// Move item to back
-function moveToBack() {
-    if (!contextMenuItem) return;
-    
-    const surface = contextMenuItem.dataset.surface;
-    contextMenuItem.style.zIndex = 1;
-    
-    // Update z-indices for all items on same surface
-    placedItems.forEach(item => {
-        if (item.surface === surface && item.id != contextMenuItem.dataset.id && item.z_index > 0) {
-            item.z_index++;
-        }
-    });
-    
-    // Update selected item
-    const itemId = contextMenuItem.dataset.id;
-    const item = placedItems.find(i => i.id == itemId);
-    if (item) {
-        item.z_index = 1;
-    }
-    
-    // Apply z-index changes
-    document.querySelectorAll(`.placed-item[data-surface="${surface}"]`).forEach(el => {
-        const elItem = placedItems.find(i => i.id == el.dataset.id);
-        if (elItem) {
-            el.style.zIndex = elItem.z_index;
-        }
-    });
-    
-    hideContextMenu();
-}
-
-// Remove item
-function removeItem() {
-    if (!contextMenuItem) return;
-    
-    if (confirm('Remove this item from the room?')) {
-        const itemId = contextMenuItem.dataset.id;
-        
-        // Remove from array
-        placedItems = placedItems.filter(i => i.id != itemId);
-        
-        // Remove element
-        contextMenuItem.remove();
-        
-        hideContextMenu();
-        showNotification('Item removed', 'info');
-    }
-}
-
-// Switch surface view
-function switchSurface(surface) {
-    currentSurface = surface;
-    
-    // Update button states
-    document.querySelectorAll('.surface-toggle').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.surface === surface) {
-            btn.classList.add('active');
-        }
-    });
-    
-    // Show/hide grids based on selection
-    ['floor', 'wall-left', 'wall-right'].forEach(s => {
-        const grid = document.getElementById(`room-grid-${s}`);
-        const items = document.getElementById(`placed-items-${s}`);
-        if (grid && items) {
-            if (s === surface || surface === 'all') {
-                grid.style.opacity = '1';
-                items.style.opacity = '1';
-            } else {
-                grid.style.opacity = '0.3';
-                items.style.opacity = '0.3';
-            }
-        }
-    });
-    
-    showNotification(`Viewing: ${surface === 'all' ? 'All surfaces' : surface}`, 'info');
+    showNotification(gridVisible ? 'Grid visible' : 'Grid hidden', 'info');
 }
 
 // Filter inventory items
 function filterInventory(category) {
-    // Update active button
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     event.target.classList.add('active');
     
-    // Filter items
     const items = document.querySelectorAll('.inventory-item');
     items.forEach(item => {
         if (category === 'all' || item.dataset.category === category) {
@@ -1992,14 +1423,12 @@ function filterInventory(category) {
     });
 }
 
-// Save room layout
-// Enhanced save room function
+// FIXED: Save room layout with proper flying item handling
 function saveRoom() {
     const saveBtn = event.target;
     saveBtn.disabled = true;
     saveBtn.textContent = 'Saving...';
     
-    // Remove flying items before saving
     const flyingItemsCount = flyingItems.size;
     if (flyingItemsCount > 0) {
         if (!confirm(`${flyingItemsCount} item(s) are in invalid positions and will be removed. Continue?`)) {
@@ -2008,11 +1437,9 @@ function saveRoom() {
             return;
         }
         
-        // Remove flying items
         clearFlyingItems();
     }
     
-    // Prepare data (excluding flying items)
     const validItems = placedItems.filter(item => !flyingItems.has(item.id));
     
     const roomData = {
@@ -2028,7 +1455,6 @@ function saveRoom() {
         }))
     };
     
-    // Send to server
     fetch('../php/api/habitus/save_room.php', {
         method: 'POST',
         headers: {
@@ -2042,17 +1468,14 @@ function saveRoom() {
         saveBtn.textContent = 'Save Layout';
         
         if (data.success) {
-            // Update temporary IDs with real IDs
             if (data.item_ids) {
                 placedItems.forEach(item => {
                     if (item.id.toString().startsWith('temp_')) {
                         const newId = data.item_ids[item.id];
                         if (newId) {
-                            // Update in placed items array
                             const oldId = item.id;
                             item.id = newId;
                             
-                            // Update element
                             const element = document.querySelector(`[data-id="${oldId}"]`);
                             if (element) {
                                 element.dataset.id = newId;
@@ -2087,7 +1510,6 @@ function clearFlyingItems() {
         if (element) {
             element.remove();
         }
-        // Remove from placed items array
         placedItems = placedItems.filter(i => i.id != itemId);
     });
     
@@ -2100,15 +1522,38 @@ function showActionFeedback(targetElement, message) {
     const feedback = document.createElement('div');
     feedback.className = 'action-feedback';
     feedback.textContent = message;
+    feedback.style.cssText = `
+        position: fixed;
+        background: #6a8d7f;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        opacity: 0;
+        transform: translateY(10px);
+        animation: actionSuccess 1.5s ease-out forwards;
+        pointer-events: none;
+        z-index: 10000;
+    `;
+    
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes actionSuccess {
+            0% { opacity: 0; transform: translateY(10px); }
+            20% { opacity: 1; transform: translateY(0); }
+            80% { opacity: 1; transform: translateY(-10px); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+    `;
+    document.head.appendChild(style);
     
     if (targetElement === document.body) {
-        feedback.style.position = 'fixed';
         feedback.style.top = '50%';
         feedback.style.left = '50%';
         feedback.style.transform = 'translate(-50%, -50%)';
     } else {
         const rect = targetElement.getBoundingClientRect();
-        feedback.style.position = 'fixed';
         feedback.style.left = (rect.left + rect.width / 2) + 'px';
         feedback.style.top = (rect.top - 10) + 'px';
         feedback.style.transform = 'translateX(-50%)';
@@ -2118,56 +1563,8 @@ function showActionFeedback(targetElement, message) {
     
     setTimeout(() => {
         feedback.remove();
+        style.remove();
     }, 1500);
-}
-
-// Touch support
-function handleTouchStart(e) {
-    if (e.touches.length === 1) {
-        const touch = e.touches[0];
-        const placedItem = touch.target.closest('.placed-item');
-        if (placedItem && !isDashboardMode) {
-            e.preventDefault();
-            dragStartPosition = { x: touch.clientX, y: touch.clientY };
-            startHold(placedItem, { clientX: touch.clientX, clientY: touch.clientY });
-        }
-    }
-}
-
-function handleTouchMove(e) {
-    if (e.touches.length === 1 && (isHolding || (heldItem && heldItem.classList.contains('being-held')))) {
-        e.preventDefault();
-        const touch = e.touches[0];
-        handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
-    }
-}
-
-function handleTouchEnd(e) {
-    if (isHolding || (heldItem && heldItem.classList.contains('being-held'))) {
-        e.preventDefault();
-        const touch = e.changedTouches[0];
-        handleMouseUp({ clientX: touch.clientX, clientY: touch.clientY });
-    }
-}
-
-// Add hold instruction to items
-function addHoldInstruction() {
-    document.querySelectorAll('.placed-item').forEach(item => {
-        if (!item.querySelector('.hold-instruction')) {
-            const instruction = document.createElement('div');
-            instruction.className = 'hold-instruction';
-            instruction.textContent = 'Hold to drag';
-            item.appendChild(instruction);
-        }
-    });
-}
-
-// Cleanup function
-function cleanup() {
-    clearInterval(holdTimer);
-    if (dragGhost) dragGhost.remove();
-    if (holdIndicator) holdIndicator.remove();
-    if (floatingMenu) floatingMenu.remove();
 }
 
 // Clear room
@@ -2177,6 +1574,9 @@ function clearRoom() {
     }
     
     placedItems = [];
+    flyingItems.clear();
+    updateFlyingWarning();
+    
     ['floor', 'wall-left', 'wall-right'].forEach(surface => {
         const container = document.getElementById(`placed-items-${surface}`);
         if (container) {
@@ -2185,18 +1585,15 @@ function clearRoom() {
         }
     });
     
-    // Re-add drag previews
     createDragPreview();
-    
     showNotification('Room cleared', 'info');
 }
 
-// Change room
+// Navigation functions
 function changeRoom(roomId) {
     window.location.href = `habitus.php?room_id=${roomId}`;
 }
 
-// Create new room
 function createNewRoom() {
     const modalTitle = document.getElementById('modal-title');
     const roomNameInput = document.getElementById('room-name-input');
@@ -2207,7 +1604,6 @@ function createNewRoom() {
     if (roomModal) roomModal.style.display = 'flex';
 }
 
-// Rename room
 function renameRoom() {
     const modalTitle = document.getElementById('modal-title');
     const roomNameInput = document.getElementById('room-name-input');
@@ -2218,13 +1614,11 @@ function renameRoom() {
     if (roomModal) roomModal.style.display = 'flex';
 }
 
-// Close room modal
 function closeRoomModal() {
     const roomModal = document.getElementById('room-modal');
     if (roomModal) roomModal.style.display = 'none';
 }
 
-// Save room name
 function saveRoomName() {
     const roomNameInput = document.getElementById('room-name-input');
     const name = roomNameInput ? roomNameInput.value.trim() : '';
@@ -2271,7 +1665,6 @@ function saveRoomName() {
 
 // Show notification
 function showNotification(message, type = 'info') {
-    // Check if notification container exists
     let container = document.querySelector('.notification-container');
     if (!container) {
         container = document.createElement('div');
@@ -2279,19 +1672,16 @@ function showNotification(message, type = 'info') {
         document.body.appendChild(container);
     }
     
-    // Create notification
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
     notification.textContent = message;
     
     container.appendChild(notification);
     
-    // Animate in
     setTimeout(() => {
         notification.classList.add('show');
     }, 10);
     
-    // Remove after delay
     setTimeout(() => {
         notification.classList.remove('show');
         setTimeout(() => {
@@ -2300,102 +1690,9 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-function debugWallPlacement() {
-    console.log('=== Wall Placement Debug ===');
-    
-    // Check grid positions
-    const leftWallGrid = document.getElementById('room-grid-wall-left');
-    const rightWallGrid = document.getElementById('room-grid-wall-right');
-    const leftWallItems = document.getElementById('placed-items-wall-left');
-    const rightWallItems = document.getElementById('placed-items-wall-right');
-    
-    console.log('Left Wall Grid:', leftWallGrid?.getBoundingClientRect());
-    console.log('Right Wall Grid:', rightWallGrid?.getBoundingClientRect());
-    console.log('Left Wall Items:', leftWallItems?.getBoundingClientRect());
-    console.log('Right Wall Items:', rightWallItems?.getBoundingClientRect());
-    
-    // Check placed items on walls
-    const wallItems = placedItems.filter(item => item.surface !== 'floor');
-    console.log('Wall Items:', wallItems);
-    
-    // Toggle debug mode
-    document.getElementById('isometric-room').classList.toggle('debug-mode');
-}
-
-function testWallAlignment() {
-    console.log('=== Testing Wall Grid Alignment ===');
-    
-    // Get all grids and item containers
-    const elements = {
-        'Left Wall Grid': document.getElementById('room-grid-wall-left'),
-        'Left Wall Items': document.getElementById('placed-items-wall-left'),
-        'Right Wall Grid': document.getElementById('room-grid-wall-right'),
-        'Right Wall Items': document.getElementById('placed-items-wall-right')
-    };
-    
-    // Check if positions match
-    for (const [name, element] of Object.entries(elements)) {
-        if (element) {
-            const computed = window.getComputedStyle(element);
-            console.log(`${name}:`, {
-                top: computed.top,
-                left: computed.left,
-                transform: computed.transform,
-                transformOrigin: computed.transformOrigin
-            });
-        }
-    }
-    
-    // Visual test: Add colored borders to see alignment
-    const leftGrid = document.getElementById('room-grid-wall-left');
-    const leftItems = document.getElementById('placed-items-wall-left');
-    const rightGrid = document.getElementById('room-grid-wall-right');
-    const rightItems = document.getElementById('placed-items-wall-right');
-    
-    if (leftGrid) leftGrid.style.border = '2px solid red';
-    if (leftItems) leftItems.style.border = '2px dashed blue';
-    if (rightGrid) rightGrid.style.border = '2px solid green';
-    if (rightItems) rightItems.style.border = '2px dashed orange';
-    
-    // Make grids visible
-    document.getElementById('isometric-room').classList.add('dragging');
-    
-    console.log('Red solid = Left Wall Grid, Blue dashed = Left Wall Items');
-    console.log('Green solid = Right Wall Grid, Orange dashed = Right Wall Items');
-    console.log('Borders should overlap exactly if alignment is correct.');
-}
-
-// Add test item to specific wall position
-function testPlaceWallItem(surface = 'wall-left', x = 0, y = 0) {
-    // Create a test item
-    const testItem = {
-        id: 'test_' + Date.now(),
-        inventory_id: 'test',
-        item_id: 'test',
-        grid_x: x,
-        grid_y: y,
-        surface: surface,
-        rotation: 0,
-        z_index: 100,
-        image_path: 'images/items/decorations/wall_clock.webp',
-        name: 'Test Wall Item'
-    };
-    
-    // Add to placed items
-    placedItems.push(testItem);
-    
-    // Create and add element
-    const itemElement = createPlacedItem(testItem);
-    const container = document.getElementById(`placed-items-${surface}`);
-    if (container) {
-        container.appendChild(itemElement);
-        console.log(`Test item placed at ${surface} [${x}, ${y}]`);
-    }
-}
-
 // Make functions globally available
 window.initializeHabitusRoom = initializeHabitusRoom;
-window.switchSurface = switchSurface;
+window.toggleGrid = toggleGrid;
 window.filterInventory = filterInventory;
 window.saveRoom = saveRoom;
 window.clearRoom = clearRoom;
@@ -2404,33 +1701,12 @@ window.createNewRoom = createNewRoom;
 window.renameRoom = renameRoom;
 window.closeRoomModal = closeRoomModal;
 window.saveRoomName = saveRoomName;
-window.rotateItem = rotateItem;
-window.moveToFront = moveToFront;
-window.moveToBack = moveToBack;
-window.removeItem = removeItem;
 window.startDrag = startDrag;
-window.debugWallPlacement = debugWallPlacement;
-window.testWallAlignment = testWallAlignment;
-window.testPlaceWallItem = testPlaceWallItem;
-window.normalizeImagePath = normalizeImagePath;
-window.generateRotationVariants = generateRotationVariants;
-window.preloadRotationImages = preloadRotationImages;
-window.debugImagePaths = debugImagePaths;
 
-window.habitusDebug = {
-    getCurrentRoom: () => currentRoom,
-    getPlacedItems: () => placedItems,
-    getItemRotationData: () => itemRotationData,
-    isDashboardMode: () => isDashboardMode,
-    debugMode: () => debugMode,
-    reinitialize: (roomData, items, rotationData) => {
-        /* debugLog('🔄 Manual re-initialization requested'); */
-        return initializeHabitusRoom(roomData, items, rotationData);
-    },
-    testItem: (itemData) => {
-        /* debugLog('🧪 Testing item creation:', itemData); */
-        return createPlacedItem(itemData);
-    }
-};
+// Legacy function compatibility (for any old references)
+window.rotateItem = () => console.log('Use new hold-to-drag system');
+window.moveToFront = () => console.log('Use new hold-to-drag system');
+window.moveToBack = () => console.log('Use new hold-to-drag system');
+window.removeItem = () => console.log('Use new hold-to-drag system');
 
-/* debugLog('🚀 Habitus Room system loaded and ready'); */
+console.log('🚀 Fixed Habitus Room system loaded and ready');

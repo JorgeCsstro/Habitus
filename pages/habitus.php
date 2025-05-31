@@ -175,9 +175,12 @@ foreach ($inventory as $item) {
                             <!-- Room structure will be created by JavaScript -->
                         </div>
                         
-                        <!-- Interaction hint for new users -->
-                        <div class="interaction-hint" id="interaction-hint" style="display: none;">
-                            💡 Hold and drag items to move them around. Right side menu appears when dragging!
+                        <!-- Room controls -->
+                        <div class="room-controls">
+                            <button onclick="toggleGrid()" title="Toggle Grid">
+                                <img src="../images/icons/grid.svg" alt="Grid"> Grid
+                            </button>
+                            <span class="surface-info">Hold items to drag them around</span>
                         </div>
                     </div>
                     
@@ -292,36 +295,11 @@ foreach ($inventory as $item) {
                 // Show interaction hint for new users (if no items placed)
                 if (placedItems.length === 0) {
                     setTimeout(() => {
-                        const hint = document.getElementById('interaction-hint');
-                        if (hint) {
-                            hint.style.display = 'block';
-                            
-                            // Hide after 5 seconds
-                            setTimeout(() => {
-                                hint.style.display = 'none';
-                            }, 5000);
-                        }
+                        showNotification('Drag items from inventory to place them in the room!', 'info');
                     }, 1000);
                 }
             }
         });
-        
-        // Enhanced drag and drop functions to replace old ones
-        window.rotateItem = function() {
-            console.log('Old rotateItem called - using new system');
-        };
-        
-        window.moveToFront = function() {
-            console.log('Old moveToFront called - using new system');
-        };
-        
-        window.moveToBack = function() {
-            console.log('Old moveToBack called - using new system');
-        };
-        
-        window.removeItem = function() {
-            console.log('Old removeItem called - using new system');
-        };
     </script>
 </body>
 </html>

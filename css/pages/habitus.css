@@ -1,4 +1,4 @@
-/* habitus.css - Enhanced isometric room with proper wall item positioning */
+/* habitus.css - Enhanced isometric room with fixed drag and drop */
 
 /* Main content container */
 .habitus-content {
@@ -208,66 +208,61 @@
     pointer-events: none;
 }
 
+/* FIXED: Grid overlays with proper initial state */
 .room-grid-floor,
 .room-grid-wall-left,
 .room-grid-wall-right {
     position: absolute;
     pointer-events: none;
-    display: none; /* Hidden by default */
+    display: none; /* FIXED: Hidden by default */
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.3s ease;
 }
 
 /* Grid overlays - Floor grid */
 .room-grid-floor {
-    position: absolute;
     width: 360px;
     height: 360px;
-    pointer-events: none;
     transform: rotateX(60deg) rotateZ(-45deg);
     top: 200px;
     left: 170px;
-    display: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
 }
 
 /* Grid overlays - Left wall grid */
 .room-grid-wall-left {
-    position: absolute;
     width: 360px;
     height: 240px;
-    pointer-events: none;
     transform: rotateX(60deg) rotateZ(-45deg) rotateX(-90deg);
     transform-origin: top;
     top: 109px;
     left: 42px;
-    display: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
 }
 
 /* Grid overlays - Right wall grid */
 .room-grid-wall-right {
-    position: absolute;
     width: 240px;
     height: 360px;
-    pointer-events: none;
     transform: rotateX(60deg) rotateZ(-45deg) rotateY(-90deg) translateZ(-360px);
     transform-origin: left;
     top: 264px;
     left: 222px;
-    display: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
 }
 
-/* Show grids when dragging */
+/* FIXED: Show grids only when dragging */
 .isometric-room.dragging .room-grid-floor,
 .isometric-room.dragging .room-grid-wall-left,
 .isometric-room.dragging .room-grid-wall-right {
     display: block !important;
     opacity: 1 !important;
+    pointer-events: all;
+}
+
+/* FIXED: Manual grid toggle */
+.isometric-room.grid-visible .room-grid-floor,
+.isometric-room.grid-visible .room-grid-wall-left,
+.isometric-room.grid-visible .room-grid-wall-right {
+    display: block !important;
+    opacity: 0.5 !important;
     pointer-events: all;
 }
 
@@ -314,15 +309,6 @@
     cursor: not-allowed;
 }
 
-/* Grid cell surface indicator */
-.grid-cell[data-surface="wall-left"] {
-    border-color: rgba(0, 0, 0, 0.15);
-}
-
-.grid-cell[data-surface="wall-right"] {
-    border-color: rgba(0, 0, 0, 0.2);
-}
-
 /* FIXED: Placed items containers for each surface */
 .placed-items-floor {
     position: absolute;
@@ -331,10 +317,9 @@
     pointer-events: none;
     transform: rotateX(60deg) rotateZ(315deg);
     top: 195px;
-    left: 170px
+    left: 170px;
 }
 
-/* FIXED: Left wall items container - EXACT same transform and position as grid */
 .placed-items-wall-left {
     position: absolute;
     width: 360px;
@@ -346,7 +331,6 @@
     left: 40px;
 }
 
-/* FIXED: Right wall items container - EXACT same transform and position as grid */
 .placed-items-wall-right {
     position: absolute;
     width: 240px;
@@ -362,11 +346,11 @@
     position: absolute;
     pointer-events: all;
     cursor: move;
-    transition: filter 0.2s;
+    transition: filter 0.2s, transform 0.3s;
     transform-style: preserve-3d;
 }
 
-/* FIXED: Counter-rotate images to prevent distortion - unified approach */
+/* FIXED: Counter-rotate images to prevent distortion */
 .placed-item img {
     width: 100%;
     height: 100%;
@@ -382,27 +366,9 @@
     translate: 10px -15px;
 }
 
-.placed-items-wall-left .placed-item img {
-    
-}
-
-/* Right wall items - counter the exact transforms: rotateX(60deg) rotateZ(-45deg) rotateY(-90deg) translateZ(-360px) */
+/* Right wall items */
 .placed-items-wall-right .placed-item img {
-    transform: rotateZ(165deg) rotateX(105deg) rotate(-135deg) rotateY(280deg) scale(1.4)
-}
-
-/* Counter-rotation for drag previews on different surfaces */
-.placed-items-floor .drag-preview img {
-    transform: rotateZ(40deg) rotateY(55deg) rotateX(0deg) rotate(5deg) scale(2);   
-    translate: 10px -15px;
-}
-
-.placed-items-wall-left .drag-preview img {
-    
-}
-
-.placed-items-wall-right .drag-preview img {
-    transform: rotateZ(165deg) rotateX(105deg) rotate(-135deg) rotateY(280deg) scale(1.4)
+    transform: rotateZ(165deg) rotateX(105deg) rotate(-135deg) rotateY(280deg) scale(1.4);
 }
 
 .placed-item:hover {
@@ -427,12 +393,22 @@
     pointer-events: none;
 }
 
+/* FIXED: Dragging state - don't inherit placement transforms */
 .placed-item.dragging {
     opacity: 0.5;
     pointer-events: none;
+    /* Remove any inherited transforms when dragging */
+    transform: none !important;
 }
 
-/* Drag preview - with proper counter-rotation for each surface */
+.placed-item.dragging img {
+    /* Reset counter-rotation when dragging */
+    transform: none !important;
+    translate: none !important;
+    scale: 1 !important;
+}
+
+/* FIXED: Drag preview - clean styling without placement transforms */
 .drag-preview {
     position: absolute;
     pointer-events: none;
@@ -442,6 +418,8 @@
     background-color: rgba(106, 141, 127, 0.1);
     border-radius: 4px;
     transition: all 0.1s ease;
+    /* FIXED: No inherited transforms */
+    transform: none !important;
 }
 
 .drag-preview img {
@@ -449,6 +427,20 @@
     height: 100%;
     object-fit: contain;
     opacity: 0.8;
+    /* FIXED: Clean image display in preview */
+    transform: none !important;
+    translate: none !important;
+    scale: 1 !important;
+}
+
+/* FIXED: Counter-rotation for drag previews - only when placed */
+.placed-items-floor .drag-preview:not(.dragging) img {
+    transform: rotateZ(40deg) rotateY(55deg) rotateX(0deg) rotate(5deg) scale(2);   
+    translate: 10px -15px;
+}
+
+.placed-items-wall-right .drag-preview:not(.dragging) img {
+    transform: rotateZ(165deg) rotateX(105deg) rotate(-135deg) rotateY(280deg) scale(1.4);
 }
 
 /* Room controls */
@@ -463,6 +455,7 @@
     padding: 10px;
     border-radius: 25px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    align-items: center;
 }
 
 .room-controls button {
@@ -488,16 +481,11 @@
     height: 16px;
 }
 
-/* Surface toggle buttons */
-.surface-toggle {
-    background: white !important;
-    border: 2px solid #e9e2d9 !important;
-}
-
-.surface-toggle.active {
-    background: #8d5b4c !important;
-    color: white !important;
-    border-color: #8d5b4c !important;
+.surface-info {
+    font-size: 0.85rem;
+    color: #8d8580;
+    font-style: italic;
+    margin-left: 10px;
 }
 
 /* Inventory panel */
@@ -641,12 +629,10 @@
 .surface-icon.floor { 
     background: #FFD700; 
     color: #8B6914; 
-    title: "Floor";
 }
 .surface-icon.wall { 
     background: #E0E0E0; 
     color: #666; 
-    title: "Wall";
 }
 
 .empty-inventory {
@@ -681,33 +667,241 @@
     box-shadow: 0 4px 8px rgba(141, 91, 76, 0.2);
 }
 
-/* Context menu */
-.item-context-menu {
+/* FIXED: Hold-to-drag system */
+.hold-to-drag-indicator {
     position: fixed;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-    padding: 5px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
     z-index: 10000;
-    min-width: 150px;
-    border: 1px solid #e9e2d9;
+    pointer-events: none;
+    border: 3px solid rgba(106, 141, 127, 0.3);
 }
 
-.item-context-menu button {
-    display: block;
-    width: 100%;
-    padding: 8px 12px;
-    background: none;
+.hold-to-drag-indicator::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    border: 3px solid transparent;
+    border-top: 3px solid #6a8d7f;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.hold-progress {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    right: 3px;
+    bottom: 3px;
+    border-radius: 50%;
+    background: conic-gradient(#6a8d7f 0deg, transparent 0deg);
+    transition: none;
+}
+
+/* Item being held/dragged */
+.placed-item.being-held {
+    z-index: 9999 !important;
+    pointer-events: none;
+    opacity: 0.9;
+    transform: scale(1.05) !important; /* FIXED: Override placement transforms */
+    transition: all 0.2s ease;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.placed-item.being-held img {
+    /* FIXED: Clean display when being held */
+    transform: none !important;
+    translate: none !important;
+    scale: 1 !important;
+}
+
+.placed-item.being-held::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border: 2px solid #6a8d7f;
+    border-radius: 8px;
+    background: rgba(106, 141, 127, 0.1);
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
+}
+
+/* Floating action menu */
+.floating-action-menu {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 10001;
+    min-width: 140px;
+    animation: fadeInSlide 0.3s ease-out;
+}
+
+.floating-action-menu.show {
+    display: flex;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateX(-20px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+.floating-action-menu .menu-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
     border: none;
-    text-align: left;
+    background: transparent;
+    border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s;
-    color: #2d2926;
+    transition: all 0.2s ease;
     font-size: 0.9rem;
+    font-weight: 500;
+    color: #2d2926;
+    text-align: left;
+    width: 100%;
 }
 
-.item-context-menu button:hover {
-    background-color: #f5f1ea;
+.floating-action-menu .menu-button:hover {
+    background: rgba(106, 141, 127, 0.1);
+    color: #6a8d7f;
+    transform: translateX(2px);
+}
+
+.floating-action-menu .menu-button.rotate::before {
+    content: '↻';
+    font-size: 16px;
+    margin-right: 4px;
+}
+
+.floating-action-menu .menu-button.front::before {
+    content: '⬆';
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+.floating-action-menu .menu-button.back::before {
+    content: '⬇';
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+.floating-action-menu .menu-button.remove {
+    color: #a15c5c;
+    border-top: 1px solid rgba(161, 92, 92, 0.2);
+    margin-top: 4px;
+    padding-top: 12px;
+}
+
+.floating-action-menu .menu-button.remove:hover {
+    background: rgba(161, 92, 92, 0.1);
+    color: #8d4c4c;
+}
+
+.floating-action-menu .menu-button.remove::before {
+    content: '✕';
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+/* Flying item state */
+.placed-item.flying {
+    opacity: 0.6;
+    filter: grayscale(0.3);
+    animation: float 2s ease-in-out infinite alternate;
+    border: 2px dashed #c4a356 !important;
+    background: rgba(196, 163, 86, 0.1) !important;
+}
+
+.placed-item.flying::after {
+    content: 'INVALID POSITION';
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #c4a356;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+    z-index: 1000;
+}
+
+@keyframes float {
+    from { transform: translateY(0px); }
+    to { transform: translateY(-5px); }
+}
+
+/* Flying items warning */
+.flying-items-warning {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(196, 163, 86, 0.95);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: 600;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(196, 163, 86, 0.3);
+}
+
+.flying-items-warning.show {
+    display: flex;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.flying-items-warning::before {
+    content: '⚠';
+    font-size: 1.2rem;
 }
 
 /* Modal */
@@ -849,640 +1043,6 @@
 
 .inventory-items::-webkit-scrollbar-thumb:hover {
     background-color: #c5bcb3;
-}
-
-/* Grid helpers for debugging */
-.debug-mode .grid-cell {
-    border: 1px solid rgba(255, 0, 0, 0.3);
-}
-
-.debug-mode .grid-cell::after {
-    content: attr(data-x) "," attr(data-y);
-    font-size: 10px;
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    color: rgba(0, 0, 0, 0.5);
-}
-
-/* Debug mode for wall positions */
-.debug-mode .placed-items-wall-left,
-.debug-mode .placed-items-wall-right {
-    border: 2px dashed red;
-}
-
-.debug-mode .room-grid-wall-left,
-.debug-mode .room-grid-wall-right {
-    border: 2px dashed blue;
-}
-
-/* Add to habitus.css - Rotation indicator styles */
-
-/* Rotation indicator on inventory items */
-.rotation-indicator {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    width: 18px;
-    height: 18px;
-    background: rgba(45, 41, 38, 0.8);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-}
-
-.rotation-indicator:hover {
-    opacity: 1;
-}
-
-.rotation-indicator img {
-    width: 12px;
-    height: 12px;
-    filter: brightness(10);
-}
-
-/* Visual feedback during rotation */
-.placed-item.rotating {
-    animation: rotateAnimation 0.3s ease-out;
-}
-
-@keyframes rotateAnimation {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.1);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
-/* Rotation preview on hover */
-.item-context-menu button:first-child::before {
-    content: '↻ ';
-    font-size: 1.1rem;
-    margin-right: 3px;
-}
-
-/* Rotation notification style */
-.notification.rotation {
-    border-left: 4px solid #c4a356;
-}
-
-/* Update the rotation system info in room controls */
-.room-controls .rotation-info {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 0.85rem;
-    color: #5a5755;
-}
-
-.room-controls .rotation-info img {
-    width: 14px;
-    height: 14px;
-    opacity: 0.7;
-}
-
-/* Loading state for image rotation */
-.placed-item.loading-rotation {
-    pointer-events: none;
-}
-
-.placed-item.loading-rotation::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 20px;
-    height: 20px;
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid #8d5b4c;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: translate(-50%, -50%) rotate(0deg); }
-    100% { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-/* Inventory item rotation state indicator */
-.inventory-item[data-rotation-variants] {
-    background: linear-gradient(135deg, #fbf8f5 0%, #f5f1ea 100%);
-}
-
-/* Rotation angle display on selected items */
-.placed-item.selected .rotation-angle {
-    position: absolute;
-    top: -25px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(45, 41, 38, 0.9);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-/* Visual guide for rotation directions */
-.rotation-guide {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(141, 91, 76, 0.1);
-    display: none;
-}
-
-.rotation-guide.show {
-    display: block;
-}
-
-.rotation-guide h4 {
-    margin: 0 0 10px 0;
-    color: #2d2926;
-    font-size: 0.9rem;
-}
-
-.rotation-guide-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-}
-
-.rotation-guide-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.8rem;
-    color: #5a5755;
-}
-
-.rotation-guide-item .angle {
-    font-weight: 600;
-    color: #8d5b4c;
-    min-width: 30px;
-}
-
-/* Enhanced Habitus CSS - Hold to Drag System */
-
-/* CHECK IF ERRORS */
-/* Hold to drag loading circle */
-.hold-to-drag-indicator {
-    position: fixed;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.8);
-    display: none;
-    z-index: 10000;
-    pointer-events: none;
-    border: 3px solid rgba(106, 141, 127, 0.3);
-}
-
-.hold-to-drag-indicator::before {
-    content: '';
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    right: 5px;
-    bottom: 5px;
-    border: 3px solid transparent;
-    border-top: 3px solid #6a8d7f;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-.hold-to-drag-indicator::after {
-    content: '';
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
-    border: 2px solid rgba(106, 141, 127, 0.3);
-    border-radius: 50%;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Progress circle animation */
-.hold-progress {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    right: 3px;
-    bottom: 3px;
-    border-radius: 50%;
-    background: conic-gradient(#6a8d7f 0deg, transparent 0deg);
-    transition: none;
-}
-
-.hold-progress::before {
-    content: '';
-    position: absolute;
-    top: -3px;
-    left: -3px;
-    right: -3px;
-    bottom: -3px;
-    border: 3px solid transparent;
-    border-top: 3px solid #6a8d7f;
-    border-radius: 50%;
-    transform: rotate(0deg);
-    transition: transform 0.1s linear;
-}
-
-/* Item being held/dragged */
-.placed-item.being-held {
-    z-index: 9999 !important;
-    pointer-events: none;
-    opacity: 0.9;
-    transform: scale(1.05);
-    transition: all 0.2s ease;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-}
-
-.placed-item.being-held::before {
-    content: '';
-    position: absolute;
-    top: -5px;
-    left: -5px;
-    right: -5px;
-    bottom: -5px;
-    border: 2px solid #6a8d7f;
-    border-radius: 8px;
-    background: rgba(106, 141, 127, 0.1);
-    animation: pulse 1.5s infinite ease-in-out;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 0.7; }
-}
-
-/* Floating action menu */
-.floating-action-menu {
-    position: absolute;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 8px;
-    display: none;
-    flex-direction: column;
-    gap: 4px;
-    z-index: 10001;
-    min-width: 140px;
-    animation: fadeInSlide 0.3s ease-out;
-}
-
-.floating-action-menu.show {
-    display: flex;
-}
-
-@keyframes fadeInSlide {
-    from {
-        opacity: 0;
-        transform: translateX(-20px) scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
-}
-
-.floating-action-menu .menu-button {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
-    border: none;
-    background: transparent;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #2d2926;
-    text-align: left;
-    width: 100%;
-}
-
-.floating-action-menu .menu-button:hover {
-    background: rgba(106, 141, 127, 0.1);
-    color: #6a8d7f;
-    transform: translateX(2px);
-}
-
-.floating-action-menu .menu-button img {
-    width: 16px;
-    height: 16px;
-    opacity: 0.7;
-}
-
-.floating-action-menu .menu-button:hover img {
-    opacity: 1;
-}
-
-.floating-action-menu .menu-button.rotate::before {
-    content: '↻';
-    font-size: 16px;
-    margin-right: 4px;
-}
-
-.floating-action-menu .menu-button.front::before {
-    content: '⬆';
-    font-size: 14px;
-    margin-right: 4px;
-}
-
-.floating-action-menu .menu-button.back::before {
-    content: '⬇';
-    font-size: 14px;
-    margin-right: 4px;
-}
-
-.floating-action-menu .menu-button.remove {
-    color: #a15c5c;
-    border-top: 1px solid rgba(161, 92, 92, 0.2);
-    margin-top: 4px;
-    padding-top: 12px;
-}
-
-.floating-action-menu .menu-button.remove:hover {
-    background: rgba(161, 92, 92, 0.1);
-    color: #8d4c4c;
-}
-
-.floating-action-menu .menu-button.remove::before {
-    content: '✕';
-    font-size: 14px;
-    margin-right: 4px;
-}
-
-/* Flying item state */
-.placed-item.flying {
-    opacity: 0.6;
-    filter: grayscale(0.3);
-    animation: float 2s ease-in-out infinite alternate;
-    border: 2px dashed #c4a356 !important;
-    background: rgba(196, 163, 86, 0.1) !important;
-}
-
-.placed-item.flying::after {
-    content: 'INVALID POSITION';
-    position: absolute;
-    top: -25px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #c4a356;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    white-space: nowrap;
-    z-index: 1000;
-}
-
-@keyframes float {
-    from {
-        transform: translateY(0px);
-    }
-    to {
-        transform: translateY(-5px);
-    }
-}
-
-/* Invalid drop zone styling */
-.grid-cell.invalid-drop {
-    background-color: rgba(161, 92, 92, 0.5) !important;
-    border-color: #a15c5c !important;
-    box-shadow: 0 0 10px rgba(161, 92, 92, 0.5);
-    z-index: 101;
-    animation: invalidDropShake 0.5s ease-in-out;
-}
-
-@keyframes invalidDropShake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-2px); }
-    75% { transform: translateX(2px); }
-}
-
-/* Enhanced drag feedback */
-.drag-ghost {
-    position: fixed;
-    pointer-events: none;
-    z-index: 10000;
-    opacity: 0.8;
-    transform: scale(0.9);
-    filter: brightness(1.1);
-    transition: none;
-    border: 2px dashed #6a8d7f;
-    border-radius: 4px;
-}
-
-/* Hold instruction tooltip */
-.hold-instruction {
-    position: absolute;
-    bottom: -35px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(45, 41, 38, 0.9);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 0.7rem;
-    white-space: nowrap;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-    z-index: 1000;
-}
-
-.placed-item:hover .hold-instruction {
-    opacity: 1;
-}
-
-/* Selection state improvements */
-.placed-item.selected {
-    filter: drop-shadow(0 0 15px #6a8d7f) brightness(1.1);
-    z-index: 1001 !important;
-}
-
-.placed-item.selected::before {
-    content: '';
-    position: absolute;
-    top: -4px;
-    left: -4px;
-    right: -4px;
-    bottom: -4px;
-    border: 2px solid #6a8d7f;
-    border-radius: 8px;
-    pointer-events: none;
-    animation: selectedPulse 2s infinite ease-in-out;
-}
-
-@keyframes selectedPulse {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
-}
-
-/* Smooth transitions for all items */
-.placed-item {
-    transition: all 0.3s ease;
-    cursor: grab;
-    user-select: none;
-}
-
-.placed-item:active {
-    cursor: grabbing;
-}
-
-.placed-item.being-held {
-    cursor: grabbing;
-}
-
-/* Inventory item interaction hints */
-.inventory-item::after {
-    content: 'Drag to place';
-    position: absolute;
-    bottom: -20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(45, 41, 38, 0.8);
-    color: white;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.6rem;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-    white-space: nowrap;
-}
-
-.inventory-item:hover::after {
-    opacity: 1;
-}
-
-/* Flying items counter */
-.flying-items-warning {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(196, 163, 86, 0.95);
-    color: white;
-    padding: 10px 15px;
-    border-radius: 8px;
-    font-weight: 600;
-    z-index: 10000;
-    display: none;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 12px rgba(196, 163, 86, 0.3);
-}
-
-.flying-items-warning.show {
-    display: flex;
-    animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
-}
-
-.flying-items-warning::before {
-    content: '⚠';
-    font-size: 1.2rem;
-}
-
-/* Enhanced save button when flying items exist */
-.save-room-btn.has-flying {
-    background: linear-gradient(45deg, #c4a356, #d4b366);
-    animation: warningPulse 2s infinite ease-in-out;
-}
-
-@keyframes warningPulse {
-    0%, 100% { box-shadow: 0 4px 8px rgba(196, 163, 86, 0.3); }
-    50% { box-shadow: 0 6px 16px rgba(196, 163, 86, 0.6); }
-}
-
-/* Improved feedback for successful actions */
-.action-feedback {
-    position: absolute;
-    background: #6a8d7f;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    opacity: 0;
-    transform: translateY(10px);
-    animation: actionSuccess 1.5s ease-out forwards;
-    pointer-events: none;
-    z-index: 10000;
-}
-
-@keyframes actionSuccess {
-    0% {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    20% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    80% {
-        opacity: 1;
-        transform: translateY(-10px);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-}
-
-/* Better responsive design for the floating menu */
-@media (max-width: 768px) {
-    .floating-action-menu {
-        min-width: 120px;
-        padding: 6px;
-    }
-    
-    .floating-action-menu .menu-button {
-        padding: 8px 10px;
-        font-size: 0.8rem;
-    }
-    
-    .hold-to-drag-indicator {
-        width: 50px;
-        height: 50px;
-    }
 }
 
 /* Responsive */
