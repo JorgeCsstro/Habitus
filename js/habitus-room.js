@@ -1050,6 +1050,7 @@ function saveRoom() {
     saveBtn.disabled = true;
     saveBtn.textContent = 'Saving...';
     
+    // Prepare data
     const roomData = {
         room_id: currentRoom.id,
         items: placedItems.map(item => ({
