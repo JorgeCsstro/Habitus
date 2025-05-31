@@ -26,6 +26,9 @@ let dragGhost = null;
 let flyingItems = new Set();
 let lastMousePosition = { x: 0, y: 0 };
 let dragStartPosition = { x: 0, y: 0 };
+let isActualDrag = false;
+let clickStartTime = 0;
+let hasMovedDuringHold = false;
 
 // Grid configuration - 6x6
 const GRID_SIZE = 6;
@@ -55,6 +58,21 @@ const ITEM_SIZES = {
     'cactus': { width: 1, height: 1, surfaces: ['floor'] },
     'wall_clock': { width: 1, height: 1, surfaces: ['wall-left', 'wall-right'] }
 };
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.floating-action-menu') && 
+        !e.target.closest('.placed-item') && 
+        !isDragging) {
+        hideFloatingMenu();
+    }
+});
+
+// Add escape key to hide menu
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        hideFloatingMenu();
+    }
+});
 
 // Initialize the Habitus room
 function initializeHabitusRoom(roomData, items, rotationData = {}) {
@@ -226,11 +244,15 @@ function handleMouseDown(e) {
     e.preventDefault();
     e.stopPropagation();
     
-    // Store initial position for movement detection
+    // Store initial position and time for movement detection
     dragStartPosition = { x: e.clientX, y: e.clientY };
+    clickStartTime = Date.now();
+    hasMovedDuringHold = false;
+    isActualDrag = false;
     
     startHold(placedItem, e);
 }
+
 
 // Start hold timer
 function startHold(item, e) {
@@ -280,17 +302,18 @@ function completeHold() {
     // Mark item as being held
     heldItem.classList.add('being-held');
     
-    // FIXED: Show grids when starting drag
+    // Show grids when starting drag
     showGridsForDragging();
     
-    // Show floating menu
-    showFloatingMenu();
+    // DON'T show floating menu here - only show during drag if needed
+    // showFloatingMenu(); // REMOVED
     
     // Create drag ghost
     createDragGhost();
     
     // Set dragging state
     isDragging = true;
+    isActualDrag = true;
     
     showActionFeedback(heldItem, 'Item picked up - drag to move');
 }
@@ -387,21 +410,24 @@ function handleMouseMove(e) {
             holdIndicator.style.top = (currentPos.y - 30) + 'px';
         }
         
-        // Check if mouse moved too far - cancel hold (FIXED: more forgiving threshold)
+        // Check if mouse moved too far - this indicates drag intention
         const distance = Math.sqrt(
             Math.pow(currentPos.x - dragStartPosition.x, 2) + 
             Math.pow(currentPos.y - dragStartPosition.y, 2)
         );
         
-        if (distance > 15) { // FIXED: Increased from 10 to 15 pixels
+        if (distance > 15) {
+            hasMovedDuringHold = true;
+            // Don't cancel hold, but mark as actual drag intention
+        }
+        
+        if (distance > 25) { // Cancel if moved too far without completing hold
             cancelHold();
         }
     } else if (heldItem && heldItem.classList.contains('being-held')) {
-        // FIXED: Smooth drag ghost updates
+        // This is actual dragging
+        isActualDrag = true;
         updateDragGhost(currentPos.x, currentPos.y);
-        updateFloatingMenuPosition();
-        
-        // FIXED: Improved drop zone checking with debouncing
         checkDropZoneSmooth(e);
     }
     
@@ -497,14 +523,62 @@ function checkDropZone(e) {
 // Mouse up handler
 function handleMouseUp(e) {
     if (isHolding && heldItem) {
+        const holdDuration = Date.now() - clickStartTime;
+        
         if (heldItem.classList.contains('being-held')) {
             // Complete drag and drop
             completeDragDrop(e);
         } else {
-            // Cancel hold
+            // This was a click or incomplete hold
+            if (!hasMovedDuringHold && holdDuration < HOLD_DURATION) {
+                // This was a simple click - show menu
+                handleItemClick(heldItem, e);
+            }
+            // Cancel the hold
             cancelHold();
         }
     }
+}
+
+// NEW: Handle item click (non-drag)
+function handleItemClick(itemElement, e) {
+    if (!itemElement) return;
+    
+    // Select the item
+    deselectItem();
+    itemElement.classList.add('selected');
+    selectedItem = itemElement;
+    heldItem = itemElement;
+    
+    // Show floating menu at click position
+    showFloatingMenuAtPosition(e.clientX, e.clientY);
+    
+    showActionFeedback(itemElement, 'Item selected');
+}
+
+// NEW: Show floating menu at specific position
+function showFloatingMenuAtPosition(x, y) {
+    if (!floatingMenu || !heldItem) return;
+    
+    floatingMenu.classList.add('show');
+    
+    const menuWidth = 140;
+    const menuHeight = 160;
+    
+    let left = x + 10;
+    let top = y;
+    
+    // Adjust if menu would go off screen
+    if (left + menuWidth > window.innerWidth) {
+        left = x - menuWidth - 10;
+    }
+    
+    if (top + menuHeight > window.innerHeight) {
+        top = window.innerHeight - menuHeight - 10;
+    }
+    
+    floatingMenu.style.left = left + 'px';
+    floatingMenu.style.top = top + 'px';
 }
 
 // Cancel hold
@@ -520,14 +594,19 @@ function cancelHold() {
     
     if (heldItem) {
         heldItem.classList.remove('being-held');
-        heldItem = null;
+        // Don't reset heldItem here if it was a simple click
+        if (isActualDrag) {
+            heldItem = null;
+        }
     }
     
-    // FIXED: Hide grids when canceling
+    // Hide grids when canceling
     hideGridsForDragging();
     
     isHolding = false;
     isDragging = false;
+    isActualDrag = false;
+    hasMovedDuringHold = false;
 }
 
 // Complete drag and drop
@@ -541,6 +620,14 @@ function completeDragDrop(e) {
         updateItemPosition(heldItem, dropResult);
         removeFromFlying(heldItem);
         showActionFeedback(heldItem, 'Item moved successfully');
+        
+        // Show menu after successful drop
+        setTimeout(() => {
+            if (heldItem) {
+                showFloatingMenuAfterDrop();
+            }
+        }, 100);
+        
     } else {
         // Invalid drop - return to original position or mark as flying
         const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
@@ -555,6 +642,15 @@ function completeDragDrop(e) {
     
     // Clean up
     finalizeDragDrop();
+    hideGridsForDragging();
+}
+
+// NEW: Show floating menu after drop
+function showFloatingMenuAfterDrop() {
+    if (!floatingMenu || !heldItem) return;
+    
+    floatingMenu.classList.add('show');
+    updateFloatingMenuPosition();
 }
 
 // Find drop zone under cursor
@@ -676,12 +772,14 @@ function finalizeDragDrop() {
         dragGhost = null;
     }
     
-    // Remove being-held state
+    // Remove being-held state but keep item selected
     if (heldItem) {
         heldItem.classList.remove('being-held');
+        heldItem.classList.add('selected'); // Keep selected for menu
+        selectedItem = heldItem; // Keep as selected item
     }
     
-    // FIXED: Hide grids after drag
+    // Hide grids after drag
     hideGridsForDragging();
     
     // Clear all highlights
@@ -694,11 +792,9 @@ function finalizeDragDrop() {
         preview.style.display = 'none';
     });
     
-    // Keep floating menu open for further actions
-    updateFloatingMenuPosition();
-    
     isDragging = false;
     isHolding = false;
+    isActualDrag = false;
 }
 
 // Show floating menu
@@ -739,11 +835,13 @@ function hideFloatingMenu() {
         floatingMenu.classList.remove('show');
     }
     
-    if (heldItem) {
+    // Only clear selected item if explicitly hiding menu
+    if (heldItem && !isDragging) {
         heldItem.classList.remove('selected');
         heldItem = null;
+        selectedItem = null;
     }
-}   
+}
 
 // Handle menu actions
 function handleMenuAction(e) {
@@ -766,8 +864,13 @@ function handleMenuAction(e) {
             break;
         case 'remove':
             removeHeldItem();
-            break;
+            return; // removeHeldItem handles its own cleanup
     }
+    
+    // Hide menu after action (except remove which handles its own cleanup)
+    setTimeout(() => {
+        hideFloatingMenu();
+    }, 1000); // Keep menu visible for 1 second after action
 }
 
 // Rotate held item
@@ -857,7 +960,11 @@ function removeHeldItem() {
         // Remove element
         heldItem.remove();
         
+        // Clean up references
         hideFloatingMenu();
+        heldItem = null;
+        selectedItem = null;
+        
         showActionFeedback(document.body, 'Item removed');
     }
 }
