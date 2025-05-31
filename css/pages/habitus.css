@@ -434,12 +434,12 @@
 }
 
 /* FIXED: Counter-rotation for drag previews - only when placed */
-.placed-items-floor .drag-preview:not(.dragging) img {
+.placed-items-floor .drag-preview.dragging img {
     transform: rotateZ(40deg) rotateY(55deg) rotateX(0deg) rotate(5deg) scale(2);   
     translate: 10px -15px;
 }
 
-.placed-items-wall-right .drag-preview:not(.dragging) img {
+.placed-items-wall-right .drag-preview.dragging img {
     transform: rotateZ(165deg) rotateX(105deg) rotate(-135deg) rotateY(280deg) scale(1.4);
 }
 

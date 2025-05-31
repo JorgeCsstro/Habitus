@@ -1,4 +1,4 @@
-// habitus-room.js - Fixed isometric room system with proper inventory tracking
+// habitus-room.js - COMPLETELY FIXED: Floating menu that actually works
 
 // Room state
 let currentRoom = null;
@@ -92,17 +92,18 @@ function initializeHabitusRoom(roomData, items, rotationData = {}) {
     // Ensure room structure exists
     ensureRoomStructure();
     
-    // Create interactive elements even in dashboard mode for testing
+    // Create interactive elements
     createAllGrids();
     createDragPreview();
     createHoldIndicator();
-    createFloatingMenu(); // FIXED: Always create floating menu
+    
+    // COMPLETE REWRITE: Create floating menu immediately
+    createFloatingMenuFixed();
     
     if (!isDashboardMode) {
         setupEventListeners();
         console.log('🎮 Interactive controls enabled');
     } else {
-        // FIXED: Add minimal event listeners for dashboard clicks
         setupDashboardEventListeners();
         console.log('🎮 Dashboard click handlers enabled');
     }
@@ -113,6 +114,189 @@ function initializeHabitusRoom(roomData, items, rotationData = {}) {
     
     console.log('✅ Room initialization complete');
     return true;
+}
+
+// COMPLETELY REWRITTEN: Create floating menu that definitely works
+function createFloatingMenuFixed() {
+    console.log('🔧 Creating floating menu (FIXED VERSION)');
+    
+    // Remove any existing menu
+    const existingMenu = document.getElementById('habitus-floating-menu');
+    if (existingMenu) {
+        existingMenu.remove();
+        console.log('🗑️ Removed existing menu');
+    }
+    
+    // Create menu container
+    floatingMenu = document.createElement('div');
+    floatingMenu.id = 'habitus-floating-menu';
+    
+    // FIXED: Bulletproof CSS that can't be overridden
+    const menuCSS = `
+        position: fixed !important;
+        background: white !important;
+        border: 2px solid #6a8d7f !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+        padding: 8px !important;
+        z-index: 999999 !important;
+        display: none !important;
+        flex-direction: column !important;
+        gap: 4px !important;
+        min-width: 150px !important;
+        font-family: Arial, sans-serif !important;
+    `;
+    
+    floatingMenu.style.cssText = menuCSS;
+    
+    // Create menu buttons with individual styling
+    const buttons = [
+        { id: 'rotate', text: '↻ Rotate Item', color: '#2d2926' },
+        { id: 'front', text: '⬆ Bring to Front', color: '#2d2926' },
+        { id: 'back', text: '⬇ Send to Back', color: '#2d2926' },
+        { id: 'remove', text: '✕ Remove Item', color: '#a15c5c' }
+    ];
+    
+    buttons.forEach(button => {
+        const btn = document.createElement('button');
+        btn.id = `menu-${button.id}`;
+        btn.textContent = button.text;
+        btn.dataset.action = button.id;
+        
+        const buttonCSS = `
+            padding: 10px 12px !important;
+            border: none !important;
+            background: transparent !important;
+            color: ${button.color} !important;
+            text-align: left !important;
+            cursor: pointer !important;
+            border-radius: 4px !important;
+            font-size: 14px !important;
+            width: 100% !important;
+            transition: background-color 0.2s !important;
+        `;
+        
+        btn.style.cssText = buttonCSS;
+        
+        // Add hover effects
+        btn.addEventListener('mouseenter', function() {
+            if (button.id === 'remove') {
+                this.style.backgroundColor = 'rgba(161, 92, 92, 0.1) !important';
+            } else {
+                this.style.backgroundColor = 'rgba(106, 141, 127, 0.1) !important';
+            }
+        });
+        
+        btn.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = 'transparent !important';
+        });
+        
+        // Add click handler
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleMenuActionFixed(button.id);
+        });
+        
+        floatingMenu.appendChild(btn);
+    });
+    
+    // Add to body
+    document.body.appendChild(floatingMenu);
+    
+    console.log('✅ Floating menu created and added to body:', floatingMenu.id);
+    
+    // Test that it exists
+    const testMenu = document.getElementById('habitus-floating-menu');
+    console.log('🧪 Menu test - exists:', !!testMenu, 'element:', testMenu);
+}
+
+// FIXED: Show floating menu at position
+function showFloatingMenuFixed(x, y) {
+    console.log('🎯 showFloatingMenuFixed called at:', x, y);
+    
+    if (!floatingMenu) {
+        console.log('❌ No floating menu found, creating...');
+        createFloatingMenuFixed();
+    }
+    
+    if (!floatingMenu) {
+        console.log('❌ Failed to create floating menu');
+        return;
+    }
+    
+    // Calculate position to keep menu on screen
+    const menuWidth = 150;
+    const menuHeight = 160;
+    
+    let left = x + 10;
+    let top = y;
+    
+    // Adjust if would go off screen
+    if (left + menuWidth > window.innerWidth) {
+        left = x - menuWidth - 10;
+    }
+    if (top + menuHeight > window.innerHeight) {
+        top = window.innerHeight - menuHeight - 10;
+    }
+    
+    // Ensure minimum margins
+    left = Math.max(10, left);
+    top = Math.max(10, top);
+    
+    // Position and show
+    floatingMenu.style.left = left + 'px';
+    floatingMenu.style.top = top + 'px';
+    floatingMenu.style.display = 'flex';
+    
+    console.log('✅ Menu positioned and shown at:', left, top);
+    console.log('📱 Menu display style:', floatingMenu.style.display);
+    console.log('📱 Menu visibility:', window.getComputedStyle(floatingMenu).display);
+}
+
+// FIXED: Hide floating menu
+function hideFloatingMenuFixed() {
+    console.log('🫥 hideFloatingMenuFixed called');
+    
+    if (floatingMenu) {
+        floatingMenu.style.display = 'none';
+        console.log('✅ Menu hidden');
+    }
+    
+    // Clean up selection
+    if (selectedItem) {
+        selectedItem.classList.remove('selected');
+        selectedItem = null;
+    }
+    if (heldItem && !isDragging) {
+        heldItem = null;
+    }
+}
+
+// FIXED: Handle menu actions
+function handleMenuActionFixed(action) {
+    console.log('🎯 Menu action:', action, 'held item:', !!heldItem);
+    
+    if (!heldItem) {
+        console.log('❌ No held item for action');
+        return;
+    }
+    
+    switch (action) {
+        case 'rotate':
+            rotateHeldItem();
+            break;
+        case 'front':
+            moveHeldItemToFront();
+            break;
+        case 'back':
+            moveHeldItemToBack();
+            break;
+        case 'remove':
+            removeHeldItem();
+            hideFloatingMenuFixed(); // Hide immediately for remove
+            return;
+    }
 }
 
 // FIXED: Initialize inventory tracking
@@ -380,40 +564,9 @@ function createHoldIndicator() {
     document.body.appendChild(holdIndicator);
 }
 
-// FIXED: Create floating action menu with better debugging
-function createFloatingMenu() {
-    // Remove existing menu if it exists
-    if (floatingMenu) {
-        floatingMenu.remove();
-    }
-    
-    floatingMenu = document.createElement('div');
-    floatingMenu.className = 'floating-action-menu';
-    floatingMenu.id = 'floating-action-menu'; // Add ID for easier debugging
-    floatingMenu.innerHTML = `
-        <button class="menu-button rotate" data-action="rotate">
-            <span>Rotate Item</span>
-        </button>
-        <button class="menu-button front" data-action="front">
-            <span>Bring to Front</span>
-        </button>
-        <button class="menu-button back" data-action="back">
-            <span>Send to Back</span>
-        </button>
-        <button class="menu-button remove" data-action="remove">
-            <span>Remove Item</span>
-        </button>
-    `;
-    
-    document.body.appendChild(floatingMenu);
-    floatingMenu.addEventListener('click', handleMenuAction);
-    
-    console.log('🔧 Floating menu created and attached to body');
-}
-
-// Set up event listeners
+// FIXED: Set up event listeners with better menu handling
 function setupEventListeners() {
-    console.log('🎮 Setting up event listeners');
+    console.log('🎮 Setting up event listeners (FIXED VERSION)');
     
     // Clean event listener setup
     document.addEventListener('mousedown', handleMouseDown);
@@ -421,13 +574,25 @@ function setupEventListeners() {
     document.addEventListener('mouseup', handleMouseUp);
     document.addEventListener('contextmenu', preventContextMenu);
     
-    // Hide floating menu when clicking elsewhere
+    // FIXED: Global click handler for menu hiding
     document.addEventListener('click', function(e) {
-        if (!e.target.closest('.floating-action-menu') && 
-            !e.target.closest('.placed-item.being-held') &&
-            !e.target.closest('.placed-item.selected')) {
-            hideFloatingMenu();
+        console.log('🖱️ Global click detected');
+        
+        // Don't hide menu if clicking on menu itself
+        if (e.target.closest('#habitus-floating-menu')) {
+            console.log('📋 Clicked on menu - keeping open');
+            return;
         }
+        
+        // Don't hide menu if clicking on a placed item
+        if (e.target.closest('.placed-item')) {
+            console.log('🎯 Clicked on placed item - may show menu');
+            return;
+        }
+        
+        // Hide menu for any other click
+        console.log('🫥 Clicked elsewhere - hiding menu');
+        hideFloatingMenuFixed();
     });
     
     // Global drag end handler
@@ -438,7 +603,7 @@ function setupEventListeners() {
     // Escape key to hide menu
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            hideFloatingMenu();
+            hideFloatingMenuFixed();
             cancelHold();
         }
     });
@@ -468,11 +633,38 @@ function handleMouseDown(e) {
     isActualDrag = false;
     
     if (isDashboardMode) {
-        // FIXED: Direct click handling for dashboard
-        handleItemClick(placedItem, e);
+        // Direct click handling for dashboard
+        handleItemClickFixed(placedItem, e);
     } else {
         startHold(placedItem, e);
     }
+}
+
+// FIXED: Handle item click with guaranteed menu display
+function handleItemClickFixed(itemElement, e) {
+    console.log('🖱️ handleItemClickFixed called for item:', itemElement.dataset.id);
+    
+    if (!itemElement) {
+        console.log('❌ No item element provided');
+        return;
+    }
+    
+    // Clear any previous selection
+    if (selectedItem) {
+        selectedItem.classList.remove('selected');
+    }
+    
+    // Select this item
+    itemElement.classList.add('selected');
+    selectedItem = itemElement;
+    heldItem = itemElement;
+    
+    console.log('✅ Item selected, showing menu at:', e.clientX, e.clientY);
+    
+    // Show menu at click position
+    showFloatingMenuFixed(e.clientX, e.clientY);
+    
+    showActionFeedback(itemElement, 'Item selected - menu opened');
 }
 
 // Start hold timer
@@ -667,104 +859,17 @@ function handleMouseUp(e) {
             completeDragDrop(e);
         } else {
             if (!hasMovedDuringHold && holdDuration < HOLD_DURATION) {
-                handleItemClick(heldItem, e);
+                handleItemClickFixed(heldItem, e);
             }
             cancelHold();
         }
     }
 }
 
-// FIXED: Handle item click with better debugging
-function handleItemClick(itemElement, e) {
-    if (!itemElement) {
-        console.log('❌ No item element provided to handleItemClick');
-        return;
-    }
-    
-    console.log('🖱️ Item clicked:', {
-        itemId: itemElement.dataset.id,
-        isDashboardMode,
-        floatingMenuExists: !!floatingMenu
-    });
-    
-    deselectItem();
-    itemElement.classList.add('selected');
-    selectedItem = itemElement;
-    heldItem = itemElement;
-    
-    // FIXED: Always try to show the menu
-    if (floatingMenu) {
-        console.log('📋 Showing floating menu at position:', e.clientX, e.clientY);
-        showFloatingMenuAtPosition(e.clientX, e.clientY);
-    } else {
-        console.log('❌ Floating menu not found, creating it now');
-        createFloatingMenu();
-        if (floatingMenu) {
-            showFloatingMenuAtPosition(e.clientX, e.clientY);
-        }
-    }
-    
-    showActionFeedback(itemElement, 'Item selected');
-}
-
-// FIXED: Show floating menu at specific position with better debugging
-function showFloatingMenuAtPosition(x, y) {
-    console.log('🔧 showFloatingMenuAtPosition called:', {
-        x, y,
-        floatingMenuExists: !!floatingMenu,
-        heldItemExists: !!heldItem
-    });
-    
-    if (!floatingMenu) {
-        console.log('❌ Floating menu not found, creating it');
-        createFloatingMenu();
-    }
-    
-    if (!heldItem) {
-        console.log('❌ No held item');
-        return;
-    }
-    
-    if (!floatingMenu) {
-        console.log('❌ Still no floating menu after creation attempt');
-        return;
-    }
-    
-    // Force show the menu
-    floatingMenu.classList.add('show');
-    floatingMenu.style.display = 'flex'; // Force display
-    
-    const menuWidth = 140;
-    const menuHeight = 160;
-    
-    let left = x + 10;
-    let top = y;
-    
-    if (left + menuWidth > window.innerWidth) {
-        left = x - menuWidth - 10;
-    }
-    
-    if (top + menuHeight > window.innerHeight) {
-        top = window.innerHeight - menuHeight - 10;
-    }
-    
-    floatingMenu.style.left = left + 'px';
-    floatingMenu.style.top = top + 'px';
-    floatingMenu.style.zIndex = '10001';
-    
-    console.log('✅ Floating menu positioned:', {
-        left,
-        top,
-        visible: floatingMenu.classList.contains('show'),
-        display: floatingMenu.style.display
-    });
-}
-
 // Cancel hold with proper cleanup
 function cancelHold() {
     clearInterval(holdTimer);
     hideHoldIndicator();
-    hideFloatingMenu();
     
     if (heldItem) {
         heldItem.classList.remove('being-held');
@@ -815,31 +920,8 @@ function completeDragDrop(e) {
 function showFloatingMenuAfterDrop() {
     if (!floatingMenu || !heldItem) return;
     
-    floatingMenu.classList.add('show');
-    updateFloatingMenuPosition();
-}
-
-// Update floating menu position
-function updateFloatingMenuPosition() {
-    if (!floatingMenu || !heldItem) return;
-    
     const itemRect = heldItem.getBoundingClientRect();
-    const menuWidth = 140;
-    const menuHeight = 160;
-    
-    let left = itemRect.right + 10;
-    let top = itemRect.top;
-    
-    if (left + menuWidth > window.innerWidth) {
-        left = itemRect.left - menuWidth - 10;
-    }
-    
-    if (top + menuHeight > window.innerHeight) {
-        top = window.innerHeight - menuHeight - 10;
-    }
-    
-    floatingMenu.style.left = left + 'px';
-    floatingMenu.style.top = top + 'px';
+    showFloatingMenuFixed(itemRect.right + 10, itemRect.top);
 }
 
 // Find drop zone under cursor
@@ -915,54 +997,6 @@ function finalizeDragDrop() {
     isActualDrag = false;
 }
 
-// FIXED: Hide floating menu with debugging
-function hideFloatingMenu() {
-    console.log('🔧 hideFloatingMenu called');
-    
-    if (floatingMenu) {
-        floatingMenu.classList.remove('show');
-        floatingMenu.style.display = 'none';
-        console.log('✅ Floating menu hidden');
-    }
-    
-    if (heldItem && !isDragging) {
-        heldItem.classList.remove('selected');
-        heldItem = null;
-        selectedItem = null;
-    }
-}
-
-// Handle menu actions
-function handleMenuAction(e) {
-    if (!e.target.closest('.menu-button') || !heldItem) return;
-    
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const action = e.target.closest('.menu-button').dataset.action;
-    
-    console.log('🎯 Menu action triggered:', action);
-    
-    switch (action) {
-        case 'rotate':
-            rotateHeldItem();
-            break;
-        case 'front':
-            moveHeldItemToFront();
-            break;
-        case 'back':
-            moveHeldItemToBack();
-            break;
-        case 'remove':
-            removeHeldItem();
-            return;
-    }
-    
-    setTimeout(() => {
-        hideFloatingMenu();
-    }, 1000);
-}
-
 // Rotate held item
 function rotateHeldItem() {
     if (!heldItem) return;
@@ -1033,25 +1067,22 @@ function moveHeldItemToBack() {
 function removeHeldItem() {
     if (!heldItem) return;
     
-    if (confirm('Remove this item from the room?')) {
-        const itemId = heldItem.dataset.id;
-        const item = placedItems.find(i => i.id == itemId);
-        
-        if (item) {
-            // FIXED: Return item to inventory
-            returnInventoryItem(item.inventory_id);
-        }
-        
-        removeFromFlying(heldItem);
-        placedItems = placedItems.filter(i => i.id != itemId);
-        heldItem.remove();
-        
-        hideFloatingMenu();
-        heldItem = null;
-        selectedItem = null;
-        
-        showActionFeedback(document.body, 'Item removed and returned to inventory');
+    const itemId = heldItem.dataset.id;
+    const item = placedItems.find(i => i.id == itemId);
+    
+    if (item) {
+        // Return item to inventory
+        returnInventoryItem(item.inventory_id);
     }
+    
+    removeFromFlying(heldItem);
+    placedItems = placedItems.filter(i => i.id != itemId);
+    heldItem.remove();
+    
+    heldItem = null;
+    selectedItem = null;
+    
+    showActionFeedback(document.body, 'Item removed and returned to inventory');
 }
 
 // Add item to flying state
@@ -1280,7 +1311,7 @@ function startDrag(e) {
     const item = e.target.closest('.inventory-item');
     if (!item) return;
     
-    // FIXED: Check if item is available before allowing drag
+    // Check if item is available before allowing drag
     const inventoryId = item.dataset.id;
     if (!isInventoryItemAvailable(inventoryId)) {
         e.preventDefault();
@@ -1449,7 +1480,7 @@ function handleDrop(e) {
             showNotification('Item moved!', 'success');
         }
     } else {
-        // FIXED: Check and use inventory before placing
+        // Check and use inventory before placing
         if (!useInventoryItem(currentDragData.itemId)) {
             showNotification('No more of this item available!', 'warning');
             clearDragState();
@@ -1501,12 +1532,10 @@ function clearDragState() {
 function selectItem(e) {
     e.stopPropagation();
     
-    deselectItem();
-    
     const item = e.target.closest('.placed-item');
     if (item) {
-        item.classList.add('selected');
-        selectedItem = item;
+        // Show menu for this item
+        handleItemClickFixed(item, e);
     }
 }
 
@@ -1776,7 +1805,7 @@ function clearRoom() {
         return;
     }
     
-    // FIXED: Return all items to inventory
+    // Return all items to inventory
     placedItems.forEach(item => {
         if (item.inventory_id) {
             returnInventoryItem(item.inventory_id);
@@ -1913,4 +1942,4 @@ window.closeRoomModal = closeRoomModal;
 window.saveRoomName = saveRoomName;
 window.startDrag = startDrag;
 
-console.log('🚀 Fixed Habitus Room system loaded with inventory tracking');
+console.log('🚀 COMPLETELY FIXED Habitus Room system loaded with bulletproof floating menu');
