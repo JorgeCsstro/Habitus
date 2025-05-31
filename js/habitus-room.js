@@ -15,12 +15,23 @@ let itemRotationData = {}; // Store rotation variants for each item
 let isDashboardMode = false; // Flag to track if we're in dashboard mode
 let debugMode = false; // Debug mode flag
 
+let holdTimer = null;
+let holdStartTime = 0;
+let isHolding = false;
+let heldItem = null;
+let floatingMenu = null;
+let holdIndicator = null;
+let dragGhost = null;
+let flyingItems = new Set();
+let lastMousePosition = { x: 0, y: 0 };
+
 // Grid configuration - 6x6
 const GRID_SIZE = 6;
 const CELL_SIZE = 60;
 const ROOM_WIDTH = 360;
 const ROOM_HEIGHT = 360;
 const WALL_HEIGHT = 4;
+const HOLD_DURATION = 800;
 
 const ROTATION_ANGLES = {
     0: 0,    // back-right (default)
@@ -69,11 +80,11 @@ function initializeHabitusRoom(roomData, items, rotationData = {}) {
     
     // FIXED: Validate placed items data
     placedItems = placedItems.filter(item => {
-        if (!item || typeof item.grid_x === 'undefined' || typeof item.grid_y === 'undefined') {
-            console.warn('Skipping invalid placed item:', item);
-            return false;
-        }
-        return true;
+        const isValid = item && 
+                       typeof item.grid_x !== 'undefined' && 
+                       typeof item.grid_y !== 'undefined' &&
+                       item.image_path;
+        return isValid;
     });
     
     // Ensure room structure exists
@@ -82,16 +93,16 @@ function initializeHabitusRoom(roomData, items, rotationData = {}) {
     // Only create grids if not in dashboard mode
     if (!isDashboardMode) {
         createAllGrids();
+        createDragPreview();
+        createHoldIndicator();
+        createFloatingMenu();
+        setupEnhancedEventListeners();
+        /* console.log('🎮 Set up enhanced interactive controls'); */
     }
     
     // Load placed items
     loadPlacedItems();
-    
-    // Only set up interactive event listeners if not in dashboard mode
-    if (!isDashboardMode) {
-        setupEventListeners();
-        createDragPreview();
-    }
+    applyRoomCustomizations(roomData);
     
     // Load room customizations
     if (roomData.floor_color) {
@@ -110,6 +121,7 @@ function initializeHabitusRoom(roomData, items, rotationData = {}) {
             rightWall.style.background = `linear-gradient(to left, ${adjustColor(roomData.wall_color, -10)}, ${adjustColor(roomData.wall_color, -30)})`;
         }
     }
+    return true;
 }
 
 function debugLog(...args) {
@@ -126,9 +138,9 @@ function debugWarn(...args) {
     console.warn('[Habitus Room WARNING]', ...args);
 }
 
-// Initialize the Habitus room with enhanced error handling
+/* // Initialize the Habitus room with enhanced error handling
 function initializeHabitusRoom(roomData, items, rotationData = {}) {
-    /* debugLog('🏠 Initializing Habitus Room'); */
+    /* debugLog('🏠 Initializing Habitus Room');
     
     // Enhanced validation
     if (!roomData) {
@@ -157,7 +169,7 @@ function initializeHabitusRoom(roomData, items, rotationData = {}) {
         isDashboardMode: isDashboardMode,
         debugMode: debugMode,
         rotationDataKeys: Object.keys(rotationData || {})
-    }); */
+    }); 
     
     currentRoom = roomData;
     placedItems = items || [];
@@ -181,7 +193,7 @@ function initializeHabitusRoom(roomData, items, rotationData = {}) {
         debugWarn(`⚠️ Filtered out ${originalCount - placedItems.length} invalid items`);
     }
     
-    /* debugLog(`✅ Processing ${placedItems.length} valid items`); */
+    /* debugLog(`✅ Processing ${placedItems.length} valid items`); 
     
     // Ensure room structure exists
     if (!ensureRoomStructure()) {
@@ -192,29 +204,595 @@ function initializeHabitusRoom(roomData, items, rotationData = {}) {
     // Only create grids if not in dashboard mode
     if (!isDashboardMode) {
         createAllGrids();
-        /* debugLog('🔧 Created interactive grids'); */
+        /* debugLog('🔧 Created interactive grids'); 
     } else {
-        /* debugLog('📱 Dashboard mode - skipping interactive grids'); */
+        /* debugLog('📱 Dashboard mode - skipping interactive grids'); 
     }
     
     // Load placed items
     const itemsLoaded = loadPlacedItems();
-    /* debugLog(`📦 Loaded ${itemsLoaded} items`); */
+    /* debugLog(`📦 Loaded ${itemsLoaded} items`); 
     
     // Only set up interactive event listeners if not in dashboard mode
     if (!isDashboardMode) {
         setupEventListeners();
         createDragPreview();
-        /* debugLog('🎮 Set up interactive controls'); */
+        /* debugLog('🎮 Set up interactive controls'); 
     } else {
-        /* debugLog('📱 Dashboard mode - skipping interactive controls'); */
+        /* debugLog('📱 Dashboard mode - skipping interactive controls'); 
     }
     
     // Apply room customizations
     applyRoomCustomizations(roomData);
     
-    /* debugLog('✅ Room initialization completed successfully'); */
+    /* debugLog('✅ Room initialization completed successfully'); 
     return true;
+} */
+
+// Hold indicator for drag and drop
+function createHoldIndicator() {
+    if (holdIndicator) return;
+    
+    holdIndicator = document.createElement('div');
+    holdIndicator.className = 'hold-to-drag-indicator';
+    holdIndicator.innerHTML = '<div class="hold-progress"></div>';
+    document.body.appendChild(holdIndicator);
+}
+
+// Create floating action menu
+function createFloatingMenu() {
+    if (floatingMenu) return;
+    
+    floatingMenu = document.createElement('div');
+    floatingMenu.className = 'floating-action-menu';
+    floatingMenu.innerHTML = `
+        <button class="menu-button rotate" data-action="rotate">
+            <span>Rotate Item</span>
+        </button>
+        <button class="menu-button front" data-action="front">
+            <span>Bring to Front</span>
+        </button>
+        <button class="menu-button back" data-action="back">
+            <span>Send to Back</span>
+        </button>
+        <button class="menu-button remove" data-action="remove">
+            <span>Remove Item</span>
+        </button>
+    `;
+    
+    document.body.appendChild(floatingMenu);
+    
+    // Add menu button listeners
+    floatingMenu.addEventListener('click', handleMenuAction);
+}
+
+function setupEnhancedEventListeners() {
+    // Remove old context menu listeners and add new hold-to-drag
+    document.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('contextmenu', preventContextMenu); // Disable right-click menu
+    
+    // Touch support for mobile
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd);
+    
+    // Hide floating menu when clicking elsewhere
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.floating-action-menu') && !e.target.closest('.placed-item.being-held')) {
+            hideFloatingMenu();
+        }
+    });
+    
+    // Clean up on page unload
+    window.addEventListener('beforeunload', cleanup);
+}
+
+// Prevent right-click context menu
+function preventContextMenu(e) {
+    if (e.target.closest('.placed-item')) {
+        e.preventDefault();
+        return false;
+    }
+}
+
+// Enhanced mouse down handler
+function handleMouseDown(e) {
+    if (e.button !== 0) return; // Only left mouse button
+    
+    const placedItem = e.target.closest('.placed-item');
+    if (!placedItem || isDashboardMode) return;
+    
+    e.preventDefault();
+    startHold(placedItem, e);
+}
+
+// Start hold timer
+function startHold(item, e) {
+    if (isHolding) return;
+    
+    isHolding = true;
+    heldItem = item;
+    holdStartTime = Date.now();
+    lastMousePosition = { x: e.clientX, y: e.clientY };
+    
+    // Show hold indicator
+    showHoldIndicator(e.clientX, e.clientY);
+    
+    // Start progress animation
+    const progress = holdIndicator.querySelector('.hold-progress');
+    let progressAngle = 0;
+    
+    holdTimer = setInterval(() => {
+        const elapsed = Date.now() - holdStartTime;
+        progressAngle = (elapsed / HOLD_DURATION) * 360;
+        
+        if (progress && progress.querySelector('::before')) {
+            progress.style.setProperty('--progress', `${progressAngle}deg`);
+        }
+        
+        if (elapsed >= HOLD_DURATION) {
+            completeHold();
+        }
+    }, 16); // ~60fps
+}
+
+// Complete hold and start drag
+function completeHold() {
+    if (!heldItem) return;
+    
+    clearInterval(holdTimer);
+    hideHoldIndicator();
+    
+    // Mark item as being held
+    heldItem.classList.add('being-held');
+    
+    // Show floating menu
+    showFloatingMenu();
+    
+    // Create drag ghost
+    createDragGhost();
+    
+    // Add hold instruction
+    addHoldInstruction();
+    
+    showActionFeedback(heldItem, 'Item picked up - drag to move');
+}
+
+// Show hold indicator
+function showHoldIndicator(x, y) {
+    if (!holdIndicator) return;
+    
+    holdIndicator.style.left = x - 30 + 'px';
+    holdIndicator.style.top = y - 30 + 'px';
+    holdIndicator.style.display = 'block';
+}
+
+// Hide hold indicator
+function hideHoldIndicator() {
+    if (holdIndicator) {
+        holdIndicator.style.display = 'none';
+    }
+}
+
+// Create drag ghost
+function createDragGhost() {
+    if (!heldItem) return;
+    
+    dragGhost = heldItem.cloneNode(true);
+    dragGhost.className = 'drag-ghost';
+    dragGhost.style.position = 'fixed';
+    dragGhost.style.pointerEvents = 'none';
+    dragGhost.style.zIndex = '10000';
+    
+    
+    document.body.appendChild(dragGhost);
+    updateDragGhost(lastMousePosition.x, lastMousePosition.y);
+}
+
+// Update drag ghost position
+function updateDragGhost(x, y) {
+    if (!dragGhost) return;
+    
+    const rect = heldItem.getBoundingClientRect();
+    dragGhost.style.left = (x - rect.width / 2) + 'px';
+    dragGhost.style.top = (y - rect.height / 2) + 'px';
+}
+
+// Mouse move handler
+function handleMouseMove(e) {
+    lastMousePosition = { x: e.clientX, y: e.clientY };
+    
+    if (isHolding && !heldItem.classList.contains('being-held')) {
+        // Update hold indicator position
+        if (holdIndicator && holdIndicator.style.display === 'block') {
+            holdIndicator.style.left = e.clientX - 30 + 'px';
+            holdIndicator.style.top = e.clientY - 30 + 'px';
+        }
+        
+        // Check if mouse moved too far - cancel hold
+        const startDistance = Math.sqrt(
+            Math.pow(e.clientX - lastMousePosition.x, 2) + 
+            Math.pow(e.clientY - lastMousePosition.y, 2)
+        );
+        
+        if (startDistance > 10) {
+            cancelHold();
+        }
+    } else if (heldItem && heldItem.classList.contains('being-held')) {
+        // Update drag ghost and floating menu
+        updateDragGhost(e.clientX, e.clientY);
+        updateFloatingMenuPosition();
+        
+        // Check for drop zones
+        checkDropZone(e);
+    }
+}
+
+function checkDropZone(e) {
+    // Visual feedback during drag
+    const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
+    const gridCell = elementUnder ? elementUnder.closest('.grid-cell') : null;
+    
+    // Clear previous highlights
+    document.querySelectorAll('.grid-cell').forEach(cell => {
+        cell.classList.remove('drag-over', 'invalid-drop');
+    });
+    
+    if (gridCell) {
+        const dropResult = findDropZone(e);
+        const itemConfig = getItemConfig(heldItem.querySelector('img').src);
+        
+        // Highlight affected cells
+        for (let dy = 0; dy < itemConfig.height; dy++) {
+            for (let dx = 0; dx < itemConfig.width; dx++) {
+                const targetCell = document.querySelector(
+                    `[data-surface="${dropResult.surface}"][data-x="${dropResult.gridX + dx}"][data-y="${dropResult.gridY + dy}"]`
+                );
+                if (targetCell) {
+                    targetCell.classList.add(dropResult.valid ? 'drag-over' : 'invalid-drop');
+                }
+            }
+        }
+    }
+}
+
+// Mouse up handler
+function handleMouseUp(e) {
+    if (isHolding && heldItem) {
+        if (heldItem.classList.contains('being-held')) {
+            // Complete drag and drop
+            completeDragDrop(e);
+        } else {
+            // Cancel hold
+            cancelHold();
+        }
+    }
+}
+
+// Cancel hold
+function cancelHold() {
+    clearInterval(holdTimer);
+    hideHoldIndicator();
+    hideFloatingMenu();
+    
+    if (dragGhost) {
+        dragGhost.remove();
+        dragGhost = null;
+    }
+    
+    if (heldItem) {
+        heldItem.classList.remove('being-held');
+        heldItem = null;
+    }
+    
+    isHolding = false;
+}
+
+// Complete drag and drop
+function completeDragDrop(e) {
+    if (!heldItem) return;
+    
+    const dropResult = findDropZone(e);
+    
+    if (dropResult.valid) {
+        // Valid drop - update item position
+        updateItemPosition(heldItem, dropResult);
+        removeFromFlying(heldItem);
+        showActionFeedback(heldItem, 'Item moved successfully');
+    } else {
+        // Invalid drop - mark as flying
+        addToFlying(heldItem);
+        showActionFeedback(heldItem, 'Invalid position - item is floating');
+    }
+    
+    // Clean up
+    finalizeDragDrop();
+}
+
+// Find drop zone under cursor
+function findDropZone(e) {
+    const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
+    const gridCell = elementUnder ? elementUnder.closest('.grid-cell') : null;
+    
+    if (!gridCell) {
+        return { valid: false, reason: 'Not over grid' };
+    }
+    
+    const gridX = parseInt(gridCell.dataset.x);
+    const gridY = parseInt(gridCell.dataset.y);
+    const surface = gridCell.dataset.surface;
+    
+    const itemConfig = getItemConfig(heldItem.querySelector('img').src);
+    const itemId = heldItem.dataset.id;
+    
+    // Check if placement is valid
+    const isValid = isAreaAvailable(gridX, gridY, itemConfig.width, itemConfig.height, surface, itemId);
+    
+    return {
+        valid: isValid,
+        gridX: gridX,
+        gridY: gridY,
+        surface: surface,
+        reason: isValid ? 'Valid placement' : 'Position occupied or invalid'
+    };
+}
+
+// Update item position
+function updateItemPosition(itemElement, dropResult) {
+    const itemId = itemElement.dataset.id;
+    const item = placedItems.find(i => i.id == itemId);
+    
+    if (item) {
+        const oldSurface = item.surface || 'floor';
+        
+        // Update data
+        item.grid_x = dropResult.gridX;
+        item.grid_y = dropResult.gridY;
+        item.surface = dropResult.surface;
+        
+        // Update visual position
+        itemElement.style.left = (dropResult.gridX * CELL_SIZE) + 'px';
+        itemElement.style.top = (dropResult.gridY * CELL_SIZE) + 'px';
+        itemElement.dataset.gridX = dropResult.gridX;
+        itemElement.dataset.gridY = dropResult.gridY;
+        itemElement.dataset.surface = dropResult.surface;
+        
+        // Move to new container if surface changed
+        if (oldSurface !== dropResult.surface) {
+            const newContainer = document.getElementById(`placed-items-${dropResult.surface}`);
+            if (newContainer) {
+                newContainer.appendChild(itemElement);
+            }
+        }
+    }
+}
+
+// Add item to flying state
+function addToFlying(itemElement) {
+    const itemId = itemElement.dataset.id;
+    flyingItems.add(itemId);
+    itemElement.classList.add('flying');
+    updateFlyingWarning();
+}
+
+// Remove item from flying state
+function removeFromFlying(itemElement) {
+    const itemId = itemElement.dataset.id;
+    flyingItems.delete(itemId);
+    itemElement.classList.remove('flying');
+    updateFlyingWarning();
+}
+
+// Update flying items warning
+function updateFlyingWarning() {
+    let warning = document.querySelector('.flying-items-warning');
+    
+    if (flyingItems.size > 0) {
+        if (!warning) {
+            warning = document.createElement('div');
+            warning.className = 'flying-items-warning';
+            document.body.appendChild(warning);
+        }
+        
+        warning.innerHTML = `${flyingItems.size} item(s) in invalid positions - they will be removed when you save`;
+        warning.classList.add('show');
+        
+        // Update save button
+        const saveBtn = document.querySelector('.save-room-btn');
+        if (saveBtn) {
+            saveBtn.classList.add('has-flying');
+        }
+    } else {
+        if (warning) {
+            warning.classList.remove('show');
+        }
+        
+        // Reset save button
+        const saveBtn = document.querySelector('.save-room-btn');
+        if (saveBtn) {
+            saveBtn.classList.remove('has-flying');
+        }
+    }
+}
+
+// Finalize drag and drop
+function finalizeDragDrop() {
+    if (dragGhost) {
+        dragGhost.remove();
+        dragGhost = null;
+    }
+    
+    if (heldItem) {
+        heldItem.classList.remove('being-held');
+    }
+    
+    // Keep floating menu open for further actions
+    updateFloatingMenuPosition();
+    
+    isHolding = false;
+}
+
+// Show floating menu
+function showFloatingMenu() {
+    if (!floatingMenu || !heldItem) return;
+    
+    floatingMenu.classList.add('show');
+    updateFloatingMenuPosition();
+}
+
+// Update floating menu position
+function updateFloatingMenuPosition() {
+    if (!floatingMenu || !heldItem) return;
+    
+    const itemRect = heldItem.getBoundingClientRect();
+    const menuWidth = 140;
+    const menuHeight = 160;
+    
+    let left = itemRect.right + 10;
+    let top = itemRect.top;
+    
+    // Adjust if menu would go off screen
+    if (left + menuWidth > window.innerWidth) {
+        left = itemRect.left - menuWidth - 10;
+    }
+    
+    if (top + menuHeight > window.innerHeight) {
+        top = window.innerHeight - menuHeight - 10;
+    }
+    
+    floatingMenu.style.left = left + 'px';
+    floatingMenu.style.top = top + 'px';
+}
+
+// Hide floating menu
+function hideFloatingMenu() {
+    if (floatingMenu) {
+        floatingMenu.classList.remove('show');
+    }
+    
+    if (heldItem) {
+        heldItem.classList.remove('selected');
+        heldItem = null;
+    }
+}
+
+// Handle menu actions
+function handleMenuAction(e) {
+    if (!e.target.closest('.menu-button') || !heldItem) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const action = e.target.closest('.menu-button').dataset.action;
+    
+    switch (action) {
+        case 'rotate':
+            rotateHeldItem();
+            break;
+        case 'front':
+            moveHeldItemToFront();
+            break;
+        case 'back':
+            moveHeldItemToBack();
+            break;
+        case 'remove':
+            removeHeldItem();
+            break;
+    }
+}
+
+// Rotate held item
+function rotateHeldItem() {
+    if (!heldItem) return;
+    
+    const currentRotation = parseInt(heldItem.dataset.rotation) || 0;
+    const newRotation = (currentRotation + 90) % 360;
+    
+    heldItem.dataset.rotation = newRotation;
+    
+    // Update rotation data
+    const itemId = heldItem.dataset.id;
+    const item = placedItems.find(i => i.id == itemId);
+    if (item) {
+        item.rotation = newRotation;
+        
+        // Update image if rotation variants exist
+        updateItemRotationImage(heldItem, item, newRotation);
+    }
+    
+    showActionFeedback(heldItem, `Rotated to ${newRotation}°`);
+}
+
+// Move held item to front
+function moveHeldItemToFront() {
+    if (!heldItem) return;
+    
+    const surface = heldItem.dataset.surface;
+    const maxZ = Math.max(...placedItems.filter(i => i.surface === surface).map(i => i.z_index || 0));
+    
+    heldItem.style.zIndex = maxZ + 1;
+    
+    const itemId = heldItem.dataset.id;
+    const item = placedItems.find(i => i.id == itemId);
+    if (item) {
+        item.z_index = maxZ + 1;
+    }
+    
+    showActionFeedback(heldItem, 'Moved to front');
+}
+
+// Move held item to back
+function moveHeldItemToBack() {
+    if (!heldItem) return;
+    
+    const surface = heldItem.dataset.surface;
+    heldItem.style.zIndex = 1;
+    
+    // Update z-indices for all items on same surface
+    placedItems.forEach(item => {
+        if (item.surface === surface && item.id != heldItem.dataset.id && item.z_index > 0) {
+            item.z_index++;
+        }
+    });
+    
+    const itemId = heldItem.dataset.id;
+    const item = placedItems.find(i => i.id == itemId);
+    if (item) {
+        item.z_index = 1;
+    }
+    
+    // Apply z-index changes
+    document.querySelectorAll(`.placed-item[data-surface="${surface}"]`).forEach(el => {
+        const elItem = placedItems.find(i => i.id == el.dataset.id);
+        if (elItem) {
+            el.style.zIndex = elItem.z_index;
+        }
+    });
+    
+    showActionFeedback(heldItem, 'Moved to back');
+}
+
+// Remove held item
+function removeHeldItem() {
+    if (!heldItem) return;
+    
+    if (confirm('Remove this item from the room?')) {
+        const itemId = heldItem.dataset.id;
+        
+        // Remove from flying items if present
+        removeFromFlying(heldItem);
+        
+        // Remove from array
+        placedItems = placedItems.filter(i => i.id != itemId);
+        
+        // Remove element
+        heldItem.remove();
+        
+        hideFloatingMenu();
+        showActionFeedback(document.body, 'Item removed');
+    }
 }
 
 // Ensure room structure exists
@@ -1300,15 +1878,31 @@ function filterInventory(category) {
 }
 
 // Save room layout
+// Enhanced save room function
 function saveRoom() {
     const saveBtn = event.target;
     saveBtn.disabled = true;
     saveBtn.textContent = 'Saving...';
     
-    // Prepare data
+    // Remove flying items before saving
+    const flyingItemsCount = flyingItems.size;
+    if (flyingItemsCount > 0) {
+        if (!confirm(`${flyingItemsCount} item(s) are in invalid positions and will be removed. Continue?`)) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save Layout';
+            return;
+        }
+        
+        // Remove flying items
+        clearFlyingItems();
+    }
+    
+    // Prepare data (excluding flying items)
+    const validItems = placedItems.filter(item => !flyingItems.has(item.id));
+    
     const roomData = {
         room_id: currentRoom.id,
-        items: placedItems.map(item => ({
+        items: validItems.map(item => ({
             id: item.id.toString().startsWith('temp_') ? null : item.id,
             inventory_id: item.inventory_id,
             grid_x: item.grid_x,
@@ -1352,7 +1946,13 @@ function saveRoom() {
                     }
                 });
             }
-            showNotification('Room layout saved successfully!', 'success');
+            
+            let message = 'Room layout saved successfully!';
+            if (flyingItemsCount > 0) {
+                message += ` ${flyingItemsCount} invalid item(s) were removed.`;
+            }
+            
+            showNotification(message, 'success');
         } else {
             showNotification(data.message || 'Error saving room layout', 'error');
         }
@@ -1363,6 +1963,95 @@ function saveRoom() {
         saveBtn.textContent = 'Save Layout';
         showNotification('Error saving room layout', 'error');
     });
+}
+
+// Clear all flying items
+function clearFlyingItems() {
+    flyingItems.forEach(itemId => {
+        const element = document.querySelector(`[data-id="${itemId}"]`);
+        if (element) {
+            element.remove();
+        }
+        // Remove from placed items array
+        placedItems = placedItems.filter(i => i.id != itemId);
+    });
+    
+    flyingItems.clear();
+    updateFlyingWarning();
+}
+
+// Show action feedback
+function showActionFeedback(targetElement, message) {
+    const feedback = document.createElement('div');
+    feedback.className = 'action-feedback';
+    feedback.textContent = message;
+    
+    if (targetElement === document.body) {
+        feedback.style.position = 'fixed';
+        feedback.style.top = '50%';
+        feedback.style.left = '50%';
+        feedback.style.transform = 'translate(-50%, -50%)';
+    } else {
+        const rect = targetElement.getBoundingClientRect();
+        feedback.style.position = 'fixed';
+        feedback.style.left = (rect.left + rect.width / 2) + 'px';
+        feedback.style.top = (rect.top - 10) + 'px';
+        feedback.style.transform = 'translateX(-50%)';
+    }
+    
+    document.body.appendChild(feedback);
+    
+    setTimeout(() => {
+        feedback.remove();
+    }, 1500);
+}
+
+// Touch support
+function handleTouchStart(e) {
+    if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const placedItem = touch.target.closest('.placed-item');
+        if (placedItem && !isDashboardMode) {
+            e.preventDefault();
+            startHold(placedItem, { clientX: touch.clientX, clientY: touch.clientY });
+        }
+    }
+}
+
+function handleTouchMove(e) {
+    if (e.touches.length === 1 && (isHolding || (heldItem && heldItem.classList.contains('being-held')))) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
+    }
+}
+
+function handleTouchEnd(e) {
+    if (isHolding || (heldItem && heldItem.classList.contains('being-held'))) {
+        e.preventDefault();
+        const touch = e.changedTouches[0];
+        handleMouseUp({ clientX: touch.clientX, clientY: touch.clientY });
+    }
+}
+
+// Add hold instruction to items
+function addHoldInstruction() {
+    document.querySelectorAll('.placed-item').forEach(item => {
+        if (!item.querySelector('.hold-instruction')) {
+            const instruction = document.createElement('div');
+            instruction.className = 'hold-instruction';
+            instruction.textContent = 'Hold to drag';
+            item.appendChild(instruction);
+        }
+    });
+}
+
+// Cleanup function
+function cleanup() {
+    clearInterval(holdTimer);
+    if (dragGhost) dragGhost.remove();
+    if (holdIndicator) holdIndicator.remove();
+    if (floatingMenu) floatingMenu.remove();
 }
 
 // Clear room

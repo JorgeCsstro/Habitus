@@ -1,5 +1,5 @@
 <?php
-// pages/habitus.php - Enhanced with rotation variants support
+// pages/habitus.php - Enhanced with hold-to-drag system
 
 // Include necessary files
 require_once '../php/include/config.php';
@@ -54,7 +54,7 @@ foreach ($rooms as $room) {
     }
 }
 
-// Update the $placedItemsQuery to match dashboard.php:
+// Get placed items with enhanced query
 $placedItemsQuery = "SELECT pi.*, ui.item_id, si.name, si.image_path, si.category_id, 
                     si.rotation_variants, ic.name as category_name,
                     pi.surface, pi.grid_x, pi.grid_y, pi.rotation, pi.z_index
@@ -174,6 +174,11 @@ foreach ($inventory as $item) {
                         <div id="isometric-room" class="isometric-room">
                             <!-- Room structure will be created by JavaScript -->
                         </div>
+                        
+                        <!-- Interaction hint for new users -->
+                        <div class="interaction-hint" id="interaction-hint" style="display: none;">
+                            💡 Hold and drag items to move them around. Right side menu appears when dragging!
+                        </div>
                     </div>
                     
                     <div class="room-inventory">
@@ -251,14 +256,6 @@ foreach ($inventory as $item) {
                         </div>
                     </div>
                 </div>
-                
-                <!-- Item context menu -->
-                <div id="item-context-menu" class="item-context-menu" style="display: none;">
-                    <button onclick="rotateItem()">Rotate</button>
-                    <button onclick="moveToFront()">Bring to Front</button>
-                    <button onclick="moveToBack()">Send to Back</button>
-                    <button onclick="removeItem()">Remove</button>
-                </div>
             </div>
         </div>
     </div>
@@ -282,15 +279,49 @@ foreach ($inventory as $item) {
     <script src="../js/main.js"></script>
     <script src="../js/habitus-room.js"></script>
     <script>
-        // Initialize the room with rotation variants support
+        // Enhanced initialization with new drag system
         document.addEventListener('DOMContentLoaded', function() {
             const roomData = <?php echo json_encode($roomData); ?>;
             const placedItems = <?php echo json_encode($placedItems); ?>;
             const rotationData = <?php echo json_encode($rotationDataMap); ?>;
             
-            // Initialize the enhanced room system with rotation data
-            initializeHabitusRoom(roomData, placedItems, rotationData);
+            // Initialize the enhanced room system
+            if (typeof initializeHabitusRoom === 'function') {
+                initializeHabitusRoom(roomData, placedItems, rotationData);
+                
+                // Show interaction hint for new users (if no items placed)
+                if (placedItems.length === 0) {
+                    setTimeout(() => {
+                        const hint = document.getElementById('interaction-hint');
+                        if (hint) {
+                            hint.style.display = 'block';
+                            
+                            // Hide after 5 seconds
+                            setTimeout(() => {
+                                hint.style.display = 'none';
+                            }, 5000);
+                        }
+                    }, 1000);
+                }
+            }
         });
+        
+        // Enhanced drag and drop functions to replace old ones
+        window.rotateItem = function() {
+            console.log('Old rotateItem called - using new system');
+        };
+        
+        window.moveToFront = function() {
+            console.log('Old moveToFront called - using new system');
+        };
+        
+        window.moveToBack = function() {
+            console.log('Old moveToBack called - using new system');
+        };
+        
+        window.removeItem = function() {
+            console.log('Old removeItem called - using new system');
+        };
     </script>
 </body>
 </html>

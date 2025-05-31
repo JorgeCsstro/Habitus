@@ -1019,6 +1019,451 @@
     min-width: 30px;
 }
 
+/* Enhanced Habitus CSS - Hold to Drag System */
+
+/* Hold to drag loading circle */
+.hold-to-drag-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    z-index: 10000;
+    pointer-events: none;
+}
+
+.hold-to-drag-indicator::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    border: 3px solid transparent;
+    border-top: 3px solid #6a8d7f;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.hold-to-drag-indicator::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border: 2px solid rgba(106, 141, 127, 0.3);
+    border-radius: 50%;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Progress circle animation */
+.hold-progress {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    border: 3px solid rgba(106, 141, 127, 0.2);
+    border-radius: 50%;
+    transition: none;
+}
+
+.hold-progress::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border: 3px solid transparent;
+    border-top: 3px solid #6a8d7f;
+    border-radius: 50%;
+    transform: rotate(0deg);
+    transition: transform 0.1s linear;
+}
+
+/* Item being held/dragged */
+.placed-item.being-held {
+    z-index: 9999 !important;
+    pointer-events: none;
+    opacity: 0.9;
+    transform: scale(1.05);
+    transition: all 0.2s ease;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.placed-item.being-held::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border: 2px solid #6a8d7f;
+    border-radius: 8px;
+    background: rgba(106, 141, 127, 0.1);
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
+}
+
+/* Floating action menu */
+.floating-action-menu {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 10001;
+    min-width: 140px;
+    animation: fadeInSlide 0.3s ease-out;
+}
+
+.floating-action-menu.show {
+    display: flex;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateX(-20px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+.floating-action-menu .menu-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #2d2926;
+    text-align: left;
+    width: 100%;
+}
+
+.floating-action-menu .menu-button:hover {
+    background: rgba(106, 141, 127, 0.1);
+    color: #6a8d7f;
+    transform: translateX(2px);
+}
+
+.floating-action-menu .menu-button img {
+    width: 16px;
+    height: 16px;
+    opacity: 0.7;
+}
+
+.floating-action-menu .menu-button:hover img {
+    opacity: 1;
+}
+
+.floating-action-menu .menu-button.rotate::before {
+    content: '↻';
+    font-size: 16px;
+    margin-right: 4px;
+}
+
+.floating-action-menu .menu-button.front::before {
+    content: '⬆';
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+.floating-action-menu .menu-button.back::before {
+    content: '⬇';
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+.floating-action-menu .menu-button.remove {
+    color: #a15c5c;
+    border-top: 1px solid rgba(161, 92, 92, 0.2);
+    margin-top: 4px;
+    padding-top: 12px;
+}
+
+.floating-action-menu .menu-button.remove:hover {
+    background: rgba(161, 92, 92, 0.1);
+    color: #8d4c4c;
+}
+
+.floating-action-menu .menu-button.remove::before {
+    content: '✕';
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+/* Flying item state */
+.placed-item.flying {
+    opacity: 0.6;
+    filter: grayscale(0.3);
+    animation: float 2s ease-in-out infinite alternate;
+    border: 2px dashed #c4a356 !important;
+    background: rgba(196, 163, 86, 0.1) !important;
+}
+
+.placed-item.flying::after {
+    content: 'INVALID POSITION';
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #c4a356;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+    z-index: 1000;
+}
+
+@keyframes float {
+    from {
+        transform: translateY(0px);
+    }
+    to {
+        transform: translateY(-5px);
+    }
+}
+
+/* Invalid drop zone styling */
+.grid-cell.invalid-drop {
+    background-color: rgba(161, 92, 92, 0.3) !important;
+    border-color: #a15c5c !important;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+}
+
+/* Enhanced drag feedback */
+.drag-ghost {
+    position: fixed;
+    pointer-events: none;
+    z-index: 10000;
+    opacity: 0.8;
+    transform: scale(0.9);
+    filter: brightness(1.1);
+    transition: all 0.1s ease;
+}
+
+/* Hold instruction tooltip */
+.hold-instruction {
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(45, 41, 38, 0.9);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.placed-item:hover .hold-instruction {
+    opacity: 1;
+}
+
+/* Selection state improvements */
+.placed-item.selected {
+    filter: drop-shadow(0 0 15px #6a8d7f) brightness(1.1);
+    z-index: 1001 !important;
+}
+
+.placed-item.selected::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border: 2px solid #6a8d7f;
+    border-radius: 8px;
+    pointer-events: none;
+    animation: selectedPulse 2s infinite ease-in-out;
+}
+
+@keyframes selectedPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* Smooth transitions for all items */
+.placed-item {
+    transition: all 0.3s ease;
+    cursor: grab;
+    user-select: none;
+}
+
+.placed-item:active {
+    cursor: grabbing;
+}
+
+.placed-item.being-held {
+    cursor: grabbing;
+}
+
+/* Inventory item interaction hints */
+.inventory-item::after {
+    content: 'Drag to place';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(45, 41, 38, 0.8);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.inventory-item:hover::after {
+    opacity: 1;
+}
+
+/* Flying items counter */
+.flying-items-warning {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(196, 163, 86, 0.95);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: 600;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(196, 163, 86, 0.3);
+}
+
+.flying-items-warning.show {
+    display: flex;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.flying-items-warning::before {
+    content: '⚠';
+    font-size: 1.2rem;
+}
+
+/* Enhanced save button when flying items exist */
+.save-room-btn.has-flying {
+    background: linear-gradient(45deg, #c4a356, #d4b366);
+    animation: warningPulse 2s infinite ease-in-out;
+}
+
+@keyframes warningPulse {
+    0%, 100% { box-shadow: 0 4px 8px rgba(196, 163, 86, 0.3); }
+    50% { box-shadow: 0 6px 16px rgba(196, 163, 86, 0.6); }
+}
+
+/* Improved feedback for successful actions */
+.action-feedback {
+    position: absolute;
+    background: #6a8d7f;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: actionSuccess 1.5s ease-out forwards;
+    pointer-events: none;
+    z-index: 10000;
+}
+
+@keyframes actionSuccess {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    20% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    80% {
+        opacity: 1;
+        transform: translateY(-10px);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+/* Better responsive design for the floating menu */
+@media (max-width: 768px) {
+    .floating-action-menu {
+        min-width: 120px;
+        padding: 6px;
+    }
+    
+    .floating-action-menu .menu-button {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .hold-to-drag-indicator {
+        width: 50px;
+        height: 50px;
+    }
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
     .habitus-editor {
