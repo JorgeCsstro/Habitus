@@ -1,9 +1,13 @@
 <?php
-// php/api/habitus/save_room.php - Fixed version with coordinate validation
+// php/api/habitus/save_room.php - ENHANCED VERSION with better debugging
 
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';
 require_once '../../include/auth.php';
+
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 // Check if user is logged in
 if (!isLoggedIn()) {
@@ -15,23 +19,44 @@ if (!isLoggedIn()) {
 $input = file_get_contents('php://input');
 $data = json_decode($input, true);
 
+// Enhanced debugging
+$debugInfo = [
+    'received_data' => $data,
+    'user_id' => $_SESSION['user_id'],
+    'timestamp' => date('Y-m-d H:i:s')
+];
+
 if (!$data) {
-    echo json_encode(['success' => false, 'message' => 'Invalid data format']);
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Invalid JSON data format',
+        'debug' => $debugInfo
+    ]);
     exit;
 }
 
 $roomId = isset($data['room_id']) ? intval($data['room_id']) : 0;
 $items = isset($data['items']) ? $data['items'] : [];
 
+$debugInfo['room_id'] = $roomId;
+$debugInfo['items_count'] = count($items);
+
 // Validate room belongs to user
-$roomQuery = "SELECT id FROM rooms WHERE id = ? AND user_id = ?";
+$roomQuery = "SELECT id, name FROM rooms WHERE id = ? AND user_id = ?";
 $stmt = $conn->prepare($roomQuery);
 $stmt->execute([$roomId, $_SESSION['user_id']]);
 
 if ($stmt->rowCount() === 0) {
-    echo json_encode(['success' => false, 'message' => 'Room not found or does not belong to you']);
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Room not found or does not belong to you',
+        'debug' => $debugInfo
+    ]);
     exit;
 }
+
+$roomInfo = $stmt->fetch();
+$debugInfo['room_name'] = $roomInfo['name'];
 
 // Grid configuration constants
 define('GRID_SIZE', 6);
@@ -39,10 +64,6 @@ define('WALL_HEIGHT', 4);
 
 // Function to check if position is in door area
 function isDoorArea($x, $y, $surface) {
-    // Door configuration:
-    // - Left wall: column 1 (x=1), bottom 2 rows (y=2,3)
-    // - Floor entrance: column 1 (x=1), first row (y=0)
-    
     if ($surface === 'wall-left') {
         return $x === 1 && $y >= 2;
     }
@@ -64,19 +85,6 @@ function getBoundsForSurface($surface) {
     return ['maxX' => GRID_SIZE, 'maxY' => GRID_SIZE];
 }
 
-// Function to get item size
-function getItemSize($itemId, $conn) {
-    $query = "SELECT grid_width, grid_height FROM shop_items WHERE id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->execute([$itemId]);
-    $result = $stmt->fetch();
-    
-    return [
-        'width' => $result['grid_width'] ?? 1,
-        'height' => $result['grid_height'] ?? 1
-    ];
-}
-
 try {
     // Begin transaction
     $conn->beginTransaction();
@@ -85,23 +93,44 @@ try {
     $deleteQuery = "DELETE FROM placed_items WHERE room_id = ?";
     $stmt = $conn->prepare($deleteQuery);
     $stmt->execute([$roomId]);
+    $deletedCount = $stmt->rowCount();
+    
+    $debugInfo['deleted_items'] = $deletedCount;
     
     // Map to store new IDs for temporary items
     $itemIds = [];
     $skippedItems = [];
+    $processedItems = [];
     
     // Insert new placed items with validation
-    foreach ($items as $item) {
+    foreach ($items as $index => $item) {
+        $itemDebug = ['index' => $index, 'item' => $item];
+        
+        // Validate required fields
+        if (!isset($item['inventory_id']) || !isset($item['grid_x']) || !isset($item['grid_y'])) {
+            $skippedItems[] = "Item at index $index: Missing required fields (inventory_id, grid_x, grid_y)";
+            continue;
+        }
+        
         $inventoryId = intval($item['inventory_id']);
         $gridX = intval($item['grid_x']);
         $gridY = intval($item['grid_y']);
         $surface = isset($item['surface']) ? $item['surface'] : 'floor';
-        $rotation = intval($item['rotation']);
-        $zIndex = intval($item['z_index']);
+        $rotation = isset($item['rotation']) ? intval($item['rotation']) : 0;
+        $zIndex = isset($item['z_index']) ? intval($item['z_index']) : 1;
+        
+        $itemDebug['processed_values'] = [
+            'inventory_id' => $inventoryId,
+            'grid_x' => $gridX,
+            'grid_y' => $gridY,
+            'surface' => $surface,
+            'rotation' => $rotation,
+            'z_index' => $zIndex
+        ];
         
         // Validate surface value
         if (!in_array($surface, ['floor', 'wall-left', 'wall-right'])) {
-            $skippedItems[] = "Invalid surface: " . $surface;
+            $skippedItems[] = "Item at index $index: Invalid surface '$surface'";
             continue;
         }
         
@@ -114,7 +143,7 @@ try {
         $stmt->execute([$inventoryId, $_SESSION['user_id']]);
         
         if ($stmt->rowCount() === 0) {
-            $skippedItems[] = "Invalid inventory item: " . $inventoryId;
+            $skippedItems[] = "Item at index $index: Invalid inventory item ID $inventoryId";
             continue;
         }
         
@@ -122,10 +151,12 @@ try {
         $itemWidth = $inventoryData['grid_width'] ?? 1;
         $itemHeight = $inventoryData['grid_height'] ?? 1;
         
+        $itemDebug['inventory_data'] = $inventoryData;
+        
         // Check if item can be placed on this surface
         $allowedSurfaces = explode(',', $inventoryData['allowed_surfaces'] ?? 'floor');
         if (!in_array($surface, $allowedSurfaces)) {
-            $skippedItems[] = $inventoryData['name'] . " cannot be placed on " . $surface;
+            $skippedItems[] = "Item at index $index: {$inventoryData['name']} cannot be placed on $surface (allowed: " . implode(', ', $allowedSurfaces) . ")";
             continue;
         }
         
@@ -136,7 +167,7 @@ try {
         if ($gridX < 0 || $gridY < 0 || 
             $gridX + $itemWidth > $bounds['maxX'] || 
             $gridY + $itemHeight > $bounds['maxY']) {
-            $skippedItems[] = $inventoryData['name'] . " is out of bounds at position (" . $gridX . "," . $gridY . ")";
+            $skippedItems[] = "Item at index $index: {$inventoryData['name']} is out of bounds at position ($gridX,$gridY) with size {$itemWidth}x{$itemHeight} on $surface (max: {$bounds['maxX']}x{$bounds['maxY']})";
             continue;
         }
         
@@ -152,12 +183,7 @@ try {
         }
         
         if ($inDoorArea) {
-            $skippedItems[] = $inventoryData['name'] . " would block the door at position (" . $gridX . "," . $gridY . ")";
-            continue;
-        }
-        
-        if (isDoorArea($gridX, $gridY, $surface)) {
-            $skippedItems[] = $inventoryData['name'] . " cannot be placed in door area";
+            $skippedItems[] = "Item at index $index: {$inventoryData['name']} would block the door at position ($gridX,$gridY)";
             continue;
         }
 
@@ -166,26 +192,48 @@ try {
                        (room_id, inventory_id, surface, grid_x, grid_y, rotation, z_index) 
                        VALUES (?, ?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($insertQuery);
-        $stmt->execute([$roomId, $inventoryId, $surface, $gridX, $gridY, $rotation, $zIndex]);
+        $result = $stmt->execute([$roomId, $inventoryId, $surface, $gridX, $gridY, $rotation, $zIndex]);
         
-        // If this was a temporary item, store the new ID
-        if (isset($item['id']) && strpos($item['id'], 'temp_') === 0) {
-            $itemIds[$item['id']] = $conn->lastInsertId();
+        if ($result) {
+            $newId = $conn->lastInsertId();
+            $itemDebug['new_id'] = $newId;
+            
+            // If this was a temporary item, store the new ID
+            if (isset($item['id']) && strpos($item['id'], 'temp_') === 0) {
+                $itemIds[$item['id']] = $newId;
+            }
+            
+            $processedItems[] = $itemDebug;
+        } else {
+            $skippedItems[] = "Item at index $index: Database insertion failed for {$inventoryData['name']}";
         }
     }
     
     // Commit transaction
     $conn->commit();
     
+    // Enhanced response with debugging info
     $response = [
         'success' => true,
         'message' => 'Room layout saved successfully',
-        'item_ids' => $itemIds
+        'item_ids' => $itemIds,
+        'stats' => [
+            'total_items_received' => count($items),
+            'items_processed' => count($processedItems),
+            'items_skipped' => count($skippedItems),
+            'items_deleted' => $deletedCount
+        ]
     ];
     
     if (!empty($skippedItems)) {
         $response['warnings'] = $skippedItems;
-        $response['message'] .= ' (Some items were skipped due to invalid placement)';
+        $response['message'] .= ' (Some items were skipped due to validation issues)';
+    }
+    
+    // Add debug info in development
+    if (defined('DEBUG_MODE') && DEBUG_MODE) {
+        $response['debug'] = $debugInfo;
+        $response['processed_items'] = $processedItems;
     }
     
     echo json_encode($response);
@@ -193,6 +241,16 @@ try {
 } catch (Exception $e) {
     // Rollback on error
     $conn->rollBack();
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    
+    $errorResponse = [
+        'success' => false, 
+        'message' => 'Database error: ' . $e->getMessage(),
+        'debug' => $debugInfo
+    ];
+    
+    // Log the error for debugging
+    error_log("Save Room Error: " . $e->getMessage() . " | Debug: " . json_encode($debugInfo));
+    
+    echo json_encode($errorResponse);
 }
 ?>

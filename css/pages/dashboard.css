@@ -197,7 +197,7 @@
     height: 100%;
     top: 70px;
     position: relative;
-    transform: scale(0.55);
+    transform: scale(1);
     transform-origin: center center;
 }
 
@@ -447,7 +447,7 @@
     transform: rotateX(90deg) translateY(40%);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
-*/
+
 .room-door::after {
     content: '';
     position: absolute;
@@ -459,6 +459,7 @@
     top: 50%;
     transform: translateY(-50%);
 }
+*/
 
 .room-selector {
     display: flex;

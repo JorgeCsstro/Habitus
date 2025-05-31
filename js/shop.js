@@ -61,8 +61,8 @@ function addToCart(itemId, itemName, itemPrice, imagePath, element) {
         const easeOutQuad = 1 - (1 - progress) * (1 - progress);
         
         // Calculate position
-        const currentX = itemRect.left + (cartRect.left - itemRect.left) * easeOutQuad;
-        const currentY = itemRect.top + (cartRect.top - itemRect.top) * easeOutQuad;
+        const currentX = itemRect.left + (cartRect.left + 35 - itemRect.left) * easeOutQuad;
+        const currentY = itemRect.top + (cartRect.top - 20 - itemRect.top) * easeOutQuad;
         
         // Add parabolic arc for up and down motion
         const arcHeight = 150;

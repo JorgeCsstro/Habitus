@@ -13,6 +13,7 @@ let currentDragData = null;
 let currentSurface = 'floor';
 let itemRotationData = {}; // Store rotation variants for each item
 let isDashboardMode = false; // Flag to track if we're in dashboard mode
+let debugMode = false; // Debug mode flag
 
 // Grid configuration - 6x6
 const GRID_SIZE = 6;
@@ -111,13 +112,123 @@ function initializeHabitusRoom(roomData, items, rotationData = {}) {
     }
 }
 
+function debugLog(...args) {
+    if (debugMode || isDashboardMode) {
+        console.log('[Habitus Room]', ...args);
+    }
+}
+
+function debugError(...args) {
+    console.error('[Habitus Room ERROR]', ...args);
+}
+
+function debugWarn(...args) {
+    console.warn('[Habitus Room WARNING]', ...args);
+}
+
+// Initialize the Habitus room with enhanced error handling
+function initializeHabitusRoom(roomData, items, rotationData = {}) {
+    /* debugLog('🏠 Initializing Habitus Room'); */
+    
+    // Enhanced validation
+    if (!roomData) {
+        debugError('❌ roomData is required but not provided');
+        return false;
+    }
+    
+    if (!Array.isArray(items)) {
+        debugError('❌ items must be an array, got:', typeof items);
+        return false;
+    }
+    
+    // Detect dashboard mode
+    const roomElement = document.getElementById('isometric-room');
+    if (!roomElement) {
+        debugError('❌ Room element #isometric-room not found');
+        return false;
+    }
+    
+    isDashboardMode = roomElement.closest('.dashboard-room') !== null;
+    debugMode = window.location.search.includes('debug=1') || isDashboardMode;
+    
+    /* debugLog('📊 Initialization Details:', {
+        roomData: roomData,
+        itemCount: items.length,
+        isDashboardMode: isDashboardMode,
+        debugMode: debugMode,
+        rotationDataKeys: Object.keys(rotationData || {})
+    }); */
+    
+    currentRoom = roomData;
+    placedItems = items || [];
+    itemRotationData = rotationData || {};
+    
+    // Validate and clean placed items data
+    const originalCount = placedItems.length;
+    placedItems = placedItems.filter(item => {
+        const isValid = item && 
+                       typeof item.grid_x !== 'undefined' && 
+                       typeof item.grid_y !== 'undefined' &&
+                       item.image_path;
+        
+        if (!isValid) {
+            debugWarn('🗑️ Filtering out invalid item:', item);
+        }
+        return isValid;
+    });
+    
+    if (placedItems.length !== originalCount) {
+        debugWarn(`⚠️ Filtered out ${originalCount - placedItems.length} invalid items`);
+    }
+    
+    /* debugLog(`✅ Processing ${placedItems.length} valid items`); */
+    
+    // Ensure room structure exists
+    if (!ensureRoomStructure()) {
+        debugError('❌ Failed to create room structure');
+        return false;
+    }
+    
+    // Only create grids if not in dashboard mode
+    if (!isDashboardMode) {
+        createAllGrids();
+        /* debugLog('🔧 Created interactive grids'); */
+    } else {
+        /* debugLog('📱 Dashboard mode - skipping interactive grids'); */
+    }
+    
+    // Load placed items
+    const itemsLoaded = loadPlacedItems();
+    /* debugLog(`📦 Loaded ${itemsLoaded} items`); */
+    
+    // Only set up interactive event listeners if not in dashboard mode
+    if (!isDashboardMode) {
+        setupEventListeners();
+        createDragPreview();
+        /* debugLog('🎮 Set up interactive controls'); */
+    } else {
+        /* debugLog('📱 Dashboard mode - skipping interactive controls'); */
+    }
+    
+    // Apply room customizations
+    applyRoomCustomizations(roomData);
+    
+    /* debugLog('✅ Room initialization completed successfully'); */
+    return true;
+}
+
 // Ensure room structure exists
 function ensureRoomStructure() {
     const room = document.getElementById('isometric-room');
-    if (!room) return;
+    if (!room) {
+        debugError('❌ Room container not found');
+        return false;
+    }
     
     // Check if structure already exists
     if (!room.querySelector('.room-base')) {
+        /* debugLog('🏗️ Creating room structure'); */
+        
         // Clear and rebuild room structure
         room.innerHTML = `
             <div class="room-base">
@@ -133,6 +244,52 @@ function ensureRoomStructure() {
             <div class="placed-items-wall-left" id="placed-items-wall-left"></div>
             <div class="placed-items-wall-right" id="placed-items-wall-right"></div>
         `;
+    } else {
+        /* debugLog('🏗️ Room structure already exists'); */
+    }
+    
+    // Verify all required containers exist
+    const requiredContainers = [
+        'room-floor', 'wall-left', 'wall-right',
+        'placed-items-floor', 'placed-items-wall-left', 'placed-items-wall-right'
+    ];
+    
+    for (const containerId of requiredContainers) {
+        if (!document.getElementById(containerId)) {
+            debugError(`❌ Required container missing: ${containerId}`);
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+function applyRoomCustomizations(roomData) {
+    /* debugLog('🎨 Applying room customizations'); */
+    
+    try {
+        if (roomData.floor_color) {
+            const floor = document.querySelector('.room-floor');
+            if (floor) {
+                floor.style.backgroundColor = roomData.floor_color;
+                /* debugLog('🎨 Applied floor color:', roomData.floor_color); */
+            }
+        }
+        
+        if (roomData.wall_color) {
+            const leftWall = document.querySelector('.room-wall-left');
+            const rightWall = document.querySelector('.room-wall-right');
+            if (leftWall) {
+                leftWall.style.background = `linear-gradient(to bottom, ${roomData.wall_color}, ${adjustColor(roomData.wall_color, -20)})`;
+                /* debugLog('🎨 Applied left wall color:', roomData.wall_color); */
+            }
+            if (rightWall) {
+                rightWall.style.background = `linear-gradient(to left, ${adjustColor(roomData.wall_color, -10)}, ${adjustColor(roomData.wall_color, -30)})`;
+                /* debugLog('🎨 Applied right wall color:', roomData.wall_color); */
+            }
+        }
+    } catch (error) {
+        debugError('❌ Error applying room customizations:', error);
     }
 }
 
@@ -185,7 +342,7 @@ function getItemConfig(itemName) {
     // Extract base name from image path
     const baseName = itemName.toLowerCase().replace(/\.(jpg|png|webp|gif)$/i, '').split('/').pop();
     
-    // Remove rotation suffixes if present (NEW FIX)
+    // Remove rotation suffixes if present
     const cleanName = baseName.replace(/-(back|front)-(left|right)$/, '');
     
     // Item configurations using clean names
@@ -327,114 +484,162 @@ function isAreaAvailable(x, y, width, height, surface, excludeItemId = null) {
 }
 
 // Load placed items into the room
+// Load placed items with enhanced debugging
 function loadPlacedItems() {
+    /* debugLog('📦 Loading placed items'); */
+    
     // Clear items from all surfaces
+    let clearedCount = 0;
     ['floor', 'wall-left', 'wall-right'].forEach(surface => {
         const container = document.getElementById(`placed-items-${surface}`);
         if (container) {
             const existingItems = container.querySelectorAll('.placed-item');
+            clearedCount += existingItems.length;
             existingItems.forEach(item => item.remove());
         }
     });
     
-    // FIXED: Add debug logging and validation
-    console.log('Loading placed items:', placedItems.length, 'items');
+    if (clearedCount > 0) {
+        /* debugLog(`🗑️ Cleared ${clearedCount} existing items`); */
+    }
+    
+    let loadedCount = 0;
+    let errorCount = 0;
     
     // Place items on appropriate surfaces
     placedItems.forEach((item, index) => {
-        // FIXED: Validate item data before creating element
-        if (!item || typeof item.grid_x === 'undefined' || typeof item.grid_y === 'undefined') {
-            console.warn(`Skipping invalid item at index ${index}:`, item);
-            return;
-        }
-        
-        const itemElement = createPlacedItem(item);
-        if (itemElement) {
-            const surface = item.surface || 'floor'; // Default to floor if not specified
-            const container = document.getElementById(`placed-items-${surface}`);
-            if (container) {
-                container.appendChild(itemElement);
-                console.log(`Placed item ${item.id} on ${surface} at [${item.grid_x}, ${item.grid_y}]`);
-            } else {
-                console.warn(`Container not found for surface: ${surface}`);
+        try {
+            // Enhanced validation
+            if (!item || typeof item.grid_x === 'undefined' || typeof item.grid_y === 'undefined') {
+                debugWarn(`⚠️ Skipping invalid item at index ${index}:`, item);
+                errorCount++;
+                return;
             }
+            
+            const itemElement = createPlacedItem(item);
+            if (itemElement) {
+                const surface = item.surface || 'floor';
+                const container = document.getElementById(`placed-items-${surface}`);
+                if (container) {
+                    container.appendChild(itemElement);
+                    loadedCount++;
+                    /* debugLog(`📦 Placed item ${item.id} "${item.name}" on ${surface} at [${item.grid_x}, ${item.grid_y}]`); */
+                } else {
+                    debugError(`❌ Container not found for surface: ${surface}`);
+                    errorCount++;
+                }
+            } else {
+                debugError(`❌ Failed to create element for item:`, item);
+                errorCount++;
+            }
+        } catch (error) {
+            debugError(`❌ Error loading item at index ${index}:`, error, item);
+            errorCount++;
         }
     });
+    
+    /* debugLog(`📊 Loading summary: ${loadedCount} loaded, ${errorCount} errors`); */
+    return loadedCount;
 }
 
 // Create a placed item element
 function createPlacedItem(item) {
-    // FIXED: Validate required item properties
-    if (!item || !item.id || typeof item.grid_x === 'undefined' || typeof item.grid_y === 'undefined') {
-        console.error('createPlacedItem: Invalid item data', item);
+    try {
+        // Enhanced validation
+        if (!item || !item.id || typeof item.grid_x === 'undefined' || typeof item.grid_y === 'undefined') {
+            debugError('❌ Invalid item data for createPlacedItem:', item);
+            return null;
+        }
+        
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'placed-item';
+        itemDiv.dataset.id = item.id;
+        itemDiv.dataset.gridX = item.grid_x;
+        itemDiv.dataset.gridY = item.grid_y;
+        itemDiv.dataset.surface = item.surface || 'floor';
+        itemDiv.dataset.rotation = item.rotation || 0;
+        itemDiv.dataset.itemId = item.item_id || item.inventory_id;
+        
+        const itemConfig = getItemConfig(item.image_path || item.name);
+        
+        // Position and size on grid
+        itemDiv.style.left = (item.grid_x * CELL_SIZE) + 'px';
+        itemDiv.style.top = (item.grid_y * CELL_SIZE) + 'px';
+        itemDiv.style.width = (itemConfig.width * CELL_SIZE) + 'px';
+        itemDiv.style.height = (itemConfig.height * CELL_SIZE) + 'px';
+        itemDiv.style.zIndex = item.z_index || 1;
+        
+        // Create image element
+        const img = document.createElement('img');
+        
+        // Get rotation variants
+        let rotationVariants = item.rotation_variants || itemRotationData[item.item_id];
+        
+        // If no rotation variants provided, try to generate them
+        if (!rotationVariants && item.image_path) {
+            rotationVariants = generateRotationVariants(item.image_path);
+        }
+        
+        // Get the correct image path for current rotation
+        const imagePath = getRotatedImagePath(
+            normalizeImagePath(item.image_path), 
+            item.rotation || 0, 
+            rotationVariants
+        );
+        
+        img.src = '../' + imagePath;
+        img.alt = item.name || 'Item';
+        img.draggable = false;
+        
+        // Enhanced error handling for image loading
+        img.onerror = function() {
+            debugWarn(`⚠️ Failed to load image: ${imagePath}, falling back to base image`);
+            const fallbackPath = '../' + normalizeImagePath(item.image_path);
+            if (this.src !== fallbackPath) {
+                this.src = fallbackPath;
+            } else {
+                debugError(`❌ Both primary and fallback images failed for item: ${item.name}`);
+                // Create a placeholder
+                this.style.display = 'none';
+                const placeholder = document.createElement('div');
+                placeholder.style.cssText = `
+                    width: 100%; height: 100%; background: #ddd; 
+                    display: flex; align-items: center; justify-content: center;
+                    font-size: 10px; color: #666; text-align: center;
+                `;
+                placeholder.textContent = item.name || 'Item';
+                itemDiv.appendChild(placeholder);
+            }
+        };
+        
+        img.onload = function() {
+            /* debugLog(`✅ Image loaded successfully: ${imagePath}`); */
+        };
+        
+        itemDiv.appendChild(img);
+        
+        // Store rotation data
+        if (rotationVariants) {
+            itemDiv.dataset.rotationVariants = JSON.stringify(rotationVariants);
+        }
+        
+        // Only add interactive event listeners if not in dashboard mode
+        if (!isDashboardMode) {
+            itemDiv.addEventListener('click', selectItem);
+            itemDiv.addEventListener('contextmenu', showContextMenu);
+            
+            // Make placed items draggable for repositioning
+            itemDiv.draggable = true;
+            itemDiv.addEventListener('dragstart', handleItemDragStart);
+            itemDiv.addEventListener('dragend', handleItemDragEnd);
+        }
+        
+        return itemDiv;
+        
+    } catch (error) {
+        debugError('❌ Error in createPlacedItem:', error, item);
         return null;
     }
-    
-    const itemDiv = document.createElement('div');
-    itemDiv.className = 'placed-item';
-    itemDiv.dataset.id = item.id;
-    itemDiv.dataset.gridX = item.grid_x;
-    itemDiv.dataset.gridY = item.grid_y;
-    itemDiv.dataset.surface = item.surface || 'floor';
-    itemDiv.dataset.rotation = item.rotation || 0;
-    itemDiv.dataset.itemId = item.item_id || item.inventory_id; // FIXED: Handle both possible field names
-    
-    const itemConfig = getItemConfig(item.image_path || item.name);
-    
-    // Position and size on grid
-    itemDiv.style.left = (item.grid_x * CELL_SIZE) + 'px';
-    itemDiv.style.top = (item.grid_y * CELL_SIZE) + 'px';
-    itemDiv.style.width = (itemConfig.width * CELL_SIZE) + 'px';
-    itemDiv.style.height = (itemConfig.height * CELL_SIZE) + 'px';
-    itemDiv.style.zIndex = item.z_index || 1;
-    
-    // FIXED: Only create ONE image element
-    const img = document.createElement('img');
-    
-    // Get or generate rotation variants
-    let rotationVariants = item.rotation_variants || itemRotationData[item.item_id];
-    
-    // If no rotation variants provided, try to generate them
-    if (!rotationVariants && item.image_path) {
-        rotationVariants = generateRotationVariants(item.image_path);
-    }
-    
-    // Get the correct image path for current rotation
-    const imagePath = getRotatedImagePath(
-        normalizeImagePath(item.image_path), 
-        item.rotation || 0, 
-        rotationVariants
-    );
-    
-    img.src = '../' + imagePath;
-    img.alt = item.name || 'Item';
-    img.draggable = false;
-    
-    // Handle image load errors
-    img.onerror = function() {
-        console.warn(`Failed to load image: ${imagePath}, falling back to base image`);
-        this.src = '../' + normalizeImagePath(item.image_path);
-    };
-    
-    itemDiv.appendChild(img);
-    
-    // Store rotation data
-    if (rotationVariants) {
-        itemDiv.dataset.rotationVariants = JSON.stringify(rotationVariants);
-    }
-    
-    // FIXED: Only add interactive event listeners if not in dashboard mode
-    if (!isDashboardMode) {
-        itemDiv.addEventListener('click', selectItem);
-        itemDiv.addEventListener('contextmenu', showContextMenu);
-        
-        // Make placed items draggable for repositioning
-        itemDiv.draggable = true;
-        itemDiv.addEventListener('dragstart', handleItemDragStart);
-        itemDiv.addEventListener('dragend', handleItemDragEnd);
-    }
-    
-    return itemDiv;
 }
 
 // Handle cell click (for debugging and surface switching)
@@ -841,7 +1046,6 @@ function normalizeImagePath(imagePath) {
     const rotationPattern = /-(back|front)-(left|right)(?=\.(jpg|png|webp|gif))/i;
     
     if (rotationPattern.test(imagePath)) {
-        // Remove the rotation suffix to get base path
         return imagePath.replace(rotationPattern, '');
     }
     
@@ -849,15 +1053,11 @@ function normalizeImagePath(imagePath) {
 }
 
 function getRotatedImagePath(basePath, rotation, rotationVariants) {
-    // If no rotation variants available, return base path
     if (!rotationVariants || rotationVariants.length === 0) {
         return basePath;
     }
     
-    // Get the rotation index (0-3)
     const rotationIndex = ROTATION_ANGLES[rotation] || 0;
-    
-    // Return the appropriate variant or fallback to base path
     return rotationVariants[rotationIndex] || basePath;
 }
 
@@ -865,10 +1065,7 @@ function getRotatedImagePath(basePath, rotation, rotationVariants) {
 function generateRotationVariants(imagePath) {
     if (!imagePath) return [];
     
-    // Get the normalized base path
     const basePath = normalizeImagePath(imagePath);
-    
-    // Extract directory, filename, and extension
     const pathParts = basePath.split('/');
     const filename = pathParts.pop();
     const directory = pathParts.join('/');
@@ -876,11 +1073,10 @@ function generateRotationVariants(imagePath) {
     const nameWithoutExt = filename.replace(/\.(jpg|png|webp|gif)$/i, '');
     const extension = filename.match(/\.(jpg|png|webp|gif)$/i);
     
-    if (!extension) return [imagePath]; // Fallback if no extension found
+    if (!extension) return [imagePath];
     
     const ext = extension[0];
     
-    // Generate 4 rotation variants
     return [
         `${directory}/${nameWithoutExt}-back-right${ext}`,    // 0°
         `${directory}/${nameWithoutExt}-back-left${ext}`,     // 90°
@@ -1415,3 +1611,20 @@ window.normalizeImagePath = normalizeImagePath;
 window.generateRotationVariants = generateRotationVariants;
 window.preloadRotationImages = preloadRotationImages;
 window.debugImagePaths = debugImagePaths;
+window.habitusDebug = {
+    getCurrentRoom: () => currentRoom,
+    getPlacedItems: () => placedItems,
+    getItemRotationData: () => itemRotationData,
+    isDashboardMode: () => isDashboardMode,
+    debugMode: () => debugMode,
+    reinitialize: (roomData, items, rotationData) => {
+        /* debugLog('🔄 Manual re-initialization requested'); */
+        return initializeHabitusRoom(roomData, items, rotationData);
+    },
+    testItem: (itemData) => {
+        /* debugLog('🧪 Testing item creation:', itemData); */
+        return createPlacedItem(itemData);
+    }
+};
+
+/* debugLog('🚀 Habitus Room system loaded and ready'); */

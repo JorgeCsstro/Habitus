@@ -1,5 +1,5 @@
 <?php
-// pages/dashboard.php - FIXED VERSION
+// pages/dashboard.php - ENHANCED VERSION with better debugging
 
 // Include necessary files
 require_once '../php/include/config.php';
@@ -12,6 +12,9 @@ if (!isLoggedIn()) {
     header('Location: login.php');    
     exit;
 }
+
+// Enable debugging for development
+$debugMode = isset($_GET['debug']) || (defined('DEBUG_MODE') && DEBUG_MODE);
 
 // Get user data
 $userData = getUserData($_SESSION['user_id']);
@@ -30,44 +33,118 @@ $challenges = getUserChallenges($_SESSION['user_id']);
 // Get featured shop items
 $featuredItems = getFeaturedShopItems();
 
-// Get user's habitus data
-$habitusData = getUserHabitusData($_SESSION['user_id']);
-
-// Get the first room data with placed items for dashboard preview
+// ENHANCED: Get the user's room data with better error handling
 $roomId = 0;
 $roomData = null;
 $placedItems = [];
+$debugInfo = [
+    'user_id' => $_SESSION['user_id'],
+    'username' => $_SESSION['username'] ?? 'Unknown'
+];
 
-// Get user's first room
-$roomsQuery = "SELECT * FROM rooms WHERE user_id = ? ORDER BY id LIMIT 1";
-$stmt = $conn->prepare($roomsQuery);
-$stmt->execute([$_SESSION['user_id']]);
-$room = $stmt->fetch();
-
-if ($room) {
-    $roomId = $room['id'];
-    $roomData = $room;
+// Get user's rooms with better error handling
+try {
+    $roomsQuery = "SELECT * FROM rooms WHERE user_id = ? ORDER BY id";
+    $stmt = $conn->prepare($roomsQuery);
+    $stmt->execute([$_SESSION['user_id']]);
+    $rooms = $stmt->fetchAll();
     
-    // FIXED: Use the same query as habitus.php with ALL required fields
-    $placedItemsQuery = "SELECT pi.*, ui.item_id, si.name, si.image_path, si.category_id, 
-                        si.rotation_variants, ic.name as category_name,
-                        pi.surface, pi.grid_x, pi.grid_y, pi.rotation, pi.z_index
-                        FROM placed_items pi
-                        JOIN user_inventory ui ON pi.inventory_id = ui.id
-                        JOIN shop_items si ON ui.item_id = si.id
-                        JOIN item_categories ic ON si.category_id = ic.id
-                        WHERE pi.room_id = ?
-                        ORDER BY pi.z_index";
-    $stmt = $conn->prepare($placedItemsQuery);
-    $stmt->execute([$roomId]);
-    $placedItems = $stmt->fetchAll();
+    $debugInfo['total_rooms'] = count($rooms);
     
-    // Process rotation variants
-    foreach ($placedItems as &$item) {
-        if (!empty($item['rotation_variants'])) {
-            $item['rotation_variants'] = json_decode($item['rotation_variants'], true);
-        }
+    if (empty($rooms)) {
+        // Create a default room if none exists
+        $createRoomQuery = "INSERT INTO rooms (user_id, name, floor_color, wall_color) VALUES (?, 'My First Room', '#FFD700', '#E0E0E0')";
+        $stmt = $conn->prepare($createRoomQuery);
+        $stmt->execute([$_SESSION['user_id']]);
+        $roomId = $conn->lastInsertId();
+        
+        // Reload rooms
+        $stmt = $conn->prepare($roomsQuery);
+        $stmt->execute([$_SESSION['user_id']]);
+        $rooms = $stmt->fetchAll();
+        
+        $debugInfo['created_default_room'] = $roomId;
     }
+    
+    if (!empty($rooms)) {
+        $roomData = $rooms[0];
+        $roomId = $roomData['id'];
+        $debugInfo['selected_room_id'] = $roomId;
+        $debugInfo['selected_room_name'] = $roomData['name'];
+        
+        // ENHANCED: Get placed items with comprehensive error handling
+        $placedItemsQuery = "SELECT 
+            pi.id,
+            pi.room_id,
+            pi.inventory_id,
+            pi.surface,
+            pi.grid_x,
+            pi.grid_y,
+            pi.rotation,
+            pi.z_index,
+            ui.item_id,
+            si.name,
+            si.image_path,
+            si.category_id,
+            si.rotation_variants,
+            ic.name as category_name
+            FROM placed_items pi
+            JOIN user_inventory ui ON pi.inventory_id = ui.id
+            JOIN shop_items si ON ui.item_id = si.id
+            JOIN item_categories ic ON si.category_id = ic.id
+            WHERE pi.room_id = ?
+            ORDER BY pi.z_index";
+        
+        $stmt = $conn->prepare($placedItemsQuery);
+        $stmt->execute([$roomId]);
+        $placedItems = $stmt->fetchAll();
+        
+        $debugInfo['placed_items_query'] = $placedItemsQuery;
+        $debugInfo['placed_items_count'] = count($placedItems);
+        
+        // Process rotation variants
+        foreach ($placedItems as &$item) {
+            if (!empty($item['rotation_variants'])) {
+                $item['rotation_variants'] = json_decode($item['rotation_variants'], true);
+            }
+            // Ensure all required fields are present with defaults
+            $item['surface'] = $item['surface'] ?? 'floor';
+            $item['grid_x'] = intval($item['grid_x']);
+            $item['grid_y'] = intval($item['grid_y']);
+            $item['rotation'] = intval($item['rotation'] ?? 0);
+            $item['z_index'] = intval($item['z_index'] ?? 1);
+        }
+        unset($item); // Break reference
+        
+        $debugInfo['placed_items_details'] = array_map(function($item) {
+            return [
+                'id' => $item['id'],
+                'name' => $item['name'],
+                'position' => "[{$item['grid_x']}, {$item['grid_y']}]",
+                'surface' => $item['surface'],
+                'rotation' => $item['rotation']
+            ];
+        }, $placedItems);
+    }
+} catch (Exception $e) {
+    $debugInfo['error'] = $e->getMessage();
+    error_log("Dashboard Error: " . $e->getMessage());
+}
+
+// Create rotation data map for JavaScript
+$rotationDataMap = [];
+foreach ($placedItems as $item) {
+    if (!empty($item['rotation_variants'])) {
+        $rotationDataMap[$item['item_id']] = $item['rotation_variants'];
+    }
+}
+$debugInfo['rotation_data_keys'] = array_keys($rotationDataMap);
+
+// Output debug information if requested
+if ($debugMode) {
+    echo "<!-- DEBUG INFO:\n";
+    echo json_encode($debugInfo, JSON_PRETTY_PRINT);
+    echo "\n-->";
 }
 ?>
 
@@ -185,6 +262,18 @@ if ($room) {
                                 <div id="isometric-room" class="isometric-room"></div>
                             </div>
                         </div>
+                        
+                        <!-- Debug info for dashboard -->
+                        <?php if ($debugMode): ?>
+                        <div style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 5px; font-size: 12px;">
+                            <strong>Debug Info:</strong><br>
+                            Room: <?php echo $roomData['name'] ?? 'None'; ?> (ID: <?php echo $roomId; ?>)<br>
+                            Items: <?php echo count($placedItems); ?><br>
+                            <?php if (!empty($placedItems)): ?>
+                                First item: <?php echo $placedItems[0]['name']; ?> at [<?php echo $placedItems[0]['grid_x']; ?>, <?php echo $placedItems[0]['grid_y']; ?>]<br>
+                            <?php endif; ?>
+                        </div>
+                        <?php endif; ?>
                     </div>
                     <div class="panel-footer">
                         <button class="edit-habitus-button" onclick="location.href='habitus.php'">
@@ -271,27 +360,73 @@ if ($room) {
     <!-- Habitus Room Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const roomData = <?php echo json_encode($roomData); ?> || null;
+            // ENHANCED: Better data validation and error handling
+            const roomData = <?php echo json_encode($roomData); ?>;
             const placedItems = <?php echo json_encode($placedItems); ?> || [];
+            const rotationData = <?php echo json_encode($rotationDataMap); ?> || {};
+            const debugMode = <?php echo $debugMode ? 'true' : 'false'; ?>;
             
-            // FIXED: Build rotationDataMap properly and add debug info
-            const rotationData = {};
-            placedItems.forEach(item => {
-                if (item.rotation_variants) {
-                    rotationData[item.item_id] = item.rotation_variants;
-                }
-            });
+            if (debugMode) {
+                console.log('Full Debug Info:', <?php echo json_encode($debugInfo); ?>);
+            }
             
-            // Debug: Log the data to console for troubleshooting
-            console.log('Dashboard - Room Data:', roomData);
-            console.log('Dashboard - Placed Items:', placedItems);
-            console.log('Dashboard - Rotation Data:', rotationData);
-        
-            if (roomData && placedItems) {
-                // FIXED: Only initialize if we have valid data
-                initializeHabitusRoom(roomData, placedItems, rotationData);
+            // Validate data before initialization
+            let initializationSuccess = false;
+            
+            if (!roomData) {
+                console.error('❌ No room data available');
+            } else if (!Array.isArray(placedItems)) {
+                console.error('❌ Invalid placed items data (not an array)');
             } else {
-                console.log('Dashboard - No room data or placed items found');
+                // Additional validation for placed items
+                const validItems = placedItems.filter(item => {
+                    if (!item || typeof item.grid_x === 'undefined' || typeof item.grid_y === 'undefined') {
+                        console.warn('⚠️ Skipping invalid item:', item);
+                        return false;
+                    }
+                    return true;
+                });
+                
+                if (validItems.length !== placedItems.length) {
+                    console.warn(`⚠️ Filtered out ${placedItems.length - validItems.length} invalid items`);
+                }
+                
+                try {
+                    // Initialize the room system
+                    if (typeof initializeHabitusRoom === 'function') {
+                        initializeHabitusRoom(roomData, validItems, rotationData);
+                        initializationSuccess = true;
+                    } else {
+                        console.error('❌ initializeHabitusRoom function not found');
+                    }
+                } catch (error) {
+                    console.error('❌ Error during room initialization:', error);
+                }
+            }
+            
+            if (!initializationSuccess) {
+                console.warn('⚠️ Room initialization failed - showing fallback message');
+                const roomElement = document.getElementById('isometric-room');
+                if (roomElement) {
+                    roomElement.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">Unable to load room preview. Visit the Habitus page to place items.</div>';
+                }
+            }
+            
+            console.groupEnd();
+            
+            // Add debugging helper to window for manual testing
+            if (debugMode) {
+                window.dashboardDebug = {
+                    roomData,
+                    placedItems,
+                    rotationData,
+                    debugInfo: <?php echo json_encode($debugInfo); ?>,
+                    reinitialize: function() {
+                        if (typeof initializeHabitusRoom === 'function') {
+                            initializeHabitusRoom(roomData, placedItems, rotationData);
+                        }
+                    }
+                };
             }
         });
     </script>
