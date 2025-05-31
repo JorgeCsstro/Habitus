@@ -1,5 +1,5 @@
 <?php
-// pages/dashboard.php
+// pages/dashboard.php - FIXED VERSION
 
 // Include necessary files
 require_once '../php/include/config.php';
@@ -48,11 +48,14 @@ if ($room) {
     $roomId = $room['id'];
     $roomData = $room;
     
-    // Get placed items for this room
-    $placedItemsQuery = "SELECT pi.*, ui.item_id, si.name, si.image_path, si.rotation_variants
+    // FIXED: Use the same query as habitus.php with ALL required fields
+    $placedItemsQuery = "SELECT pi.*, ui.item_id, si.name, si.image_path, si.category_id, 
+                        si.rotation_variants, ic.name as category_name,
+                        pi.surface, pi.grid_x, pi.grid_y, pi.rotation, pi.z_index
                         FROM placed_items pi
                         JOIN user_inventory ui ON pi.inventory_id = ui.id
                         JOIN shop_items si ON ui.item_id = si.id
+                        JOIN item_categories ic ON si.category_id = ic.id
                         WHERE pi.room_id = ?
                         ORDER BY pi.z_index";
     $stmt = $conn->prepare($placedItemsQuery);
@@ -271,16 +274,24 @@ if ($room) {
             const roomData = <?php echo json_encode($roomData); ?> || null;
             const placedItems = <?php echo json_encode($placedItems); ?> || [];
             
-            // Build rotationDataMap from placedItems (like habitus.php)
+            // FIXED: Build rotationDataMap properly and add debug info
             const rotationData = {};
             placedItems.forEach(item => {
                 if (item.rotation_variants) {
                     rotationData[item.item_id] = item.rotation_variants;
                 }
             });
+            
+            // Debug: Log the data to console for troubleshooting
+            console.log('Dashboard - Room Data:', roomData);
+            console.log('Dashboard - Placed Items:', placedItems);
+            console.log('Dashboard - Rotation Data:', rotationData);
         
-            if (roomData) {
+            if (roomData && placedItems) {
+                // FIXED: Only initialize if we have valid data
                 initializeHabitusRoom(roomData, placedItems, rotationData);
+            } else {
+                console.log('Dashboard - No room data or placed items found');
             }
         });
     </script>

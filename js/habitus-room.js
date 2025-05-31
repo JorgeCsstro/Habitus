@@ -12,6 +12,7 @@ let dragPreview = null;
 let currentDragData = null;
 let currentSurface = 'floor';
 let itemRotationData = {}; // Store rotation variants for each item
+let isDashboardMode = false; // Flag to track if we're in dashboard mode
 
 // Grid configuration - 6x6
 const GRID_SIZE = 6;
@@ -44,24 +45,52 @@ const ITEM_SIZES = {
 
 // Initialize the Habitus room
 function initializeHabitusRoom(roomData, items, rotationData = {}) {
+    // FIXED: Add validation for required data
+    if (!roomData) {
+        console.error('initializeHabitusRoom: roomData is required');
+        return;
+    }
+    
+    // FIXED: Detect if we're in dashboard mode
+    const roomElement = document.getElementById('isometric-room');
+    isDashboardMode = roomElement && roomElement.closest('.dashboard-room') !== null;
+    
+    console.log('Initializing Habitus Room:', {
+        roomData,
+        itemCount: (items || []).length,
+        isDashboardMode,
+        rotationDataKeys: Object.keys(rotationData || {})
+    });
+    
     currentRoom = roomData;
     placedItems = items || [];
-    itemRotationData = rotationData;
+    itemRotationData = rotationData || {};
+    
+    // FIXED: Validate placed items data
+    placedItems = placedItems.filter(item => {
+        if (!item || typeof item.grid_x === 'undefined' || typeof item.grid_y === 'undefined') {
+            console.warn('Skipping invalid placed item:', item);
+            return false;
+        }
+        return true;
+    });
     
     // Ensure room structure exists
     ensureRoomStructure();
     
-    // Create grids for all surfaces
-    createAllGrids();
+    // Only create grids if not in dashboard mode
+    if (!isDashboardMode) {
+        createAllGrids();
+    }
     
     // Load placed items
     loadPlacedItems();
     
-    // Set up event listeners
-    setupEventListeners();
-    
-    // Create drag preview element
-    createDragPreview();
+    // Only set up interactive event listeners if not in dashboard mode
+    if (!isDashboardMode) {
+        setupEventListeners();
+        createDragPreview();
+    }
     
     // Load room customizations
     if (roomData.floor_color) {
@@ -126,6 +155,9 @@ function adjustColor(color, amount) {
 
 // Create drag preview element
 function createDragPreview() {
+    // Only create drag previews if not in dashboard mode
+    if (isDashboardMode) return;
+    
     // Create preview for each surface
     ['floor', 'wall-left', 'wall-right'].forEach(surface => {
         const container = document.getElementById(`placed-items-${surface}`);
@@ -305,14 +337,26 @@ function loadPlacedItems() {
         }
     });
     
+    // FIXED: Add debug logging and validation
+    console.log('Loading placed items:', placedItems.length, 'items');
+    
     // Place items on appropriate surfaces
-    placedItems.forEach(item => {
+    placedItems.forEach((item, index) => {
+        // FIXED: Validate item data before creating element
+        if (!item || typeof item.grid_x === 'undefined' || typeof item.grid_y === 'undefined') {
+            console.warn(`Skipping invalid item at index ${index}:`, item);
+            return;
+        }
+        
         const itemElement = createPlacedItem(item);
         if (itemElement) {
             const surface = item.surface || 'floor'; // Default to floor if not specified
             const container = document.getElementById(`placed-items-${surface}`);
             if (container) {
                 container.appendChild(itemElement);
+                console.log(`Placed item ${item.id} on ${surface} at [${item.grid_x}, ${item.grid_y}]`);
+            } else {
+                console.warn(`Container not found for surface: ${surface}`);
             }
         }
     });
@@ -320,6 +364,12 @@ function loadPlacedItems() {
 
 // Create a placed item element
 function createPlacedItem(item) {
+    // FIXED: Validate required item properties
+    if (!item || !item.id || typeof item.grid_x === 'undefined' || typeof item.grid_y === 'undefined') {
+        console.error('createPlacedItem: Invalid item data', item);
+        return null;
+    }
+    
     const itemDiv = document.createElement('div');
     itemDiv.className = 'placed-item';
     itemDiv.dataset.id = item.id;
@@ -327,7 +377,7 @@ function createPlacedItem(item) {
     itemDiv.dataset.gridY = item.grid_y;
     itemDiv.dataset.surface = item.surface || 'floor';
     itemDiv.dataset.rotation = item.rotation || 0;
-    itemDiv.dataset.itemId = item.item_id;
+    itemDiv.dataset.itemId = item.item_id || item.inventory_id; // FIXED: Handle both possible field names
     
     const itemConfig = getItemConfig(item.image_path || item.name);
     
@@ -338,7 +388,7 @@ function createPlacedItem(item) {
     itemDiv.style.height = (itemConfig.height * CELL_SIZE) + 'px';
     itemDiv.style.zIndex = item.z_index || 1;
     
-    // Create image with rotation handling
+    // FIXED: Only create ONE image element
     const img = document.createElement('img');
     
     // Get or generate rotation variants
@@ -357,7 +407,7 @@ function createPlacedItem(item) {
     );
     
     img.src = '../' + imagePath;
-    img.alt = item.name;
+    img.alt = item.name || 'Item';
     img.draggable = false;
     
     // Handle image load errors
@@ -373,14 +423,16 @@ function createPlacedItem(item) {
         itemDiv.dataset.rotationVariants = JSON.stringify(rotationVariants);
     }
     
-    // Add event listeners
-    itemDiv.addEventListener('click', selectItem);
-    itemDiv.addEventListener('contextmenu', showContextMenu);
-    
-    // Make placed items draggable for repositioning
-    itemDiv.draggable = true;
-    itemDiv.addEventListener('dragstart', handleItemDragStart);
-    itemDiv.addEventListener('dragend', handleItemDragEnd);
+    // FIXED: Only add interactive event listeners if not in dashboard mode
+    if (!isDashboardMode) {
+        itemDiv.addEventListener('click', selectItem);
+        itemDiv.addEventListener('contextmenu', showContextMenu);
+        
+        // Make placed items draggable for repositioning
+        itemDiv.draggable = true;
+        itemDiv.addEventListener('dragstart', handleItemDragStart);
+        itemDiv.addEventListener('dragend', handleItemDragEnd);
+    }
     
     return itemDiv;
 }
@@ -399,6 +451,9 @@ function handleCellClick(e) {
 
 // Set up event listeners
 function setupEventListeners() {
+    // Only set up interactive listeners if not in dashboard mode
+    if (isDashboardMode) return;
+    
     // Close context menu on click outside
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.item-context-menu') && !e.target.closest('.placed-item')) {
@@ -780,6 +835,8 @@ function hideContextMenu() {
 
 // NEW: Function to normalize image paths and handle rotation suffixes
 function normalizeImagePath(imagePath) {
+    if (!imagePath) return '';
+    
     // If the path already has a rotation suffix, extract the base path
     const rotationPattern = /-(back|front)-(left|right)(?=\.(jpg|png|webp|gif))/i;
     
@@ -806,6 +863,8 @@ function getRotatedImagePath(basePath, rotation, rotationVariants) {
 
 // NEW: Function to generate rotation variants from base or suffixed path
 function generateRotationVariants(imagePath) {
+    if (!imagePath) return [];
+    
     // Get the normalized base path
     const basePath = normalizeImagePath(imagePath);
     
