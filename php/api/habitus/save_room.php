@@ -1,5 +1,5 @@
 <?php
-// php/api/habitus/save_room.php - Enhanced for new hold-to-drag system
+// php/api/habitus/save_room.php - Enhanced for inventory tracking system
 
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';
@@ -27,7 +27,7 @@ $debugInfo = [
     'received_data' => $data,
     'user_id' => $_SESSION['user_id'],
     'timestamp' => date('Y-m-d H:i:s'),
-    'system_version' => 'enhanced_hold_to_drag_v1.0'
+    'system_version' => 'enhanced_inventory_tracking_v1.0'
 ];
 
 if (!$data) {
@@ -41,11 +41,9 @@ if (!$data) {
 
 $roomId = isset($data['room_id']) ? intval($data['room_id']) : 0;
 $items = isset($data['items']) ? $data['items'] : [];
-$flyingItems = isset($data['flying_items']) ? $data['flying_items'] : [];
 
 $debugInfo['room_id'] = $roomId;
 $debugInfo['items_count'] = count($items);
-$debugInfo['flying_items_count'] = count($flyingItems);
 
 // Validate room belongs to user
 $roomQuery = "SELECT id, name FROM rooms WHERE id = ? AND user_id = ?";
@@ -117,8 +115,9 @@ function validateItemPlacement($item, $conn, $userId, $roomId) {
         $errors[] = "Invalid surface: $surface";
     }
     
-    // Get item data
-    $inventoryQuery = "SELECT ui.id, ui.item_id, si.allowed_surfaces, si.grid_width, si.grid_height, si.name
+    // FIXED: Enhanced inventory validation
+    $inventoryQuery = "SELECT ui.id, ui.item_id, ui.quantity, si.allowed_surfaces, 
+                      si.grid_width, si.grid_height, si.name
                       FROM user_inventory ui 
                       JOIN shop_items si ON ui.item_id = si.id 
                       WHERE ui.id = ? AND ui.user_id = ?";
@@ -133,6 +132,19 @@ function validateItemPlacement($item, $conn, $userId, $roomId) {
     $inventoryData = $stmt->fetch();
     $itemWidth = $inventoryData['grid_width'] ?? 1;
     $itemHeight = $inventoryData['grid_height'] ?? 1;
+    
+    // FIXED: Check if user has enough of this item in inventory
+    $usedQuery = "SELECT COUNT(*) as used_count FROM placed_items 
+                  WHERE inventory_id = ? AND room_id IN (
+                      SELECT id FROM rooms WHERE user_id = ?
+                  )";
+    $stmt = $conn->prepare($usedQuery);
+    $stmt->execute([$inventoryId, $userId]);
+    $usedCount = $stmt->fetch()['used_count'];
+    
+    if ($usedCount >= $inventoryData['quantity']) {
+        $errors[] = "No more of this item available in inventory (quantity: {$inventoryData['quantity']}, used: {$usedCount})";
+    }
     
     // Check surface compatibility
     $allowedSurfaces = explode(',', $inventoryData['allowed_surfaces'] ?? 'floor');
@@ -169,6 +181,12 @@ try {
     // Begin transaction
     $conn->beginTransaction();
     
+    // FIXED: Get current placed items for this room to track what's being removed
+    $currentItemsQuery = "SELECT inventory_id FROM placed_items WHERE room_id = ?";
+    $stmt = $conn->prepare($currentItemsQuery);
+    $stmt->execute([$roomId]);
+    $currentItems = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    
     // Remove all existing placed items for this room
     $deleteQuery = "DELETE FROM placed_items WHERE room_id = ?";
     $stmt = $conn->prepare($deleteQuery);
@@ -176,14 +194,15 @@ try {
     $deletedCount = $stmt->rowCount();
     
     $debugInfo['deleted_items'] = $deletedCount;
+    $debugInfo['previous_inventory_usage'] = array_count_values($currentItems);
     
     // Track processing results
     $itemIds = [];
     $skippedItems = [];
     $processedItems = [];
-    $flyingItemsRemoved = [];
+    $inventoryUsage = [];
     
-    // Process valid items (non-flying)
+    // Process valid items
     foreach ($items as $index => $item) {
         $validation = validateItemPlacement($item, $conn, $_SESSION['user_id'], $roomId);
         
@@ -198,6 +217,22 @@ try {
         $surface = isset($item['surface']) ? $item['surface'] : 'floor';
         $rotation = isset($item['rotation']) ? intval($item['rotation']) : 0;
         $zIndex = isset($item['z_index']) ? intval($item['z_index']) : 1;
+        
+        // Track inventory usage for validation
+        if (isset($inventoryUsage[$inventoryId])) {
+            $inventoryUsage[$inventoryId]++;
+        } else {
+            $inventoryUsage[$inventoryId] = 1;
+        }
+        
+        // FIXED: Additional check for inventory quantity during processing
+        $totalUsedNow = $inventoryUsage[$inventoryId];
+        $availableQuantity = $validation['inventory_data']['quantity'];
+        
+        if ($totalUsedNow > $availableQuantity) {
+            $skippedItems[] = "Item at index $index: Exceeds available quantity (trying to place {$totalUsedNow}, only have {$availableQuantity})";
+            continue;
+        }
         
         // Insert placed item
         $insertQuery = "INSERT INTO placed_items 
@@ -226,19 +261,6 @@ try {
         }
     }
     
-    // Log flying items that were removed (for debugging/statistics)
-    if (!empty($flyingItems)) {
-        foreach ($flyingItems as $flyingItem) {
-            $flyingItemsRemoved[] = [
-                'temp_id' => $flyingItem['id'] ?? 'unknown',
-                'name' => $flyingItem['name'] ?? 'unknown',
-                'position' => "[{$flyingItem['grid_x']}, {$flyingItem['grid_y']}]",
-                'surface' => $flyingItem['surface'] ?? 'floor',
-                'reason' => 'Invalid position - item was flying'
-            ];
-        }
-    }
-    
     // Commit transaction
     $conn->commit();
     
@@ -251,9 +273,9 @@ try {
             'total_items_received' => count($items),
             'items_processed' => count($processedItems),
             'items_skipped' => count($skippedItems),
-            'flying_items_removed' => count($flyingItemsRemoved),
             'items_deleted_from_db' => $deletedCount
-        ]
+        ],
+        'inventory_usage' => $inventoryUsage
     ];
     
     // Add warnings if items were skipped
@@ -262,22 +284,16 @@ try {
         $response['message'] .= ' (Some items were skipped due to validation issues)';
     }
     
-    // Add flying items information
-    if (!empty($flyingItemsRemoved)) {
-        $response['flying_items_removed'] = $flyingItemsRemoved;
-        $response['message'] .= " {$response['stats']['flying_items_removed']} flying item(s) were removed.";
-    }
-    
     // Add debug info in development mode
     if (defined('DEBUG_MODE') && DEBUG_MODE) {
         $response['debug'] = array_merge($debugInfo, [
             'processed_items' => $processedItems,
-            'flying_items_removed' => $flyingItemsRemoved
+            'inventory_usage_final' => $inventoryUsage
         ]);
     }
     
     // Log successful save for analytics
-    error_log("Room Save Success: User {$_SESSION['user_id']}, Room $roomId, Items: {$response['stats']['items_processed']}, Flying Removed: {$response['stats']['flying_items_removed']}");
+    error_log("Room Save Success: User {$_SESSION['user_id']}, Room $roomId, Items: {$response['stats']['items_processed']}");
     
     echo json_encode($response);
     

@@ -1,17 +1,21 @@
-// habitus-room.js - Fixed isometric room system with proper drag and drop
+// habitus-room.js - Fixed isometric room system with proper inventory tracking
 
 // Room state
 let currentRoom = null;
 let selectedItem = null;
 let isDragging = false;
 let placedItems = [];
-let gridVisible = false; // FIXED: Start with grids hidden
+let gridVisible = false;
 let currentDragData = null;
 let itemRotationData = {};
 let isDashboardMode = false;
 let debugMode = false;
 
-// FIXED: Hold-to-drag variables (cleaned up)
+// FIXED: Inventory tracking
+let inventoryUsage = {}; // Track how many times each inventory item is used
+let availableInventory = []; // Store available inventory items
+
+// Hold-to-drag variables
 let holdTimer = null;
 let holdStartTime = 0;
 let isHolding = false;
@@ -73,6 +77,9 @@ function initializeHabitusRoom(roomData, items, rotationData = {}) {
     placedItems = items || [];
     itemRotationData = rotationData || {};
     
+    // FIXED: Initialize inventory tracking
+    initializeInventoryTracking();
+    
     // Validate placed items data
     placedItems = placedItems.filter(item => {
         const isValid = item && 
@@ -85,14 +92,19 @@ function initializeHabitusRoom(roomData, items, rotationData = {}) {
     // Ensure room structure exists
     ensureRoomStructure();
     
-    // Only create interactive elements if not in dashboard mode
+    // Create interactive elements even in dashboard mode for testing
+    createAllGrids();
+    createDragPreview();
+    createHoldIndicator();
+    createFloatingMenu(); // FIXED: Always create floating menu
+    
     if (!isDashboardMode) {
-        createAllGrids();
-        createDragPreview();
-        createHoldIndicator();
-        createFloatingMenu();
         setupEventListeners();
         console.log('🎮 Interactive controls enabled');
+    } else {
+        // FIXED: Add minimal event listeners for dashboard clicks
+        setupDashboardEventListeners();
+        console.log('🎮 Dashboard click handlers enabled');
     }
     
     // Load placed items
@@ -103,7 +115,117 @@ function initializeHabitusRoom(roomData, items, rotationData = {}) {
     return true;
 }
 
-// FIXED: Ensure room structure exists
+// FIXED: Initialize inventory tracking
+function initializeInventoryTracking() {
+    inventoryUsage = {};
+    
+    // Get all inventory items from the page
+    const inventoryElements = document.querySelectorAll('.inventory-item');
+    availableInventory = Array.from(inventoryElements).map(element => ({
+        id: element.dataset.id,
+        itemId: element.dataset.itemId,
+        quantity: parseInt(element.querySelector('.item-quantity')?.textContent?.replace('x', '') || '1'),
+        name: element.dataset.name,
+        element: element
+    }));
+    
+    // Count how many times each inventory item is currently placed
+    placedItems.forEach(placedItem => {
+        const inventoryId = placedItem.inventory_id;
+        if (inventoryUsage[inventoryId]) {
+            inventoryUsage[inventoryId]++;
+        } else {
+            inventoryUsage[inventoryId] = 1;
+        }
+    });
+    
+    // Update inventory display
+    updateInventoryDisplay();
+    
+    console.log('📦 Inventory tracking initialized:', inventoryUsage);
+}
+
+// FIXED: Update inventory display based on usage
+function updateInventoryDisplay() {
+    availableInventory.forEach(item => {
+        const usedCount = inventoryUsage[item.id] || 0;
+        const remainingCount = item.quantity - usedCount;
+        
+        const quantityElement = item.element.querySelector('.item-quantity');
+        if (quantityElement) {
+            if (remainingCount > 1) {
+                quantityElement.textContent = `x${remainingCount}`;
+                quantityElement.style.display = 'inline';
+            } else if (remainingCount === 1) {
+                quantityElement.style.display = 'none';
+            }
+        }
+        
+        // Disable item if no more available
+        if (remainingCount <= 0) {
+            item.element.classList.add('disabled');
+            item.element.style.opacity = '0.3';
+            item.element.style.pointerEvents = 'none';
+            item.element.title = 'No more available';
+        } else {
+            item.element.classList.remove('disabled');
+            item.element.style.opacity = '1';
+            item.element.style.pointerEvents = 'all';
+            item.element.title = '';
+        }
+    });
+}
+
+// FIXED: Check if inventory item is available
+function isInventoryItemAvailable(inventoryId) {
+    const item = availableInventory.find(item => item.id === inventoryId);
+    if (!item) return false;
+    
+    const usedCount = inventoryUsage[inventoryId] || 0;
+    return usedCount < item.quantity;
+}
+
+// FIXED: Use inventory item (when placing)
+function useInventoryItem(inventoryId) {
+    if (!isInventoryItemAvailable(inventoryId)) {
+        return false;
+    }
+    
+    if (inventoryUsage[inventoryId]) {
+        inventoryUsage[inventoryId]++;
+    } else {
+        inventoryUsage[inventoryId] = 1;
+    }
+    
+    updateInventoryDisplay();
+    return true;
+}
+
+// FIXED: Return inventory item (when removing placed item)
+function returnInventoryItem(inventoryId) {
+    if (inventoryUsage[inventoryId] && inventoryUsage[inventoryId] > 0) {
+        inventoryUsage[inventoryId]--;
+        updateInventoryDisplay();
+    }
+}
+
+// FIXED: Setup dashboard event listeners for clicking
+function setupDashboardEventListeners() {
+    // Add click listeners to placed items in dashboard mode
+    document.addEventListener('click', function(e) {
+        const placedItem = e.target.closest('.placed-item');
+        if (placedItem && isDashboardMode) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log('Dashboard item clicked:', placedItem.dataset.id);
+            // Just show a simple notification for dashboard
+            showActionFeedback(placedItem, 'Item preview - visit Habitus page to edit');
+        }
+    });
+}
+
+// Ensure room structure exists
 function ensureRoomStructure() {
     const room = document.getElementById('isometric-room');
     if (!room) {
@@ -173,7 +295,7 @@ function adjustColor(color, amount) {
     return (usePound ? '#' : '') + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
 }
 
-// FIXED: Create all grids (floor and walls)
+// Create all grids (floor and walls)
 function createAllGrids() {
     createGrid('floor', GRID_SIZE, GRID_SIZE);
     createGrid('wall-left', GRID_SIZE, WALL_HEIGHT);
@@ -223,10 +345,8 @@ function isDoorArea(x, y, surface) {
     return false;
 }
 
-// FIXED: Create drag preview element
+// Create drag preview element
 function createDragPreview() {
-    if (isDashboardMode) return;
-    
     ['floor', 'wall-left', 'wall-right'].forEach(surface => {
         const container = document.getElementById(`placed-items-${surface}`);
         if (container) {
@@ -260,12 +380,16 @@ function createHoldIndicator() {
     document.body.appendChild(holdIndicator);
 }
 
-// Create floating action menu
+// FIXED: Create floating action menu with better debugging
 function createFloatingMenu() {
-    if (floatingMenu) return;
+    // Remove existing menu if it exists
+    if (floatingMenu) {
+        floatingMenu.remove();
+    }
     
     floatingMenu = document.createElement('div');
     floatingMenu.className = 'floating-action-menu';
+    floatingMenu.id = 'floating-action-menu'; // Add ID for easier debugging
     floatingMenu.innerHTML = `
         <button class="menu-button rotate" data-action="rotate">
             <span>Rotate Item</span>
@@ -283,13 +407,15 @@ function createFloatingMenu() {
     
     document.body.appendChild(floatingMenu);
     floatingMenu.addEventListener('click', handleMenuAction);
+    
+    console.log('🔧 Floating menu created and attached to body');
 }
 
-// FIXED: Set up event listeners
+// Set up event listeners
 function setupEventListeners() {
-    if (isDashboardMode) return;
+    console.log('🎮 Setting up event listeners');
     
-    // FIXED: Clean event listener setup
+    // Clean event listener setup
     document.addEventListener('mousedown', handleMouseDown);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
@@ -304,9 +430,9 @@ function setupEventListeners() {
         }
     });
     
-    // Global drag end handler - FIXED: Ensure cleanup
+    // Global drag end handler
     document.addEventListener('dragend', function(e) {
-        clearDragState(); // FIXED: Always clear drag state
+        clearDragState();
     });
     
     // Escape key to hide menu
@@ -326,12 +452,12 @@ function preventContextMenu(e) {
     }
 }
 
-// FIXED: Enhanced mouse down handler
+// Enhanced mouse down handler
 function handleMouseDown(e) {
     if (e.button !== 0) return; // Only left mouse button
     
     const placedItem = e.target.closest('.placed-item');
-    if (!placedItem || isDashboardMode) return;
+    if (!placedItem) return;
     
     e.preventDefault();
     e.stopPropagation();
@@ -341,7 +467,12 @@ function handleMouseDown(e) {
     hasMovedDuringHold = false;
     isActualDrag = false;
     
-    startHold(placedItem, e);
+    if (isDashboardMode) {
+        // FIXED: Direct click handling for dashboard
+        handleItemClick(placedItem, e);
+    } else {
+        startHold(placedItem, e);
+    }
 }
 
 // Start hold timer
@@ -386,7 +517,7 @@ function completeHold() {
     hideHoldIndicator();
     
     heldItem.classList.add('being-held');
-    showGridsForDragging(); // FIXED: Show grids when drag starts
+    showGridsForDragging();
     
     isDragging = true;
     isActualDrag = true;
@@ -394,7 +525,7 @@ function completeHold() {
     showActionFeedback(heldItem, 'Item picked up - drag to move');
 }
 
-// FIXED: Show grids for dragging
+// Show grids for dragging
 function showGridsForDragging() {
     const room = document.getElementById('isometric-room');
     if (room) {
@@ -402,7 +533,7 @@ function showGridsForDragging() {
     }
 }
 
-// FIXED: Hide grids for dragging
+// Hide grids for dragging
 function hideGridsForDragging() {
     const room = document.getElementById('isometric-room');
     if (room) {
@@ -436,7 +567,7 @@ function hideHoldIndicator() {
     }
 }
 
-// FIXED: Mouse move handler
+// Mouse move handler
 function handleMouseMove(e) {
     const currentPos = { x: e.clientX, y: e.clientY };
     
@@ -468,7 +599,7 @@ function handleMouseMove(e) {
     lastMousePosition = currentPos;
 }
 
-// FIXED: Check drop zone with proper highlighting
+// Check drop zone with proper highlighting
 function checkDropZone(e) {
     // Clear previous highlights
     document.querySelectorAll('.grid-cell').forEach(cell => {
@@ -498,7 +629,7 @@ function checkDropZone(e) {
     }
 }
 
-// FIXED: Update drag preview
+// Update drag preview
 function updateDragPreview(dropResult) {
     if (!dropResult || !heldItem) return;
     
@@ -527,13 +658,13 @@ function updateDragPreview(dropResult) {
     }
 }
 
-// FIXED: Mouse up handler
+// Mouse up handler
 function handleMouseUp(e) {
     if (isHolding && heldItem) {
         const holdDuration = Date.now() - clickStartTime;
         
         if (heldItem.classList.contains('being-held')) {
-            completeDragDrop(e); // FIXED: Complete drag and drop
+            completeDragDrop(e);
         } else {
             if (!hasMovedDuringHold && holdDuration < HOLD_DURATION) {
                 handleItemClick(heldItem, e);
@@ -543,24 +674,65 @@ function handleMouseUp(e) {
     }
 }
 
-// Handle item click (non-drag)
+// FIXED: Handle item click with better debugging
 function handleItemClick(itemElement, e) {
-    if (!itemElement) return;
+    if (!itemElement) {
+        console.log('❌ No item element provided to handleItemClick');
+        return;
+    }
+    
+    console.log('🖱️ Item clicked:', {
+        itemId: itemElement.dataset.id,
+        isDashboardMode,
+        floatingMenuExists: !!floatingMenu
+    });
     
     deselectItem();
     itemElement.classList.add('selected');
     selectedItem = itemElement;
     heldItem = itemElement;
     
-    showFloatingMenuAtPosition(e.clientX, e.clientY);
+    // FIXED: Always try to show the menu
+    if (floatingMenu) {
+        console.log('📋 Showing floating menu at position:', e.clientX, e.clientY);
+        showFloatingMenuAtPosition(e.clientX, e.clientY);
+    } else {
+        console.log('❌ Floating menu not found, creating it now');
+        createFloatingMenu();
+        if (floatingMenu) {
+            showFloatingMenuAtPosition(e.clientX, e.clientY);
+        }
+    }
+    
     showActionFeedback(itemElement, 'Item selected');
 }
 
-// Show floating menu at specific position
+// FIXED: Show floating menu at specific position with better debugging
 function showFloatingMenuAtPosition(x, y) {
-    if (!floatingMenu || !heldItem) return;
+    console.log('🔧 showFloatingMenuAtPosition called:', {
+        x, y,
+        floatingMenuExists: !!floatingMenu,
+        heldItemExists: !!heldItem
+    });
     
+    if (!floatingMenu) {
+        console.log('❌ Floating menu not found, creating it');
+        createFloatingMenu();
+    }
+    
+    if (!heldItem) {
+        console.log('❌ No held item');
+        return;
+    }
+    
+    if (!floatingMenu) {
+        console.log('❌ Still no floating menu after creation attempt');
+        return;
+    }
+    
+    // Force show the menu
     floatingMenu.classList.add('show');
+    floatingMenu.style.display = 'flex'; // Force display
     
     const menuWidth = 140;
     const menuHeight = 160;
@@ -578,9 +750,17 @@ function showFloatingMenuAtPosition(x, y) {
     
     floatingMenu.style.left = left + 'px';
     floatingMenu.style.top = top + 'px';
+    floatingMenu.style.zIndex = '10001';
+    
+    console.log('✅ Floating menu positioned:', {
+        left,
+        top,
+        visible: floatingMenu.classList.contains('show'),
+        display: floatingMenu.style.display
+    });
 }
 
-// FIXED: Cancel hold with proper cleanup
+// Cancel hold with proper cleanup
 function cancelHold() {
     clearInterval(holdTimer);
     hideHoldIndicator();
@@ -593,7 +773,7 @@ function cancelHold() {
         }
     }
     
-    hideGridsForDragging(); // FIXED: Always hide grids when canceling
+    hideGridsForDragging();
     
     isHolding = false;
     isDragging = false;
@@ -601,7 +781,7 @@ function cancelHold() {
     hasMovedDuringHold = false;
 }
 
-// FIXED: Complete drag and drop with proper cleanup
+// Complete drag and drop with proper cleanup
 function completeDragDrop(e) {
     if (!heldItem) return;
     
@@ -628,7 +808,7 @@ function completeDragDrop(e) {
         }
     }
     
-    finalizeDragDrop(); // FIXED: Always finalize and cleanup
+    finalizeDragDrop();
 }
 
 // Show floating menu after drop
@@ -720,7 +900,7 @@ function updateItemPosition(itemElement, dropResult) {
     }
 }
 
-// FIXED: Finalize drag and drop with complete cleanup
+// Finalize drag and drop with complete cleanup
 function finalizeDragDrop() {
     if (heldItem) {
         heldItem.classList.remove('being-held');
@@ -728,17 +908,21 @@ function finalizeDragDrop() {
         selectedItem = heldItem;
     }
     
-    hideGridsForDragging(); // FIXED: Always hide grids
+    hideGridsForDragging();
     
     isDragging = false;
     isHolding = false;
     isActualDrag = false;
 }
 
-// Hide floating menu
+// FIXED: Hide floating menu with debugging
 function hideFloatingMenu() {
+    console.log('🔧 hideFloatingMenu called');
+    
     if (floatingMenu) {
         floatingMenu.classList.remove('show');
+        floatingMenu.style.display = 'none';
+        console.log('✅ Floating menu hidden');
     }
     
     if (heldItem && !isDragging) {
@@ -756,6 +940,8 @@ function handleMenuAction(e) {
     e.stopPropagation();
     
     const action = e.target.closest('.menu-button').dataset.action;
+    
+    console.log('🎯 Menu action triggered:', action);
     
     switch (action) {
         case 'rotate':
@@ -843,12 +1029,18 @@ function moveHeldItemToBack() {
     showActionFeedback(heldItem, 'Moved to back');
 }
 
-// Remove held item
+// FIXED: Remove held item with inventory return
 function removeHeldItem() {
     if (!heldItem) return;
     
     if (confirm('Remove this item from the room?')) {
         const itemId = heldItem.dataset.id;
+        const item = placedItems.find(i => i.id == itemId);
+        
+        if (item) {
+            // FIXED: Return item to inventory
+            returnInventoryItem(item.inventory_id);
+        }
         
         removeFromFlying(heldItem);
         placedItems = placedItems.filter(i => i.id != itemId);
@@ -858,7 +1050,7 @@ function removeHeldItem() {
         heldItem = null;
         selectedItem = null;
         
-        showActionFeedback(document.body, 'Item removed');
+        showActionFeedback(document.body, 'Item removed and returned to inventory');
     }
 }
 
@@ -1070,12 +1262,10 @@ function createPlacedItem(item) {
             itemDiv.dataset.rotationVariants = JSON.stringify(rotationVariants);
         }
         
-        // Only add interactive event listeners if not in dashboard mode
-        if (!isDashboardMode) {
-            itemDiv.addEventListener('click', selectItem);
-            itemDiv.draggable = true;
-            itemDiv.addEventListener('dragstart', handleItemDragStart);
-        }
+        // Add interactive event listeners
+        itemDiv.addEventListener('click', selectItem);
+        itemDiv.draggable = true;
+        itemDiv.addEventListener('dragstart', handleItemDragStart);
         
         return itemDiv;
         
@@ -1085,12 +1275,18 @@ function createPlacedItem(item) {
     }
 }
 
-// REMOVED UNUSED FUNCTIONS AND CONSOLIDATED DRAG HANDLERS
-
 // Traditional drag and drop for inventory items
 function startDrag(e) {
     const item = e.target.closest('.inventory-item');
     if (!item) return;
+    
+    // FIXED: Check if item is available before allowing drag
+    const inventoryId = item.dataset.id;
+    if (!isInventoryItemAvailable(inventoryId)) {
+        e.preventDefault();
+        showNotification('No more of this item available!', 'warning');
+        return;
+    }
     
     e.dataTransfer.effectAllowed = 'copy';
     e.dataTransfer.setData('itemId', item.dataset.id);
@@ -1202,7 +1398,7 @@ function handleDrop(e) {
     
     const cell = e.target.closest('.grid-cell');
     if (!cell) {
-        clearDragState(); // FIXED: Clear state even on invalid drop
+        clearDragState();
         return;
     }
     
@@ -1215,14 +1411,14 @@ function handleDrop(e) {
     
     if (!isReposition && !itemConfig.surfaces.includes(surface)) {
         showNotification('This item cannot be placed on this surface!', 'warning');
-        clearDragState(); // FIXED: Clear state
+        clearDragState();
         return;
     }
     
     const excludeId = isReposition ? currentDragData.originalId : null;
     if (!isAreaAvailable(gridX, gridY, itemConfig.width, itemConfig.height, surface, excludeId)) {
         showNotification('Cannot place item here!', 'warning');
-        clearDragState(); // FIXED: Clear state
+        clearDragState();
         return;
     }
     
@@ -1253,6 +1449,13 @@ function handleDrop(e) {
             showNotification('Item moved!', 'success');
         }
     } else {
+        // FIXED: Check and use inventory before placing
+        if (!useInventoryItem(currentDragData.itemId)) {
+            showNotification('No more of this item available!', 'warning');
+            clearDragState();
+            return;
+        }
+        
         const newItem = {
             id: 'temp_' + Date.now(),
             inventory_id: currentDragData.itemId,
@@ -1278,15 +1481,15 @@ function handleDrop(e) {
         showNotification('Item placed! Remember to save your layout.', 'info');
     }
     
-    clearDragState(); // FIXED: Always clear drag state
+    clearDragState();
 }
 
-// FIXED: Clear drag state with complete cleanup
+// Clear drag state with complete cleanup
 function clearDragState() {
     isDragging = false;
     currentDragData = null;
     
-    hideGridsForDragging(); // FIXED: Always hide grids
+    hideGridsForDragging();
     
     // Reset placed item dragging state
     document.querySelectorAll('.placed-item.dragging').forEach(item => {
@@ -1392,7 +1595,7 @@ function updateItemRotationImage(itemElement, item, newRotation) {
     }
 }
 
-// FIXED: Toggle grid visibility
+// Toggle grid visibility
 function toggleGrid() {
     gridVisible = !gridVisible;
     const room = document.getElementById('isometric-room');
@@ -1423,7 +1626,7 @@ function filterInventory(category) {
     });
 }
 
-// FIXED: Save room layout with proper flying item handling
+// Save room layout with proper flying item handling
 function saveRoom() {
     const saveBtn = event.target;
     saveBtn.disabled = true;
@@ -1573,6 +1776,13 @@ function clearRoom() {
         return;
     }
     
+    // FIXED: Return all items to inventory
+    placedItems.forEach(item => {
+        if (item.inventory_id) {
+            returnInventoryItem(item.inventory_id);
+        }
+    });
+    
     placedItems = [];
     flyingItems.clear();
     updateFlyingWarning();
@@ -1586,7 +1796,7 @@ function clearRoom() {
     });
     
     createDragPreview();
-    showNotification('Room cleared', 'info');
+    showNotification('Room cleared - all items returned to inventory', 'info');
 }
 
 // Navigation functions
@@ -1703,10 +1913,4 @@ window.closeRoomModal = closeRoomModal;
 window.saveRoomName = saveRoomName;
 window.startDrag = startDrag;
 
-// Legacy function compatibility (for any old references)
-window.rotateItem = () => console.log('Use new hold-to-drag system');
-window.moveToFront = () => console.log('Use new hold-to-drag system');
-window.moveToBack = () => console.log('Use new hold-to-drag system');
-window.removeItem = () => console.log('Use new hold-to-drag system');
-
-console.log('🚀 Fixed Habitus Room system loaded and ready');
+console.log('🚀 Fixed Habitus Room system loaded with inventory tracking');

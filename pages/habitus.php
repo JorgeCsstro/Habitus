@@ -1,5 +1,5 @@
 <?php
-// pages/habitus.php - Enhanced with hold-to-drag system
+// pages/habitus.php - Enhanced with proper inventory tracking
 
 // Include necessary files
 require_once '../php/include/config.php';
@@ -75,7 +75,7 @@ foreach ($placedItems as &$item) {
     }
 }
 
-// Get user's inventory with rotation variants
+// FIXED: Get user's inventory with better quantity tracking
 $inventoryQuery = "SELECT ui.*, si.name, si.image_path, si.category_id, 
                   si.grid_width, si.grid_height, si.rotation_variants,
                   si.allowed_surfaces, ic.name as category
@@ -95,21 +95,23 @@ foreach ($inventory as &$item) {
     }
 }
 
-// Filter out items that are already placed (unless quantity > 1)
-$availableInventory = [];
-foreach ($inventory as $item) {
-    $placedCount = 0;
-    foreach ($placedItems as $placed) {
-        if ($placed['inventory_id'] == $item['id']) {
-            $placedCount++;
-        }
-    }
-    
-    if ($item['quantity'] > $placedCount) {
-        $availableInventory[] = $item;
+// FIXED: Calculate available quantities more accurately
+$inventoryUsage = [];
+foreach ($placedItems as $placedItem) {
+    $inventoryId = $placedItem['inventory_id'];
+    if (isset($inventoryUsage[$inventoryId])) {
+        $inventoryUsage[$inventoryId]++;
+    } else {
+        $inventoryUsage[$inventoryId] = 1;
     }
 }
-$inventory = $availableInventory;
+
+// Add usage information to inventory items
+foreach ($inventory as &$item) {
+    $used = isset($inventoryUsage[$item['id']]) ? $inventoryUsage[$item['id']] : 0;
+    $item['used_count'] = $used;
+    $item['available_count'] = $item['quantity'] - $used;
+}
 
 // Create rotation data map for JavaScript
 $rotationDataMap = [];
@@ -118,6 +120,14 @@ foreach ($inventory as $item) {
         $rotationDataMap[$item['item_id']] = $item['rotation_variants'];
     }
 }
+
+// Debug information (can be removed in production)
+$debugInfo = [
+    'room_id' => $roomId,
+    'total_inventory_items' => count($inventory),
+    'placed_items_count' => count($placedItems),
+    'inventory_usage' => $inventoryUsage
+];
 ?>
 
 <!DOCTYPE html>
@@ -209,8 +219,12 @@ foreach ($inventory as $item) {
                                     
                                     // Get rotation variants
                                     $rotationVariants = !empty($item['rotation_variants']) ? $item['rotation_variants'] : [];
+                                    
+                                    // Check if item is available
+                                    $isAvailable = $item['available_count'] > 0;
+                                    $isDisabled = !$isAvailable;
                                     ?>
-                                    <div class="inventory-item" 
+                                    <div class="inventory-item <?php echo $isDisabled ? 'disabled' : ''; ?>" 
                                          data-id="<?php echo $item['id']; ?>"
                                          data-item-id="<?php echo $item['item_id']; ?>"
                                          data-category="<?php echo strtolower($item['category']); ?>"
@@ -220,13 +234,22 @@ foreach ($inventory as $item) {
                                          <?php if (!empty($rotationVariants)): ?>
                                          data-rotation-variants='<?php echo json_encode($rotationVariants); ?>'
                                          <?php endif; ?>
+                                         <?php if ($isAvailable): ?>
                                          draggable="true"
-                                         ondragstart="startDrag(event)">
+                                         ondragstart="startDrag(event)"
+                                         <?php else: ?>
+                                         draggable="false"
+                                         title="No more available - all items are placed"
+                                         <?php endif; ?>>
                                         <img src="../<?php echo $item['image_path']; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                                         <div class="item-info">
                                             <span class="item-name"><?php echo htmlspecialchars($item['name']); ?></span>
-                                            <?php if ($item['quantity'] > 1): ?>
-                                                <span class="item-quantity">x<?php echo $item['quantity']; ?></span>
+                                            <?php if ($item['available_count'] > 1): ?>
+                                                <span class="item-quantity">x<?php echo $item['available_count']; ?></span>
+                                            <?php elseif ($item['available_count'] === 1): ?>
+                                                <span class="item-quantity" style="display: none;">x1</span>
+                                            <?php elseif ($item['used_count'] > 0): ?>
+                                                <span class="item-quantity used">In use (<?php echo $item['used_count']; ?>)</span>
                                             <?php endif; ?>
                                         </div>
                                         <?php if ($itemWidth > 1 || $itemHeight > 1): ?>
@@ -257,6 +280,17 @@ foreach ($inventory as $item) {
                         <div class="inventory-actions">
                             <a href="shop.php" class="shop-btn">Shop for More Items</a>
                         </div>
+                        
+                        <!-- FIXED: Add debug info panel (remove in production) -->
+                        <?php if (isset($_GET['debug'])): ?>
+                        <div class="debug-panel" style="margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 8px; font-size: 0.8rem;">
+                            <strong>Debug Info:</strong><br>
+                            Room ID: <?php echo $roomId; ?><br>
+                            Inventory Items: <?php echo count($inventory); ?><br>
+                            Placed Items: <?php echo count($placedItems); ?><br>
+                            Usage: <?php echo json_encode($inventoryUsage); ?>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -282,11 +316,14 @@ foreach ($inventory as $item) {
     <script src="../js/main.js"></script>
     <script src="../js/habitus-room.js"></script>
     <script>
-        // Enhanced initialization with new drag system
+        // Enhanced initialization with inventory tracking
         document.addEventListener('DOMContentLoaded', function() {
             const roomData = <?php echo json_encode($roomData); ?>;
             const placedItems = <?php echo json_encode($placedItems); ?>;
             const rotationData = <?php echo json_encode($rotationDataMap); ?>;
+            const debugInfo = <?php echo json_encode($debugInfo); ?>;
+            
+            console.log('🏠 Habitus page initialized with:', debugInfo);
             
             // Initialize the enhanced room system
             if (typeof initializeHabitusRoom === 'function') {
@@ -297,7 +334,17 @@ foreach ($inventory as $item) {
                     setTimeout(() => {
                         showNotification('Drag items from inventory to place them in the room!', 'info');
                     }, 1000);
+                } else {
+                    // Show inventory status
+                    const usedItems = Object.keys(<?php echo json_encode($inventoryUsage); ?>).length;
+                    if (usedItems > 0) {
+                        setTimeout(() => {
+                            showNotification(`${usedItems} item type(s) currently in use`, 'info');
+                        }, 500);
+                    }
                 }
+            } else {
+                console.error('❌ initializeHabitusRoom function not found');
             }
         });
     </script>

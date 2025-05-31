@@ -1,5 +1,5 @@
 <?php
-// pages/dashboard.php - ENHANCED VERSION with better debugging
+// pages/dashboard.php - ENHANCED VERSION with better integration
 
 // Include necessary files
 require_once '../php/include/config.php';
@@ -272,6 +272,7 @@ if ($debugMode) {
                             <?php if (!empty($placedItems)): ?>
                                 First item: <?php echo $placedItems[0]['name']; ?> at [<?php echo $placedItems[0]['grid_x']; ?>, <?php echo $placedItems[0]['grid_y']; ?>]<br>
                             <?php endif; ?>
+                            <button onclick="window.dashboardDebug.reinitialize()" style="margin-top: 5px; padding: 2px 8px; font-size: 10px;">Reinitialize Room</button>
                         </div>
                         <?php endif; ?>
                     </div>
@@ -366,6 +367,8 @@ if ($debugMode) {
             const rotationData = <?php echo json_encode($rotationDataMap); ?> || {};
             const debugMode = <?php echo $debugMode ? 'true' : 'false'; ?>;
             
+            console.group('🏠 Dashboard Room Initialization');
+            
             if (debugMode) {
                 console.log('Full Debug Info:', <?php echo json_encode($debugInfo); ?>);
             }
@@ -394,8 +397,14 @@ if ($debugMode) {
                 try {
                     // Initialize the room system
                     if (typeof initializeHabitusRoom === 'function') {
-                        initializeHabitusRoom(roomData, validItems, rotationData);
-                        initializationSuccess = true;
+                        console.log('🔧 Initializing dashboard room system...');
+                        const result = initializeHabitusRoom(roomData, validItems, rotationData);
+                        if (result) {
+                            initializationSuccess = true;
+                            console.log('✅ Dashboard room system initialized successfully');
+                        } else {
+                            console.error('❌ initializeHabitusRoom returned false');
+                        }
                     } else {
                         console.error('❌ initializeHabitusRoom function not found');
                     }
@@ -408,7 +417,14 @@ if ($debugMode) {
                 console.warn('⚠️ Room initialization failed - showing fallback message');
                 const roomElement = document.getElementById('isometric-room');
                 if (roomElement) {
-                    roomElement.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">Unable to load room preview. Visit the Habitus page to place items.</div>';
+                    roomElement.innerHTML = `
+                        <div style="padding: 20px; text-align: center; color: #888; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+                            <p>Unable to load room preview.</p>
+                            <p style="font-size: 0.9em; margin-top: 10px;">
+                                <a href="habitus.php" style="color: #6a8d7f; text-decoration: none;">Visit the Habitus page to place items →</a>
+                            </p>
+                        </div>
+                    `;
                 }
             }
             
@@ -422,11 +438,35 @@ if ($debugMode) {
                     rotationData,
                     debugInfo: <?php echo json_encode($debugInfo); ?>,
                     reinitialize: function() {
+                        console.log('🔄 Manual reinitialize triggered');
                         if (typeof initializeHabitusRoom === 'function') {
-                            initializeHabitusRoom(roomData, placedItems, rotationData);
+                            const result = initializeHabitusRoom(roomData, placedItems, rotationData);
+                            console.log('Reinitialize result:', result);
+                        } else {
+                            console.error('initializeHabitusRoom function not available');
+                        }
+                    },
+                    testItemClick: function() {
+                        console.log('🖱️ Testing item click simulation');
+                        const items = document.querySelectorAll('.placed-item');
+                        if (items.length > 0) {
+                            const firstItem = items[0];
+                            const clickEvent = new MouseEvent('click', {
+                                bubbles: true,
+                                cancelable: true,
+                                clientX: 100,
+                                clientY: 100
+                            });
+                            firstItem.dispatchEvent(clickEvent);
+                            console.log('Click event dispatched to first item');
+                        } else {
+                            console.log('No placed items found to test');
                         }
                     }
                 };
+                
+                console.log('🔧 Dashboard debug helper available at window.dashboardDebug');
+                console.log('Available methods: reinitialize(), testItemClick()');
             }
         });
     </script>
