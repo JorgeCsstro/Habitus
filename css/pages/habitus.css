@@ -253,8 +253,18 @@
 .isometric-room.dragging .room-grid-wall-left,
 .isometric-room.dragging .room-grid-wall-right {
     display: block !important;
-    opacity: 1 !important;
+    opacity: 0.8 !important;
     pointer-events: all;
+}
+
+.isometric-room.dragging .grid-cell {
+    border-color: rgba(106, 141, 127, 0.3);
+    transition: all 0.15s ease;
+}
+
+.isometric-room.dragging .grid-cell:hover:not(.drag-over):not(.drag-invalid) {
+    background-color: rgba(106, 141, 127, 0.1);
+    border-color: rgba(106, 141, 127, 0.4);
 }
 
 /* FIXED: Manual grid toggle */
@@ -284,23 +294,41 @@
 }
 
 .grid-cell.drag-over {
-    background-color: rgba(106, 141, 127, 0.5) !important;
+    background-color: rgba(106, 141, 127, 0.4) !important;
     border-color: #6a8d7f !important;
-    box-shadow: 0 0 10px rgba(106, 141, 127, 0.5);
+    box-shadow: 0 0 15px rgba(106, 141, 127, 0.6);
     z-index: 101;
-    animation: dragOverPulse 1s infinite ease-in-out;
+    animation: dragOverGlow 1s infinite ease-in-out;
 }
 
-@keyframes dragOverPulse {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 0.8; }
+@keyframes dragOverGlow {
+    0%, 100% { 
+        background-color: rgba(106, 141, 127, 0.4);
+        box-shadow: 0 0 15px rgba(106, 141, 127, 0.6);
+    }
+    50% { 
+        background-color: rgba(106, 141, 127, 0.6);
+        box-shadow: 0 0 20px rgba(106, 141, 127, 0.8);
+    }
 }
 
 .grid-cell.drag-invalid {
-    background-color: rgba(161, 92, 92, 0.5) !important;
+    background-color: rgba(161, 92, 92, 0.4) !important;
     border-color: #a15c5c !important;
-    box-shadow: 0 0 10px rgba(161, 92, 92, 0.5);
+    box-shadow: 0 0 15px rgba(161, 92, 92, 0.6);
     z-index: 101;
+    animation: dragInvalidPulse 0.3s ease-in-out infinite alternate;
+}
+
+@keyframes dragInvalidPulse {
+    0% { 
+        background-color: rgba(161, 92, 92, 0.4);
+        box-shadow: 0 0 15px rgba(161, 92, 92, 0.6);
+    }
+    100% { 
+        background-color: rgba(161, 92, 92, 0.6);
+        box-shadow: 0 0 20px rgba(161, 92, 92, 0.8);
+    }
 }
 
 .grid-cell.non-placeable {
@@ -340,6 +368,22 @@
     transform-origin: left;
     top: 264px;
     left: 222px;
+}
+
+.placed-item.operation-success {
+    animation: operationSuccess 0.6s ease-out forwards;
+}
+
+@keyframes operationSuccess {
+    0% { transform: scale(1); }
+    50% { 
+        transform: scale(1.05);
+        filter: brightness(1.2) drop-shadow(0 0 15px rgba(106, 141, 127, 0.8));
+    }
+    100% { 
+        transform: scale(1);
+        filter: brightness(1) drop-shadow(0 2px 8px rgba(0,0,0,0.2));
+    }
 }
 
 .placed-item {
@@ -395,42 +439,65 @@
 
 /* FIXED: Dragging state - don't inherit placement transforms */
 .placed-item.dragging {
-    opacity: 0.5;
+    opacity: 0.3;
     pointer-events: none;
-    /* Remove any inherited transforms when dragging */
-    transform: none !important;
+    filter: grayscale(0.5);
+    transform: scale(0.95) !important;
+    z-index: 9998;
 }
 
 .placed-item.dragging img {
-    /* Reset counter-rotation when dragging */
-    transform: none !important;
-    translate: none !important;
-    scale: 1 !important;
+    /* Keep normal transforms when showing as being dragged */
+    filter: brightness(0.7);
 }
 
 /* FIXED: Drag preview - clean styling without placement transforms */
 .drag-preview {
     position: absolute;
     pointer-events: none;
-    opacity: 0.7;
+    opacity: 0.8;
     z-index: 9999;
-    border: 2px dashed #6a8d7f;
-    background-color: rgba(106, 141, 127, 0.1);
-    border-radius: 4px;
-    transition: all 0.1s ease;
-    /* FIXED: No inherited transforms */
-    transform: none !important;
+    display: none;
+    transition: none;
+    /* Remove all borders and backgrounds */
 }
 
-.drag-preview img {
+.drag-preview img,
+.drag-preview-image {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    opacity: 0.8;
-    /* FIXED: Clean image display in preview */
-    transform: none !important;
-    translate: none !important;
-    scale: 1 !important;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.drag-preview-floor img,
+.drag-preview-floor .drag-preview-image {
+    transform: rotateZ(40deg) rotateY(55deg) rotateX(0deg) rotate(5deg) scale(2);   
+    translate: 10px -15px;
+}
+
+.drag-preview-wall-left img,
+.drag-preview-wall-left .drag-preview-image {
+    transform: rotateZ(40deg) rotateY(55deg) rotateX(0deg) rotate(5deg) scale(1.8);   
+    translate: 5px -10px;
+}
+
+.drag-preview-wall-right img,
+.drag-preview-wall-right .drag-preview-image {
+    transform: rotateZ(165deg) rotateX(105deg) rotate(-135deg) rotateY(280deg) scale(1.4);
+}
+
+.drag-preview.invalid-drop img,
+.drag-preview.invalid-drop .drag-preview-image {
+    filter: grayscale(0.7) brightness(0.6) sepia(1) hue-rotate(0deg) saturate(3);
+    animation: invalidPulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes invalidPulse {
+    0% { opacity: 0.3; }
+    100% { opacity: 0.6; }
 }
 
 /* FIXED: Counter-rotation for drag previews - only when placed */
@@ -759,10 +826,10 @@
     z-index: 9999 !important;
     pointer-events: none;
     opacity: 0.9;
-    transform: scale(1.05) !important; /* FIXED: Override placement transforms */
+    filter: brightness(1.1) drop-shadow(0 8px 25px rgba(0,0,0,0.4));
     transition: all 0.2s ease;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
 }
+
 
 .placed-item.being-held img {
     /* FIXED: Clean display when being held */
@@ -774,19 +841,28 @@
 .placed-item.being-held::before {
     content: '';
     position: absolute;
-    top: -5px;
-    left: -5px;
-    right: -5px;
-    bottom: -5px;
-    border: 2px solid #6a8d7f;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    border: 3px solid #6a8d7f;
     border-radius: 8px;
     background: rgba(106, 141, 127, 0.1);
-    animation: pulse 1.5s infinite ease-in-out;
+    animation: heldItemGlow 1.5s infinite ease-in-out;
+    pointer-events: none;
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 0.7; }
+@keyframes heldItemGlow {
+    0%, 100% { 
+        opacity: 0.3;
+        border-color: #6a8d7f;
+        box-shadow: 0 0 15px rgba(106, 141, 127, 0.3);
+    }
+    50% { 
+        opacity: 0.7;
+        border-color: #5a7c70;
+        box-shadow: 0 0 25px rgba(106, 141, 127, 0.5);
+    }
 }
 
 /* FIXED: Floating action menu with enhanced visibility */

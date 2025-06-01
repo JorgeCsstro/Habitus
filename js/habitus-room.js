@@ -541,12 +541,10 @@ function createDragPreview() {
                 preview.style.cssText = `
                     position: absolute;
                     pointer-events: none;
-                    opacity: 0.7;
+                    opacity: 0.8;
                     z-index: 9999;
-                    border: 2px dashed #6a8d7f;
-                    background-color: rgba(106, 141, 127, 0.1);
-                    border-radius: 4px;
                     display: none;
+                    transition: none;
                 `;
                 container.appendChild(preview);
             }
@@ -737,9 +735,10 @@ function hideGridsForDragging() {
         cell.classList.remove('drag-over', 'drag-invalid');
     });
     
-    // Hide all drag previews
+    // Hide all drag previews with cleanup
     document.querySelectorAll('.drag-preview').forEach(preview => {
         preview.style.display = 'none';
+        preview.classList.remove('invalid-drop');
     });
 }
 
@@ -817,7 +816,13 @@ function checkDropZone(e) {
             }
         }
         
+        // Update the drag preview with proper transforms
         updateDragPreview(dropResult);
+    } else {
+        // Hide all previews if not over a valid grid cell
+        document.querySelectorAll('.drag-preview').forEach(preview => {
+            preview.style.display = 'none';
+        });
     }
 }
 
@@ -840,12 +845,24 @@ function updateDragPreview(dropResult) {
         preview.style.top = (dropResult.gridY * CELL_SIZE) + 'px';
         preview.style.width = (itemConfig.width * CELL_SIZE) + 'px';
         preview.style.height = (itemConfig.height * CELL_SIZE) + 'px';
-        preview.style.opacity = dropResult.valid ? '0.7' : '0.3';
-        preview.style.borderColor = dropResult.valid ? '#6a8d7f' : '#a15c5c';
         
+        // Set opacity based on validity
+        preview.style.opacity = dropResult.valid ? '0.8' : '0.4';
+        
+        // Create the image with proper transforms
         const img = heldItem.querySelector('img');
         if (img) {
-            preview.innerHTML = `<img src="${img.src}" alt="${img.alt}">`;
+            preview.innerHTML = `<img src="${img.src}" alt="${img.alt}" class="drag-preview-image">`;
+            
+            // Apply surface-specific styling to the preview
+            preview.className = `drag-preview drag-preview-${dropResult.surface}`;
+            
+            // Add validity indicator
+            if (!dropResult.valid) {
+                preview.classList.add('invalid-drop');
+            } else {
+                preview.classList.remove('invalid-drop');
+            }
         }
     }
 }
@@ -1406,6 +1423,7 @@ function handleDragOver(e) {
         }
     }
     
+    // Enhanced preview with proper transforms
     const preview = document.querySelector(`#placed-items-${surface} .drag-preview`);
     if (preview) {
         preview.style.display = 'block';
@@ -1413,8 +1431,17 @@ function handleDragOver(e) {
         preview.style.top = (gridY * CELL_SIZE) + 'px';
         preview.style.width = (itemConfig.width * CELL_SIZE) + 'px';
         preview.style.height = (itemConfig.height * CELL_SIZE) + 'px';
-        preview.innerHTML = `<img src="../${currentDragData.image}" alt="${currentDragData.name}">`;
-        preview.style.opacity = isValid ? '0.7' : '0.3';
+        
+        // Create image with proper transforms
+        preview.innerHTML = `<img src="../${currentDragData.image}" alt="${currentDragData.name}" class="drag-preview-image">`;
+        
+        // Apply surface-specific styling
+        preview.className = `drag-preview drag-preview-${surface}`;
+        preview.style.opacity = isValid ? '0.8' : '0.4';
+        
+        if (!isValid) {
+            preview.classList.add('invalid-drop');
+        }
     }
     
     e.dataTransfer.dropEffect = isValid ? 'copy' : 'none';
@@ -1521,6 +1548,12 @@ function clearDragState() {
     currentDragData = null;
     
     hideGridsForDragging();
+    
+    // Hide all drag previews
+    document.querySelectorAll('.drag-preview').forEach(preview => {
+        preview.style.display = 'none';
+        preview.classList.remove('invalid-drop');
+    });
     
     // Reset placed item dragging state
     document.querySelectorAll('.placed-item.dragging').forEach(item => {
