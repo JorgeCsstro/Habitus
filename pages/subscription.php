@@ -1,5 +1,5 @@
 <?php
-// pages/subscription.php - FIXED VERSION
+// pages/subscription.php - COMPLETE FIXED VERSION
 
 // Include necessary files
 require_once '../php/include/config.php';
@@ -67,24 +67,301 @@ $debugInfo = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subscription - <?php echo SITE_NAME; ?></title>
     
-    <!-- Core CSS -->
-    <link rel="stylesheet" href="../css/main.css">
+    <!-- CRITICAL: Inline styles for modal to prevent CSS loading issues -->
+    <style>
+        /* Critical inline styles for modal display and Stripe form */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(45, 41, 38, 0.85);
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal.show {
+            display: flex !important;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 650px;
+            min-height: 500px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            margin: auto;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px 35px;
+            border-bottom: 2px solid #e9e2d9;
+            background: linear-gradient(135deg, #f5f1ea 0%, #e9e2d9 100%);
+            border-radius: 20px 20px 0 0;
+            flex-shrink: 0;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            color: #2d2926;
+            font-size: 1.6rem;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #8d8580;
+            line-height: 1;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-modal:hover {
+            color: #2d2926;
+            background-color: rgba(141, 91, 76, 0.1);
+            transform: rotate(90deg);
+        }
+        
+        .modal-body {
+            padding: 40px;
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+        
+        .payment-summary {
+            background: linear-gradient(135deg, #f5f1ea 0%, #e9e2d9 100%);
+            border-radius: 15px;
+            padding: 35px;
+            margin-bottom: 40px;
+            text-align: center;
+            border: 2px solid #e9e2d9;
+            box-shadow: inset 0 2px 10px rgba(141, 91, 76, 0.05);
+        }
+        
+        .payment-summary h3 {
+            margin: 0 0 15px;
+            color: #2d2926;
+            font-size: 1.8rem;
+            font-weight: 600;
+            font-family: 'Quicksand', sans-serif;
+        }
+        
+        .payment-summary p {
+            margin: 0;
+            color: #8d5b4c;
+            font-size: 2.5rem;
+            font-weight: 800;
+            font-family: 'Quicksand', sans-serif;
+        }
+        
+        #payment-element {
+            width: 100%;
+            min-height: 350px;
+            margin: 30px 0;
+            border: 2px solid #e9e2d9;
+            border-radius: 15px;
+            background-color: #ffffff;
+            padding: 0;
+            overflow: visible;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(141, 91, 76, 0.08);
+        }
+        
+        #payment-element > div {
+            width: 100% !important;
+            min-height: 320px !important;
+            padding: 25px !important;
+            border-radius: 15px;
+        }
+        
+        #payment-element iframe {
+            width: 100% !important;
+            min-height: 300px !important;
+            border: none !important;
+            border-radius: 10px !important;
+            background: transparent !important;
+        }
+        
+        .stripe-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 320px;
+            padding: 50px;
+            text-align: center;
+            background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
+            border-radius: 15px;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #8d5b4c;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 25px;
+        }
+        
+        .stripe-loading p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 1.1rem;
+            font-weight: 500;
+            font-family: 'Quicksand', sans-serif;
+        }
+        
+        .submit-payment-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #6a8d7f, #7a9d8f);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            font-family: 'Quicksand', sans-serif;
+            margin-top: 30px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 6px 20px rgba(106, 141, 127, 0.3);
+        }
+        
+        .submit-payment-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #5a7c70, #6a8d7f);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(106, 141, 127, 0.4);
+        }
+        
+        .submit-payment-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            background: linear-gradient(135deg, #cccccc, #dddddd);
+        }
+        
+        #payment-message {
+            background: linear-gradient(135deg, #fff5f5, #ffe5e5);
+            color: #c53030;
+            border: 2px solid #feb2b2;
+            padding: 18px 22px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 1rem;
+            line-height: 1.5;
+            font-weight: 500;
+            box-shadow: 0 3px 10px rgba(197, 48, 48, 0.1);
+        }
+        
+        #payment-message.hidden {
+            display: none;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .modal-content {
+                max-width: 95%;
+                margin: 20px auto;
+            }
+            
+            .modal-header {
+                padding: 25px 20px;
+            }
+            
+            .modal-body {
+                padding: 30px 20px;
+            }
+            
+            .payment-summary {
+                padding: 25px 20px;
+            }
+            
+            #payment-element {
+                min-height: 300px;
+            }
+        }
+    </style>
     
-    <!-- Component CSS -->
-    <link rel="stylesheet" href="../css/components/sidebar.css">
-    <link rel="stylesheet" href="../css/components/header.css">
-    <link rel="stylesheet" href="../css/components/scrollbar.css">
+    <!-- External CSS files with error handling -->
+    <link rel="stylesheet" href="../css/main.css" onerror="this.onerror=null; console.warn('Failed to load main.css');">
+    <link rel="stylesheet" href="../css/components/sidebar.css" onerror="this.onerror=null; console.warn('Failed to load sidebar.css');">
+    <link rel="stylesheet" href="../css/components/header.css" onerror="this.onerror=null; console.warn('Failed to load header.css');">
+    <link rel="stylesheet" href="../css/components/scrollbar.css" onerror="this.onerror=null; console.warn('Failed to load scrollbar.css');">
+    <link rel="stylesheet" href="../css/pages/subscription.css" onerror="this.onerror=null; console.warn('Failed to load subscription.css');">
     
-    <!-- Page-specific CSS -->
-    <link rel="stylesheet" href="../css/pages/subscription.css">
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Stripe JavaScript - Load early -->
+    <!-- Stripe JavaScript -->
     <?php if (!empty(STRIPE_PUBLISHABLE_KEY)): ?>
     <script src="https://js.stripe.com/v3/"></script>
     <?php endif; ?>
@@ -356,7 +633,7 @@ $debugInfo = [
         </div>
     </div>
 
-    <!-- Payment Modal -->
+    <!-- FIXED Payment Modal -->
     <div id="payment-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -379,8 +656,8 @@ $debugInfo = [
                     </div>
                     
                     <!-- Payment Security Info -->
-                    <div class="payment-security">
-                        <img src="../images/icons/lock.webp" alt="Secure">
+                    <div class="payment-security" style="display: flex; align-items: center; gap: 12px; margin: 25px 0; padding: 18px; background-color: #f5f1ea; border-radius: 8px; font-size: 14px; color: #5a5755; border: 1px solid #e9e2d9;">
+                        <img src="../images/icons/lock.webp" alt="Secure" style="width: 24px; height: 24px;">
                         <span>Secured by Stripe. We never store your payment details.</span>
                     </div>
                     
@@ -395,7 +672,7 @@ $debugInfo = [
                 </form>
                 
                 <!-- Payment Methods Info -->
-                <div class="payment-methods">
+                <div class="payment-methods" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e9e2d9; font-size: 14px; color: #8d8580;">
                     <span>Powered by Stripe</span>
                 </div>
             </div>
@@ -405,18 +682,35 @@ $debugInfo = [
     <!-- Scripts -->
     <script src="../js/main.js"></script>
     
-    <!-- Initialize Stripe -->
+    <!-- Enhanced Stripe initialization -->
     <?php if (!empty(STRIPE_PUBLISHABLE_KEY)): ?>
     <script>
-        // Initialize Stripe with your publishable key
-        const stripe = Stripe('<?php echo STRIPE_PUBLISHABLE_KEY; ?>');
+        // Initialize Stripe with error handling
+        console.log('🔧 Initializing Stripe...');
         
-        // Debug information
-        console.log('🔧 Stripe initialized for Habitus Zone');
-        console.log('📊 Debug info:', <?php echo json_encode($debugInfo); ?>);
+        try {
+            const stripe = Stripe('<?php echo STRIPE_PUBLISHABLE_KEY; ?>');
+            window.stripe = stripe; // Make globally available
+            
+            console.log('✅ Stripe initialized successfully');
+            console.log('📊 Debug info:', <?php echo json_encode($debugInfo); ?>);
+            
+        } catch (error) {
+            console.error('❌ Stripe initialization failed:', error);
+            
+            // Disable all subscription buttons
+            document.addEventListener('DOMContentLoaded', function() {
+                const buttons = document.querySelectorAll('[onclick*="subscribeToPlan"]');
+                buttons.forEach(button => {
+                    button.disabled = true;
+                    button.textContent = 'Payment System Error';
+                    button.style.opacity = '0.5';
+                });
+            });
+        }
     </script>
     
-    <!-- Load subscription functionality -->
+    <!-- Load enhanced subscription functionality -->
     <script src="../js/subscription-stripe.js"></script>
     
     <?php else: ?>
@@ -436,11 +730,13 @@ $debugInfo = [
         function subscribeToPlan(plan) {
             alert('Payment system not configured. Please contact support.');
         }
+        
+        window.subscribeToPlan = subscribeToPlan;
     </script>
     <?php endif; ?>
     
     <script>
-        // Subscription management functions
+        // Enhanced subscription management functions
         function manageSubscription() {
             if (confirm('Would you like to cancel your subscription? You will retain access until the end of your billing period.')) {
                 cancelSubscription();
@@ -471,6 +767,67 @@ $debugInfo = [
                 alert('An error occurred. Please try again.');
             });
         }
+        
+        // Enhanced FAQ toggle function
+        function toggleFaq(questionElement) {
+            const faqItem = questionElement.closest('.faq-item');
+            const answer = faqItem.querySelector('.faq-answer');
+            const icon = questionElement.querySelector('img');
+            
+            questionElement.classList.toggle('active');
+            answer.classList.toggle('show');
+            
+            if (answer.classList.contains('show')) {
+                answer.style.maxHeight = answer.scrollHeight + 'px';
+                if (icon) icon.style.transform = 'rotate(180deg)';
+            } else {
+                answer.style.maxHeight = '0';
+                if (icon) icon.style.transform = 'rotate(0deg)';
+            }
+        }
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('payment-modal');
+            if (e.target === modal) {
+                if (typeof closePaymentModal === 'function') {
+                    closePaymentModal();
+                }
+            }
+        });
+        
+        // ESC key to close modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('payment-modal');
+                if (modal && modal.classList.contains('show')) {
+                    if (typeof closePaymentModal === 'function') {
+                        closePaymentModal();
+                    }
+                }
+            }
+        });
+        
+        // Enhanced error handling for CSS loading
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 Subscription page loaded');
+            
+            // Check if critical elements exist
+            const modal = document.getElementById('payment-modal');
+            const paymentElement = document.getElementById('payment-element');
+            
+            if (!modal) {
+                console.error('❌ Payment modal not found!');
+            } else {
+                console.log('✅ Payment modal found');
+            }
+            
+            if (!paymentElement) {
+                console.error('❌ Payment element container not found!');
+            } else {
+                console.log('✅ Payment element container found');
+            }
+        });
     </script>
     
     <!-- Debug Mode Styling -->
