@@ -278,9 +278,31 @@ async function initializeStripePayment() {
     
     // Show enhanced loading state
     paymentElement.innerHTML = `
-        <div class="payment-loading">
-            <div></div>
-            <p>Loading secure payment form...</p>
+        <div class="payment-loading" style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 150px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9e2d9;
+            flex-direction: column;
+            gap: 15px;
+        ">
+            <div style="
+                width: 24px;
+                height: 24px;
+                border: 3px solid #e9e2d9;
+                border-top-color: #8d5b4c;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            "></div>
+            <p style="
+                margin: 0;
+                color: #6c757d;
+                font-size: 14px;
+                font-weight: 500;
+            ">Loading secure payment form...</p>
         </div>
     `;
     
@@ -318,9 +340,9 @@ async function initializeStripePayment() {
         } catch (mountError) {
             console.error('Mount error:', mountError);
             paymentElement.innerHTML = `
-                <div>
+                <div style="padding: 20px; text-align: center; color: #e53e3e; border: 1px solid #feb2b2; border-radius: 8px; background: #fff5f5;">
                     <p>Failed to load payment form. Please refresh the page and try again.</p>
-                    <button onclick="initializeStripePayment()">
+                    <button onclick="initializeStripePayment()" style="margin-top: 10px; padding: 8px 16px; background: #8d5b4c; color: white; border: none; border-radius: 4px; cursor: pointer;">
                         Retry
                     </button>
                 </div>
@@ -345,10 +367,10 @@ async function initializeStripePayment() {
     } catch (error) {
         console.error('❌ Payment initialization error:', error);
         paymentElement.innerHTML = `
-            <div>
-                <h4>Payment Form Error</h4>
-                <p>${error.message}</p>
-                <button onclick="initializeStripePayment()">
+            <div style="padding: 20px; text-align: center; color: #e53e3e; border: 1px solid #feb2b2; border-radius: 8px; background: #fff5f5;">
+                <h4 style="margin: 0 0 10px 0;">Payment Form Error</h4>
+                <p style="margin: 0 0 15px 0;">${error.message}</p>
+                <button onclick="initializeStripePayment()" style="padding: 8px 16px; background: #8d5b4c; color: white; border: none; border-radius: 4px; cursor: pointer;">
                     🔄 Try Again
                 </button>
             </div>
@@ -538,6 +560,22 @@ function showAlert(message, type = 'info') {
     debugLog('info', `Showing ${type} alert: ${message}`);
     
     const alertDiv = document.createElement('div');
+    alertDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#48bb78' : type === 'error' ? '#f56565' : '#4299e1'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        max-width: 400px;
+        opacity: 0;
+        transform: translateX(100%);
+        transition: all 0.3s ease;
+        font-family: system-ui, -apple-system, sans-serif;
+    `;
     alertDiv.textContent = message;
     
     document.body.appendChild(alertDiv);
