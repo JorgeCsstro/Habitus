@@ -1,4 +1,4 @@
-// subscription-stripe.js - COMPLETE ENHANCED VERSION with better modal and form handling
+// subscription-stripe.js - COMPLETE ENHANCED VERSION
 
 let selectedPlan = null;
 let elements = null;
@@ -130,6 +130,12 @@ const paymentElementOptions = {
     }
 };
 
+/**
+ * Debug logging function
+ * @param {string} level - Log level (error, success, info, debug, warning)
+ * @param {string} message - Log message
+ * @param {*} data - Optional data to log
+ */
 function debugLog(level, message, data = null) {
     if (!debugMode && level === 'debug') return;
     
@@ -145,29 +151,16 @@ function debugLog(level, message, data = null) {
     console.log(`${emoji} [${timestamp}] Stripe: ${message}`, data || '');
 }
 
-// Initialize when DOM is ready
+/**
+ * Initialize Stripe and set up event handlers when DOM is ready
+ */
 document.addEventListener('DOMContentLoaded', function() {
     debugLog('info', 'Subscription JavaScript initializing...');
     
-    // Check if Stripe is loaded
-    if (typeof window.Stripe === 'undefined') {
-        debugLog('error', 'Stripe library not loaded! Make sure Stripe.js is included.');
-        showAlert('Payment system not available. Please refresh the page.', 'error');
-        disableAllSubscriptionButtons('Payment System Error');
+    // Initialize Stripe
+    if (!initializeStripe()) {
         return;
     }
-    
-    // Get Stripe instance (should be initialized in PHP template)
-    stripe = window.stripe;
-    
-    if (!stripe) {
-        debugLog('error', 'Stripe instance not found. Check initialization.');
-        showAlert('Payment configuration error. Please contact support.', 'error');
-        disableAllSubscriptionButtons('Configuration Error');
-        return;
-    }
-    
-    debugLog('success', 'Stripe loaded and configured successfully');
     
     // Set up all event handlers
     setupModalHandlers();
@@ -177,6 +170,47 @@ document.addEventListener('DOMContentLoaded', function() {
     debugLog('success', 'Subscription page fully initialized');
 });
 
+/**
+ * Initialize Stripe with error handling
+ * @returns {boolean} Success status
+ */
+function initializeStripe() {
+    // Check if Stripe is loaded
+    if (typeof window.Stripe === 'undefined') {
+        debugLog('error', 'Stripe library not loaded! Make sure Stripe.js is included.');
+        showAlert('Payment system not available. Please refresh the page.', 'error');
+        disableAllSubscriptionButtons('Payment System Error');
+        return false;
+    }
+    
+    // Check if publishable key is available
+    if (!window.STRIPE_PUBLISHABLE_KEY) {
+        debugLog('error', 'Stripe publishable key not configured');
+        showAlert('Payment system not configured. Please contact support.', 'error');
+        disableAllSubscriptionButtons('Configuration Error');
+        return false;
+    }
+    
+    try {
+        // Initialize Stripe instance
+        stripe = window.Stripe(window.STRIPE_PUBLISHABLE_KEY);
+        
+        debugLog('success', 'Stripe loaded and configured successfully');
+        debugLog('debug', 'Debug info:', window.DEBUG_INFO || {});
+        
+        return true;
+        
+    } catch (error) {
+        debugLog('error', 'Stripe initialization failed:', error);
+        showAlert('Payment initialization error. Please refresh the page.', 'error');
+        disableAllSubscriptionButtons('Initialization Error');
+        return false;
+    }
+}
+
+/**
+ * Set up modal event handlers
+ */
 function setupModalHandlers() {
     const modal = document.getElementById('payment-modal');
     const closeButtons = document.querySelectorAll('.close-modal');
@@ -202,6 +236,9 @@ function setupModalHandlers() {
     }
 }
 
+/**
+ * Set up FAQ handlers
+ */
 function setupFaqHandlers() {
     const faqQuestions = document.querySelectorAll('.faq-question');
     faqQuestions.forEach(question => {
@@ -211,6 +248,9 @@ function setupFaqHandlers() {
     });
 }
 
+/**
+ * Set up keyboard handlers
+ */
 function setupKeyboardHandlers() {
     // ESC key handler
     document.addEventListener('keydown', function(e) {
@@ -223,6 +263,10 @@ function setupKeyboardHandlers() {
     });
 }
 
+/**
+ * Subscribe to a plan
+ * @param {string} planType - Plan type (adfree or premium)
+ */
 async function subscribeToPlan(planType) {
     debugLog('info', `Starting subscription process for: ${planType}`);
     
@@ -273,6 +317,9 @@ async function subscribeToPlan(planType) {
     }, 200);
 }
 
+/**
+ * Initialize Stripe payment form
+ */
 async function initializeStripePayment() {
     debugLog('info', 'Initializing Stripe payment form...');
     
@@ -287,9 +334,7 @@ async function initializeStripePayment() {
         <div class="stripe-loading">
             <div class="loading-spinner"></div>
             <p>Setting up secure payment...</p>
-            <small style="color: #999; margin-top: 10px; display: block;">
-                This may take a few seconds
-            </small>
+            <small>This may take a few seconds</small>
         </div>
     `;
     
@@ -328,7 +373,7 @@ async function initializeStripePayment() {
         paymentElement = elements.create('payment', paymentElementOptions);
         
         // Clear loading and create proper container
-        paymentContainer.innerHTML = '<div id="stripe-payment-element" style="min-height: 300px; padding: 20px; border-radius: 12px;"></div>';
+        paymentContainer.innerHTML = '<div id="stripe-payment-element"></div>';
         
         // Mount the payment element
         debugLog('info', 'Mounting payment element...');
@@ -372,6 +417,9 @@ async function initializeStripePayment() {
     }
 }
 
+/**
+ * Set up payment element event listeners
+ */
 function setupPaymentElementListeners() {
     if (!paymentElement) return;
     
@@ -398,6 +446,10 @@ function setupPaymentElementListeners() {
     });
 }
 
+/**
+ * Handle form submission
+ * @param {Event} e - Form submit event
+ */
 async function handleSubmit(e) {
     e.preventDefault();
     debugLog('info', 'Processing payment submission...');
@@ -473,6 +525,10 @@ async function handleSubmit(e) {
     }
 }
 
+/**
+ * Activate subscription after successful payment
+ * @param {string} paymentIntentId - Stripe payment intent ID
+ */
 async function activateSubscription(paymentIntentId) {
     debugLog('info', 'Activating subscription...');
     
@@ -518,6 +574,9 @@ async function activateSubscription(paymentIntentId) {
     setLoading(false);
 }
 
+/**
+ * Close payment modal and clean up
+ */
 function closePaymentModal() {
     debugLog('info', 'Closing payment modal');
     
@@ -554,6 +613,10 @@ function closePaymentModal() {
     debugLog('info', 'Payment modal closed and cleaned up');
 }
 
+/**
+ * Show payment message
+ * @param {string} messageText - Message to display
+ */
 function showMessage(messageText) {
     const messageContainer = document.getElementById('payment-message');
     if (!messageContainer) return;
@@ -578,6 +641,10 @@ function showMessage(messageText) {
     }
 }
 
+/**
+ * Set loading state for submit button
+ * @param {boolean} isLoading - Loading state
+ */
 function setLoading(isLoading) {
     const submitButton = document.getElementById('submit-payment-btn');
     const spinner = document.getElementById('spinner');
@@ -600,6 +667,10 @@ function setLoading(isLoading) {
     }
 }
 
+/**
+ * Toggle FAQ answer visibility
+ * @param {HTMLElement} questionElement - The question button element
+ */
 function toggleFaq(questionElement) {
     const faqItem = questionElement.closest('.faq-item');
     const answer = faqItem.querySelector('.faq-answer');
@@ -632,61 +703,45 @@ function toggleFaq(questionElement) {
     }
 }
 
+/**
+ * Show alert notification
+ * @param {string} message - Alert message
+ * @param {string} type - Alert type (success, error, info, warning)
+ */
 function showAlert(message, type = 'info') {
     const alertDiv = document.createElement('div');
     alertDiv.className = `subscription-alert ${type}`;
     alertDiv.textContent = message;
     
-    // Enhanced styling
-    alertDiv.style.position = 'fixed';
-    alertDiv.style.top = '20px';
-    alertDiv.style.right = '20px';
-    alertDiv.style.zIndex = '100000';
-    alertDiv.style.padding = '16px 24px';
-    alertDiv.style.borderRadius = '10px';
-    alertDiv.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
-    alertDiv.style.maxWidth = '400px';
-    alertDiv.style.opacity = '0';
-    alertDiv.style.transform = 'translateX(100%)';
-    alertDiv.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-    alertDiv.style.fontWeight = '600';
-    alertDiv.style.fontSize = '15px';
-    alertDiv.style.lineHeight = '1.4';
-    
-    // Color based on type
-    const colors = {
-        success: { bg: '#48bb78', color: 'white' },
-        error: { bg: '#f56565', color: 'white' },
-        info: { bg: '#4299e1', color: 'white' },
-        warning: { bg: '#ed8936', color: 'white' }
-    };
-    
-    const color = colors[type] || colors.info;
-    alertDiv.style.backgroundColor = color.bg;
-    alertDiv.style.color = color.color;
-    
     document.body.appendChild(alertDiv);
     
     // Animate in
     setTimeout(() => {
-        alertDiv.style.opacity = '1';
-        alertDiv.style.transform = 'translateX(0)';
+        alertDiv.classList.add('show');
     }, 10);
     
     // Remove after delay
     setTimeout(() => {
-        alertDiv.style.opacity = '0';
-        alertDiv.style.transform = 'translateX(100%)';
+        alertDiv.classList.remove('show');
         setTimeout(() => alertDiv.remove(), 400);
     }, type === 'success' ? 6000 : 5000);
 }
 
+/**
+ * Retry payment initialization
+ */
 function retryPaymentInit() {
     debugLog('info', `Retrying payment initialization (attempt ${retryAttempts + 1})`);
     initializeStripePayment();
 }
 
-// Utility function for fetch with retry logic
+/**
+ * Utility function for fetch with retry logic
+ * @param {string} url - URL to fetch
+ * @param {Object} options - Fetch options
+ * @param {number} retries - Number of retries
+ * @returns {Promise<Response>} - Fetch response
+ */
 async function fetchWithRetry(url, options, retries = 2) {
     for (let i = 0; i <= retries; i++) {
         try {
@@ -705,6 +760,10 @@ async function fetchWithRetry(url, options, retries = 2) {
     }
 }
 
+/**
+ * Disable all subscription buttons with reason
+ * @param {string} reason - Reason for disabling
+ */
 function disableAllSubscriptionButtons(reason) {
     document.addEventListener('DOMContentLoaded', function() {
         const buttons = document.querySelectorAll('[onclick*="subscribeToPlan"]');
@@ -717,11 +776,57 @@ function disableAllSubscriptionButtons(reason) {
     });
 }
 
-// Global function exports
+/**
+ * Subscription management functions
+ */
+
+/**
+ * Manage existing subscription
+ */
+function manageSubscription() {
+    if (confirm('Would you like to cancel your subscription? You will retain access until the end of your billing period.')) {
+        cancelSubscription();
+    }
+}
+
+/**
+ * Downgrade to free plan
+ */
+function downgradeToFree() {
+    if (confirm('Are you sure you want to downgrade to the free plan? You will lose access to premium features.')) {
+        cancelSubscription();
+    }
+}
+
+/**
+ * Cancel subscription
+ */
+function cancelSubscription() {
+    fetch('../php/api/subscription/cancel.php', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Subscription cancelled. You will retain access until ' + data.expires_date, 'info');
+            setTimeout(() => window.location.reload(), 2000);
+        } else {
+            showAlert(data.message || 'Error cancelling subscription', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Cancel error:', error);
+        showAlert('An error occurred. Please try again.', 'error');
+    });
+}
+
+// Global function exports for onclick handlers
 window.subscribeToPlan = subscribeToPlan;
 window.closePaymentModal = closePaymentModal;
 window.toggleFaq = toggleFaq;
 window.retryPaymentInit = retryPaymentInit;
+window.manageSubscription = manageSubscription;
+window.downgradeToFree = downgradeToFree;
 
 // Initialize logging
 debugLog('success', 'Stripe subscription handler loaded and ready');
