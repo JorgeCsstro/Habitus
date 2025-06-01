@@ -1,5 +1,5 @@
 <?php
-// pages/subscription.php
+// pages/subscription.php - FIXED VERSION
 
 // Include necessary files
 require_once '../php/include/config.php';
@@ -40,7 +40,7 @@ if ($subscriptionExpires) {
 }
 
 // Get subscription plans
-$plansQuery = "SELECT * FROM subscription_plans";
+$plansQuery = "SELECT * FROM subscription_plans ORDER BY price ASC";
 $stmt = $conn->query($plansQuery);
 $plans = $stmt->fetchAll();
 
@@ -49,6 +49,15 @@ $planData = [];
 foreach ($plans as $plan) {
     $planData[$plan['name']] = $plan;
 }
+
+// Debug information
+$debugInfo = [
+    'user_id' => $_SESSION['user_id'],
+    'subscription_type' => $subscriptionType,
+    'subscription_expires' => $subscriptionExpires,
+    'stripe_keys_configured' => !empty(STRIPE_PUBLISHABLE_KEY) && !empty(STRIPE_SECRET_KEY),
+    'publishable_key_preview' => !empty(STRIPE_PUBLISHABLE_KEY) ? substr(STRIPE_PUBLISHABLE_KEY, 0, 12) . '...' : 'NOT SET'
+];
 ?>
 
 <!DOCTYPE html>
@@ -70,8 +79,15 @@ foreach ($plans as $plan) {
     <link rel="stylesheet" href="../css/pages/subscription.css">
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
     
-    <!-- Stripe JavaScript -->
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Stripe JavaScript - Load early -->
+    <?php if (!empty(STRIPE_PUBLISHABLE_KEY)): ?>
     <script src="https://js.stripe.com/v3/"></script>
+    <?php endif; ?>
 </head>
 <body>
     <div class="main-container">
@@ -104,6 +120,14 @@ foreach ($plans as $plan) {
                         </div>
                     </div>
                     <button class="manage-subscription-btn" onclick="manageSubscription()">Manage Subscription</button>
+                </div>
+                <?php endif; ?>
+
+                <!-- Configuration Warning (Development) -->
+                <?php if (DEBUG_MODE && (empty(STRIPE_PUBLISHABLE_KEY) || empty(STRIPE_SECRET_KEY))): ?>
+                <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <strong>⚠️ Development Notice:</strong> Stripe keys not configured. 
+                    <a href="../test-stripe.php" target="_blank">Test Configuration</a>
                 </div>
                 <?php endif; ?>
 
@@ -258,21 +282,21 @@ foreach ($plans as $plan) {
                                 <img src="../images/icons/ads-icon-light.webp" alt="No Ads">
                             </div>
                             <h3>Ad-Free Experience</h3>
-                            <p>Focus on your tasks without any distractions or interruptions</p>
+                            <p>Focus on your tasks without any distractions or interruptions from advertisements</p>
                         </div>
                         <div class="benefit">
                             <div class="benefit-icon">
                                 <img src="../images/icons/exclusive-icon-light.webp" alt="Exclusive">
                             </div>
                             <h3>Exclusive Content</h3>
-                            <p>Access special items and themes not available to free users</p>
+                            <p>Access special items, themes, and features not available to free users</p>
                         </div>
                         <div class="benefit">
                             <div class="benefit-icon">
                                 <img src="../images/icons/support-icon-light.webp" alt="Support">
                             </div>
                             <h3>Support Development</h3>
-                            <p>Help us continue improving and adding new features</p>
+                            <p>Help us continue improving Habitus Zone and adding new features for everyone</p>
                         </div>
                     </div>
                 </div>
@@ -287,7 +311,7 @@ foreach ($plans as $plan) {
                                 <img src="../images/icons/chevron-down.webp" alt="Toggle">
                             </button>
                             <div class="faq-answer">
-                                <p>Yes! You can cancel your subscription at any time. You'll retain access to premium features until the end of your billing period.</p>
+                                <p>Yes! You can cancel your subscription at any time. You'll retain access to premium features until the end of your current billing period.</p>
                             </div>
                         </div>
                         <div class="faq-item">
@@ -305,7 +329,7 @@ foreach ($plans as $plan) {
                                 <img src="../images/icons/chevron-down.webp" alt="Toggle">
                             </button>
                             <div class="faq-answer">
-                                <p>Absolutely! You can upgrade or downgrade your plan at any time. Changes take effect immediately.</p>
+                                <p>Absolutely! You can upgrade or downgrade your plan at any time. Changes take effect immediately and billing adjusts accordingly.</p>
                             </div>
                         </div>
                         <div class="faq-item">
@@ -314,7 +338,16 @@ foreach ($plans as $plan) {
                                 <img src="../images/icons/chevron-down.webp" alt="Toggle">
                             </button>
                             <div class="faq-answer">
-                                <p>Yes, we use Stripe's industry-standard encryption and never store your payment details on our servers.</p>
+                                <p>Yes, we use Stripe's industry-standard encryption and security. We never store your payment details on our servers.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <button class="faq-question" onclick="toggleFaq(this)">
+                                What happens if I don't renew?
+                                <img src="../images/icons/chevron-down.webp" alt="Toggle">
+                            </button>
+                            <div class="faq-answer">
+                                <p>If you don't renew, your account will revert to the free plan. You'll keep all your data, but lose access to premium features.</p>
                             </div>
                         </div>
                     </div>
@@ -335,28 +368,33 @@ foreach ($plans as $plan) {
                     <h3 id="selected-plan-name">Plan Name</h3>
                     <p id="selected-plan-price">Price</p>
                 </div>
-                                
+                
                 <form id="payment-form">
                     <!-- Stripe Elements will be inserted here -->
                     <div id="payment-element">
-                        <div class="loading-message">Loading payment form...</div>
+                        <div class="stripe-loading">
+                            <div class="loading-spinner"></div>
+                            <p>Initializing secure payment form...</p>
+                        </div>
                     </div>
-                                
+                    
+                    <!-- Payment Security Info -->
                     <div class="payment-security">
                         <img src="../images/icons/lock.webp" alt="Secure">
                         <span>Secured by Stripe. We never store your payment details.</span>
                     </div>
-                                
+                    
                     <!-- Error messages -->
                     <div id="payment-message" class="hidden"></div>
-                                
+                    
+                    <!-- Submit Button -->
                     <button type="submit" id="submit-payment-btn" class="submit-payment-btn" disabled>
                         <span id="button-text">Subscribe Now</span>
-                        <span id="spinner" class="hidden">⌛</span>
+                        <span id="spinner" class="hidden"></span>
                     </button>
                 </form>
-                                
-                <!-- Payment method logos -->
+                
+                <!-- Payment Methods Info -->
                 <div class="payment-methods">
                     <span>Powered by Stripe</span>
                 </div>
@@ -365,24 +403,100 @@ foreach ($plans as $plan) {
     </div>
 
     <!-- Scripts -->
+    <script src="../js/main.js"></script>
+    
+    <!-- Initialize Stripe -->
+    <?php if (!empty(STRIPE_PUBLISHABLE_KEY)): ?>
     <script>
         // Initialize Stripe with your publishable key
         const stripe = Stripe('<?php echo STRIPE_PUBLISHABLE_KEY; ?>');
         
-        // Debug: Check if Stripe is loaded
-        console.log('Stripe initialized:', !!stripe);
-        console.log('Stripe key used:', '<?php echo STRIPE_PUBLISHABLE_KEY; ?>');
+        // Debug information
+        console.log('🔧 Stripe initialized for Habitus Zone');
+        console.log('📊 Debug info:', <?php echo json_encode($debugInfo); ?>);
     </script>
-    <script src="../js/main.js"></script>
+    
+    <!-- Load subscription functionality -->
     <script src="../js/subscription-stripe.js"></script>
     
-    <!-- Debug info -->
-    <?php if (DEBUG_MODE): ?>
+    <?php else: ?>
     <script>
-        console.log('Debug: Subscription page loaded');
-        console.log('User subscription type:', '<?php echo $subscriptionType; ?>');
-        console.log('Stripe publishable key:', '<?php echo STRIPE_PUBLISHABLE_KEY; ?>');
+        console.error('❌ Stripe publishable key not configured');
+        
+        // Disable subscription buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('[onclick*="subscribeToPlan"]');
+            buttons.forEach(button => {
+                button.disabled = true;
+                button.textContent = 'Configuration Required';
+                button.style.opacity = '0.5';
+            });
+        });
+        
+        function subscribeToPlan(plan) {
+            alert('Payment system not configured. Please contact support.');
+        }
     </script>
+    <?php endif; ?>
+    
+    <script>
+        // Subscription management functions
+        function manageSubscription() {
+            if (confirm('Would you like to cancel your subscription? You will retain access until the end of your billing period.')) {
+                cancelSubscription();
+            }
+        }
+        
+        function downgradeToFree() {
+            if (confirm('Are you sure you want to downgrade to the free plan? You will lose access to premium features.')) {
+                cancelSubscription();
+            }
+        }
+        
+        function cancelSubscription() {
+            fetch('../php/api/subscription/cancel.php', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Subscription cancelled. You will retain access until ' + data.expires_date);
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    alert(data.message || 'Error cancelling subscription');
+                }
+            })
+            .catch(error => {
+                console.error('Cancel error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+    </script>
+    
+    <!-- Debug Mode Styling -->
+    <?php if (DEBUG_MODE): ?>
+    <style>
+        .debug-info {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 10000;
+            max-width: 300px;
+        }
+    </style>
+    <div class="debug-info">
+        <strong>Debug Info:</strong><br>
+        User: <?php echo $_SESSION['user_id']; ?><br>
+        Plan: <?php echo $subscriptionType; ?><br>
+        Stripe: <?php echo !empty(STRIPE_PUBLISHABLE_KEY) ? 'Configured' : 'Not Configured'; ?><br>
+        <a href="../test-stripe.php" target="_blank" style="color: #4CAF50;">Test Config</a>
+    </div>
     <?php endif; ?>
 </body>
 </html>
