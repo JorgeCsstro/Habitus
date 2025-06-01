@@ -1,33 +1,179 @@
-// subscription-stripe.js - DEBUG VERSION
+// debug-subscription.js - Enhanced debugging version
+// Replace the content of js/subscription-stripe.js with this
 
 let selectedPlan = null;
 let elements = null;
 let paymentIntentClientSecret = null;
+let debugMode = true; // Set to false to reduce console output
+
+const appearance = {
+    theme: 'stripe',
+    variables: {
+        colorPrimary: '#8d5b4c',
+        colorBackground: '#ffffff',
+        colorText: '#2d2926',
+        colorDanger: '#e53e3e',
+        colorSuccess: '#38a169',
+        colorWarning: '#d69e2e',
+        fontFamily: 'Poppins, system-ui, sans-serif',
+        fontSizeBase: '16px',
+        fontSizeSm: '14px',
+        fontWeightNormal: '400',
+        fontWeightMedium: '500',
+        fontWeightBold: '600',
+        borderRadius: '8px',
+        spacingUnit: '4px',
+        gridRowSpacing: '16px',
+        gridColumnSpacing: '16px'
+    },
+    rules: {
+        '.Tab': {
+            border: '1px solid #e9e2d9',
+            borderRadius: '8px',
+            boxShadow: 'none',
+            padding: '12px 16px',
+            backgroundColor: '#ffffff',
+            transition: 'all 0.3s ease'
+        },
+        '.Tab:hover': {
+            borderColor: '#d6cfc7',
+            backgroundColor: '#f9f5f0'
+        },
+        '.Tab--selected': {
+            borderColor: '#8d5b4c',
+            backgroundColor: '#f5f1ea',
+            transform: 'none',
+            boxShadow: '0 0 0 1px #8d5b4c'
+        },
+        '.TabIcon': {
+            color: '#8d5b4c'
+        },
+        '.TabIcon--selected': {
+            color: '#8d5b4c'
+        },
+        '.TabLabel': {
+            fontWeight: '500',
+            color: '#5a5755'
+        },
+        '.TabLabel--selected': {
+            color: '#8d5b4c'
+        },
+        '.Input': {
+            border: '1px solid #e9e2d9',
+            borderRadius: '6px',
+            padding: '12px 16px',
+            fontSize: '16px',
+            backgroundColor: '#ffffff',
+            transition: 'border-color 0.3s ease'
+        },
+        '.Input:focus': {
+            borderColor: '#8d5b4c',
+            boxShadow: '0 0 0 2px rgba(141, 91, 76, 0.1)',
+            outline: 'none'
+        },
+        '.Input--invalid': {
+            borderColor: '#e53e3e'
+        },
+        '.Input::placeholder': {
+            color: '#a0aec0'
+        },
+        '.Label': {
+            fontWeight: '500',
+            fontSize: '14px',
+            color: '#5a5755',
+            marginBottom: '6px'
+        },
+        '.Error': {
+            color: '#e53e3e',
+            fontSize: '14px',
+            marginTop: '6px'
+        },
+        '.Block': {
+            backgroundColor: '#ffffff',
+            borderRadius: '8px',
+            border: '1px solid #e9e2d9',
+            padding: '16px'
+        },
+        '.CodeInput': {
+            borderColor: '#e9e2d9',
+            fontSize: '16px'
+        },
+        '.CodeInput:focus': {
+            borderColor: '#8d5b4c',
+            boxShadow: '0 0 0 2px rgba(141, 91, 76, 0.1)'
+        }
+    }
+};
+
+const paymentElementOptions = {
+    layout: {
+        type: 'tabs',
+        defaultCollapsed: false,
+        radios: false,
+        spacedAccordionItems: true
+    },
+    fields: {
+        billingDetails: {
+            name: 'auto',
+            email: 'auto',
+            phone: 'auto',
+            address: {
+                country: 'auto',
+                line1: 'auto',
+                line2: 'auto',
+                city: 'auto',
+                state: 'auto',
+                postalCode: 'auto'
+            }
+        }
+    },
+    terms: {
+        card: 'auto'
+    },
+    wallets: {
+        applePay: 'auto',
+        googlePay: 'auto'
+    }
+};
 
 // Enhanced logging function
-function debugLog(message, data = null) {
+function debugLog(level, message, data = null) {
+    if (!debugMode && level === 'debug') return;
+    
     const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] ${message}`, data || '');
+    const emoji = {
+        'error': '❌',
+        'success': '✅', 
+        'info': 'ℹ️',
+        'debug': '🔧',
+        'warning': '⚠️'
+    }[level] || 'ℹ️';
+    
+    console.log(`[${timestamp}] ${emoji} ${message}`, data || '');
 }
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    debugLog('🚀 Subscription page initializing...');
+    debugLog('info', '🚀 Debug Subscription JS Loading...');
     
-    // Check if Stripe is available
+    // Check if Stripe is loaded
     if (typeof stripe === 'undefined') {
-        debugLog('❌ Stripe not loaded!');
-        showMessage('Payment system not available. Please refresh the page.');
+        debugLog('error', 'Stripe not loaded! Check if Stripe script is included.');
+        showAlert('❌ Stripe not loaded. Please refresh the page.', 'error');
         return;
     }
     
-    debugLog('✅ Stripe loaded successfully');
+    debugLog('success', 'Stripe loaded successfully');
+    debugLog('debug', 'Stripe object details', {
+        version: stripe._VERSION,
+        key: stripe._keyMode
+    });
     
     // Initialize components
     initializeFaqToggles();
     setupModalHandlers();
     
-    debugLog('✅ Subscription page ready');
+    debugLog('success', 'Subscription page initialized successfully');
 });
 
 /**
@@ -40,19 +186,23 @@ function initializeFaqToggles() {
             toggleFaq(this);
         });
     });
-    debugLog(`📋 Initialized ${faqQuestions.length} FAQ toggles`);
+    debugLog('debug', `Initialized ${faqQuestions.length} FAQ toggles`);
 }
 
 /**
  * Set up modal event handlers
  */
 function setupModalHandlers() {
+    const modal = document.getElementById('payment-modal');
     const closeButtons = document.querySelectorAll('.close-modal');
+    const form = document.getElementById('payment-form');
+    
+    // Close button handlers
     closeButtons.forEach(button => {
         button.addEventListener('click', closePaymentModal);
     });
     
-    const modal = document.getElementById('payment-modal');
+    // Click outside modal to close
     if (modal) {
         modal.addEventListener('click', function(e) {
             if (e.target === modal) {
@@ -61,19 +211,25 @@ function setupModalHandlers() {
         });
     }
     
-    const form = document.getElementById('payment-form');
+    // Form submission handler
     if (form) {
         form.addEventListener('submit', handleSubmit);
     }
     
-    debugLog('🔧 Modal handlers set up');
+    debugLog('debug', 'Modal handlers set up');
 }
 
 /**
- * Subscribe to a plan
+ * Subscribe to a plan with extensive debugging
  */
 async function subscribeToPlan(planType) {
-    debugLog('🎯 Starting subscription process', { plan: planType });
+    debugLog('info', `Starting subscription process for plan: ${planType}`);
+    
+    if (!planType || !['adfree', 'premium'].includes(planType)) {
+        debugLog('error', 'Invalid plan type', planType);
+        showAlert('❌ Invalid plan selected', 'error');
+        return;
+    }
     
     selectedPlan = planType;
     
@@ -82,162 +238,103 @@ async function subscribeToPlan(planType) {
         premium: { name: 'Premium Plan', price: '€5/month' }
     };
     
-    const selectedPlanDetails = planDetails[planType];
-    if (!selectedPlanDetails) {
-        debugLog('❌ Invalid plan selected', planType);
-        showMessage('Invalid plan selected');
-        return;
-    }
-    
     // Update modal content
-    document.getElementById('selected-plan-name').textContent = selectedPlanDetails.name;
-    document.getElementById('selected-plan-price').textContent = selectedPlanDetails.price;
+    const planNameEl = document.getElementById('selected-plan-name');
+    const planPriceEl = document.getElementById('selected-plan-price');
+    
+    if (planNameEl && planPriceEl) {
+        planNameEl.textContent = planDetails[planType].name;
+        planPriceEl.textContent = planDetails[planType].price;
+        debugLog('debug', 'Modal content updated');
+    } else {
+        debugLog('error', 'Modal elements not found');
+    }
     
     // Show modal
     const modal = document.getElementById('payment-modal');
-    modal.style.display = 'flex';
+    if (modal) {
+        modal.style.display = 'flex';
+        debugLog('debug', 'Modal displayed');
+    } else {
+        debugLog('error', 'Modal element not found');
+        return;
+    }
     
     // Initialize Stripe payment
     await initializeStripePayment();
 }
 
 /**
- * Initialize Stripe Payment Element with enhanced debugging
+ * Initialize Stripe Payment Element with comprehensive debugging
  */
 async function initializeStripePayment() {
-    debugLog('🔧 Initializing Stripe payment...', { plan: selectedPlan });
-    setLoading(true);
-    showMessage('');
+    console.log('🔧 Initializing Stripe payment with enhanced styling...');
+    
+    const paymentElement = document.getElementById('payment-element');
+    if (!paymentElement) {
+        console.error('Payment element container not found');
+        return;
+    }
+    
+    // Show enhanced loading state
+    paymentElement.innerHTML = `
+        <div class="payment-loading">
+            <div></div>
+            <p>Loading secure payment form...</p>
+        </div>
+    `;
     
     try {
-        debugLog('📡 Making request to create payment intent...');
-        
-        const requestBody = JSON.stringify({ plan: selectedPlan });
-        debugLog('📡 Request body:', requestBody);
-        
+        // Your existing API call code here...
         const response = await fetch('../php/api/subscription/create-payment-intent.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
             },
-            body: requestBody
+            body: JSON.stringify({ plan: selectedPlan })
         });
         
-        debugLog('📡 Response received', {
-            status: response.status,
-            statusText: response.statusText,
-            ok: response.ok,
-            headers: Object.fromEntries(response.headers.entries())
-        });
-        
-        // Check response status
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        // Get response as text first to check what we actually received
-        const responseText = await response.text();
-        debugLog('📡 Raw response text (first 500 chars):', responseText.substring(0, 500));
-        
-        // Check if response is empty
-        if (!responseText || responseText.trim() === '') {
-            throw new Error('Server returned empty response');
-        }
-        
-        // Try to parse as JSON
-        let data;
-        try {
-            data = JSON.parse(responseText);
-            debugLog('📡 Parsed JSON response:', data);
-        } catch (parseError) {
-            debugLog('❌ JSON parse failed', {
-                error: parseError.message,
-                responseLength: responseText.length,
-                responseStart: responseText.substring(0, 200),
-                responseEnd: responseText.substring(-200)
-            });
-            
-            // Check if response looks like HTML (server error page)
-            if (responseText.includes('<html>') || responseText.includes('<!DOCTYPE')) {
-                throw new Error('Server returned HTML instead of JSON. Check server logs for PHP errors.');
-            }
-            
-            throw new Error(`Invalid JSON response: ${parseError.message}`);
-        }
-        
-        // Validate response structure
-        if (!data || typeof data !== 'object') {
-            throw new Error('Invalid response format');
-        }
+        const data = await response.json();
         
         if (!data.success) {
-            const errorMsg = data.message || 'Unknown server error';
-            debugLog('❌ Server returned error', data);
-            throw new Error(errorMsg);
+            throw new Error(data.message || 'Server error');
         }
         
-        if (!data.clientSecret) {
-            debugLog('❌ Missing clientSecret in response', data);
-            throw new Error('No client secret received from server');
-        }
-        
-        paymentIntentClientSecret = data.clientSecret;
-        debugLog('✅ Payment intent created successfully', {
-            paymentIntentId: data.paymentIntentId,
-            customerId: data.customerId
-        });
-        
-        // Configure Stripe Elements
-        const appearance = {
-            theme: 'stripe',
-            variables: {
-                colorPrimary: '#8d5b4c',
-                colorBackground: '#ffffff',
-                colorText: '#2d2926',
-                colorDanger: '#a15c5c',
-                fontFamily: 'Poppins, sans-serif',
-                borderRadius: '8px'
-            }
-        };
-        
-        debugLog('🎨 Creating Stripe elements...');
+        // Create elements with enhanced styling
         elements = stripe.elements({
-            clientSecret: paymentIntentClientSecret,
-            appearance
+            clientSecret: data.clientSecret,
+            appearance: appearance
         });
         
-        const paymentElement = elements.create('payment', {
-            layout: {
-                type: 'tabs',
-                defaultCollapsed: false
-            }
-        });
+        const paymentElementStripe = elements.create('payment', paymentElementOptions);
         
         // Clear container and mount
-        const container = document.getElementById('payment-element');
-        if (!container) {
-            throw new Error('Payment element container not found');
+        paymentElement.innerHTML = '';
+        
+        // Mount with error handling
+        try {
+            await paymentElementStripe.mount('#payment-element');
+            console.log('✅ Payment element mounted with enhanced styling');
+        } catch (mountError) {
+            console.error('Mount error:', mountError);
+            paymentElement.innerHTML = `
+                <div>
+                    <p>Failed to load payment form. Please refresh the page and try again.</p>
+                    <button onclick="initializeStripePayment()">
+                        Retry
+                    </button>
+                </div>
+            `;
+            return;
         }
         
-        container.innerHTML = '';
-        
-        debugLog('🔗 Mounting payment element...');
-        paymentElement.mount('#payment-element');
-        
-        // Handle events
-        paymentElement.on('ready', function() {
-            debugLog('✅ Payment element ready');
-            setLoading(false);
-            
-            const submitBtn = document.getElementById('submit-payment-btn');
-            if (submitBtn) {
-                submitBtn.disabled = false;
-            }
+        // Event handlers
+        paymentElementStripe.on('ready', function() {
+            console.log('✅ Payment element ready');
+            document.getElementById('submit-payment-btn').disabled = false;
         });
         
-        paymentElement.on('change', function(event) {
-            debugLog('💳 Payment element changed', event);
+        paymentElementStripe.on('change', function(event) {
             if (event.error) {
                 showMessage(event.error.message);
             } else {
@@ -246,12 +343,16 @@ async function initializeStripePayment() {
         });
         
     } catch (error) {
-        debugLog('❌ Payment initialization error', {
-            message: error.message,
-            stack: error.stack
-        });
-        showMessage(error.message || 'Failed to initialize payment. Please try again.');
-        setLoading(false);
+        console.error('❌ Payment initialization error:', error);
+        paymentElement.innerHTML = `
+            <div>
+                <h4>Payment Form Error</h4>
+                <p>${error.message}</p>
+                <button onclick="initializeStripePayment()">
+                    🔄 Try Again
+                </button>
+            </div>
+        `;
     }
 }
 
@@ -260,10 +361,10 @@ async function initializeStripePayment() {
  */
 async function handleSubmit(e) {
     e.preventDefault();
-    debugLog('💳 Processing payment...');
+    debugLog('info', 'Processing payment submission...');
     
     if (!stripe || !elements) {
-        debugLog('❌ Stripe or elements not ready');
+        debugLog('error', 'Stripe or elements not ready');
         showMessage('Payment system not ready. Please refresh and try again.');
         return;
     }
@@ -272,9 +373,9 @@ async function handleSubmit(e) {
     showMessage('');
     
     try {
-        debugLog('🔐 Confirming payment with Stripe...');
+        debugLog('info', 'Confirming payment with Stripe...');
         
-        const { error, paymentIntent } = await stripe.confirmPayment({
+        const confirmResult = await stripe.confirmPayment({
             elements,
             confirmParams: {
                 return_url: window.location.href,
@@ -282,30 +383,32 @@ async function handleSubmit(e) {
             redirect: 'if_required'
         });
         
-        if (error) {
-            debugLog('❌ Payment error', error);
+        debugLog('debug', 'Payment confirmation result', confirmResult);
+        
+        if (confirmResult.error) {
+            debugLog('error', 'Payment confirmation error', confirmResult.error);
             
-            if (error.type === 'card_error' || error.type === 'validation_error') {
-                showMessage(error.message);
+            if (confirmResult.error.type === 'card_error' || confirmResult.error.type === 'validation_error') {
+                showMessage(confirmResult.error.message);
             } else {
                 showMessage('Payment failed. Please try again.');
             }
             setLoading(false);
-        } else if (paymentIntent) {
-            debugLog('✅ Payment intent result', {
-                id: paymentIntent.id,
-                status: paymentIntent.status
+        } else if (confirmResult.paymentIntent) {
+            debugLog('success', 'Payment confirmed', {
+                id: confirmResult.paymentIntent.id,
+                status: confirmResult.paymentIntent.status
             });
             
-            if (paymentIntent.status === 'succeeded') {
-                await activateSubscription(paymentIntent.id);
+            if (confirmResult.paymentIntent.status === 'succeeded') {
+                await activateSubscription(confirmResult.paymentIntent.id);
             } else {
-                showMessage(`Payment status: ${paymentIntent.status}`);
+                showMessage(`Payment status: ${confirmResult.paymentIntent.status}`);
                 setLoading(false);
             }
         }
     } catch (error) {
-        debugLog('❌ Payment processing error', error);
+        debugLog('error', 'Payment processing error', error);
         showMessage('An error occurred during payment. Please try again.');
         setLoading(false);
     }
@@ -315,7 +418,7 @@ async function handleSubmit(e) {
  * Activate subscription after successful payment
  */
 async function activateSubscription(paymentIntentId) {
-    debugLog('🎉 Activating subscription...', { paymentIntentId });
+    debugLog('info', 'Activating subscription...', { paymentIntentId });
     
     try {
         const response = await fetch('../php/api/subscription/activate-subscription.php', {
@@ -330,10 +433,11 @@ async function activateSubscription(paymentIntentId) {
         });
         
         const data = await response.json();
-        debugLog('🎉 Activation response', data);
+        debugLog('debug', 'Activation response', data);
         
         if (data.success) {
-            showNotification('🎉 Subscription activated successfully!', 'success');
+            debugLog('success', 'Subscription activated successfully');
+            showAlert('🎉 Subscription activated successfully!', 'success');
             closePaymentModal();
             
             setTimeout(() => {
@@ -343,7 +447,7 @@ async function activateSubscription(paymentIntentId) {
             throw new Error(data.message || 'Failed to activate subscription');
         }
     } catch (error) {
-        debugLog('❌ Activation error', error);
+        debugLog('error', 'Activation error', error);
         showMessage('Payment succeeded but activation failed. Please contact support.');
     }
     
@@ -354,7 +458,7 @@ async function activateSubscription(paymentIntentId) {
  * Close payment modal
  */
 function closePaymentModal() {
-    debugLog('🚪 Closing payment modal');
+    debugLog('info', 'Closing payment modal');
     const modal = document.getElementById('payment-modal');
     modal.style.display = 'none';
     
@@ -373,7 +477,10 @@ function closePaymentModal() {
  */
 function showMessage(messageText) {
     const messageContainer = document.getElementById('payment-message');
-    if (!messageContainer) return;
+    if (!messageContainer) {
+        debugLog('warning', 'Message container not found');
+        return;
+    }
     
     if (!messageText) {
         messageContainer.classList.add('hidden');
@@ -383,7 +490,7 @@ function showMessage(messageText) {
     
     messageContainer.classList.remove('hidden');
     messageContainer.textContent = messageText;
-    debugLog('💬 Showing message:', messageText);
+    debugLog('info', 'Showing message', messageText);
 }
 
 /**
@@ -408,7 +515,7 @@ function setLoading(isLoading) {
         }
     }
     
-    debugLog(`⏳ Loading state: ${isLoading}`);
+    debugLog('debug', `Loading state changed to: ${isLoading}`);
 }
 
 /**
@@ -420,51 +527,41 @@ function toggleFaq(questionElement) {
     
     questionElement.classList.toggle('active');
     answer.classList.toggle('show');
+    
+    debugLog('debug', 'FAQ toggled');
 }
 
 /**
- * Show notification
+ * Show alert notification
  */
-function showNotification(message, type = 'info') {
-    debugLog(`📢 ${type.toUpperCase()}: ${message}`);
+function showAlert(message, type = 'info') {
+    debugLog('info', `Showing ${type} alert: ${message}`);
     
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
-        color: white;
-        padding: 15px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 10000;
-        max-width: 300px;
-        opacity: 0;
-        transform: translateX(100%);
-        transition: all 0.3s ease;
-    `;
-    notification.textContent = message;
+    const alertDiv = document.createElement('div');
+    alertDiv.textContent = message;
     
-    document.body.appendChild(notification);
+    document.body.appendChild(alertDiv);
     
+    // Animate in
     setTimeout(() => {
-        notification.style.opacity = '1';
-        notification.style.transform = 'translateX(0)';
+        alertDiv.style.opacity = '1';
+        alertDiv.style.transform = 'translateX(0)';
     }, 10);
     
+    // Remove after delay
     setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => notification.remove(), 300);
-    }, 4000);
+        alertDiv.style.opacity = '0';
+        alertDiv.style.transform = 'translateX(100%)';
+        setTimeout(() => alertDiv.remove(), 300);
+    }, 5000);
 }
 
-// Global functions
+// Export functions globally
 window.subscribeToPlan = subscribeToPlan;
 window.closePaymentModal = closePaymentModal;
+window.toggleFaq = toggleFaq;
 
-// Keyboard shortcuts
+// Add keyboard shortcuts
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         const modal = document.getElementById('payment-modal');
@@ -474,4 +571,4 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-debugLog('🔧 Debug Subscription Stripe JS loaded');
+debugLog('success', 'Debug Subscription JavaScript loaded and ready');
