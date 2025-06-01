@@ -69,6 +69,9 @@ foreach ($plans as $plan) {
     <!-- Page-specific CSS -->
     <link rel="stylesheet" href="../css/pages/subscription.css">
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
+    
+    <!-- Stripe JavaScript -->
+    <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
     <div class="main-container">
@@ -293,7 +296,7 @@ foreach ($plans as $plan) {
                                 <img src="../images/icons/chevron-down.webp" alt="Toggle">
                             </button>
                             <div class="faq-answer">
-                                <p>We accept all major credit and debit cards through our secure payment processor.</p>
+                                <p>We accept all major credit and debit cards, Apple Pay, and Google Pay through our secure payment processor Stripe.</p>
                             </div>
                         </div>
                         <div class="faq-item">
@@ -311,7 +314,7 @@ foreach ($plans as $plan) {
                                 <img src="../images/icons/chevron-down.webp" alt="Toggle">
                             </button>
                             <div class="faq-answer">
-                                <p>Yes, we use industry-standard encryption and never store your payment details on our servers.</p>
+                                <p>Yes, we use Stripe's industry-standard encryption and never store your payment details on our servers.</p>
                             </div>
                         </div>
                     </div>
@@ -335,7 +338,9 @@ foreach ($plans as $plan) {
                                 
                 <form id="payment-form">
                     <!-- Stripe Elements will be inserted here -->
-                    <div id="payment-element"></div>
+                    <div id="payment-element">
+                        <div class="loading-message">Loading payment form...</div>
+                    </div>
                                 
                     <div class="payment-security">
                         <img src="../images/icons/lock.webp" alt="Secure">
@@ -345,31 +350,39 @@ foreach ($plans as $plan) {
                     <!-- Error messages -->
                     <div id="payment-message" class="hidden"></div>
                                 
-                    <button type="submit" id="submit-payment-btn" class="submit-payment-btn">
+                    <button type="submit" id="submit-payment-btn" class="submit-payment-btn" disabled>
                         <span id="button-text">Subscribe Now</span>
-                        <span id="spinner" class="hidden">Processing...</span>
+                        <span id="spinner" class="hidden">⌛</span>
                     </button>
                 </form>
                                 
                 <!-- Payment method logos -->
                 <div class="payment-methods">
-                    <img src="../images/payment/visa.svg" alt="Visa" title="Visa">
-                    <img src="../images/payment/mastercard.svg" alt="Mastercard" title="Mastercard">
-                    <img src="../images/payment/amex.svg" alt="American Express" title="American Express">
-                    <img src="../images/payment/apple-pay.svg" alt="Apple Pay" title="Apple Pay">
-                    <img src="../images/payment/google-pay.svg" alt="Google Pay" title="Google Pay">
+                    <span>Powered by Stripe</span>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Scripts -->
-    <script src="https://js.stripe.com/v3/"></script>
     <script>
         // Initialize Stripe with your publishable key
         const stripe = Stripe('<?php echo STRIPE_PUBLISHABLE_KEY; ?>');
+        
+        // Debug: Check if Stripe is loaded
+        console.log('Stripe initialized:', !!stripe);
+        console.log('Stripe key used:', '<?php echo STRIPE_PUBLISHABLE_KEY; ?>');
     </script>
     <script src="../js/main.js"></script>
     <script src="../js/subscription-stripe.js"></script>
+    
+    <!-- Debug info -->
+    <?php if (DEBUG_MODE): ?>
+    <script>
+        console.log('Debug: Subscription page loaded');
+        console.log('User subscription type:', '<?php echo $subscriptionType; ?>');
+        console.log('Stripe publishable key:', '<?php echo STRIPE_PUBLISHABLE_KEY; ?>');
+    </script>
+    <?php endif; ?>
 </body>
 </html>

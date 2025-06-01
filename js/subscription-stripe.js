@@ -1,4 +1,4 @@
-// subscription-stripe.js - Enhanced Stripe payment integration for Habitus Zone
+// subscription-stripe.js - Fixed Stripe payment integration for Habitus Zone
 
 let selectedPlan = null;
 let elements = null;
@@ -6,6 +6,16 @@ let paymentIntentClientSecret = null;
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Subscription page loaded');
+    
+    // Check if Stripe is available
+    if (typeof stripe === 'undefined') {
+        console.error('❌ Stripe not loaded! Check your publishable key.');
+        return;
+    }
+    
+    console.log('✅ Stripe loaded successfully');
+    
     // Initialize FAQ toggles
     const faqQuestions = document.querySelectorAll('.faq-question');
     faqQuestions.forEach(question => {
@@ -13,6 +23,8 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleFaq(this);
         });
     });
+    
+    console.log('✅ FAQ toggles initialized');
 });
 
 /**
@@ -20,6 +32,8 @@ document.addEventListener('DOMContentLoaded', function() {
  * @param {string} planType - Type of plan (adfree or premium)
  */
 async function subscribeToPlan(planType) {
+    console.log('🎯 subscribeToPlan called with:', planType);
+    
     selectedPlan = planType;
     
     // Update modal content based on plan
@@ -40,7 +54,9 @@ async function subscribeToPlan(planType) {
     document.getElementById('selected-plan-price').textContent = planDetails[planType].price;
     
     // Show modal
-    document.getElementById('payment-modal').style.display = 'flex';
+    const modal = document.getElementById('payment-modal');
+    modal.style.display = 'flex';
+    console.log('💳 Payment modal shown');
     
     // Initialize Stripe payment
     await initializeStripePayment();
@@ -50,11 +66,13 @@ async function subscribeToPlan(planType) {
  * Initialize Stripe Payment Element
  */
 async function initializeStripePayment() {
+    console.log('🔧 Initializing Stripe payment...');
     setLoading(true);
     showMessage(''); // Clear any previous messages
     
     try {
         // Create payment intent on server
+        console.log('📡 Creating payment intent...');
         const response = await fetch('../php/api/subscription/create-payment-intent.php', {
             method: 'POST',
             headers: {
@@ -64,6 +82,7 @@ async function initializeStripePayment() {
         });
         
         const data = await response.json();
+        console.log('📡 Payment intent response:', data);
         
         if (!data.success) {
             throw new Error(data.message || 'Failed to initialize payment');
@@ -84,36 +103,17 @@ async function initializeStripePayment() {
                 fontSizeBase: '16px',
                 spacingUnit: '4px',
                 borderRadius: '8px'
-            },
-            rules: {
-                '.Tab': {
-                    border: '1px solid #e9e2d9',
-                    boxShadow: '0 2px 5px rgba(141, 91, 76, 0.08)',
-                },
-                '.Tab:hover': {
-                    backgroundColor: '#f5f1ea',
-                },
-                '.Tab--selected': {
-                    backgroundColor: '#f5f1ea',
-                    borderColor: '#8d5b4c',
-                },
-                '.Input': {
-                    borderColor: '#e9e2d9',
-                },
-                '.Input:focus': {
-                    borderColor: '#8d5b4c',
-                    boxShadow: '0 0 0 3px rgba(141, 91, 76, 0.1)',
-                }
             }
         };
         
         // Create Stripe Elements
+        console.log('🎨 Creating Stripe elements...');
         elements = stripe.elements({
             clientSecret: paymentIntentClientSecret,
             appearance
         });
         
-        // Create and mount Payment Element with options
+        // Create and mount Payment Element
         const paymentElementOptions = {
             layout: {
                 type: 'tabs',
@@ -127,10 +127,6 @@ async function initializeStripePayment() {
                     name: 'auto',
                     email: 'auto'
                 }
-            },
-            wallets: {
-                applePay: 'auto',
-                googlePay: 'auto'
             }
         };
         
@@ -141,16 +137,17 @@ async function initializeStripePayment() {
         container.innerHTML = '';
         
         // Mount the payment element
+        console.log('🔗 Mounting payment element...');
         paymentElement.mount('#payment-element');
         
         // Listen for element ready event
         paymentElement.on('ready', function(event) {
+            console.log('✅ Payment element ready');
             setLoading(false);
             
-            // Check if wallet payments are available
-            if (event.availablePaymentMethods) {
-                console.log('Available payment methods:', event.availablePaymentMethods);
-            }
+            // Enable submit button
+            const submitBtn = document.getElementById('submit-payment-btn');
+            submitBtn.disabled = false;
         });
         
         // Listen for payment method change
@@ -163,7 +160,7 @@ async function initializeStripePayment() {
         });
         
     } catch (error) {
-        console.error('Error initializing payment:', error);
+        console.error('❌ Error initializing payment:', error);
         showMessage(error.message || 'Failed to initialize payment. Please try again.');
         setLoading(false);
     }
@@ -178,9 +175,11 @@ document.getElementById('payment-form').addEventListener('submit', handleSubmit)
  */
 async function handleSubmit(e) {
     e.preventDefault();
+    console.log('💳 Payment form submitted');
     
     if (!stripe || !elements) {
-        console.error('Stripe not initialized');
+        console.error('❌ Stripe not initialized');
+        showMessage('Payment system not ready. Please refresh and try again.');
         return;
     }
     
@@ -188,6 +187,8 @@ async function handleSubmit(e) {
     showMessage('');
     
     try {
+        console.log('🔐 Confirming payment...');
+        
         // Confirm payment with Stripe
         const { error, paymentIntent } = await stripe.confirmPayment({
             elements,
@@ -200,6 +201,7 @@ async function handleSubmit(e) {
         
         if (error) {
             // Show error to customer
+            console.error('❌ Payment error:', error);
             if (error.type === 'card_error' || error.type === 'validation_error') {
                 showMessage(error.message);
             } else if (error.code === 'payment_intent_authentication_failure') {
@@ -210,6 +212,8 @@ async function handleSubmit(e) {
             setLoading(false);
         } else if (paymentIntent) {
             // Payment succeeded or requires further action
+            console.log('✅ Payment intent status:', paymentIntent.status);
+            
             if (paymentIntent.status === 'succeeded') {
                 // Payment succeeded, activate subscription
                 await activateSubscription(paymentIntent.id);
@@ -225,7 +229,7 @@ async function handleSubmit(e) {
             }
         }
     } catch (error) {
-        console.error('Payment error:', error);
+        console.error('❌ Payment error:', error);
         showMessage('Payment failed. Please try again.');
         setLoading(false);
     }
@@ -236,6 +240,8 @@ async function handleSubmit(e) {
  * @param {string} paymentIntentId - Stripe payment intent ID
  */
 async function activateSubscription(paymentIntentId) {
+    console.log('🎉 Activating subscription for payment:', paymentIntentId);
+    
     try {
         const response = await fetch('../php/api/subscription/activate-subscription.php', {
             method: 'POST',
@@ -249,6 +255,7 @@ async function activateSubscription(paymentIntentId) {
         });
         
         const data = await response.json();
+        console.log('🎉 Activation response:', data);
         
         if (data.success) {
             // Show success message
@@ -265,7 +272,7 @@ async function activateSubscription(paymentIntentId) {
             throw new Error(data.message || 'Failed to activate subscription');
         }
     } catch (error) {
-        console.error('Activation error:', error);
+        console.error('❌ Activation error:', error);
         showMessage('Payment succeeded but activation failed. Please contact support.');
     }
     
@@ -276,6 +283,7 @@ async function activateSubscription(paymentIntentId) {
  * Close payment modal
  */
 function closePaymentModal() {
+    console.log('🚪 Closing payment modal');
     const modal = document.getElementById('payment-modal');
     modal.style.display = 'none';
     
@@ -298,6 +306,11 @@ function closePaymentModal() {
  */
 function showMessage(messageText) {
     const messageContainer = document.getElementById('payment-message');
+    
+    if (!messageContainer) {
+        console.warn('⚠️ Payment message container not found');
+        return;
+    }
     
     if (!messageText) {
         messageContainer.classList.add('hidden');
@@ -360,12 +373,8 @@ async function cancelSubscription() {
     }
     
     try {
-        const response = await fetch('../php/api/subscription/manage-subscription.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'action=cancel'
+        const response = await fetch('../php/api/subscription/cancel.php', {
+            method: 'POST'
         });
         
         const data = await response.json();
@@ -381,8 +390,17 @@ async function cancelSubscription() {
             showNotification(data.message || 'Error cancelling subscription', 'error');
         }
     } catch (error) {
-        console.error('Cancel error:', error);
+        console.error('❌ Cancel error:', error);
         showNotification('An error occurred. Please try again.', 'error');
+    }
+}
+
+/**
+ * Downgrade to free plan
+ */
+function downgradeToFree() {
+    if (confirm('Are you sure you want to downgrade to the free plan? You will lose access to premium features.')) {
+        cancelSubscription();
     }
 }
 
@@ -413,29 +431,48 @@ function toggleFaq(questionElement) {
  * @param {string} type - Notification type (success, error, info, warning)
  */
 function showNotification(message, type = 'info') {
+    console.log(`📢 Notification (${type}):`, message);
+    
     // Check if notification container exists
     let container = document.querySelector('.notification-container');
     if (!container) {
         container = document.createElement('div');
         container.className = 'notification-container';
+        container.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+        `;
         document.body.appendChild(container);
     }
     
     // Create notification
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
+    notification.style.cssText = `
+        background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+        color: white;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        max-width: 300px;
+    `;
     notification.textContent = message;
     
     container.appendChild(notification);
     
     // Animate in
     setTimeout(() => {
-        notification.classList.add('show');
+        notification.style.transform = 'translateX(0)';
     }, 10);
     
     // Remove after delay
     setTimeout(() => {
-        notification.classList.remove('show');
+        notification.style.transform = 'translateX(100%)';
         setTimeout(() => {
             notification.remove();
         }, 300);
@@ -453,14 +490,10 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Add CSS for loading message
-const style = document.createElement('style');
-style.textContent = `
-    .loading-message {
-        text-align: center;
-        padding: 40px;
-        color: #5a5755;
-        font-style: italic;
-    }
-`;
-document.head.appendChild(style);
+// Debug logging
+console.log('🔧 Subscription Stripe JS loaded');
+
+// Make functions globally available for testing
+window.subscribeToPlan = subscribeToPlan;
+window.closePaymentModal = closePaymentModal;
+window.manageSubscription = manageSubscription;

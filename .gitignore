@@ -1,2 +1,72 @@
+
+# .gitignore for Habitus Zone   
 node_modules
+
+# Environment variables (NEVER COMMIT THIS!)
 .env
+.env.local
+.env.production
+.env.staging
+
+# Composer
+/vendor/
+composer.lock
+
+# Logs
+*.log
+logs/
+error.log
+access.log
+
+# Database dumps
+*.sql
+*.dump
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+cache/
+*.tmp
+*.temp
+
+# Upload directories
+uploads/*
+!uploads/.gitkeep
+
+# Config files that might contain sensitive data
+config/local.php
+config/database.php
+
+# Node modules (if using any frontend build tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+
+# PHP
+*.phar
+
+# Backup files
+*.bak
+*.backup
+*~

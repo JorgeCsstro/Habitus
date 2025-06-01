@@ -5,14 +5,17 @@ require_once '../../include/config.php';
 require_once '../../include/db_connect.php';
 require_once '../../include/auth.php';
 require_once '../../include/functions.php';
-require_once '../../../vendor/autoload.php';
+
+// Load Stripe PHP library
+if (file_exists(__DIR__ . '/../../../vendor/autoload.php')) {
+    require_once '../../../vendor/autoload.php';
+} else {
+    echo json_encode(['success' => false, 'message' => 'Stripe library not found']);
+    exit;
+}
 
 // Set Stripe API key
-if (file_exists(__DIR__ . '/../../../.env')) {
-    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../../../');
-    $dotenv->load();
-}
-\Stripe\Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
+\Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
 
 // Enable CORS if needed
 header('Content-Type: application/json');
@@ -80,14 +83,15 @@ try {
     // Record transaction
     $transactionDesc = "Subscription: " . ucfirst($plan) . " Plan (1 month)";
     $insertTransaction = "INSERT INTO transactions 
-                         (user_id, amount, description, transaction_type, reference_id, reference_type) 
-                         VALUES (?, ?, ?, 'spend', ?, 'subscription')";
+                         (user_id, amount, description, transaction_type, reference_id, reference_type, stripe_charge_id) 
+                         VALUES (?, ?, ?, 'spend', ?, 'subscription', ?)";
     $stmt = $conn->prepare($insertTransaction);
     $stmt->execute([
         $_SESSION['user_id'], 
         $planPrices[$plan] * 100, // Convert to cents for consistency
         $transactionDesc,
-        $paymentIntentId
+        $paymentIntent->id,
+        $paymentIntent->latest_charge ?? $paymentIntent->id
     ]);
     
     // Record subscription history
@@ -113,17 +117,6 @@ try {
                           VALUES (?, 'update', ?, ?)";
     $stmt = $conn->prepare($insertNotification);
     $stmt->execute([$_SESSION['user_id'], $notificationTitle, $notificationMessage]);
-    
-    // If user upgraded from ad-free to premium, send special notification
-    $userData = getUserData($_SESSION['user_id']);
-    if ($userData['subscription_type'] === 'adfree' && $plan === 'premium') {
-        $upgradeNotification = "INSERT INTO notifications 
-                               (user_id, type, title, message) 
-                               VALUES (?, 'update', 'Premium Upgrade Complete!', 
-                               'You now have access to exclusive premium items and features!')";
-        $stmt = $conn->prepare($upgradeNotification);
-        $stmt->execute([$_SESSION['user_id']]);
-    }
     
     // Commit transaction
     $conn->commit();

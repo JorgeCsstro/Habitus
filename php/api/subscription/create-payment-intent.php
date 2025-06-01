@@ -4,14 +4,25 @@
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';
 require_once '../../include/auth.php';
-require_once '../../../vendor/autoload.php'; // Stripe PHP library
 
-// Set Stripe API key
-if (file_exists(__DIR__ . '/../../../.env')) {
-    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../../../');
-    $dotenv->load();
+// Load Stripe PHP library (autoload should be available from config.php)
+if (file_exists(__DIR__ . '/../../../vendor/autoload.php')) {
+    // Autoload is already included in config.php, but double-check
+    if (!class_exists('\Stripe\Stripe')) {
+        require_once '../../../vendor/autoload.php';
+    }
+} else {
+    echo json_encode(['success' => false, 'message' => 'Stripe library not found. Please run: composer install']);
+    exit;
 }
-\Stripe\Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
+
+// Set Stripe API key from environment variable
+if (empty(STRIPE_SECRET_KEY)) {
+    echo json_encode(['success' => false, 'message' => 'Stripe not configured. Please check your .env file.']);
+    exit;
+}
+
+\Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
 
 // Enable CORS if needed
 header('Content-Type: application/json');
@@ -48,6 +59,10 @@ try {
     // Get user data
     $userData = getUserData($_SESSION['user_id']);
     
+    if (DEBUG_MODE) {
+        error_log("Creating payment intent for user: {$userData['username']}, plan: $plan");
+    }
+    
     // Create or retrieve Stripe customer
     $stripeCustomer = null;
     
@@ -56,8 +71,14 @@ try {
         try {
             // Retrieve existing customer
             $stripeCustomer = \Stripe\Customer::retrieve($userData['stripe_customer_id']);
+            if (DEBUG_MODE) {
+                error_log("Retrieved existing Stripe customer: {$stripeCustomer->id}");
+            }
         } catch (\Stripe\Exception\InvalidRequestException $e) {
             // Customer doesn't exist, create new one
+            if (DEBUG_MODE) {
+                error_log("Existing customer not found, will create new one");
+            }
             $stripeCustomer = null;
         }
     }
@@ -73,6 +94,10 @@ try {
             ]
         ]);
         
+        if (DEBUG_MODE) {
+            error_log("Created new Stripe customer: {$stripeCustomer->id}");
+        }
+        
         // Save Stripe customer ID to database
         $updateQuery = "UPDATE users SET stripe_customer_id = ? WHERE id = ?";
         $stmt = $conn->prepare($updateQuery);
@@ -82,7 +107,7 @@ try {
     // Create payment intent with automatic payment methods
     $paymentIntent = \Stripe\PaymentIntent::create([
         'amount' => $planPrices[$plan],
-        'currency' => 'eur',
+        'currency' => PAYMENT_CURRENCY,
         'customer' => $stripeCustomer->id,
         'automatic_payment_methods' => [
             'enabled' => true,
@@ -94,11 +119,14 @@ try {
             'username' => $userData['username']
         ],
         'description' => 'Habitus Zone ' . ucfirst($plan) . ' Subscription - ' . $userData['username'],
-        'receipt_email' => $userData['email']
+        'receipt_email' => $userData['email'],
+        'statement_descriptor' => PAYMENT_STATEMENT_DESCRIPTOR
     ]);
     
     // Log the payment intent creation
-    error_log("Payment intent created: " . $paymentIntent->id . " for user: " . $_SESSION['user_id']);
+    if (DEBUG_MODE) {
+        error_log("Payment intent created: {$paymentIntent->id} for user: {$_SESSION['user_id']} ({$userData['username']})");
+    }
     
     echo json_encode([
         'success' => true,
@@ -108,48 +136,45 @@ try {
     
 } catch (\Stripe\Exception\CardException $e) {
     // Card was declined
-    echo json_encode([
-        'success' => false,
-        'message' => 'Card declined: ' . $e->getError()->message
-    ]);
+    $error = 'Card declined: ' . $e->getError()->message;
+    if (DEBUG_MODE) {
+        error_log("Stripe CardException: $error");
+    }
+    echo json_encode(['success' => false, 'message' => $error]);
+    
 } catch (\Stripe\Exception\RateLimitException $e) {
     // Too many requests made to the API too quickly
-    echo json_encode([
-        'success' => false,
-        'message' => 'Too many requests. Please try again in a moment.'
-    ]);
+    if (DEBUG_MODE) {
+        error_log("Stripe RateLimitException: " . $e->getMessage());
+    }
+    echo json_encode(['success' => false, 'message' => 'Too many requests. Please try again in a moment.']);
+    
 } catch (\Stripe\Exception\InvalidRequestException $e) {
     // Invalid parameters were supplied to Stripe's API
-    echo json_encode([
-        'success' => false,
-        'message' => 'Invalid request: ' . $e->getMessage()
-    ]);
+    if (DEBUG_MODE) {
+        error_log("Stripe InvalidRequestException: " . $e->getMessage());
+    }
+    echo json_encode(['success' => false, 'message' => 'Invalid request: ' . $e->getMessage()]);
+    
 } catch (\Stripe\Exception\AuthenticationException $e) {
     // Authentication with Stripe's API failed
     error_log("Stripe authentication failed: " . $e->getMessage());
-    echo json_encode([
-        'success' => false,
-        'message' => 'Authentication failed. Please contact support.'
-    ]);
+    echo json_encode(['success' => false, 'message' => 'Authentication failed. Please check your Stripe keys in .env file.']);
+    
 } catch (\Stripe\Exception\ApiConnectionException $e) {
     // Network communication with Stripe failed
-    echo json_encode([
-        'success' => false,
-        'message' => 'Network error. Please check your connection and try again.'
-    ]);
+    if (DEBUG_MODE) {
+        error_log("Stripe ApiConnectionException: " . $e->getMessage());
+    }
+    echo json_encode(['success' => false, 'message' => 'Network error. Please check your connection and try again.']);
+    
 } catch (\Stripe\Exception\ApiErrorException $e) {
     // Generic Stripe API error
     error_log("Stripe API error: " . $e->getMessage());
-    echo json_encode([
-        'success' => false,
-        'message' => 'Payment service error. Please try again later.'
-    ]);
+    echo json_encode(['success' => false, 'message' => 'Payment service error. Please try again later.']);
+    
 } catch (Exception $e) {
     // Other errors
     error_log("Payment intent creation error: " . $e->getMessage());
-    echo json_encode([
-        'success' => false,
-        'message' => 'An error occurred. Please try again.'
-    ]);
+    echo json_encode(['success' => false, 'message' => 'An error occurred. Please try again.']);
 }
-?>

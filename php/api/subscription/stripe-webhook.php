@@ -1,22 +1,28 @@
 <?php
 // php/api/subscription/stripe-webhook.php
-// This file handles Stripe webhooks for subscription events
+// Enhanced webhook handler for Habitus Zone
 
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';
-require_once '../../../vendor/autoload.php';
+require_once '../../include/functions.php';
+
+// Load Stripe PHP library
+if (!class_exists('\Stripe\Stripe')) {
+    require_once '../../../vendor/autoload.php';
+}
 
 // Set Stripe API key
-if (file_exists(__DIR__ . '/../../../.env')) {
-    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../../../');
-    $dotenv->load();
-}
-\Stripe\Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
+\Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
 
 // Get webhook payload and signature
 $payload = @file_get_contents('php://input');
 $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? '';
 $event = null;
+
+// Log incoming webhook (in debug mode)
+if (DEBUG_MODE) {
+    error_log("Stripe webhook received - Signature: " . substr($sig_header, 0, 20) . "...");
+}
 
 try {
     // Verify webhook signature
@@ -74,6 +80,16 @@ try {
             handleInvoicePaymentFailed($invoice);
             break;
             
+        case 'customer.created':
+            $customer = $event->data->object;
+            handleCustomerCreated($customer);
+            break;
+            
+        case 'customer.updated':
+            $customer = $event->data->object;
+            handleCustomerUpdated($customer);
+            break;
+            
         default:
             // Unexpected event type
             error_log('Unhandled Stripe event type: ' . $event->type);
@@ -91,10 +107,11 @@ try {
 
 /**
  * Handle successful payment
- * @param object $paymentIntent
  */
 function handlePaymentSuccess($paymentIntent) {
     global $conn;
+    
+    error_log("Processing successful payment: {$paymentIntent->id}");
     
     // Extract metadata
     $userId = $paymentIntent->metadata->user_id ?? null;
@@ -106,48 +123,75 @@ function handlePaymentSuccess($paymentIntent) {
     }
     
     // Check if payment was already processed
-    $checkQuery = "SELECT id FROM transactions WHERE reference_id = ? AND reference_type = 'subscription'";
+    $checkQuery = "SELECT id FROM transactions WHERE stripe_charge_id = ?";
     $stmt = $conn->prepare($checkQuery);
     $stmt->execute([$paymentIntent->id]);
     
     if ($stmt->rowCount() > 0) {
-        // Already processed
+        error_log("Payment already processed: {$paymentIntent->id}");
         return;
     }
     
-    // Update user subscription
-    $expiryDate = date('Y-m-d H:i:s', strtotime('+1 month'));
-    $updateQuery = "UPDATE users SET 
-                   subscription_type = ?, 
-                   subscription_expires = ?,
-                   last_payment_intent = ?
-                   WHERE id = ?";
-    
-    $stmt = $conn->prepare($updateQuery);
-    $stmt->execute([$plan, $expiryDate, $paymentIntent->id, $userId]);
-    
-    // Record transaction
-    $amount = $paymentIntent->amount; // Amount in cents
-    $transactionDesc = "Subscription: " . ucfirst($plan) . " Plan (Webhook)";
-    
-    $insertTransaction = "INSERT INTO transactions 
-                         (user_id, amount, description, transaction_type, reference_id, reference_type) 
-                         VALUES (?, ?, ?, 'spend', ?, 'subscription')";
-    $stmt = $conn->prepare($insertTransaction);
-    $stmt->execute([$userId, $amount, $transactionDesc, $paymentIntent->id]);
-    
-    error_log("Payment processed for user $userId: $paymentIntent->id");
+    try {
+        $conn->beginTransaction();
+        
+        // Update user subscription
+        $expiryDate = date('Y-m-d H:i:s', strtotime('+1 month'));
+        $updateQuery = "UPDATE users SET 
+                       subscription_type = ?, 
+                       subscription_expires = ?,
+                       last_payment_intent = ?
+                       WHERE id = ?";
+        
+        $stmt = $conn->prepare($updateQuery);
+        $stmt->execute([$plan, $expiryDate, $paymentIntent->id, $userId]);
+        
+        // Record transaction
+        $amount = $paymentIntent->amount; // Amount in cents
+        $transactionDesc = "Subscription: " . ucfirst($plan) . " Plan (Webhook)";
+        
+        $insertTransaction = "INSERT INTO transactions 
+                             (user_id, amount, description, transaction_type, stripe_charge_id, reference_type) 
+                             VALUES (?, ?, ?, 'spend', ?, 'subscription')";
+        $stmt = $conn->prepare($insertTransaction);
+        $stmt->execute([$userId, $amount, $transactionDesc, $paymentIntent->id]);
+        
+        // Add to subscription history
+        $insertHistory = "INSERT INTO subscription_history 
+                         (user_id, plan_name, action, price, payment_intent_id) 
+                         VALUES (?, ?, 'subscribe', ?, ?)";
+        $stmt = $conn->prepare($insertHistory);
+        $stmt->execute([$userId, $plan, ($amount / 100), $paymentIntent->id]);
+        
+        // Send success notification
+        $notificationTitle = "Payment Successful!";
+        $notificationMessage = "Your " . ucfirst($plan) . " subscription is now active. Welcome to premium features!";
+        
+        $insertNotification = "INSERT INTO notifications 
+                              (user_id, type, title, message) 
+                              VALUES (?, 'update', ?, ?)";
+        $stmt = $conn->prepare($insertNotification);
+        $stmt->execute([$userId, $notificationTitle, $notificationMessage]);
+        
+        $conn->commit();
+        error_log("Payment processed successfully for user $userId: $paymentIntent->id");
+        
+    } catch (Exception $e) {
+        $conn->rollBack();
+        error_log("Error processing payment: " . $e->getMessage());
+    }
 }
 
 /**
  * Handle failed payment
- * @param object $paymentIntent
  */
 function handlePaymentFailure($paymentIntent) {
     global $conn;
     
     $userId = $paymentIntent->metadata->user_id ?? null;
     if (!$userId) return;
+    
+    error_log("Processing failed payment for user $userId: {$paymentIntent->id}");
     
     // Send notification to user
     $notificationTitle = "Payment Failed";
@@ -158,16 +202,15 @@ function handlePaymentFailure($paymentIntent) {
                           VALUES (?, 'update', ?, ?)";
     $stmt = $conn->prepare($insertNotification);
     $stmt->execute([$userId, $notificationTitle, $notificationMessage]);
-    
-    error_log("Payment failed for user $userId: $paymentIntent->id");
 }
 
 /**
  * Handle subscription update
- * @param object $subscription
  */
 function handleSubscriptionUpdate($subscription) {
     global $conn;
+    
+    error_log("Processing subscription update: {$subscription->id}");
     
     // Get user by Stripe customer ID
     $customerId = $subscription->customer;
@@ -201,10 +244,11 @@ function handleSubscriptionUpdate($subscription) {
 
 /**
  * Handle subscription cancellation
- * @param object $subscription
  */
 function handleSubscriptionCancellation($subscription) {
     global $conn;
+    
+    error_log("Processing subscription cancellation: {$subscription->id}");
     
     // Get user by Stripe customer ID
     $customerId = $subscription->customer;
@@ -230,19 +274,11 @@ function handleSubscriptionCancellation($subscription) {
     $stmt = $conn->prepare($insertNotification);
     $stmt->execute([$userId, $notificationTitle, $notificationMessage]);
     
-    // Record in subscription history
-    $insertHistory = "INSERT INTO subscription_history 
-                     (user_id, plan_name, action, price) 
-                     VALUES (?, 'cancelled', 'cancel', 0)";
-    $stmt = $conn->prepare($insertHistory);
-    $stmt->execute([$userId]);
-    
     error_log("Subscription cancelled for user $userId: $subscription->id");
 }
 
 /**
  * Handle successful invoice payment (for recurring subscriptions)
- * @param object $invoice
  */
 function handleInvoicePaymentSuccess($invoice) {
     global $conn;
@@ -251,6 +287,8 @@ function handleInvoicePaymentSuccess($invoice) {
     if ($invoice->billing_reason === 'subscription_create') {
         return;
     }
+    
+    error_log("Processing invoice payment success: {$invoice->id}");
     
     // Get user by customer ID
     $customerId = $invoice->customer;
@@ -277,7 +315,7 @@ function handleInvoicePaymentSuccess($invoice) {
     $transactionDesc = "Subscription Renewal: " . ucfirst($plan) . " Plan";
     
     $insertTransaction = "INSERT INTO transactions 
-                         (user_id, amount, description, transaction_type, reference_id, reference_type) 
+                         (user_id, amount, description, transaction_type, stripe_charge_id, reference_type) 
                          VALUES (?, ?, ?, 'spend', ?, 'subscription')";
     $stmt = $conn->prepare($insertTransaction);
     $stmt->execute([$userId, $amount, $transactionDesc, $invoice->payment_intent]);
@@ -297,10 +335,11 @@ function handleInvoicePaymentSuccess($invoice) {
 
 /**
  * Handle failed invoice payment
- * @param object $invoice
  */
 function handleInvoicePaymentFailed($invoice) {
     global $conn;
+    
+    error_log("Processing invoice payment failure: {$invoice->id}");
     
     // Get user by customer ID
     $customerId = $invoice->customer;
@@ -325,17 +364,28 @@ function handleInvoicePaymentFailed($invoice) {
     $stmt = $conn->prepare($insertNotification);
     $stmt->execute([$userId, $notificationTitle, $notificationMessage]);
     
-    // Send email notification
-    $subject = "Habitus Zone - Payment Failed";
-    $message = "Hi {$user['username']},\n\n";
-    $message .= "We were unable to process your subscription payment.\n\n";
-    $message .= "Please update your payment method at: " . SITE_URL . "/pages/subscription.php\n\n";
-    $message .= "If you have any questions, please contact support.\n\n";
-    $message .= "Best regards,\nHabitus Zone Team";
-    
-    $headers = "From: " . ADMIN_EMAIL . "\r\n";
-    mail($user['email'], $subject, $message, $headers);
-    
     error_log("Invoice payment failed for user $userId: Invoice $invoice->id");
+}
+
+/**
+ * Handle customer created
+ */
+function handleCustomerCreated($customer) {
+    error_log("New Stripe customer created: {$customer->id}");
+    // Additional logic if needed
+}
+
+/**
+ * Handle customer updated
+ */
+function handleCustomerUpdated($customer) {
+    global $conn;
+    
+    // Update user email if it changed
+    if (!empty($customer->email)) {
+        $updateQuery = "UPDATE users SET email = ? WHERE stripe_customer_id = ?";
+        $stmt = $conn->prepare($updateQuery);
+        $stmt->execute([$customer->email, $customer->id]);
+    }
 }
 ?>
