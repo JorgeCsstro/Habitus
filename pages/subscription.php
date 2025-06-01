@@ -1,5 +1,5 @@
 <?php
-// pages/subscription.php - COMPLETE FIXED VERSION
+// pages/subscription.php - CLEAN VERSION (No inline CSS conflicts)
 
 // Include necessary files
 require_once '../php/include/config.php';
@@ -67,292 +67,12 @@ $debugInfo = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subscription - <?php echo SITE_NAME; ?></title>
     
-    <!-- CRITICAL: Inline styles for modal to prevent CSS loading issues -->
-    <style>
-        /* Critical inline styles for modal display and Stripe form */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(45, 41, 38, 0.85);
-            z-index: 99999;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-            overflow-y: auto;
-            backdrop-filter: blur(5px);
-        }
-        
-        .modal.show {
-            display: flex !important;
-        }
-        
-        .modal-content {
-            background-color: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 650px;
-            min-height: 500px;
-            max-height: 90vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            margin: auto;
-            animation: modalSlideIn 0.3s ease-out;
-        }
-        
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 30px 35px;
-            border-bottom: 2px solid #e9e2d9;
-            background: linear-gradient(135deg, #f5f1ea 0%, #e9e2d9 100%);
-            border-radius: 20px 20px 0 0;
-            flex-shrink: 0;
-        }
-        
-        .modal-header h2 {
-            margin: 0;
-            color: #2d2926;
-            font-size: 1.6rem;
-            font-family: 'Quicksand', sans-serif;
-            font-weight: 600;
-        }
-        
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 2rem;
-            cursor: pointer;
-            color: #8d8580;
-            line-height: 1;
-            padding: 8px;
-            border-radius: 50%;
-            transition: all 0.2s;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .close-modal:hover {
-            color: #2d2926;
-            background-color: rgba(141, 91, 76, 0.1);
-            transform: rotate(90deg);
-        }
-        
-        .modal-body {
-            padding: 40px;
-            flex: 1;
-            overflow-y: auto;
-            min-height: 0;
-        }
-        
-        .payment-summary {
-            background: linear-gradient(135deg, #f5f1ea 0%, #e9e2d9 100%);
-            border-radius: 15px;
-            padding: 35px;
-            margin-bottom: 40px;
-            text-align: center;
-            border: 2px solid #e9e2d9;
-            box-shadow: inset 0 2px 10px rgba(141, 91, 76, 0.05);
-        }
-        
-        .payment-summary h3 {
-            margin: 0 0 15px;
-            color: #2d2926;
-            font-size: 1.8rem;
-            font-weight: 600;
-            font-family: 'Quicksand', sans-serif;
-        }
-        
-        .payment-summary p {
-            margin: 0;
-            color: #8d5b4c;
-            font-size: 2.5rem;
-            font-weight: 800;
-            font-family: 'Quicksand', sans-serif;
-        }
-        
-        #payment-element {
-            width: 100%;
-            min-height: 350px;
-            margin: 30px 0;
-            border: 2px solid #e9e2d9;
-            border-radius: 15px;
-            background-color: #ffffff;
-            padding: 0;
-            overflow: visible;
-            position: relative;
-            box-shadow: 0 4px 15px rgba(141, 91, 76, 0.08);
-        }
-        
-        #payment-element > div {
-            width: 100% !important;
-            min-height: 320px !important;
-            padding: 25px !important;
-            border-radius: 15px;
-        }
-        
-        #payment-element iframe {
-            width: 100% !important;
-            min-height: 300px !important;
-            border: none !important;
-            border-radius: 10px !important;
-            background: transparent !important;
-        }
-        
-        .stripe-loading {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 320px;
-            padding: 50px;
-            text-align: center;
-            background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
-            border-radius: 15px;
-        }
-        
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #8d5b4c;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 25px;
-        }
-        
-        .stripe-loading p {
-            margin: 0;
-            color: #6c757d;
-            font-size: 1.1rem;
-            font-weight: 500;
-            font-family: 'Quicksand', sans-serif;
-        }
-        
-        .submit-payment-btn {
-            width: 100%;
-            padding: 20px;
-            background: linear-gradient(135deg, #6a8d7f, #7a9d8f);
-            color: white;
-            border: none;
-            border-radius: 15px;
-            font-size: 1.2rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            min-height: 65px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            font-family: 'Quicksand', sans-serif;
-            margin-top: 30px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 6px 20px rgba(106, 141, 127, 0.3);
-        }
-        
-        .submit-payment-btn:hover:not(:disabled) {
-            background: linear-gradient(135deg, #5a7c70, #6a8d7f);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(106, 141, 127, 0.4);
-        }
-        
-        .submit-payment-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-            background: linear-gradient(135deg, #cccccc, #dddddd);
-        }
-        
-        #payment-message {
-            background: linear-gradient(135deg, #fff5f5, #ffe5e5);
-            color: #c53030;
-            border: 2px solid #feb2b2;
-            padding: 18px 22px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-            font-size: 1rem;
-            line-height: 1.5;
-            font-weight: 500;
-            box-shadow: 0 3px 10px rgba(197, 48, 48, 0.1);
-        }
-        
-        #payment-message.hidden {
-            display: none;
-        }
-        
-        .hidden {
-            display: none !important;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        #spinner {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            border: 3px solid #ffffff;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .modal-content {
-                max-width: 95%;
-                margin: 20px auto;
-            }
-            
-            .modal-header {
-                padding: 25px 20px;
-            }
-            
-            .modal-body {
-                padding: 30px 20px;
-            }
-            
-            .payment-summary {
-                padding: 25px 20px;
-            }
-            
-            #payment-element {
-                min-height: 300px;
-            }
-        }
-    </style>
-    
-    <!-- External CSS files with error handling -->
-    <link rel="stylesheet" href="../css/main.css" onerror="this.onerror=null; console.warn('Failed to load main.css');">
-    <link rel="stylesheet" href="../css/components/sidebar.css" onerror="this.onerror=null; console.warn('Failed to load sidebar.css');">
-    <link rel="stylesheet" href="../css/components/header.css" onerror="this.onerror=null; console.warn('Failed to load header.css');">
-    <link rel="stylesheet" href="../css/components/scrollbar.css" onerror="this.onerror=null; console.warn('Failed to load scrollbar.css');">
-    <link rel="stylesheet" href="../css/pages/subscription.css" onerror="this.onerror=null; console.warn('Failed to load subscription.css');">
+    <!-- External CSS files -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components/sidebar.css">
+    <link rel="stylesheet" href="../css/components/header.css">
+    <link rel="stylesheet" href="../css/components/scrollbar.css">
+    <link rel="stylesheet" href="../css/pages/subscription.css">
     
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
     
@@ -402,7 +122,7 @@ $debugInfo = [
 
                 <!-- Configuration Warning (Development) -->
                 <?php if (DEBUG_MODE && (empty(STRIPE_PUBLISHABLE_KEY) || empty(STRIPE_SECRET_KEY))): ?>
-                <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <div class="dev-warning">
                     <strong>⚠️ Development Notice:</strong> Stripe keys not configured. 
                     <a href="../test-stripe.php" target="_blank">Test Configuration</a>
                 </div>
@@ -633,7 +353,7 @@ $debugInfo = [
         </div>
     </div>
 
-    <!-- FIXED Payment Modal -->
+    <!-- Payment Modal -->
     <div id="payment-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -656,8 +376,8 @@ $debugInfo = [
                     </div>
                     
                     <!-- Payment Security Info -->
-                    <div class="payment-security" style="display: flex; align-items: center; gap: 12px; margin: 25px 0; padding: 18px; background-color: #f5f1ea; border-radius: 8px; font-size: 14px; color: #5a5755; border: 1px solid #e9e2d9;">
-                        <img src="../images/icons/lock.webp" alt="Secure" style="width: 24px; height: 24px;">
+                    <div class="payment-security">
+                        <img src="../images/icons/lock.webp" alt="Secure">
                         <span>Secured by Stripe. We never store your payment details.</span>
                     </div>
                     
@@ -672,7 +392,7 @@ $debugInfo = [
                 </form>
                 
                 <!-- Payment Methods Info -->
-                <div class="payment-methods" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e9e2d9; font-size: 14px; color: #8d8580;">
+                <div class="payment-methods">
                     <span>Powered by Stripe</span>
                 </div>
             </div>
@@ -704,7 +424,6 @@ $debugInfo = [
                 buttons.forEach(button => {
                     button.disabled = true;
                     button.textContent = 'Payment System Error';
-                    button.style.opacity = '0.5';
                 });
             });
         }
@@ -723,7 +442,6 @@ $debugInfo = [
             buttons.forEach(button => {
                 button.disabled = true;
                 button.textContent = 'Configuration Required';
-                button.style.opacity = '0.5';
             });
         });
         
@@ -832,27 +550,12 @@ $debugInfo = [
     
     <!-- Debug Mode Styling -->
     <?php if (DEBUG_MODE): ?>
-    <style>
-        .debug-info {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            font-family: monospace;
-            z-index: 10000;
-            max-width: 300px;
-        }
-    </style>
     <div class="debug-info">
         <strong>Debug Info:</strong><br>
         User: <?php echo $_SESSION['user_id']; ?><br>
         Plan: <?php echo $subscriptionType; ?><br>
         Stripe: <?php echo !empty(STRIPE_PUBLISHABLE_KEY) ? 'Configured' : 'Not Configured'; ?><br>
-        <a href="../test-stripe.php" target="_blank" style="color: #4CAF50;">Test Config</a>
+        <a href="../test-stripe.php" target="_blank">Test Config</a>
     </div>
     <?php endif; ?>
 </body>

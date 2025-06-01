@@ -1,4 +1,4 @@
-// subscription-stripe.js - COMPLETE ENHANCED VERSION
+// subscription-stripe.js - CLEAN VERSION (No CSS conflicts with subscription.css)
 
 let selectedPlan = null;
 let elements = null;
@@ -184,19 +184,19 @@ function initializeStripe() {
     }
     
     // Check if publishable key is available
-    if (!window.STRIPE_PUBLISHABLE_KEY) {
-        debugLog('error', 'Stripe publishable key not configured');
+    if (!window.stripe) {
+        debugLog('error', 'Stripe instance not available');
         showAlert('Payment system not configured. Please contact support.', 'error');
         disableAllSubscriptionButtons('Configuration Error');
         return false;
     }
     
     try {
-        // Initialize Stripe instance
-        stripe = window.Stripe(window.STRIPE_PUBLISHABLE_KEY);
+        // Use the global Stripe instance
+        stripe = window.stripe;
         
         debugLog('success', 'Stripe loaded and configured successfully');
-        debugLog('debug', 'Debug info:', window.DEBUG_INFO || {});
+        debugLog('debug', 'Debug info:', window.debugInfo || {});
         
         return true;
         
@@ -299,9 +299,8 @@ async function subscribeToPlan(planType) {
     if (planNameEl) planNameEl.textContent = planDetails[planType].name;
     if (planPriceEl) planPriceEl.textContent = planDetails[planType].price;
     
-    // Show modal with enhanced animation
+    // Show modal
     modal.classList.add('show');
-    modal.style.display = 'flex';
     
     // Focus management for accessibility
     setTimeout(() => {
@@ -329,7 +328,7 @@ async function initializeStripePayment() {
         return;
     }
     
-    // Show enhanced loading state
+    // Show loading state (CSS will handle styling)
     paymentContainer.innerHTML = `
         <div class="stripe-loading">
             <div class="loading-spinner"></div>
@@ -381,12 +380,10 @@ async function initializeStripePayment() {
         
         debugLog('success', 'Payment element mounted successfully');
         
-        // Enable submit button with animation
+        // Enable submit button
         const submitBtn = document.getElementById('submit-payment-btn');
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.style.opacity = '1';
-            submitBtn.style.transform = 'translateY(0)';
         }
         
         // Set up enhanced event listeners
@@ -583,11 +580,6 @@ function closePaymentModal() {
     const modal = document.getElementById('payment-modal');
     modal.classList.remove('show');
     
-    // Enhanced close animation
-    setTimeout(() => {
-        modal.style.display = 'none';
-    }, 300);
-    
     // Clean up Stripe elements
     if (paymentElement) {
         try {
@@ -652,8 +644,6 @@ function setLoading(isLoading) {
     
     if (submitButton) {
         submitButton.disabled = isLoading;
-        submitButton.style.opacity = isLoading ? '0.7' : '1';
-        submitButton.style.cursor = isLoading ? 'not-allowed' : 'pointer';
     }
     
     if (spinner && buttonText) {
@@ -770,8 +760,6 @@ function disableAllSubscriptionButtons(reason) {
         buttons.forEach(button => {
             button.disabled = true;
             button.textContent = reason || 'Unavailable';
-            button.style.opacity = '0.5';
-            button.style.cursor = 'not-allowed';
         });
     });
 }
