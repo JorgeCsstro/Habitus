@@ -1,4 +1,11 @@
-/* subscription.css - COMPLETE VERSION with Enhanced Modal and Payment Form */
+/* subscription.css - ENHANCED VERSION with Stripe Modal Fixes */
+
+/* ===== BASIC RESET AND LAYOUT ===== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
 /* Main content container */
 .subscription-content {
@@ -107,7 +114,7 @@
     box-shadow: 0 5px 12px rgba(106, 141, 127, 0.3);
 }
 
-/* Subscription Plans Grid */
+/* ===== SUBSCRIPTION PLANS GRID ===== */
 .subscription-plans {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -300,151 +307,7 @@
     box-shadow: 0 8px 20px rgba(196, 163, 86, 0.4);
 }
 
-/* Benefits Section */
-.subscription-benefits {
-    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
-    border-radius: 20px;
-    padding: 50px;
-    margin-bottom: 50px;
-    box-shadow: 0 8px 25px rgba(141, 91, 76, 0.08);
-    border: 1px solid #e9e2d9;
-}
-
-.subscription-benefits h2 {
-    text-align: center;
-    margin-bottom: 40px;
-    color: #2d2926;
-    font-size: 2rem;
-    font-family: 'Quicksand', sans-serif;
-    font-weight: 600;
-}
-
-.benefits-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 40px;
-}
-
-.benefit {
-    text-align: center;
-    padding: 20px;
-}
-
-.benefit-icon {
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, #f5f1ea, #e9e2d9);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 20px;
-    box-shadow: 0 4px 15px rgba(141, 91, 76, 0.1);
-}
-
-.benefit-icon img {
-    width: 40px;
-    height: 40px;
-}
-
-.benefit h3 {
-    margin: 0 0 15px;
-    color: #2d2926;
-    font-size: 1.3rem;
-    font-weight: 600;
-    font-family: 'Quicksand', sans-serif;
-}
-
-.benefit p {
-    margin: 0;
-    color: #5a5755;
-    font-size: 1rem;
-    line-height: 1.6;
-}
-
-/* FAQ Section */
-.subscription-faq {
-    background-color: white;
-    border-radius: 20px;
-    padding: 50px;
-    box-shadow: 0 8px 25px rgba(141, 91, 76, 0.08);
-    border: 1px solid #e9e2d9;
-}
-
-.subscription-faq h2 {
-    text-align: center;
-    margin-bottom: 40px;
-    color: #2d2926;
-    font-size: 2rem;
-    font-family: 'Quicksand', sans-serif;
-    font-weight: 600;
-}
-
-.faq-list {
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.faq-item {
-    border-bottom: 1px solid #e9e2d9;
-    padding: 25px 0;
-}
-
-.faq-item:last-child {
-    border-bottom: none;
-}
-
-.faq-question {
-    width: 100%;
-    background: none;
-    border: none;
-    padding: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    text-align: left;
-    font-size: 1.1rem;
-    color: #2d2926;
-    font-weight: 600;
-    transition: color 0.3s;
-    font-family: 'Quicksand', sans-serif;
-}
-
-.faq-question:hover {
-    color: #8d5b4c;
-}
-
-.faq-question img {
-    width: 24px;
-    height: 24px;
-    transition: transform 0.3s;
-    filter: brightness(0) saturate(100%) invert(55%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
-}
-
-.faq-question.active img {
-    transform: rotate(180deg);
-}
-
-.faq-answer {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out;
-}
-
-.faq-answer.show {
-    max-height: 200px;
-    padding-top: 20px;
-}
-
-.faq-answer p {
-    margin: 0;
-    color: #5a5755;
-    line-height: 1.6;
-    font-size: 1rem;
-}
-
-/* ===== ENHANCED MODAL STYLING ===== */
+/* ===== CRITICAL: ENHANCED MODAL STYLING ===== */
 .modal {
     display: none;
     position: fixed;
@@ -456,7 +319,7 @@
     z-index: 99999;
     justify-content: center;
     align-items: center;
-    padding: 15px;
+    padding: 20px;
     box-sizing: border-box;
     overflow-y: auto;
     backdrop-filter: blur(5px);
@@ -466,19 +329,20 @@
     display: flex !important;
 }
 
+/* CRITICAL: Modal Content with Proper Height */
 .modal-content {
     background-color: white;
     border-radius: 20px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     width: 100%;
-    max-width: 750px;
+    max-width: 800px;
     min-height: 700px;
     max-height: 95vh;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
     margin: auto;
     animation: modalSlideIn 0.3s ease-out;
+    overflow: hidden;
 }
 
 @keyframes modalSlideIn {
@@ -499,7 +363,6 @@
     padding: 25px 35px;
     border-bottom: 2px solid #e9e2d9;
     background: linear-gradient(135deg, #f5f1ea 0%, #e9e2d9 100%);
-    border-radius: 20px 20px 0 0;
     flex-shrink: 0;
 }
 
@@ -534,8 +397,9 @@
     transform: rotate(90deg);
 }
 
+/* CRITICAL: Modal Body with Proper Scrolling */
 .modal-body {
-    padding: 30px 40px 40px 40px;
+    padding: 30px 40px;
     flex: 1;
     overflow-y: auto;
     min-height: 0;
@@ -543,19 +407,15 @@
     flex-direction: column;
 }
 
-/* Payment Summary */
 .payment-summary {
     background: linear-gradient(135deg, #f5f1ea 0%, #e9e2d9 100%);
     border-radius: 15px;
     padding: 30px;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
     text-align: center;
     border: 2px solid #e9e2d9;
     box-shadow: inset 0 2px 10px rgba(141, 91, 76, 0.05);
     flex-shrink: 0;
-    width: 60%;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 .payment-summary h3 {
@@ -574,47 +434,45 @@
     font-family: 'Quicksand', sans-serif;
 }
 
-/* CRITICAL: Enhanced Payment Element Container */
+/* ===== MOST CRITICAL: PAYMENT ELEMENT CONTAINER ===== */
 #payment-element {
     width: 100%;
-    min-height: 450px;
+    min-height: 500px !important;
     margin: 25px 0;
     border: 2px solid #e9e2d9;
     border-radius: 15px;
     background-color: #ffffff;
     padding: 0;
-    overflow: visible;
+    overflow: visible !important;
     position: relative;
     box-shadow: 0 4px 15px rgba(141, 91, 76, 0.08);
     flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Ensure Stripe elements have maximum space */
-#payment-element > div {
+/* CRITICAL: Ensure Stripe elements have maximum space */
+#payment-element > div,
+#stripe-payment-element {
     width: 100% !important;
-    min-height: 420px !important;
+    min-height: 460px !important;
     height: auto !important;
     padding: 30px !important;
     border-radius: 15px;
     box-sizing: border-box;
+    overflow: visible !important;
 }
 
-/* Remove iframe constraints completely */
+/* CRITICAL: Remove ALL iframe constraints */
 #payment-element iframe {
     width: 100% !important;
-    min-height: 380px !important;
+    min-height: 400px !important;
     height: auto !important;
+    max-height: none !important;
     border: none !important;
     border-radius: 10px !important;
     background: transparent !important;
-}
-
-#stripe-payment-element {
-    min-height: 420px !important;
-    padding: 30px !important;
-    border-radius: 12px;
-    width: 100%;
-    box-sizing: border-box;
+    overflow: visible !important;
 }
 
 /* Stripe Loading State */
@@ -623,7 +481,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 420px;
+    min-height: 460px;
     padding: 50px;
     text-align: center;
     background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
@@ -661,7 +519,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 420px;
+    min-height: 460px;
     padding: 50px;
     text-align: center;
     background: linear-gradient(135deg, #fff5f5, #ffe5e5);
@@ -866,6 +724,150 @@
     color: white;
 }
 
+/* Benefits Section */
+.subscription-benefits {
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    border-radius: 20px;
+    padding: 50px;
+    margin-bottom: 50px;
+    box-shadow: 0 8px 25px rgba(141, 91, 76, 0.08);
+    border: 1px solid #e9e2d9;
+}
+
+.subscription-benefits h2 {
+    text-align: center;
+    margin-bottom: 40px;
+    color: #2d2926;
+    font-size: 2rem;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+}
+
+.benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 40px;
+}
+
+.benefit {
+    text-align: center;
+    padding: 20px;
+}
+
+.benefit-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #f5f1ea, #e9e2d9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    box-shadow: 0 4px 15px rgba(141, 91, 76, 0.1);
+}
+
+.benefit-icon img {
+    width: 40px;
+    height: 40px;
+}
+
+.benefit h3 {
+    margin: 0 0 15px;
+    color: #2d2926;
+    font-size: 1.3rem;
+    font-weight: 600;
+    font-family: 'Quicksand', sans-serif;
+}
+
+.benefit p {
+    margin: 0;
+    color: #5a5755;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+/* FAQ Section */
+.subscription-faq {
+    background-color: white;
+    border-radius: 20px;
+    padding: 50px;
+    box-shadow: 0 8px 25px rgba(141, 91, 76, 0.08);
+    border: 1px solid #e9e2d9;
+}
+
+.subscription-faq h2 {
+    text-align: center;
+    margin-bottom: 40px;
+    color: #2d2926;
+    font-size: 2rem;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+}
+
+.faq-list {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.faq-item {
+    border-bottom: 1px solid #e9e2d9;
+    padding: 25px 0;
+}
+
+.faq-item:last-child {
+    border-bottom: none;
+}
+
+.faq-question {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    text-align: left;
+    font-size: 1.1rem;
+    color: #2d2926;
+    font-weight: 600;
+    transition: color 0.3s;
+    font-family: 'Quicksand', sans-serif;
+}
+
+.faq-question:hover {
+    color: #8d5b4c;
+}
+
+.faq-question img {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.3s;
+    filter: brightness(0) saturate(100%) invert(55%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
+}
+
+.faq-question.active img {
+    transform: rotate(180deg);
+}
+
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.faq-answer.show {
+    max-height: 200px;
+    padding-top: 20px;
+}
+
+.faq-answer p {
+    margin: 0;
+    color: #5a5755;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
 /* Hidden class */
 .hidden {
     display: none !important;
@@ -962,7 +964,7 @@
     }
     
     .modal-body {
-        padding: 25px 20px 30px 20px;
+        padding: 25px 20px;
     }
     
     .payment-summary {
@@ -970,31 +972,27 @@
     }
     
     #payment-element {
-        min-height: 400px;
+        min-height: 450px !important;
         margin: 20px 0;
     }
     
-    #payment-element > div {
-        min-height: 370px !important;
+    #payment-element > div,
+    #stripe-payment-element {
+        min-height: 410px !important;
         padding: 25px !important;
     }
     
     #payment-element iframe {
-        min-height: 340px !important;
-    }
-    
-    #stripe-payment-element {
         min-height: 370px !important;
-        padding: 25px !important;
     }
     
     .stripe-loading {
-        min-height: 370px;
+        min-height: 410px;
         padding: 40px 25px;
     }
     
     .stripe-error {
-        min-height: 370px;
+        min-height: 410px;
         padding: 40px 25px;
     }
     
@@ -1032,30 +1030,26 @@
     }
     
     #payment-element {
-        min-height: 380px;
+        min-height: 420px !important;
     }
     
-    #payment-element > div {
-        min-height: 350px !important;
+    #payment-element > div,
+    #stripe-payment-element {
+        min-height: 380px !important;
         padding: 20px !important;
     }
     
     #payment-element iframe {
-        min-height: 320px !important;
-    }
-    
-    #stripe-payment-element {
-        min-height: 350px !important;
-        padding: 20px !important;
+        min-height: 340px !important;
     }
     
     .stripe-loading {
-        min-height: 350px;
+        min-height: 380px;
         padding: 30px 20px;
     }
     
     .stripe-error {
-        min-height: 350px;
+        min-height: 380px;
         padding: 30px 20px;
     }
     
