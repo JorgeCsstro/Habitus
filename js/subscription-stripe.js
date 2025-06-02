@@ -1,4 +1,4 @@
-// js/subscription-stripe.js - COMPLETE ENHANCED VERSION for Google Pay Fix
+// js/subscription-stripe.js - COMPLETE IMPLEMENTATION with Enhanced Error Handling
 
 let selectedPlan = null;
 let elements = null;
@@ -9,7 +9,7 @@ let stripe = null;
 let retryAttempts = 0;
 const maxRetryAttempts = 3;
 
-// Enhanced debug logging
+// Enhanced debug logging with better formatting
 function debugLog(level, message, data = null) {
     const timestamp = new Date().toISOString();
     const prefix = `[${timestamp}] [STRIPE-${level.toUpperCase()}]`;
@@ -19,354 +19,176 @@ function debugLog(level, message, data = null) {
     } else {
         console.log(`${prefix} ${message}`);
     }
+    
+    // Also log to a global debug array for later inspection
+    if (!window.stripeDebugLog) window.stripeDebugLog = [];
+    window.stripeDebugLog.push({
+        timestamp,
+        level,
+        message,
+        data
+    });
+    
+    // Keep only last 100 entries
+    if (window.stripeDebugLog.length > 100) {
+        window.stripeDebugLog = window.stripeDebugLog.slice(-100);
+    }
 }
 
-// ENHANCED: Appearance configuration optimized for Google Pay
-const appearance = {
-    theme: 'stripe',
-    variables: {
-        colorPrimary: '#6a8d7f',
-        colorBackground: '#ffffff',
-        colorText: '#2d2926',
-        colorDanger: '#e53e3e',
-        colorSuccess: '#38a169',
-        fontFamily: 'Poppins, Quicksand, system-ui, sans-serif',
-        fontSizeBase: '16px',
-        borderRadius: '8px',
-        spacingUnit: '6px',
-        gridColumnSpacing: '8px',
-        gridRowSpacing: '8px'
-    },
-    rules: {
-        '.Tab': {
-            border: '1px solid #e9e2d9',
-            borderRadius: '8px',
-            padding: '16px',
-            backgroundColor: '#ffffff',
-            fontSize: '16px',
-            minHeight: '52px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: '600',
-            transition: 'all 0.2s ease',
-            marginBottom: '8px'
-        },
-        '.Tab:hover': {
-            borderColor: '#d6cfc7',
-            backgroundColor: '#f9f5f0',
-            transform: 'translateY(-1px)'
-        },
-        '.Tab--selected': {
-            borderColor: '#6a8d7f',
-            backgroundColor: '#f5f1ea',
-            boxShadow: '0 2px 8px rgba(106, 141, 127, 0.15)'
-        },
-        '.Tab[data-testid="tab-googlePay"]': {
-            backgroundColor: '#4285f4 !important',
-            color: 'white !important',
-            border: '1px solid #4285f4 !important',
-            fontWeight: '700 !important'
-        },
-        '.Tab[data-testid="tab-googlePay"]:hover': {
-            backgroundColor: '#3367d6 !important',
-            borderColor: '#3367d6 !important',
-            transform: 'translateY(-2px) !important',
-            boxShadow: '0 4px 12px rgba(66, 133, 244, 0.3) !important'
-        },
-        '.Tab[data-testid="tab-applePay"]': {
-            backgroundColor: '#000000 !important',
-            color: 'white !important',
-            border: '1px solid #000000 !important',
-            fontWeight: '700 !important'
-        },
-        '.Tab[data-testid="tab-applePay"]:hover': {
-            backgroundColor: '#333333 !important',
-            transform: 'translateY(-2px) !important'
-        },
-        '.Input': {
-            border: '1px solid #e9e2d9',
-            borderRadius: '6px',
-            padding: '12px',
-            fontSize: '16px',
-            backgroundColor: '#ffffff',
-            transition: 'border-color 0.2s ease'
-        },
-        '.Input:focus': {
-            borderColor: '#6a8d7f',
-            outline: 'none',
-            boxShadow: '0 0 0 3px rgba(106, 141, 127, 0.1)'
-        },
-        '.Input:hover': {
-            borderColor: '#d6cfc7'
-        },
-        '.Input--invalid': {
-            borderColor: '#e53e3e'
-        },
-        '.Label': {
-            fontWeight: '600',
-            fontSize: '14px',
-            color: '#5a5755',
-            fontFamily: 'inherit',
-            marginBottom: '6px'
-        },
-        '.Error': {
-            color: '#e53e3e',
-            fontSize: '14px',
-            fontWeight: '500',
-            marginTop: '6px'
-        },
-        '.TabContainer': {
-            gap: '8px',
-            marginBottom: '16px'
+// Enhanced error reporting function
+function reportError(error, context = 'Unknown') {
+    debugLog('error', `Error in ${context}:`, {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        context: context,
+        timestamp: new Date().toISOString(),
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+        stripe_available: typeof Stripe !== 'undefined',
+        elements_available: !!elements,
+        payment_element_available: !!paymentElement
+    });
+}
+
+// Improved fetch function with detailed error handling
+async function fetchWithRetry(url, options, retries = 2) {
+    debugLog('info', `Making request to: ${url}`, {
+        method: options.method,
+        headers: options.headers,
+        body: options.body,
+        retries: retries
+    });
+    
+    for (let i = 0; i <= retries; i++) {
+        try {
+            debugLog('debug', `Fetch attempt ${i + 1}/${retries + 1}`);
+            
+            const response = await fetch(url, options);
+            
+            debugLog('debug', `Response received:`, {
+                status: response.status,
+                statusText: response.statusText,
+                headers: Object.fromEntries(response.headers.entries()),
+                url: response.url,
+                ok: response.ok
+            });
+            
+            if (response.ok) {
+                const responseText = await response.text();
+                debugLog('debug', `Response body: ${responseText.substring(0, 500)}${responseText.length > 500 ? '...' : ''}`);
+                
+                try {
+                    const responseData = JSON.parse(responseText);
+                    return { ok: true, json: () => Promise.resolve(responseData) };
+                } catch (jsonError) {
+                    debugLog('error', 'Failed to parse JSON response:', {
+                        error: jsonError.message,
+                        responseText: responseText.substring(0, 1000)
+                    });
+                    throw new Error(`Invalid JSON response: ${jsonError.message}`);
+                }
+            } else {
+                // Try to get error details from response
+                let errorText = '';
+                try {
+                    errorText = await response.text();
+                    debugLog('error', `HTTP ${response.status} Error Response:`, errorText);
+                } catch (e) {
+                    debugLog('error', 'Could not read error response body');
+                }
+                
+                throw new Error(`HTTP ${response.status}: ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
+            }
+        } catch (error) {
+            debugLog('warning', `Fetch attempt ${i + 1} failed:`, {
+                error: error.message,
+                stack: error.stack,
+                name: error.name
+            });
+            
+            if (i === retries) {
+                throw error;
+            }
+            
+            // Exponential backoff with jitter
+            const delay = 1000 * Math.pow(2, i) + Math.random() * 1000;
+            debugLog('info', `Waiting ${delay.toFixed(0)}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
-};
+}
 
-// ENHANCED: Payment element options optimized for Google Pay
-const paymentElementOptions = {
-    layout: {
-        type: 'tabs',
-        defaultCollapsed: false,
-        radios: false,
-        spacedAccordionItems: true
-    },
-    
-    fields: {
-        billingDetails: {
-            name: 'auto',
-            email: 'auto',
-            phone: 'never',
-            address: {
-                country: 'auto',
-                line1: 'never',
-                line2: 'never', 
-                city: 'never',
-                state: 'never',
-                postalCode: 'auto'
-            }
-        }
-    },
-    
-    terms: {
-        card: 'auto'
-    },
-    
-    // ENHANCED: Optimized wallet configuration
-    wallets: {
-        googlePay: 'auto',
-        applePay: 'auto',
-        link: 'auto'
-    },
-    
-    business: {
-        name: 'Habitus Zone'
-    },
-    
-    paymentMethodCreation: 'manual'
-};
-
-// Enhanced Stripe initialization with Google Pay support
+// Enhanced Stripe initialization
 function initializeStripe() {
     debugLog('info', 'Starting enhanced Stripe initialization...');
     
-    if (typeof window.Stripe === 'undefined') {
-        debugLog('error', 'Stripe library not loaded from CDN');
-        showAlert('Payment system not available. Please refresh the page.', 'error');
-        disableAllSubscriptionButtons('Payment System Error');
-        return false;
-    }
-    
-    if (!window.stripe) {
-        debugLog('warning', 'window.stripe not available, attempting to create...');
+    try {
+        // Check if Stripe is loaded
+        if (typeof window.Stripe === 'undefined') {
+            debugLog('error', 'Stripe library not loaded from CDN');
+            showAlert('Payment system not available. Please refresh the page.', 'error');
+            disableAllSubscriptionButtons('Payment System Error');
+            return false;
+        }
         
-        const scripts = document.querySelectorAll('script');
-        let publishableKey = null;
-        
-        scripts.forEach(script => {
-            if (script.textContent && script.textContent.includes('Stripe(')) {
-                const match = script.textContent.match(/Stripe\(['"`]([^'"`]+)['"`]/);
-                if (match) {
-                    publishableKey = match[1];
+        // Get Stripe instance
+        if (!window.stripe) {
+            debugLog('warning', 'window.stripe not available, checking for publishable key...');
+            
+            // Try to extract publishable key from page
+            const scripts = document.querySelectorAll('script');
+            let publishableKey = null;
+            
+            scripts.forEach(script => {
+                if (script.textContent && script.textContent.includes('Stripe(')) {
+                    const match = script.textContent.match(/Stripe\(['"`]([^'"`]+)['"`]/);
+                    if (match) {
+                        publishableKey = match[1];
+                    }
                 }
-            }
-        });
-        
-        if (publishableKey) {
-            debugLog('info', 'Found publishable key, creating Stripe instance...');
-            try {
-                window.stripe = Stripe(publishableKey, { 
-                    locale: 'auto',
-                    stripeAccount: undefined
-                });
-                debugLog('success', 'Created Stripe instance successfully');
-            } catch (error) {
-                debugLog('error', 'Failed to create Stripe instance:', error);
-                showAlert('Payment system configuration error.', 'error');
+            });
+            
+            if (publishableKey) {
+                debugLog('info', `Found publishable key: ${publishableKey.substring(0, 12)}...`);
+                try {
+                    window.stripe = Stripe(publishableKey, { 
+                        locale: 'auto',
+                        stripeAccount: undefined
+                    });
+                    debugLog('success', 'Created Stripe instance successfully');
+                } catch (error) {
+                    reportError(error, 'Stripe instance creation');
+                    showAlert('Payment system configuration error.', 'error');
+                    disableAllSubscriptionButtons('Configuration Error');
+                    return false;
+                }
+            } else {
+                debugLog('error', 'No publishable key found in page scripts');
+                showAlert('Payment system not configured.', 'error');
                 disableAllSubscriptionButtons('Configuration Error');
                 return false;
             }
-        } else {
-            debugLog('error', 'No publishable key found');
-            showAlert('Payment system not configured.', 'error');
-            disableAllSubscriptionButtons('Configuration Error');
-            return false;
         }
-    }
-    
-    try {
+        
         stripe = window.stripe;
         debugLog('success', 'Stripe initialized successfully');
         
-        // Check Google Pay availability
-        checkGooglePayAvailability();
+        // Test basic Stripe functionality
+        if (typeof stripe.elements !== 'function') {
+            throw new Error('Stripe elements function not available');
+        }
         
         return true;
     } catch (error) {
-        debugLog('error', 'Stripe initialization failed:', error);
+        reportError(error, 'Stripe initialization');
         showAlert('Payment initialization error.', 'error');
         disableAllSubscriptionButtons('Initialization Error');
         return false;
     }
 }
 
-// Enhanced Google Pay availability check
-async function checkGooglePayAvailability() {
-    try {
-        debugLog('info', 'Checking Google Pay availability...');
-        
-        // Check basic requirements
-        const isHttps = window.location.protocol === 'https:';
-        const isChrome = /Chrome/.test(navigator.userAgent);
-        
-        debugLog('debug', 'Environment check:', {
-            https: isHttps,
-            chrome: isChrome,
-            domain: window.location.hostname
-        });
-        
-        if (!isHttps) {
-            debugLog('warning', 'HTTPS required for Google Pay - current protocol:', window.location.protocol);
-        }
-        
-        // Test Stripe Google Pay availability
-        const canMakePayment = await stripe.canMakePayment({
-            type: 'googlePay'
-        });
-        
-        debugLog('info', 'Google Pay availability check result:', canMakePayment);
-        
-        if (!canMakePayment) {
-            debugLog('warning', 'Google Pay not available. Possible reasons:');
-            debugLog('warning', '1. Not on HTTPS');
-            debugLog('warning', '2. Browser doesn\'t support Google Pay');
-            debugLog('warning', '3. No valid payment methods in Google Pay');
-            debugLog('warning', '4. Geographic restrictions');
-        }
-        
-        return canMakePayment;
-    } catch (error) {
-        debugLog('error', 'Error checking Google Pay availability:', error);
-        return false;
-    }
-}
-
-// Set up event handlers
-function setupEventHandlers() {
-    debugLog('info', 'Setting up event handlers...');
-    
-    // Modal handlers
-    const modal = document.getElementById('payment-modal');
-    const closeButtons = document.querySelectorAll('.close-modal');
-    
-    closeButtons.forEach(button => {
-        button.addEventListener('click', closePaymentModal);
-    });
-    
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closePaymentModal();
-            }
-        });
-    }
-    
-    // Keyboard handlers
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            const modal = document.getElementById('payment-modal');
-            if (modal && modal.classList.contains('show')) {
-                closePaymentModal();
-            }
-        }
-    });
-    
-    // Form handler
-    const form = document.getElementById('payment-form');
-    if (form) {
-        form.addEventListener('submit', handleSubmit);
-    }
-    
-    debugLog('success', 'Event handlers set up successfully');
-}
-
-// Enhanced subscribe to plan function
-async function subscribeToPlan(planType) {
-    debugLog('info', `Starting subscription process for: ${planType}`);
-    
-    if (!planType || !['adfree', 'premium'].includes(planType)) {
-        showAlert('Invalid plan selected', 'error');
-        return;
-    }
-    
-    // Initialize Stripe if not already done
-    if (!stripe) {
-        debugLog('warning', 'Stripe not initialized, attempting to initialize...');
-        const initialized = initializeStripe();
-        if (!initialized) {
-            debugLog('error', 'Failed to initialize Stripe');
-            return;
-        }
-    }
-    
-    // Double-check stripe is available
-    if (!stripe) {
-        debugLog('error', 'Stripe still not available after initialization attempt');
-        showAlert('Payment system not ready. Please refresh the page.', 'error');
-        return;
-    }
-    
-    selectedPlan = planType;
-    retryAttempts = 0;
-    
-    const planDetails = {
-        adfree: { name: 'Ad-Free Plan', price: '€1/month' },
-        premium: { name: 'Premium Plan', price: '€5/month' }
-    };
-    
-    debugLog('info', 'Updating modal content...');
-    
-    // Update modal content
-    const modal = document.getElementById('payment-modal');
-    const planNameEl = document.getElementById('selected-plan-name');
-    const planPriceEl = document.getElementById('selected-plan-price');
-    
-    if (planNameEl) planNameEl.textContent = planDetails[planType].name;
-    if (planPriceEl) planPriceEl.textContent = planDetails[planType].price;
-    
-    // Show modal
-    modal.classList.add('show');
-    document.body.style.overflow = 'hidden';
-    
-    debugLog('info', 'Modal shown, initializing payment...');
-    
-    // Initialize payment with delay for proper rendering
-    setTimeout(() => {
-        initializeStripePayment();
-    }, 300);
-}
-
-// Enhanced Stripe payment initialization
+// Enhanced payment initialization with better error handling
 async function initializeStripePayment() {
     debugLog('info', 'Initializing enhanced Stripe payment form...');
     
@@ -377,59 +199,176 @@ async function initializeStripePayment() {
         return;
     }
     
-    // Show enhanced loading state
+    // Show loading state
     paymentContainer.innerHTML = `
         <div class="stripe-loading">
             <div class="loading-spinner"></div>
             <p>Setting up secure payment form...</p>
-            <small>Checking Google Pay availability...</small>
+            <small>Initializing payment methods...</small>
         </div>
     `;
     
     try {
-        // Create payment intent with Google Pay enablement
-        debugLog('info', 'Creating payment intent with Google Pay support...');
+        // Prepare request data
+        const requestData = {
+            plan: selectedPlan,
+            enable_google_pay: true
+        };
+        
+        debugLog('info', 'Creating payment intent...', requestData);
+        
+        // Make request with enhanced error handling
         const response = await fetchWithRetry('../php/api/subscription/create-payment-intent.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             },
-            body: JSON.stringify({ 
-                plan: selectedPlan,
-                enable_google_pay: true
-            })
+            body: JSON.stringify(requestData)
         });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
         
         const data = await response.json();
         debugLog('debug', 'Payment intent response:', data);
         
         if (!data.success) {
-            throw new Error(data.message || 'Failed to create payment intent');
+            const errorMessage = data.message || 'Failed to create payment intent';
+            const errorDetails = data.details || data.error_code || 'No additional details';
+            
+            debugLog('error', 'Payment intent creation failed:', {
+                message: errorMessage,
+                details: errorDetails,
+                full_response: data
+            });
+            
+            throw new Error(`${errorMessage} (${errorDetails})`);
+        }
+        
+        if (!data.clientSecret) {
+            throw new Error('No client secret received from server');
         }
         
         paymentIntentClientSecret = data.clientSecret;
         
-        debugLog('info', 'Google Pay available:', data.google_pay_available);
-        debugLog('info', 'Payment method types:', data.payment_method_types);
+        debugLog('success', 'Payment intent created successfully:', {
+            paymentIntentId: data.paymentIntentId,
+            amount: data.amount,
+            currency: data.currency,
+            customerId: data.customerId,
+            paymentMethodTypes: data.payment_method_types,
+            googlePayAvailable: data.google_pay_available
+        });
         
-        // Create Stripe elements with enhanced configuration
+        // Create Stripe elements with enhanced appearance
+        debugLog('info', 'Creating Stripe elements...');
         elements = stripe.elements({
             clientSecret: data.clientSecret,
-            appearance: appearance,
+            appearance: {
+                theme: 'stripe',
+                variables: {
+                    colorPrimary: '#6a8d7f',
+                    colorBackground: '#ffffff',
+                    colorText: '#2d2926',
+                    colorDanger: '#e53e3e',
+                    colorSuccess: '#38a169',
+                    fontFamily: 'Poppins, Quicksand, system-ui, sans-serif',
+                    fontSizeBase: '16px',
+                    borderRadius: '8px',
+                    spacingUnit: '6px'
+                },
+                rules: {
+                    '.Tab': {
+                        border: '1px solid #e9e2d9',
+                        borderRadius: '8px',
+                        padding: '16px',
+                        backgroundColor: '#ffffff',
+                        fontSize: '16px',
+                        minHeight: '52px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: '600',
+                        transition: 'all 0.2s ease',
+                        marginBottom: '8px'
+                    },
+                    '.Tab:hover': {
+                        borderColor: '#d6cfc7',
+                        backgroundColor: '#f9f5f0',
+                        transform: 'translateY(-1px)'
+                    },
+                    '.Tab--selected': {
+                        borderColor: '#6a8d7f',
+                        backgroundColor: '#f5f1ea',
+                        boxShadow: '0 2px 8px rgba(106, 141, 127, 0.15)'
+                    },
+                    '.Tab[data-testid="tab-googlePay"]': {
+                        backgroundColor: '#4285f4 !important',
+                        color: 'white !important',
+                        border: '1px solid #4285f4 !important',
+                        fontWeight: '700 !important'
+                    },
+                    '.Tab[data-testid="tab-googlePay"]:hover': {
+                        backgroundColor: '#3367d6 !important',
+                        borderColor: '#3367d6 !important',
+                        transform: 'translateY(-2px) !important',
+                        boxShadow: '0 4px 12px rgba(66, 133, 244, 0.3) !important'
+                    },
+                    '.Tab[data-testid="tab-applePay"]': {
+                        backgroundColor: '#000000 !important',
+                        color: 'white !important',
+                        border: '1px solid #000000 !important',
+                        fontWeight: '700 !important'
+                    },
+                    '.Tab[data-testid="tab-applePay"]:hover': {
+                        backgroundColor: '#333333 !important',
+                        transform: 'translateY(-2px) !important'
+                    }
+                }
+            },
             locale: 'auto'
         });
         
-        // Create payment element with enhanced options
-        paymentElement = elements.create('payment', paymentElementOptions);
+        // Create payment element with optimized options
+        debugLog('info', 'Creating payment element...');
+        paymentElement = elements.create('payment', {
+            layout: {
+                type: 'tabs',
+                defaultCollapsed: false,
+                radios: false,
+                spacedAccordionItems: true
+            },
+            wallets: {
+                googlePay: 'auto',
+                applePay: 'auto',
+                link: 'auto'
+            },
+            fields: {
+                billingDetails: {
+                    name: 'auto',
+                    email: 'auto',
+                    phone: 'never',
+                    address: {
+                        country: 'auto',
+                        line1: 'never',
+                        line2: 'never',
+                        city: 'never',
+                        state: 'never',
+                        postalCode: 'auto'
+                    }
+                }
+            },
+            terms: {
+                card: 'auto'
+            },
+            business: {
+                name: 'Habitus Zone'
+            },
+            paymentMethodCreation: 'manual'
+        });
         
-        // Clear container and create mount point
+        // Clear container and mount element
         paymentContainer.innerHTML = '<div id="stripe-payment-element" style="min-height: 250px;"></div>';
         
-        // Mount the payment element
         debugLog('info', 'Mounting payment element...');
         await paymentElement.mount('#stripe-payment-element');
         
@@ -441,18 +380,21 @@ async function initializeStripePayment() {
             submitBtn.disabled = false;
         }
         
-        // Set up enhanced event listeners
-        setupEnhancedPaymentListeners();
+        // Set up event listeners
+        setupPaymentListeners();
         
     } catch (error) {
-        debugLog('error', 'Payment initialization failed:', error);
+        reportError(error, 'Payment initialization');
         handlePaymentInitError(error);
     }
 }
 
-// Enhanced payment element listeners
-function setupEnhancedPaymentListeners() {
-    if (!paymentElement) return;
+// Enhanced payment listeners
+function setupPaymentListeners() {
+    if (!paymentElement) {
+        debugLog('warning', 'Payment element not available for listener setup');
+        return;
+    }
     
     paymentElement.on('ready', function() {
         debugLog('success', 'Payment element ready for user input');
@@ -473,22 +415,12 @@ function setupEnhancedPaymentListeners() {
                     tab.addEventListener('click', function() {
                         debugLog('info', 'Google Pay tab clicked by user');
                     });
-                    
-                    // Apply enhanced styling
-                    tab.style.cssText += `
-                        display: flex !important;
-                        visibility: visible !important;
-                        opacity: 1 !important;
-                        background-color: #4285f4 !important;
-                        color: white !important;
-                        border: 1px solid #4285f4 !important;
-                    `;
                 }
             });
             
             if (tabs.length === 0) {
                 debugLog('warning', 'No payment method tabs found - checking again in 2 seconds...');
-                setTimeout(() => setupEnhancedPaymentListeners(), 2000);
+                setTimeout(() => setupPaymentListeners(), 2000);
             }
         }, 1500);
     });
@@ -501,10 +433,8 @@ function setupEnhancedPaymentListeners() {
             debugLog('warning', 'Payment validation error:', event.error);
         } else {
             showMessage('');
-            debugLog('debug', 'Payment element validation passed');
         }
         
-        // Log payment method selection
         if (event.value && event.value.type) {
             debugLog('info', `Payment method selected: ${event.value.type}`);
             
@@ -516,6 +446,7 @@ function setupEnhancedPaymentListeners() {
     
     paymentElement.on('loaderror', function(event) {
         debugLog('error', 'Payment element load error:', event);
+        reportError(new Error('Payment element failed to load'), 'Payment element loading');
         showMessage('Error loading payment form. Please refresh and try again.');
     });
     
@@ -528,7 +459,7 @@ function setupEnhancedPaymentListeners() {
     });
 }
 
-// Enhanced form submission with Google Pay handling
+// Enhanced form submission
 async function handleSubmit(e) {
     e.preventDefault();
     debugLog('info', 'Processing payment submission...');
@@ -544,7 +475,6 @@ async function handleSubmit(e) {
     showMessage('');
     
     try {
-        // Enhanced payment confirmation
         debugLog('info', 'Confirming payment with Stripe...');
         
         const {error, paymentIntent} = await stripe.confirmPayment({
@@ -561,7 +491,7 @@ async function handleSubmit(e) {
         });
         
         if (error) {
-            debugLog('error', 'Payment confirmation error:', error);
+            reportError(error, 'Payment confirmation');
             handlePaymentError(error);
             setLoading(false);
         } else if (paymentIntent && paymentIntent.status === 'succeeded') {
@@ -576,7 +506,7 @@ async function handleSubmit(e) {
         }
         
     } catch (error) {
-        debugLog('error', 'Payment processing error:', error);
+        reportError(error, 'Payment processing');
         showMessage('An unexpected error occurred. Please try again.');
         setLoading(false);
     }
@@ -662,62 +592,116 @@ async function activateSubscription(paymentIntentId) {
     setLoading(false);
 }
 
-// Handle payment initialization errors
+// Handle payment initialization errors with better UX
 function handlePaymentInitError(error) {
     retryAttempts++;
     
     const paymentContainer = document.getElementById('payment-element');
+    const errorMessage = error.message || 'Unknown error occurred';
+    
+    debugLog('error', `Payment init error (attempt ${retryAttempts}):`, {
+        error: errorMessage,
+        stack: error.stack,
+        canRetry: retryAttempts < maxRetryAttempts
+    });
+    
     paymentContainer.innerHTML = `
         <div class="stripe-error">
             <div class="error-icon">⚠️</div>
             <h4>Payment Form Error</h4>
-            <p>${error.message}</p>
-            <div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px;">
-                ${retryAttempts < maxRetryAttempts ? 
-                    '<button onclick="retryPaymentInit()" class="retry-btn">🔄 Try Again</button>' : 
-                    '<button onclick="closePaymentModal()" class="retry-btn">Close</button>'
-                }
-            </div>
-            ${retryAttempts < maxRetryAttempts ? 
-                `<small style="color: #666; margin-top: 10px;">Attempt ${retryAttempts} of ${maxRetryAttempts}</small>` : 
-                '<small style="color: #666; margin-top: 10px;">Please try again later or contact support</small>'
-            }
+            <p><strong>Error:</strong> ${errorMessage}</p>
+            
+            ${retryAttempts < maxRetryAttempts ? `
+                <div style="margin: 20px 0;">
+                    <button onclick="retryPaymentInit()" class="retry-btn">🔄 Try Again</button>
+                    <button onclick="closePaymentModal()" class="retry-btn" style="margin-left: 10px;">Cancel</button>
+                </div>
+                <small style="color: #666;">Attempt ${retryAttempts} of ${maxRetryAttempts}</small>
+            ` : `
+                <div style="margin: 20px 0;">
+                    <button onclick="closePaymentModal()" class="retry-btn">Close</button>
+                    <button onclick="showDebugInfo()" class="retry-btn" style="margin-left: 10px;">Show Debug Info</button>
+                </div>
+                <small style="color: #666;">Maximum retry attempts reached. Please contact support if the problem persists.</small>
+            `}
         </div>
     `;
 }
 
-// Close payment modal and clean up
-function closePaymentModal() {
-    debugLog('info', 'Closing payment modal and cleaning up...');
+// Debug info display function
+function showDebugInfo() {
+    const debugInfo = {
+        stripe_available: typeof Stripe !== 'undefined',
+        window_stripe: !!window.stripe,
+        selected_plan: selectedPlan,
+        retry_attempts: retryAttempts,
+        current_url: window.location.href,
+        user_agent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+        recent_logs: window.stripeDebugLog ? window.stripeDebugLog.slice(-10) : []
+    };
     
-    const modal = document.getElementById('payment-modal');
-    modal.classList.remove('show');
-    document.body.style.overflow = '';
+    const debugWindow = window.open('', '_blank', 'width=800,height=600');
+    debugWindow.document.write(`
+        <html>
+        <head><title>Stripe Debug Information</title></head>
+        <body>
+        <h1>Stripe Debug Information</h1>
+        <pre style="font-family: monospace; white-space: pre-wrap; background: #f5f5f5; padding: 15px; border-radius: 5px;">
+${JSON.stringify(debugInfo, null, 2)}
+        </pre>
+        <p style="margin-top: 20px; color: #666;">
+        Please copy this information and provide it to support for assistance.
+        </p>
+        </body>
+        </html>
+    `);
+}
+
+// Subscribe to plan function with enhanced validation
+async function subscribeToPlan(planType) {
+    debugLog('info', `Starting subscription process for: ${planType}`);
     
-    // Clean up Stripe elements
-    if (paymentElement) {
-        try {
-            paymentElement.unmount();
-            debugLog('debug', 'Payment element unmounted successfully');
-        } catch (e) {
-            debugLog('warning', 'Error unmounting payment element:', e);
+    // Validation
+    if (!planType || !['adfree', 'premium'].includes(planType)) {
+        showAlert('Invalid plan selected', 'error');
+        return;
+    }
+    
+    // Initialize Stripe if needed
+    if (!stripe) {
+        debugLog('warning', 'Stripe not initialized, attempting to initialize...');
+        const initialized = initializeStripe();
+        if (!initialized) {
+            debugLog('error', 'Failed to initialize Stripe');
+            return;
         }
-        paymentElement = null;
     }
     
-    if (elements) {
-        elements = null;
-    }
-    
-    // Reset state
-    selectedPlan = null;
-    paymentIntentClientSecret = null;
+    selectedPlan = planType;
     retryAttempts = 0;
     
-    showMessage('');
-    setLoading(false);
+    const planDetails = {
+        adfree: { name: 'Ad-Free Plan', price: '€1/month' },
+        premium: { name: 'Premium Plan', price: '€5/month' }
+    };
     
-    debugLog('info', 'Payment modal closed and cleaned up successfully');
+    // Update modal content
+    const modal = document.getElementById('payment-modal');
+    const planNameEl = document.getElementById('selected-plan-name');
+    const planPriceEl = document.getElementById('selected-plan-price');
+    
+    if (planNameEl) planNameEl.textContent = planDetails[planType].name;
+    if (planPriceEl) planPriceEl.textContent = planDetails[planType].price;
+    
+    // Show modal
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    
+    // Initialize payment with delay
+    setTimeout(() => {
+        initializeStripePayment();
+    }, 300);
 }
 
 // Show payment message
@@ -766,34 +750,50 @@ function setLoading(isLoading) {
     }
 }
 
+// Close payment modal and clean up
+function closePaymentModal() {
+    debugLog('info', 'Closing payment modal and cleaning up...');
+    
+    const modal = document.getElementById('payment-modal');
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+    
+    // Clean up Stripe elements
+    if (paymentElement) {
+        try {
+            paymentElement.unmount();
+            debugLog('debug', 'Payment element unmounted successfully');
+        } catch (e) {
+            debugLog('warning', 'Error unmounting payment element:', e);
+        }
+        paymentElement = null;
+    }
+    
+    if (elements) {
+        elements = null;
+    }
+    
+    // Reset state
+    selectedPlan = null;
+    paymentIntentClientSecret = null;
+    retryAttempts = 0;
+    
+    showMessage('');
+    setLoading(false);
+    
+    debugLog('info', 'Payment modal closed and cleaned up successfully');
+}
+
 // Retry payment initialization
 function retryPaymentInit() {
     debugLog('info', `Retrying payment initialization (attempt ${retryAttempts + 1})`);
     initializeStripePayment();
 }
 
-// Utility function for fetch with retry logic
-async function fetchWithRetry(url, options, retries = 2) {
-    for (let i = 0; i <= retries; i++) {
-        try {
-            const response = await fetch(url, options);
-            if (response.ok) {
-                return response;
-            }
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        } catch (error) {
-            debugLog('warning', `Fetch attempt ${i + 1} failed:`, error.message);
-            if (i === retries) {
-                throw error;
-            }
-            // Exponential backoff
-            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
-        }
-    }
-}
-
 // Show alert notification
 function showAlert(message, type = 'info') {
+    debugLog('info', `Alert: ${message} (${type})`);
+    
     const alertDiv = document.createElement('div');
     alertDiv.className = `subscription-alert ${type}`;
     alertDiv.textContent = message;
@@ -848,6 +848,45 @@ function disableAllSubscriptionButtons(reason) {
         button.style.opacity = '0.6';
         button.style.cursor = 'not-allowed';
     });
+}
+
+// Set up event handlers
+function setupEventHandlers() {
+    debugLog('info', 'Setting up event handlers...');
+    
+    // Modal handlers
+    const modal = document.getElementById('payment-modal');
+    const closeButtons = document.querySelectorAll('.close-modal');
+    
+    closeButtons.forEach(button => {
+        button.addEventListener('click', closePaymentModal);
+    });
+    
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closePaymentModal();
+            }
+        });
+    }
+    
+    // Keyboard handlers
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('payment-modal');
+            if (modal && modal.classList.contains('show')) {
+                closePaymentModal();
+            }
+        }
+    });
+    
+    // Form handler
+    const form = document.getElementById('payment-form');
+    if (form) {
+        form.addEventListener('submit', handleSubmit);
+    }
+    
+    debugLog('success', 'Event handlers set up successfully');
 }
 
 // Toggle FAQ answer visibility
@@ -917,6 +956,21 @@ function cancelSubscription() {
     });
 }
 
+// Export enhanced debug function
+window.stripeDebug = {
+    showLogs: () => console.log('Stripe Debug Logs:', window.stripeDebugLog || []),
+    clearLogs: () => window.stripeDebugLog = [],
+    showInfo: showDebugInfo,
+    testConnection: async () => {
+        try {
+            const response = await fetch('../test-payment-intent.php');
+            console.log('Test connection result:', await response.text());
+        } catch (error) {
+            console.error('Test connection failed:', error);
+        }
+    }
+};
+
 // Export functions for onclick handlers
 window.subscribeToPlan = subscribeToPlan;
 window.closePaymentModal = closePaymentModal;
@@ -924,10 +978,11 @@ window.toggleFaq = toggleFaq;
 window.retryPaymentInit = retryPaymentInit;
 window.manageSubscription = manageSubscription;
 window.downgradeToFree = downgradeToFree;
+window.showDebugInfo = showDebugInfo;
 
 // Initialize everything when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    debugLog('info', 'Initializing enhanced Google Pay subscription system...');
+    debugLog('info', 'Initializing enhanced Stripe subscription system...');
     
     // Wait for the main page to set up window.stripe
     setTimeout(() => {
@@ -937,36 +992,40 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         setupEventHandlers();
-        debugLog('success', 'Enhanced Google Pay subscription system fully initialized');
+        debugLog('success', 'Enhanced Stripe subscription system fully initialized');
         
         // Add diagnostic helper
-        window.diagnoseGooglePay = function() {
-            checkGooglePayAvailability().then(available => {
-                console.log('🔍 Google Pay Diagnostic:');
-                console.log('HTTPS:', window.location.protocol === 'https:');
-                console.log('Chrome:', /Chrome/.test(navigator.userAgent));
-                console.log('Stripe initialized:', !!stripe);
-                console.log('Google Pay available:', available);
-            });
+        window.diagnoseStripe = function() {
+            console.log('🔍 Stripe Diagnostic:');
+            console.log('HTTPS:', window.location.protocol === 'https:');
+            console.log('Stripe Library:', typeof Stripe !== 'undefined');
+            console.log('Stripe Instance:', !!window.stripe);
+            console.log('Elements:', !!elements);
+            console.log('Payment Element:', !!paymentElement);
+            console.log('Selected Plan:', selectedPlan);
+            console.log('Recent Logs:', window.stripeDebugLog ? window.stripeDebugLog.slice(-5) : []);
         };
+        
+        console.log('💡 Run window.diagnoseStripe() to see diagnostic info');
+        console.log('💡 Run window.stripeDebug.showLogs() to see all logs');
         
     }, 500);
 });
 
 // Error boundary for uncaught errors
 window.addEventListener('error', function(event) {
-    debugLog('error', 'Uncaught error:', event.error);
-    if (event.error && event.error.message && event.error.message.includes('stripe')) {
+    if (event.error && event.error.message && event.error.message.toLowerCase().includes('stripe')) {
+        reportError(event.error, 'Global error handler');
         showAlert('Payment system error detected. Please refresh the page.', 'error');
     }
 });
 
 // Unhandled promise rejection handler
 window.addEventListener('unhandledrejection', function(event) {
-    debugLog('error', 'Unhandled promise rejection:', event.reason);
-    if (event.reason && event.reason.toString().includes('stripe')) {
+    if (event.reason && event.reason.toString().toLowerCase().includes('stripe')) {
+        reportError(new Error(event.reason), 'Unhandled promise rejection');
         showAlert('Payment processing error detected. Please try again.', 'error');
     }
 });
 
-debugLog('success', 'Enhanced Google Pay Stripe subscription handler loaded and ready');
+debugLog('success', 'Complete Stripe subscription handler loaded and ready');

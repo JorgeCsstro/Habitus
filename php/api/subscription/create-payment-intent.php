@@ -1,13 +1,22 @@
 <?php
-// php/api/subscription/create-payment-intent.php - COMPLETE ENHANCED VERSION for Google Pay
+// php/api/subscription/create-payment-intent.php - FIXED VERSION with Better Debugging
 
-// Enable comprehensive error logging
+// Enable comprehensive error reporting
 error_reporting(E_ALL);
+ini_set('display_errors', 1);
 ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/../../logs/stripe_errors.log');
 
-// Start output buffering to catch any unwanted output
-ob_start();
+// Set content type first
+header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
+// Handle preflight requests
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
 // Create logs directory if it doesn't exist
 $logsDir = __DIR__ . '/../../logs';
@@ -15,124 +24,209 @@ if (!is_dir($logsDir)) {
     mkdir($logsDir, 0755, true);
 }
 
-// Enhanced logging for Google Pay debugging
-$logFile = __DIR__ . '/../../logs/stripe_debug.log';
-$requestData = [
-    'timestamp' => date('Y-m-d H:i:s'),
-    'method' => $_SERVER['REQUEST_METHOD'],
-    'input' => file_get_contents('php://input'),
-    'headers' => getallheaders(),
-    'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown',
-    'ip' => $_SERVER['REMOTE_ADDR'] ?? 'Unknown',
-    'referer' => $_SERVER['HTTP_REFERER'] ?? 'Unknown'
-];
-file_put_contents($logFile, "=== GOOGLE PAY REQUEST START ===" . PHP_EOL, FILE_APPEND);
-file_put_contents($logFile, json_encode($requestData, JSON_PRETTY_PRINT) . PHP_EOL, FILE_APPEND);
+$logFile = $logsDir . '/stripe_debug.log';
+$errorLogFile = $logsDir . '/stripe_errors.log';
+
+// Log function
+function logDebug($message, $data = null) {
+    global $logFile;
+    $timestamp = date('Y-m-d H:i:s');
+    $logEntry = "[$timestamp] $message";
+    if ($data) {
+        $logEntry .= "\n" . json_encode($data, JSON_PRETTY_PRINT);
+    }
+    $logEntry .= "\n---\n";
+    file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
+}
+
+// Error response function
+function sendError($message, $code = 400, $details = null) {
+    global $errorLogFile;
+    
+    $error = [
+        'success' => false,
+        'message' => $message,
+        'error_code' => $code,
+        'timestamp' => date('Y-m-d H:i:s')
+    ];
+    
+    if ($details) {
+        $error['details'] = $details;
+    }
+    
+    // Log error
+    file_put_contents($errorLogFile, json_encode($error, JSON_PRETTY_PRINT) . "\n", FILE_APPEND | LOCK_EX);
+    
+    http_response_code($code);
+    echo json_encode($error, JSON_PRETTY_PRINT);
+    exit;
+}
 
 try {
-    // Clean any previous output
-    if (ob_get_length()) {
-        ob_clean();
+    logDebug("=== PAYMENT INTENT REQUEST START ===");
+    logDebug("Request Method: " . $_SERVER['REQUEST_METHOD']);
+    logDebug("Content Type: " . ($_SERVER['CONTENT_TYPE'] ?? 'not set'));
+    
+    // Validate request method
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        sendError('Only POST method allowed', 405);
     }
     
-    // Set comprehensive headers
-    header('Content-Type: application/json; charset=utf-8');
-    header('Cache-Control: no-cache, must-revalidate');
-    header('Pragma: no-cache');
-    header('X-Content-Type-Options: nosniff');
-    
-    // Load required files
-    require_once '../../include/config.php';
-    require_once '../../include/db_connect.php';
-    require_once '../../include/auth.php';
-    require_once '../../include/functions.php';
-    
-    // Check if Composer autoload exists
-    $autoloadPath = __DIR__ . '/../../../vendor/autoload.php';
-    if (!file_exists($autoloadPath)) {
-        throw new Exception('Composer dependencies not installed. Run: composer install');
-    }
-    
-    require_once $autoloadPath;
-    
-    // Validate Stripe configuration
-    if (!defined('STRIPE_SECRET_KEY') || empty(STRIPE_SECRET_KEY)) {
-        throw new Exception('STRIPE_SECRET_KEY not configured in environment');
-    }
-    
-    if (!defined('STRIPE_PUBLISHABLE_KEY') || empty(STRIPE_PUBLISHABLE_KEY)) {
-        throw new Exception('STRIPE_PUBLISHABLE_KEY not configured in environment');
-    }
-    
-    // Initialize Stripe with error handling
-    try {
-        \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
-        \Stripe\Stripe::setApiVersion('2023-10-16'); // Use latest API version
-        file_put_contents($logFile, "STRIPE: API initialized successfully" . PHP_EOL, FILE_APPEND);
-    } catch (Exception $e) {
-        throw new Exception('Stripe initialization failed: ' . $e->getMessage());
-    }
-    
-    // Check authentication
-    if (!function_exists('isLoggedIn') || !isLoggedIn()) {
-        throw new Exception('User authentication required');
-    }
-    
-    // Get and validate input data
+    // Get raw input
     $rawInput = file_get_contents('php://input');
+    logDebug("Raw Input Length: " . strlen($rawInput));
+    logDebug("Raw Input Content: " . $rawInput);
+    
     if (empty($rawInput)) {
-        throw new Exception('No input data received');
+        sendError('No input data received - request body is empty', 400);
     }
     
+    // Parse JSON
     $inputData = json_decode($rawInput, true);
     if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new Exception('Invalid JSON input: ' . json_last_error_msg());
+        sendError('Invalid JSON format: ' . json_last_error_msg(), 400, [
+            'json_error_code' => json_last_error(),
+            'raw_input' => substr($rawInput, 0, 200)
+        ]);
     }
     
-    file_put_contents($logFile, "INPUT: " . json_encode($inputData, JSON_PRETTY_PRINT) . PHP_EOL, FILE_APPEND);
+    logDebug("Parsed Input Data:", $inputData);
     
     // Validate required parameters
     if (!isset($inputData['plan'])) {
-        throw new Exception('Plan parameter is required');
+        sendError('Missing required parameter: plan', 400, [
+            'received_keys' => array_keys($inputData)
+        ]);
     }
     
     $plan = $inputData['plan'];
     $enableGooglePay = $inputData['enable_google_pay'] ?? true;
     
-    // Validate plan selection
+    logDebug("Plan: $plan, Google Pay: " . ($enableGooglePay ? 'enabled' : 'disabled'));
+    
+    // Validate plan
     $validPlans = ['adfree', 'premium'];
     if (!in_array($plan, $validPlans)) {
-        throw new Exception('Invalid plan selected: ' . $plan);
+        sendError('Invalid plan selected', 400, [
+            'received_plan' => $plan,
+            'valid_plans' => $validPlans
+        ]);
     }
     
-    // Plan pricing in cents (EUR)
+    // Load configuration
+    $configPath = __DIR__ . '/../../include/config.php';
+    if (!file_exists($configPath)) {
+        sendError('Configuration file not found', 500, [
+            'config_path' => $configPath
+        ]);
+    }
+    
+    require_once $configPath;
+    logDebug("Config loaded successfully");
+    
+    // Check database connection
+    $dbPath = __DIR__ . '/../../include/db_connect.php';
+    if (!file_exists($dbPath)) {
+        sendError('Database connection file not found', 500);
+    }
+    
+    require_once $dbPath;
+    logDebug("Database connection loaded");
+    
+    // Check authentication
+    $authPath = __DIR__ . '/../../include/auth.php';
+    if (!file_exists($authPath)) {
+        sendError('Authentication file not found', 500);
+    }
+    
+    require_once $authPath;
+    
+    if (!function_exists('isLoggedIn')) {
+        sendError('Authentication function not available', 500);
+    }
+    
+    if (!isLoggedIn()) {
+        sendError('User authentication required - please log in', 401);
+    }
+    
+    logDebug("User authenticated - ID: " . $_SESSION['user_id']);
+    
+    // Check Stripe configuration
+    if (!defined('STRIPE_SECRET_KEY') || empty(STRIPE_SECRET_KEY)) {
+        sendError('Stripe secret key not configured', 500);
+    }
+    
+    if (!defined('STRIPE_PUBLISHABLE_KEY') || empty(STRIPE_PUBLISHABLE_KEY)) {
+        sendError('Stripe publishable key not configured', 500);
+    }
+    
+    logDebug("Stripe keys configured - SK: " . substr(STRIPE_SECRET_KEY, 0, 12) . "...");
+    
+    // Load Composer dependencies
+    $autoloadPath = __DIR__ . '/../../../vendor/autoload.php';
+    if (!file_exists($autoloadPath)) {
+        sendError('Composer dependencies not installed', 500, [
+            'autoload_path' => $autoloadPath,
+            'solution' => 'Run: composer install'
+        ]);
+    }
+    
+    require_once $autoloadPath;
+    logDebug("Composer autoload included");
+    
+    // Initialize Stripe
+    if (!class_exists('\Stripe\Stripe')) {
+        sendError('Stripe class not available after autoload', 500);
+    }
+    
+    \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
+    \Stripe\Stripe::setApiVersion('2023-10-16');
+    logDebug("Stripe initialized successfully");
+    
+    // Get user data
+    $functionsPath = __DIR__ . '/../../include/functions.php';
+    if (!file_exists($functionsPath)) {
+        sendError('Functions file not found', 500);
+    }
+    
+    require_once $functionsPath;
+    
+    if (!function_exists('getUserData')) {
+        sendError('getUserData function not available', 500);
+    }
+    
+    $userData = getUserData($_SESSION['user_id']);
+    if (!$userData) {
+        sendError('User data not found', 404, [
+            'user_id' => $_SESSION['user_id']
+        ]);
+    }
+    
+    logDebug("User data retrieved:", [
+        'id' => $userData['id'],
+        'username' => $userData['username'],
+        'email' => $userData['email']
+    ]);
+    
+    // Plan pricing (in cents)
     $planPrices = [
         'adfree' => 100,   // €1.00
         'premium' => 500   // €5.00
     ];
     
-    // Get user data
-    if (!function_exists('getUserData')) {
-        throw new Exception('getUserData function not available');
-    }
+    $amount = $planPrices[$plan];
+    logDebug("Amount for plan '$plan': $amount cents");
     
-    $userData = getUserData($_SESSION['user_id']);
-    if (!$userData) {
-        throw new Exception('User data not found for ID: ' . $_SESSION['user_id']);
-    }
-    
-    file_put_contents($logFile, "USER: {$userData['username']} (ID: {$_SESSION['user_id']}, Email: {$userData['email']})" . PHP_EOL, FILE_APPEND);
-    
-    // Create or retrieve Stripe customer
+    // Create or get Stripe customer
     $customerId = null;
     
     if (!empty($userData['stripe_customer_id'])) {
         try {
             $customer = \Stripe\Customer::retrieve($userData['stripe_customer_id']);
             $customerId = $customer->id;
-            file_put_contents($logFile, "CUSTOMER: Retrieved existing customer {$customerId}" . PHP_EOL, FILE_APPEND);
+            logDebug("Retrieved existing customer: $customerId");
         } catch (\Stripe\Exception\InvalidRequestException $e) {
-            file_put_contents($logFile, "CUSTOMER: Existing customer invalid, will create new: " . $e->getMessage() . PHP_EOL, FILE_APPEND);
+            logDebug("Existing customer invalid, will create new: " . $e->getMessage());
             $customerId = null;
         }
     }
@@ -145,229 +239,116 @@ try {
             'metadata' => [
                 'user_id' => $_SESSION['user_id'],
                 'username' => $userData['username'],
-                'google_pay_enabled' => $enableGooglePay ? 'true' : 'false',
-                'created_from' => 'habitus_zone_subscription'
+                'source' => 'habitus_zone'
             ]
         ];
         
+        logDebug("Creating new customer with data:", $customerData);
+        
         $customer = \Stripe\Customer::create($customerData);
         $customerId = $customer->id;
-        file_put_contents($logFile, "CUSTOMER: Created new customer {$customerId}" . PHP_EOL, FILE_APPEND);
+        
+        logDebug("Created new customer: $customerId");
         
         // Save customer ID to database
-        $updateStmt = $conn->prepare("UPDATE users SET stripe_customer_id = ? WHERE id = ?");
-        $updateStmt->execute([$customerId, $_SESSION['user_id']]);
-        file_put_contents($logFile, "DATABASE: Updated user with stripe_customer_id" . PHP_EOL, FILE_APPEND);
+        try {
+            $updateStmt = $conn->prepare("UPDATE users SET stripe_customer_id = ? WHERE id = ?");
+            $updateStmt->execute([$customerId, $_SESSION['user_id']]);
+            logDebug("Updated user with stripe_customer_id");
+        } catch (PDOException $e) {
+            logDebug("Database update error: " . $e->getMessage());
+            // Continue anyway - customer was created successfully
+        }
     }
     
-    // Prepare payment intent data
-    file_put_contents($logFile, "PAYMENT_INTENT: Creating for plan {$plan}, amount {$planPrices[$plan]} cents" . PHP_EOL, FILE_APPEND);
-    
+    // Create payment intent
     $paymentIntentData = [
-        'amount' => $planPrices[$plan],
+        'amount' => $amount,
         'currency' => 'eur',
         'customer' => $customerId,
+        'automatic_payment_methods' => [
+            'enabled' => true,
+            'allow_redirects' => 'never'
+        ],
         'metadata' => [
             'user_id' => $_SESSION['user_id'],
             'plan' => $plan,
             'username' => $userData['username'],
-            'email' => $userData['email'],
-            'domain' => $_SERVER['HTTP_HOST'] ?? 'habitus.zone',
-            'google_pay_requested' => $enableGooglePay ? 'yes' : 'no',
-            'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown',
-            'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'Unknown',
-            'created_at' => date('Y-m-d H:i:s')
+            'email' => $userData['email']
         ],
-        'description' => "Habitus Zone {$plan} subscription - {$userData['username']}",
-        'receipt_email' => $userData['email'],
-        'statement_descriptor' => 'HABITUS ZONE',
-        'statement_descriptor_suffix' => strtoupper(substr($plan, 0, 6))
+        'description' => "Habitus Zone $plan subscription",
+        'receipt_email' => $userData['email']
     ];
     
-    // ENHANCED: Configure payment methods for Google Pay optimization
     if ($enableGooglePay) {
-        // Explicitly enable Google Pay and other payment methods
         $paymentIntentData['payment_method_types'] = ['card', 'google_pay'];
-        
-        // Enhanced automatic payment methods configuration
-        $paymentIntentData['automatic_payment_methods'] = [
-            'enabled' => true,
-            'allow_redirects' => 'never'
-        ];
-        
-        file_put_contents($logFile, "GOOGLE_PAY: Explicitly enabled in payment intent" . PHP_EOL, FILE_APPEND);
-    } else {
-        $paymentIntentData['automatic_payment_methods'] = [
-            'enabled' => true,
-            'allow_redirects' => 'never'
-        ];
     }
     
-    // ENHANCED: Improved shipping configuration for Google Pay merchant validation
-    $paymentIntentData['shipping'] = [
-        'name' => $userData['username'],
-        'address' => [
-            'country' => 'ES', // Spain for EUR currency
-            'line1' => 'Digital Service Delivery', // Since it's a digital product
-            'city' => 'Valencia',
-            'state' => 'Valencia',
-            'postal_code' => '46000'
-        ]
-    ];
-    
-    // ENHANCED: Additional configuration for better Google Pay support
-    $paymentIntentData['setup_future_usage'] = 'off_session'; // For recurring payments
-    $paymentIntentData['capture_method'] = 'automatic';
-    $paymentIntentData['confirmation_method'] = 'automatic';
-    
-    // Create the payment intent
-    file_put_contents($logFile, "PAYMENT_INTENT: Creating with data: " . json_encode($paymentIntentData, JSON_PRETTY_PRINT) . PHP_EOL, FILE_APPEND);
+    logDebug("Creating payment intent with data:", $paymentIntentData);
     
     $paymentIntent = \Stripe\PaymentIntent::create($paymentIntentData);
     
-    // Log the created payment intent details
-    file_put_contents($logFile, "PAYMENT_INTENT: Created successfully with ID: {$paymentIntent->id}" . PHP_EOL, FILE_APPEND);
-    file_put_contents($logFile, "PAYMENT_METHODS: Available types: " . json_encode($paymentIntent->payment_method_types) . PHP_EOL, FILE_APPEND);
-    file_put_contents($logFile, "AUTO_METHODS: Configuration: " . json_encode($paymentIntent->automatic_payment_methods) . PHP_EOL, FILE_APPEND);
+    logDebug("Payment intent created successfully:", [
+        'id' => $paymentIntent->id,
+        'amount' => $paymentIntent->amount,
+        'currency' => $paymentIntent->currency,
+        'status' => $paymentIntent->status,
+        'payment_method_types' => $paymentIntent->payment_method_types
+    ]);
     
-    // Check if Google Pay is actually available
-    $googlePayAvailable = in_array('google_pay', $paymentIntent->payment_method_types ?? []);
-    file_put_contents($logFile, "GOOGLE_PAY: Available in payment intent: " . ($googlePayAvailable ? 'YES' : 'NO') . PHP_EOL, FILE_APPEND);
-    
-    // If Google Pay was requested but not available, log why
-    if ($enableGooglePay && !$googlePayAvailable) {
-        file_put_contents($logFile, "GOOGLE_PAY: WARNING - Requested but not available. Check Stripe account settings." . PHP_EOL, FILE_APPEND);
-    }
-    
-    // Prepare comprehensive response
+    // Prepare response
     $response = [
         'success' => true,
         'clientSecret' => $paymentIntent->client_secret,
         'paymentIntentId' => $paymentIntent->id,
         'customerId' => $customerId,
-        'google_pay_available' => $googlePayAvailable,
-        'payment_method_types' => $paymentIntent->payment_method_types,
         'amount' => $paymentIntent->amount,
         'currency' => $paymentIntent->currency,
-        'status' => $paymentIntent->status,
+        'payment_method_types' => $paymentIntent->payment_method_types,
+        'google_pay_available' => in_array('google_pay', $paymentIntent->payment_method_types ?? []),
         'debug' => [
             'plan' => $plan,
-            'amount_cents' => $planPrices[$plan],
-            'amount_display' => '€' . number_format($planPrices[$plan] / 100, 2),
+            'amount_eur' => number_format($amount / 100, 2),
             'user_id' => $_SESSION['user_id'],
-            'google_pay_requested' => $enableGooglePay,
-            'automatic_payment_methods' => $paymentIntent->automatic_payment_methods,
-            'timestamp' => date('Y-m-d H:i:s'),
-            'environment' => [
-                'https' => ($_SERVER['HTTPS'] ?? 'off') === 'on',
-                'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown'
-            ]
+            'timestamp' => date('Y-m-d H:i:s')
         ]
     ];
     
-    file_put_contents($logFile, "RESPONSE: " . json_encode($response, JSON_PRETTY_PRINT) . PHP_EOL, FILE_APPEND);
-    file_put_contents($logFile, "=== GOOGLE PAY REQUEST SUCCESS ===" . PHP_EOL . PHP_EOL, FILE_APPEND);
+    logDebug("Sending success response:", $response);
     
-    // Clean output buffer and send response
-    ob_clean();
     echo json_encode($response, JSON_PRETTY_PRINT);
     
 } catch (\Stripe\Exception\AuthenticationException $e) {
-    ob_clean();
-    $error = [
-        'success' => false,
-        'message' => 'Stripe authentication failed. Please check API key configuration.',
-        'error_type' => 'stripe_auth_error',
-        'debug' => [
-            'stripe_error' => $e->getMessage(),
-            'api_key_prefix' => substr(STRIPE_SECRET_KEY, 0, 12) . '...'
-        ]
-    ];
-    file_put_contents($logFile, "ERROR: Authentication failed - " . json_encode($error) . PHP_EOL, FILE_APPEND);
-    http_response_code(500);
-    echo json_encode($error);
+    sendError('Stripe authentication failed', 500, [
+        'stripe_error' => $e->getMessage(),
+        'api_key_prefix' => substr(STRIPE_SECRET_KEY ?? '', 0, 12) . '...'
+    ]);
     
 } catch (\Stripe\Exception\InvalidRequestException $e) {
-    ob_clean();
-    $error = [
-        'success' => false,
-        'message' => 'Invalid request to Stripe: ' . $e->getMessage(),
-        'error_type' => 'stripe_invalid_request',
-        'debug' => [
-            'stripe_code' => $e->getStripeCode(),
-            'param' => $e->getStripeParam(),
-            'request_id' => $e->getRequestId()
-        ]
-    ];
-    file_put_contents($logFile, "ERROR: Invalid request - " . json_encode($error) . PHP_EOL, FILE_APPEND);
-    http_response_code(400);
-    echo json_encode($error);
-    
-} catch (\Stripe\Exception\RateLimitException $e) {
-    ob_clean();
-    $error = [
-        'success' => false,
-        'message' => 'Too many requests to Stripe. Please try again later.',
-        'error_type' => 'stripe_rate_limit',
-        'debug' => [
-            'retry_after' => $e->getHttpHeaders()['Retry-After'] ?? 60
-        ]
-    ];
-    file_put_contents($logFile, "ERROR: Rate limited - " . json_encode($error) . PHP_EOL, FILE_APPEND);
-    http_response_code(429);
-    echo json_encode($error);
+    sendError('Invalid Stripe request', 400, [
+        'stripe_error' => $e->getMessage(),
+        'stripe_code' => $e->getStripeCode(),
+        'param' => $e->getStripeParam()
+    ]);
     
 } catch (\Stripe\Exception\ApiErrorException $e) {
-    ob_clean();
-    $error = [
-        'success' => false,
-        'message' => 'Stripe API error: ' . $e->getMessage(),
-        'error_type' => 'stripe_api_error',
-        'debug' => [
-            'stripe_code' => $e->getStripeCode(),
-            'decline_code' => $e->getDeclineCode(),
-            'param' => $e->getStripeParam(),
-            'request_id' => $e->getRequestId(),
-            'http_status' => $e->getHttpStatus()
-        ]
-    ];
-    file_put_contents($logFile, "ERROR: Stripe API error - " . json_encode($error) . PHP_EOL, FILE_APPEND);
-    http_response_code(500);
-    echo json_encode($error);
+    sendError('Stripe API error', 500, [
+        'stripe_error' => $e->getMessage(),
+        'stripe_code' => $e->getStripeCode(),
+        'http_status' => $e->getHttpStatus()
+    ]);
     
 } catch (PDOException $e) {
-    ob_clean();
-    $error = [
-        'success' => false,
-        'message' => 'Database error occurred.',
-        'error_type' => 'database_error',
-        'debug' => [
-            'pdo_code' => $e->getCode(),
-            'pdo_message' => $e->getMessage()
-        ]
-    ];
-    file_put_contents($logFile, "ERROR: Database error - " . json_encode($error) . PHP_EOL, FILE_APPEND);
-    http_response_code(500);
-    echo json_encode($error);
+    sendError('Database connection error', 500, [
+        'error' => $e->getMessage(),
+        'code' => $e->getCode()
+    ]);
     
 } catch (Exception $e) {
-    ob_clean();
-    $error = [
-        'success' => false,
-        'message' => $e->getMessage(),
-        'error_type' => 'general_error',
-        'debug' => [
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
-            'trace' => DEBUG_MODE ? $e->getTraceAsString() : 'Enable debug mode for trace'
-        ]
-    ];
-    file_put_contents($logFile, "ERROR: General error - " . json_encode($error) . PHP_EOL, FILE_APPEND);
-    http_response_code(500);
-    echo json_encode($error);
+    sendError('Server error: ' . $e->getMessage(), 500, [
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+        'trace' => $e->getTraceAsString()
+    ]);
 }
-
-// End output buffering
-ob_end_flush();
-exit;
 ?>
