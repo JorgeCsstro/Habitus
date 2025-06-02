@@ -143,27 +143,38 @@ try {
         'amount' => $planPrices[$plan],
         'currency' => 'eur',
         'customer' => $customerId,
-        
-        // FIXED: Enable automatic payment methods but restrict redirects
+
+        // CRITICAL: Proper automatic payment methods for Google Pay
         'automatic_payment_methods' => [
             'enabled' => true,
-            'allow_redirects' => 'never' // This prevents bank transfers, SEPA, etc.
+            'allow_redirects' => 'never'
         ],
-        
-        // REMOVED: payment_method_options that was causing the error
-        // For subscriptions, let Stripe handle the capture method automatically
-        
+
+        // ADDED: Shipping information (helps with Google Pay)
+        'shipping' => [
+            'name' => $userData['username'],
+            'address' => [
+                'country' => 'ES', // Spain for EUR currency
+            ]
+        ],
+
         'metadata' => [
             'user_id' => $_SESSION['user_id'],
             'plan' => $plan,
             'username' => $userData['username'],
-            'email' => $userData['email']
+            'email' => $userData['email'],
+            'domain' => $_SERVER['HTTP_HOST'] ?? 'habitus.zone'
         ],
         'description' => "Habitus Zone {$plan} subscription - {$userData['username']}",
-        'receipt_email' => $userData['email']
+        'receipt_email' => $userData['email'],
+
+        // ADDED: Statement descriptor for user's card statement
+        'statement_descriptor' => 'HABITUS ZONE',
+        'statement_descriptor_suffix' => strtoupper($plan)
     ]); 
     
-    file_put_contents($logFile, "PAYMENT_INTENT: Created {$paymentIntent->id}\n", FILE_APPEND);
+    // ENHANCED: Log payment methods enabled
+    file_put_contents($logFile, "PAYMENT_METHODS: " . json_encode($paymentIntent->automatic_payment_methods) . "\n", FILE_APPEND);
     
     // Prepare response
     $response = [

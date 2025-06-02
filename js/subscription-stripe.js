@@ -77,7 +77,7 @@ const paymentElementOptions = {
         type: 'tabs',
         defaultCollapsed: false,
         radios: false,
-        spacedAccordionItems: false
+        spacedAccordionItems: true // Better spacing for wallet buttons
     },
     
     fields: {
@@ -100,155 +100,20 @@ const paymentElementOptions = {
         card: 'auto'
     },
     
-    // ENHANCED: More explicit wallet configuration
+    // CRITICAL: Explicit wallet configuration
     wallets: {
-        googlePay: 'auto'
+        googlePay: 'auto',  // Let Stripe determine availability
+        link: 'auto'        // Enable Stripe Link
     },
     
-    // ADDED: Business information (important for Google Pay)
+    // CRITICAL: Business information for Google Pay
     business: {
         name: 'Habitus Zone'
     },
     
-    // ADDED: Payment method configuration
-    paymentMethodCreation: 'manual'
+    // FIXED: Use automatic payment method creation
+    paymentMethodCreation: 'automatic'
 };
-
-function debugPaymentMethods() {
-    console.group('🔍 Enhanced Payment Methods Debug');
-    
-    // Check basic requirements
-    console.log('🌐 HTTPS:', window.location.protocol === 'https:');
-    console.log('🌍 Domain:', window.location.hostname);
-    console.log('🔑 Stripe loaded:', typeof window.Stripe !== 'undefined');
-    
-    // Check browser
-    const isChrome = navigator.userAgent.includes('Chrome');
-    const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
-    const isEdge = navigator.userAgent.includes('Edg');
-    
-    console.log('🌐 Browser Detection:');
-    console.log('  - Chrome/Chromium:', isChrome);
-    console.log('  - Safari:', isSafari);
-    console.log('  - Edge:', isEdge);
-    console.log('  - User Agent:', navigator.userAgent);
-    
-    // Check Google Pay readiness
-    console.log('💳 Google Pay Requirements:');
-    console.log('  - Chrome-based browser:', isChrome || isEdge);
-    console.log('  - Secure context (HTTPS):', window.isSecureContext);
-    console.log('  - PaymentRequest API:', 'PaymentRequest' in window);
-    
-    // Check if Google Pay API is available
-    if (window.google && window.google.payments) {
-        console.log('  - Google Pay API loaded:', true);
-    } else {
-        console.log('  - Google Pay API: Will be loaded by Stripe');
-    }
-    
-    // Stripe configuration check
-    if (window.stripe) {
-        console.log('💰 Stripe Configuration:');
-        console.log('  - Instance available:', true);
-        console.log('  - Key type:', window.stripe._keyMode || 'unknown');
-    }
-    
-    console.groupEnd();
-    
-    // Return summary for easy checking
-    return {
-        https: window.location.protocol === 'https:',
-        chrome: isChrome || isEdge,
-        safari: isSafari,
-        googlePayReady: (isChrome || isEdge) && window.isSecureContext,
-        stripeLoaded: typeof window.Stripe !== 'undefined'
-    };
-}
-
-async function testGooglePayAvailability() {
-    console.group('🧪 Google Pay Availability Test');
-    
-    try {
-        // Check if we're in a supported browser
-        const isSupported = window.isSecureContext && 
-                           (navigator.userAgent.includes('Chrome') || navigator.userAgent.includes('Edg'));
-        
-        console.log('✅ Basic requirements:', isSupported);
-        
-        if (!isSupported) {
-            console.log('❌ Google Pay requires Chrome/Edge browser with HTTPS');
-            console.groupEnd();
-            return false;
-        }
-        
-        // Test PaymentRequest API
-        if (window.PaymentRequest) {
-            console.log('✅ PaymentRequest API available');
-            
-            // Create a test payment request to check Google Pay
-            const supportedInstruments = [{
-                supportedMethods: 'https://google.com/pay',
-                data: {
-                    apiVersion: 2,
-                    apiVersionMinor: 0,
-                    allowedPaymentMethods: [{
-                        type: 'CARD',
-                        parameters: {
-                            allowedAuthMethods: ['PAN_ONLY', 'CRYPTOGRAM_3DS'],
-                            allowedCardNetworks: ['MASTERCARD', 'VISA']
-                        }
-                    }]
-                }
-            }];
-            
-            const details = {
-                total: {
-                    label: 'Test',
-                    amount: { currency: 'EUR', value: '1.00' }
-                }
-            };
-            
-            try {
-                const request = new PaymentRequest(supportedInstruments, details);
-                const canMakePayment = await request.canMakePayment();
-                console.log('✅ Google Pay can make payment:', canMakePayment);
-                console.groupEnd();
-                return canMakePayment;
-            } catch (error) {
-                console.log('⚠️ Google Pay test error:', error.message);
-                console.groupEnd();
-                return false;
-            }
-        } else {
-            console.log('❌ PaymentRequest API not available');
-            console.groupEnd();
-            return false;
-        }
-        
-    } catch (error) {
-        console.error('❌ Google Pay test failed:', error);
-        console.groupEnd();
-        return false;
-    }
-}
-
-/**
- * Debug logging function
- */
-function debugLog(level, message, data = null) {
-    if (!debugMode && level === 'debug') return;
-    
-    const emoji = {
-        'error': '❌',
-        'success': '✅', 
-        'info': 'ℹ️',
-        'debug': '🔧',
-        'warning': '⚠️'
-    }[level] || 'ℹ️';
-    
-    const timestamp = new Date().toLocaleTimeString();
-    console.log(`${emoji} [${timestamp}] Stripe Fixed: ${message}`, data || '');
-}
 
 /**
  * Initialize Stripe with error handling
@@ -412,19 +277,21 @@ async function initializeStripePayment() {
         
         paymentIntentClientSecret = data.clientSecret;
         
-        // COMPLETE FIX: Create Stripe elements
+        // Create Stripe elements with Google Pay support
         elements = stripe.elements({
             clientSecret: data.clientSecret,
-            appearance: appearance
+            appearance: appearance,
+            // ADDED: Explicit locale for better Google Pay support
+            locale: 'auto'
         });
         
-        // COMPLETE FIX: Create payment element
+        // Create payment element with enhanced options
         paymentElement = elements.create('payment', paymentElementOptions);
         
-        // COMPLETE FIX: Clear container and create minimal mount point
+        // Clear container and create mount point
         paymentContainer.innerHTML = '<div id="stripe-payment-element"></div>';
         
-        // COMPLETE FIX: Mount the payment element
+        // Mount the payment element
         debugLog('info', 'Mounting payment element...');
         await paymentElement.mount('#stripe-payment-element');
         
@@ -436,13 +303,8 @@ async function initializeStripePayment() {
             submitBtn.disabled = false;
         }
         
-        // Set up event listeners
+        // Set up event listeners with Google Pay debugging
         setupPaymentElementListeners();
-        
-        // COMPLETE FIX: Ensure proper sizing after mount
-        setTimeout(() => {
-            ensureProperSizing();
-        }, 100);
         
     } catch (error) {
         debugLog('error', 'Payment initialization failed:', error);
@@ -949,9 +811,6 @@ window.addEventListener('unhandledrejection', function(event) {
  */
 document.addEventListener('DOMContentLoaded', function() {
     debugLog('info', 'COMPLETE FIX: Initializing subscription system...');
-    
-    // ADDED: Debug payment methods availability
-    debugPaymentMethods();
     
     if (!initializeStripe()) {
         return;

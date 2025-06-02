@@ -13,9 +13,6 @@ if (!isLoggedIn()) {
     exit;
 }
 
-// Enable debugging for development
-$debugMode = isset($_GET['debug']) || (defined('DEBUG_MODE') && DEBUG_MODE);
-
 // Get user data
 $userData = getUserData($_SESSION['user_id']);
 $userHCoins = $userData['hcoin'];
@@ -37,10 +34,6 @@ $featuredItems = getFeaturedShopItems();
 $roomId = 0;
 $roomData = null;
 $placedItems = [];
-$debugInfo = [
-    'user_id' => $_SESSION['user_id'],
-    'username' => $_SESSION['username'] ?? 'Unknown'
-];
 
 // Get user's rooms with better error handling
 try {
@@ -48,8 +41,6 @@ try {
     $stmt = $conn->prepare($roomsQuery);
     $stmt->execute([$_SESSION['user_id']]);
     $rooms = $stmt->fetchAll();
-    
-    $debugInfo['total_rooms'] = count($rooms);
     
     if (empty($rooms)) {
         // Create a default room if none exists
@@ -62,15 +53,11 @@ try {
         $stmt = $conn->prepare($roomsQuery);
         $stmt->execute([$_SESSION['user_id']]);
         $rooms = $stmt->fetchAll();
-        
-        $debugInfo['created_default_room'] = $roomId;
     }
     
     if (!empty($rooms)) {
         $roomData = $rooms[0];
         $roomId = $roomData['id'];
-        $debugInfo['selected_room_id'] = $roomId;
-        $debugInfo['selected_room_name'] = $roomData['name'];
         
         // ENHANCED: Get placed items with comprehensive error handling
         $placedItemsQuery = "SELECT 
@@ -99,9 +86,6 @@ try {
         $stmt->execute([$roomId]);
         $placedItems = $stmt->fetchAll();
         
-        $debugInfo['placed_items_query'] = $placedItemsQuery;
-        $debugInfo['placed_items_count'] = count($placedItems);
-        
         // Process rotation variants
         foreach ($placedItems as &$item) {
             if (!empty($item['rotation_variants'])) {
@@ -115,19 +99,8 @@ try {
             $item['z_index'] = intval($item['z_index'] ?? 1);
         }
         unset($item); // Break reference
-        
-        $debugInfo['placed_items_details'] = array_map(function($item) {
-            return [
-                'id' => $item['id'],
-                'name' => $item['name'],
-                'position' => "[{$item['grid_x']}, {$item['grid_y']}]",
-                'surface' => $item['surface'],
-                'rotation' => $item['rotation']
-            ];
-        }, $placedItems);
     }
 } catch (Exception $e) {
-    $debugInfo['error'] = $e->getMessage();
     error_log("Dashboard Error: " . $e->getMessage());
 }
 
@@ -137,14 +110,6 @@ foreach ($placedItems as $item) {
     if (!empty($item['rotation_variants'])) {
         $rotationDataMap[$item['item_id']] = $item['rotation_variants'];
     }
-}
-$debugInfo['rotation_data_keys'] = array_keys($rotationDataMap);
-
-// Output debug information if requested
-if ($debugMode) {
-    echo "<!-- DEBUG INFO:\n";
-    echo json_encode($debugInfo, JSON_PRETTY_PRINT);
-    echo "\n-->";
 }
 ?>
 
@@ -262,19 +227,6 @@ if ($debugMode) {
                                 <div id="isometric-room" class="isometric-room"></div>
                             </div>
                         </div>
-                        
-                        <!-- Debug info for dashboard -->
-                        <?php if ($debugMode): ?>
-                        <div style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 5px; font-size: 12px;">
-                            <strong>Debug Info:</strong><br>
-                            Room: <?php echo $roomData['name'] ?? 'None'; ?> (ID: <?php echo $roomId; ?>)<br>
-                            Items: <?php echo count($placedItems); ?><br>
-                            <?php if (!empty($placedItems)): ?>
-                                First item: <?php echo $placedItems[0]['name']; ?> at [<?php echo $placedItems[0]['grid_x']; ?>, <?php echo $placedItems[0]['grid_y']; ?>]<br>
-                            <?php endif; ?>
-                            <button onclick="window.dashboardDebug.reinitialize()" style="margin-top: 5px; padding: 2px 8px; font-size: 10px;">Reinitialize Room</button>
-                        </div>
-                        <?php endif; ?>
                     </div>
                     <div class="panel-footer">
                         <button class="edit-habitus-button" onclick="location.href='habitus.php'">
@@ -365,13 +317,8 @@ if ($debugMode) {
             const roomData = <?php echo json_encode($roomData); ?>;
             const placedItems = <?php echo json_encode($placedItems); ?> || [];
             const rotationData = <?php echo json_encode($rotationDataMap); ?> || {};
-            const debugMode = <?php echo $debugMode ? 'true' : 'false'; ?>;
             
             console.group('🏠 Dashboard Room Initialization');
-            
-            if (debugMode) {
-                console.log('Full Debug Info:', <?php echo json_encode($debugInfo); ?>);
-            }
             
             // Validate data before initialization
             let initializationSuccess = false;
@@ -429,48 +376,8 @@ if ($debugMode) {
             }
             
             console.groupEnd();
-            
-            // Add debugging helper to window for manual testing
-            if (debugMode) {
-                window.dashboardDebug = {
-                    roomData,
-                    placedItems,
-                    rotationData,
-                    debugInfo: <?php echo json_encode($debugInfo); ?>,
-                    reinitialize: function() {
-                        console.log('🔄 Manual reinitialize triggered');
-                        if (typeof initializeHabitusRoom === 'function') {
-                            const result = initializeHabitusRoom(roomData, placedItems, rotationData);
-                            console.log('Reinitialize result:', result);
-                        } else {
-                            console.error('initializeHabitusRoom function not available');
-                        }
-                    },
-                    testItemClick: function() {
-                        console.log('🖱️ Testing item click simulation');
-                        const items = document.querySelectorAll('.placed-item');
-                        if (items.length > 0) {
-                            const firstItem = items[0];
-                            const clickEvent = new MouseEvent('click', {
-                                bubbles: true,
-                                cancelable: true,
-                                clientX: 100,
-                                clientY: 100
-                            });
-                            firstItem.dispatchEvent(clickEvent);
-                            console.log('Click event dispatched to first item');
-                        } else {
-                            console.log('No placed items found to test');
-                        }
-                    }
-                };
-                
-                console.log('🔧 Dashboard debug helper available at window.dashboardDebug');
-                console.log('Available methods: reinitialize(), testItemClick()');
-            }
         });
     </script>
     <script src="../js/habitus-room.js"></script>
-    
 </body>
 </html>
