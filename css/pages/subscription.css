@@ -1,4 +1,4 @@
-/* subscription.css - ENHANCED VERSION with Stripe Modal Fixes */
+/* subscription.css - FIXED VERSION with Proper Payment Element Display */
 
 /* ===== BASIC RESET AND LAYOUT ===== */
 * {
@@ -307,7 +307,7 @@
     box-shadow: 0 8px 20px rgba(196, 163, 86, 0.4);
 }
 
-/* ===== CRITICAL: ENHANCED MODAL STYLING ===== */
+/* ===== CRITICAL: FIXED MODAL STYLING ===== */
 .modal {
     display: none;
     position: fixed;
@@ -318,7 +318,7 @@
     background-color: rgba(45, 41, 38, 0.85);
     z-index: 99999;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     padding: 20px;
     box-sizing: border-box;
     overflow-y: auto;
@@ -329,20 +329,20 @@
     display: flex !important;
 }
 
-/* CRITICAL: Modal Content with Proper Height */
+/* CRITICAL: Fixed Modal Content with Proper Height */
 .modal-content {
     background-color: white;
     border-radius: 20px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     width: 100%;
-    max-width: 800px;
-    min-height: 700px;
-    max-height: 95vh;
+    max-width: 900px;
+    min-height: 800px;
+    max-height: none;
     display: flex;
     flex-direction: column;
-    margin: auto;
+    margin: 20px auto;
     animation: modalSlideIn 0.3s ease-out;
-    overflow: hidden;
+    overflow: visible;
 }
 
 @keyframes modalSlideIn {
@@ -397,21 +397,21 @@
     transform: rotate(90deg);
 }
 
-/* CRITICAL: Modal Body with Proper Scrolling */
+/* CRITICAL: Fixed Modal Body with Proper Scrolling */
 .modal-body {
-    padding: 30px 40px;
+    padding: 30px 40px 40px;
     flex: 1;
-    overflow-y: auto;
-    min-height: 0;
+    overflow: visible;
     display: flex;
     flex-direction: column;
+    min-height: 0;
 }
 
 .payment-summary {
     background: linear-gradient(135deg, #f5f1ea 0%, #e9e2d9 100%);
     border-radius: 15px;
     padding: 30px;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
     text-align: center;
     border: 2px solid #e9e2d9;
     box-shadow: inset 0 2px 10px rgba(141, 91, 76, 0.05);
@@ -434,15 +434,16 @@
     font-family: 'Quicksand', sans-serif;
 }
 
-/* ===== MOST CRITICAL: PAYMENT ELEMENT CONTAINER ===== */
+/* ===== MOST CRITICAL: FIXED PAYMENT ELEMENT CONTAINER ===== */
 #payment-element {
     width: 100%;
-    min-height: 500px !important;
-    margin: 25px 0;
+    min-height: 600px !important;
+    height: auto !important;
+    margin: 30px 0;
     border: 2px solid #e9e2d9;
     border-radius: 15px;
     background-color: #ffffff;
-    padding: 0;
+    padding: 0 !important;
     overflow: visible !important;
     position: relative;
     box-shadow: 0 4px 15px rgba(141, 91, 76, 0.08);
@@ -455,18 +456,22 @@
 #payment-element > div,
 #stripe-payment-element {
     width: 100% !important;
-    min-height: 460px !important;
+    min-height: 560px !important;
     height: auto !important;
-    padding: 30px !important;
+    max-height: none !important;
+    padding: 40px !important;
     border-radius: 15px;
     box-sizing: border-box;
     overflow: visible !important;
+    flex: 1;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
 /* CRITICAL: Remove ALL iframe constraints */
 #payment-element iframe {
     width: 100% !important;
-    min-height: 400px !important;
+    min-height: 480px !important;
     height: auto !important;
     max-height: none !important;
     border: none !important;
@@ -481,8 +486,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 460px;
-    padding: 50px;
+    min-height: 560px;
+    padding: 60px 40px;
     text-align: center;
     background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
     border-radius: 15px;
@@ -519,8 +524,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 460px;
-    padding: 50px;
+    min-height: 560px;
+    padding: 60px 40px;
     text-align: center;
     background: linear-gradient(135deg, #fff5f5, #ffe5e5);
     border: 2px solid #feb2b2;
@@ -568,7 +573,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    margin: 20px 0;
+    margin: 25px 0;
     padding: 18px;
     background-color: #f5f1ea;
     border-radius: 8px;
@@ -601,7 +606,7 @@
     justify-content: center;
     gap: 15px;
     font-family: 'Quicksand', sans-serif;
-    margin-top: 25px;
+    margin-top: 30px;
     text-transform: uppercase;
     letter-spacing: 1px;
     box-shadow: 0 6px 20px rgba(106, 141, 127, 0.3);
@@ -664,8 +669,8 @@
     justify-content: center;
     align-items: center;
     gap: 15px;
-    margin-top: 20px;
-    padding-top: 15px;
+    margin-top: 25px;
+    padding-top: 20px;
     border-top: 1px solid #e9e2d9;
     font-size: 14px;
     color: #8d8580;
@@ -946,7 +951,7 @@
         width: 100%;
     }
     
-    /* Modal Responsive */
+    /* CRITICAL: Mobile Modal Fixes */
     .modal {
         padding: 10px;
         align-items: flex-start;
@@ -954,9 +959,10 @@
     
     .modal-content {
         max-width: 95%;
+        margin: 10px auto;
+        min-height: 700px;
         max-height: 95vh;
-        margin-top: 10px;
-        min-height: 600px;
+        overflow-y: auto;
     }
     
     .modal-header {
@@ -964,36 +970,37 @@
     }
     
     .modal-body {
-        padding: 25px 20px;
+        padding: 25px 20px 30px;
     }
     
     .payment-summary {
         padding: 25px 20px;
+        margin-bottom: 25px;
     }
     
     #payment-element {
-        min-height: 450px !important;
-        margin: 20px 0;
+        min-height: 550px !important;
+        margin: 25px 0;
     }
     
     #payment-element > div,
     #stripe-payment-element {
-        min-height: 410px !important;
-        padding: 25px !important;
+        min-height: 510px !important;
+        padding: 30px 25px !important;
     }
     
     #payment-element iframe {
-        min-height: 370px !important;
+        min-height: 450px !important;
     }
     
     .stripe-loading {
-        min-height: 410px;
-        padding: 40px 25px;
+        min-height: 510px;
+        padding: 50px 30px;
     }
     
     .stripe-error {
-        min-height: 410px;
-        padding: 40px 25px;
+        min-height: 510px;
+        padding: 50px 30px;
     }
     
     .subscription-alert {
@@ -1014,7 +1021,7 @@
     
     .modal-content {
         border-radius: 15px;
-        min-height: 550px;
+        min-height: 650px;
     }
     
     .modal-header h2 {
@@ -1030,34 +1037,34 @@
     }
     
     #payment-element {
-        min-height: 420px !important;
+        min-height: 500px !important;
     }
     
     #payment-element > div,
     #stripe-payment-element {
-        min-height: 380px !important;
-        padding: 20px !important;
+        min-height: 460px !important;
+        padding: 25px 20px !important;
     }
     
     #payment-element iframe {
-        min-height: 340px !important;
+        min-height: 400px !important;
     }
     
     .stripe-loading {
-        min-height: 380px;
-        padding: 30px 20px;
+        min-height: 460px;
+        padding: 40px 25px;
     }
     
     .stripe-error {
-        min-height: 380px;
-        padding: 30px 20px;
+        min-height: 460px;
+        padding: 40px 25px;
     }
     
     .submit-payment-btn {
         padding: 18px;
         font-size: 1.1rem;
         min-height: 60px;
-        margin-top: 20px;
+        margin-top: 25px;
     }
     
     .plan-features li {
@@ -1071,6 +1078,39 @@
     .benefit p {
         font-size: 0.9rem;
     }
+}
+
+/* ===== ADDITIONAL FIXES FOR STRIPE ELEMENT DISPLAY ===== */
+
+/* Force visible scrollbars when needed */
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: #f5f1ea;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: #d6cfc7;
+    border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: #c5bcb3;
+}
+
+/* Ensure payment form has proper z-index */
+#payment-element,
+#stripe-payment-element {
+    z-index: 1;
+    position: relative;
+}
+
+/* Fix for potential iframe rendering issues */
+#payment-element iframe {
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 /* Print styles */

@@ -1,4 +1,4 @@
-// subscription-stripe.js - ENHANCED VERSION with Fixed Payment Modal
+// subscription-stripe.js - FIXED VERSION with Proper Payment Element Display
 
 let selectedPlan = null;
 let elements = null;
@@ -21,9 +21,10 @@ const appearance = {
         fontFamily: 'Poppins, Quicksand, system-ui, sans-serif',
         fontSizeBase: '16px',
         borderRadius: '8px',
-        spacingUnit: '8px',
-        spacingGridRow: '28px',
-        spacingGridColumn: '28px'
+        spacingUnit: '10px',
+        spacingGridRow: '30px',
+        spacingGridColumn: '30px',
+        tabSpacing: '20px'
     },
     rules: {
         '.Tab': {
@@ -32,10 +33,11 @@ const appearance = {
             padding: '24px 28px',
             backgroundColor: '#ffffff',
             transition: 'all 0.3s ease',
-            marginBottom: '16px',
+            marginBottom: '20px',
             fontSize: '16px',
             fontWeight: '500',
-            minHeight: '70px'
+            minHeight: '80px',
+            boxSizing: 'border-box'
         },
         '.Tab:hover': {
             borderColor: '#d6cfc7',
@@ -57,7 +59,8 @@ const appearance = {
             backgroundColor: '#ffffff',
             transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
             minHeight: '60px',
-            fontFamily: 'inherit'
+            fontFamily: 'inherit',
+            boxSizing: 'border-box'
         },
         '.Input:focus': {
             borderColor: '#6a8d7f',
@@ -75,13 +78,13 @@ const appearance = {
             fontWeight: '600',
             fontSize: '16px',
             color: '#5a5755',
-            marginBottom: '12px',
+            marginBottom: '15px',
             fontFamily: 'inherit'
         },
         '.Error': {
             color: '#e53e3e',
             fontSize: '15px',
-            marginTop: '12px',
+            marginTop: '15px',
             fontWeight: '500',
             lineHeight: '1.4'
         },
@@ -89,10 +92,11 @@ const appearance = {
             backgroundColor: '#ffffff',
             borderRadius: '12px',
             border: '2px solid #e9e2d9',
-            padding: '28px',
-            marginBottom: '24px',
+            padding: '30px',
+            marginBottom: '25px',
             transition: 'border-color 0.3s ease',
-            minHeight: '80px'
+            minHeight: '90px',
+            boxSizing: 'border-box'
         },
         '.Block:hover': {
             borderColor: '#d6cfc7'
@@ -100,7 +104,7 @@ const appearance = {
     }
 };
 
-// Payment element options with better layout for larger forms
+// Enhanced payment element options with proper layout for maximum display
 const paymentElementOptions = {
     layout: {
         type: 'tabs',
@@ -129,7 +133,8 @@ const paymentElementOptions = {
     wallets: {
         applePay: 'auto',
         googlePay: 'auto'
-    }
+    },
+    paymentMethodOrder: ['card', 'apple_pay', 'google_pay']
 };
 
 /**
@@ -157,7 +162,7 @@ function debugLog(level, message, data = null) {
  * Initialize Stripe and set up event handlers when DOM is ready
  */
 document.addEventListener('DOMContentLoaded', function() {
-    debugLog('info', 'Enhanced subscription JavaScript initializing...');
+    debugLog('info', 'Fixed subscription JavaScript initializing...');
     
     // Initialize Stripe
     if (!initializeStripe()) {
@@ -170,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupKeyboardHandlers();
     setupFormHandlers();
     
-    debugLog('success', 'Enhanced subscription page fully initialized');
+    debugLog('success', 'Fixed subscription page fully initialized');
 });
 
 /**
@@ -271,11 +276,11 @@ function setupFormHandlers() {
 }
 
 /**
- * Subscribe to a plan - ENHANCED VERSION
+ * Subscribe to a plan - FIXED VERSION
  * @param {string} planType - Plan type (adfree or premium)
  */
 async function subscribeToPlan(planType) {
-    debugLog('info', `Starting enhanced subscription process for: ${planType}`);
+    debugLog('info', `Starting fixed subscription process for: ${planType}`);
     
     // Validation
     if (!planType || !['adfree', 'premium'].includes(planType)) {
@@ -309,25 +314,28 @@ async function subscribeToPlan(planType) {
     // Show modal with enhanced animation
     modal.classList.add('show');
     
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+    
     // Focus management for accessibility
     setTimeout(() => {
         const closeButton = modal.querySelector('.close-modal');
         if (closeButton) closeButton.focus();
     }, 100);
     
-    debugLog('info', 'Enhanced modal displayed, initializing payment form...');
+    debugLog('info', 'Fixed modal displayed, initializing payment form...');
     
-    // Initialize payment after modal is visible
+    // Initialize payment after modal is visible with longer delay for proper rendering
     setTimeout(() => {
-        initializeEnhancedStripePayment();
-    }, 300);
+        initializeFixedStripePayment();
+    }, 500);
 }
 
 /**
- * Initialize enhanced Stripe payment form
+ * Initialize fixed Stripe payment form
  */
-async function initializeEnhancedStripePayment() {
-    debugLog('info', 'Initializing enhanced Stripe payment form...');
+async function initializeFixedStripePayment() {
+    debugLog('info', 'Initializing fixed Stripe payment form...');
     
     const paymentContainer = document.getElementById('payment-element');
     if (!paymentContainer) {
@@ -335,11 +343,11 @@ async function initializeEnhancedStripePayment() {
         return;
     }
     
-    // Show enhanced loading state
+    // Show enhanced loading state with fixed height
     paymentContainer.innerHTML = `
         <div class="stripe-loading">
             <div class="loading-spinner"></div>
-            <p>Setting up secure payment...</p>
+            <p>Setting up secure payment form...</p>
             <small>This may take a few seconds</small>
         </div>
     `;
@@ -360,7 +368,7 @@ async function initializeEnhancedStripePayment() {
         }
         
         const data = await response.json();
-        debugLog('debug', 'Enhanced payment intent response:', data);
+        debugLog('debug', 'Fixed payment intent response:', data);
         
         if (!data.success) {
             throw new Error(data.message || 'Failed to create payment intent');
@@ -368,24 +376,36 @@ async function initializeEnhancedStripePayment() {
         
         paymentIntentClientSecret = data.clientSecret;
         
-        // Create Stripe elements with enhanced appearance
-        debugLog('info', 'Creating enhanced Stripe elements...');
+        // Create Stripe elements with fixed appearance
+        debugLog('info', 'Creating fixed Stripe elements...');
         elements = stripe.elements({
             clientSecret: data.clientSecret,
             appearance: appearance
         });
         
-        // Create payment element with enhanced options
+        // Create payment element with fixed options
         paymentElement = elements.create('payment', paymentElementOptions);
         
-        // Clear loading and create proper container
-        paymentContainer.innerHTML = '<div id="stripe-payment-element"></div>';
+        // Clear loading and create proper container with fixed structure
+        paymentContainer.innerHTML = '<div id="stripe-payment-element" style="min-height: 560px; height: auto;"></div>';
         
-        // Mount the payment element
-        debugLog('info', 'Mounting enhanced payment element...');
-        await paymentElement.mount('#stripe-payment-element');
+        // Mount the payment element with error handling
+        debugLog('info', 'Mounting fixed payment element...');
         
-        debugLog('success', 'Enhanced payment element mounted successfully');
+        try {
+            await paymentElement.mount('#stripe-payment-element');
+            debugLog('success', 'Fixed payment element mounted successfully');
+            
+            // Force a resize after mounting to ensure proper display
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+                debugLog('debug', 'Triggered resize event for payment element');
+            }, 500);
+            
+        } catch (mountError) {
+            debugLog('error', 'Payment element mount failed:', mountError);
+            throw new Error('Failed to mount payment form: ' + mountError.message);
+        }
         
         // Enable submit button
         const submitBtn = document.getElementById('submit-payment-btn');
@@ -394,10 +414,10 @@ async function initializeEnhancedStripePayment() {
         }
         
         // Set up enhanced event listeners
-        setupEnhancedPaymentElementListeners();
+        setupFixedPaymentElementListeners();
         
     } catch (error) {
-        debugLog('error', 'Enhanced payment initialization failed:', error);
+        debugLog('error', 'Fixed payment initialization failed:', error);
         
         retryAttempts++;
         
@@ -422,13 +442,23 @@ async function initializeEnhancedStripePayment() {
 }
 
 /**
- * Set up enhanced payment element event listeners
+ * Set up fixed payment element event listeners
  */
-function setupEnhancedPaymentElementListeners() {
+function setupFixedPaymentElementListeners() {
     if (!paymentElement) return;
     
     paymentElement.on('ready', function() {
-        debugLog('success', 'Enhanced payment element ready for user input');
+        debugLog('success', 'Fixed payment element ready for user input');
+        
+        // Additional resize trigger when element is ready
+        setTimeout(() => {
+            const iframe = document.querySelector('#payment-element iframe');
+            if (iframe) {
+                iframe.style.minHeight = '480px';
+                iframe.style.height = 'auto';
+                debugLog('debug', 'Applied fixed height to payment iframe');
+            }
+        }, 100);
     });
     
     paymentElement.on('change', function(event) {
@@ -453,15 +483,26 @@ function setupEnhancedPaymentElementListeners() {
         debugLog('error', 'Payment element load error:', event);
         showMessage('Error loading payment form. Please refresh and try again.');
     });
+    
+    // Additional event listener for element size changes
+    paymentElement.on('heightchange', function(event) {
+        debugLog('debug', 'Payment element height changed:', event.height);
+        
+        // Ensure container adjusts to content
+        const container = document.getElementById('stripe-payment-element');
+        if (container && event.height) {
+            container.style.minHeight = Math.max(event.height + 50, 560) + 'px';
+        }
+    });
 }
 
 /**
- * Handle enhanced form submission
+ * Handle fixed form submission
  * @param {Event} e - Form submit event
  */
 async function handleSubmit(e) {
     e.preventDefault();
-    debugLog('info', 'Processing enhanced payment submission...');
+    debugLog('info', 'Processing fixed payment submission...');
     
     if (!stripe || !elements || !paymentElement) {
         const errorMsg = 'Payment system not ready. Please try again.';
@@ -483,7 +524,7 @@ async function handleSubmit(e) {
         });
         
         if (error) {
-            debugLog('error', 'Enhanced payment confirmation error:', error);
+            debugLog('error', 'Fixed payment confirmation error:', error);
             
             let errorMessage = 'Payment failed. Please try again.';
             
@@ -516,7 +557,7 @@ async function handleSubmit(e) {
             setLoading(false);
             
         } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-            debugLog('success', 'Enhanced payment succeeded:', paymentIntent.id);
+            debugLog('success', 'Fixed payment succeeded:', paymentIntent.id);
             showMessage('Payment successful! Activating subscription...');
             await activateSubscription(paymentIntent.id);
             
@@ -528,18 +569,18 @@ async function handleSubmit(e) {
         }
         
     } catch (error) {
-        debugLog('error', 'Enhanced payment processing error:', error);
+        debugLog('error', 'Fixed payment processing error:', error);
         showMessage('An unexpected error occurred during payment processing. Please try again.');
         setLoading(false);
     }
 }
 
 /**
- * Activate subscription after successful payment - ENHANCED
+ * Activate subscription after successful payment - FIXED
  * @param {string} paymentIntentId - Stripe payment intent ID
  */
 async function activateSubscription(paymentIntentId) {
-    debugLog('info', 'Activating enhanced subscription...');
+    debugLog('info', 'Activating fixed subscription...');
     
     try {
         const response = await fetchWithRetry('../php/api/subscription/activate-subscription.php', {
@@ -556,7 +597,7 @@ async function activateSubscription(paymentIntentId) {
         const data = await response.json();
         
         if (data.success) {
-            debugLog('success', 'Enhanced subscription activated successfully');
+            debugLog('success', 'Fixed subscription activated successfully');
             showAlert('🎉 Subscription activated successfully! Welcome to premium features!', 'success');
             
             showMessage('Subscription activated! Refreshing page...');
@@ -573,7 +614,7 @@ async function activateSubscription(paymentIntentId) {
             throw new Error(data.message || 'Activation failed');
         }
     } catch (error) {
-        debugLog('error', 'Enhanced subscription activation error:', error);
+        debugLog('error', 'Fixed subscription activation error:', error);
         showMessage(`Payment succeeded but activation failed. Please contact support with payment ID: ${paymentIntentId}`);
         
         // Still show success for payment, but indicate activation issue
@@ -584,18 +625,22 @@ async function activateSubscription(paymentIntentId) {
 }
 
 /**
- * Close payment modal and clean up - ENHANCED
+ * Close payment modal and clean up - FIXED
  */
 function closePaymentModal() {
-    debugLog('info', 'Closing enhanced payment modal');
+    debugLog('info', 'Closing fixed payment modal');
     
     const modal = document.getElementById('payment-modal');
     modal.classList.remove('show');
+    
+    // Restore body scroll
+    document.body.style.overflow = '';
     
     // Enhanced cleanup of Stripe elements
     if (paymentElement) {
         try {
             paymentElement.unmount();
+            debugLog('debug', 'Payment element unmounted successfully');
         } catch (e) {
             debugLog('warning', 'Error unmounting payment element:', e);
         }
@@ -614,11 +659,11 @@ function closePaymentModal() {
     showMessage('');
     setLoading(false);
     
-    debugLog('info', 'Enhanced payment modal closed and cleaned up');
+    debugLog('info', 'Fixed payment modal closed and cleaned up');
 }
 
 /**
- * Show enhanced payment message
+ * Show fixed payment message
  * @param {string} messageText - Message to display
  */
 function showMessage(messageText) {
@@ -646,7 +691,7 @@ function showMessage(messageText) {
 }
 
 /**
- * Set enhanced loading state for submit button
+ * Set fixed loading state for submit button
  * @param {boolean} isLoading - Loading state
  */
 function setLoading(isLoading) {
@@ -670,7 +715,7 @@ function setLoading(isLoading) {
 }
 
 /**
- * Toggle FAQ answer visibility - ENHANCED
+ * Toggle FAQ answer visibility - FIXED
  * @param {HTMLElement} questionElement - The question button element
  */
 function toggleFaq(questionElement) {
@@ -706,7 +751,7 @@ function toggleFaq(questionElement) {
 }
 
 /**
- * Show enhanced alert notification
+ * Show fixed alert notification
  * @param {string} message - Alert message
  * @param {string} type - Alert type (success, error, info, warning)
  */
@@ -730,15 +775,15 @@ function showAlert(message, type = 'info') {
 }
 
 /**
- * Retry payment initialization - ENHANCED
+ * Retry payment initialization - FIXED
  */
 function retryPaymentInit() {
-    debugLog('info', `Retrying enhanced payment initialization (attempt ${retryAttempts + 1})`);
-    initializeEnhancedStripePayment();
+    debugLog('info', `Retrying fixed payment initialization (attempt ${retryAttempts + 1})`);
+    initializeFixedStripePayment();
 }
 
 /**
- * Enhanced utility function for fetch with retry logic
+ * Fixed utility function for fetch with retry logic
  * @param {string} url - URL to fetch
  * @param {Object} options - Fetch options
  * @param {number} retries - Number of retries
@@ -753,7 +798,7 @@ async function fetchWithRetry(url, options, retries = 2) {
             }
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         } catch (error) {
-            debugLog('warning', `Enhanced fetch attempt ${i + 1} failed:`, error.message);
+            debugLog('warning', `Fixed fetch attempt ${i + 1} failed:`, error.message);
             if (i === retries) {
                 throw error;
             }
@@ -764,7 +809,7 @@ async function fetchWithRetry(url, options, retries = 2) {
 }
 
 /**
- * Disable all subscription buttons with reason - ENHANCED
+ * Disable all subscription buttons with reason - FIXED
  * @param {string} reason - Reason for disabling
  */
 function disableAllSubscriptionButtons(reason) {
@@ -780,11 +825,11 @@ function disableAllSubscriptionButtons(reason) {
 }
 
 /**
- * Enhanced subscription management functions
+ * Fixed subscription management functions
  */
 
 /**
- * Manage existing subscription - ENHANCED
+ * Manage existing subscription - FIXED
  */
 function manageSubscription() {
     if (confirm('Would you like to cancel your subscription? You will retain access until the end of your billing period.')) {
@@ -793,7 +838,7 @@ function manageSubscription() {
 }
 
 /**
- * Downgrade to free plan - ENHANCED
+ * Downgrade to free plan - FIXED
  */
 function downgradeToFree() {
     if (confirm('Are you sure you want to downgrade to the free plan? You will lose access to premium features.')) {
@@ -802,7 +847,7 @@ function downgradeToFree() {
 }
 
 /**
- * Cancel subscription - ENHANCED
+ * Cancel subscription - FIXED
  */
 function cancelSubscription() {
     debugLog('info', 'Cancelling subscription...');
@@ -825,7 +870,7 @@ function cancelSubscription() {
     });
 }
 
-// Enhanced global function exports for onclick handlers
+// Fixed global function exports for onclick handlers
 window.subscribeToPlan = subscribeToPlan;
 window.closePaymentModal = closePaymentModal;
 window.toggleFaq = toggleFaq;
@@ -833,10 +878,10 @@ window.retryPaymentInit = retryPaymentInit;
 window.manageSubscription = manageSubscription;
 window.downgradeToFree = downgradeToFree;
 
-// Enhanced initialization logging
-debugLog('success', 'Enhanced Stripe subscription handler loaded and ready');
+// Fixed initialization logging
+debugLog('success', 'Fixed Stripe subscription handler loaded and ready');
 
-// Enhanced page visibility handling for better UX
+// Fixed page visibility handling for better UX
 document.addEventListener('visibilitychange', function() {
     if (document.visibilityState === 'visible') {
         debugLog('info', 'Page became visible - checking payment state');
@@ -844,7 +889,7 @@ document.addEventListener('visibilitychange', function() {
     }
 });
 
-// Enhanced online/offline handling
+// Fixed online/offline handling
 window.addEventListener('online', function() {
     debugLog('success', 'Connection restored');
     showAlert('Connection restored', 'success');
@@ -855,7 +900,7 @@ window.addEventListener('offline', function() {
     showAlert('Connection lost. Please check your internet.', 'warning');
 });
 
-// Enhanced error boundary for uncaught errors
+// Fixed error boundary for uncaught errors
 window.addEventListener('error', function(event) {
     debugLog('error', 'Uncaught error:', event.error);
     if (event.error && event.error.message && event.error.message.includes('stripe')) {
@@ -863,7 +908,7 @@ window.addEventListener('error', function(event) {
     }
 });
 
-// Enhanced unhandled promise rejection handler
+// Fixed unhandled promise rejection handler
 window.addEventListener('unhandledrejection', function(event) {
     debugLog('error', 'Unhandled promise rejection:', event.reason);
     if (event.reason && event.reason.toString().includes('stripe')) {
@@ -871,4 +916,19 @@ window.addEventListener('unhandledrejection', function(event) {
     }
 });
 
-debugLog('success', 'Enhanced error handlers and event listeners configured');
+// Fixed window resize handler to help with payment element display
+window.addEventListener('resize', function() {
+    if (paymentElement) {
+        debugLog('debug', 'Window resized, triggering payment element reflow');
+        // Small delay to allow for CSS transitions
+        setTimeout(() => {
+            const iframe = document.querySelector('#payment-element iframe');
+            if (iframe) {
+                iframe.style.height = 'auto';
+                iframe.style.minHeight = '480px';
+            }
+        }, 100);
+    }
+});
+
+debugLog('success', 'Fixed error handlers and event listeners configured');

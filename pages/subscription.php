@@ -1,5 +1,5 @@
 <?php
-// pages/subscription.php - ENHANCED VERSION with Fixed Payment Modal
+// pages/subscription.php - FIXED VERSION with Proper Payment Modal Display
 
 // Include necessary files
 require_once '../php/include/config.php';
@@ -50,7 +50,7 @@ foreach ($plans as $plan) {
     $planData[$plan['name']] = $plan;
 }
 
-// Enhanced debug information
+// Fixed debug information
 $debugInfo = [
     'user_id' => $_SESSION['user_id'],
     'username' => $_SESSION['username'] ?? 'Unknown',
@@ -61,7 +61,8 @@ $debugInfo = [
     'publishable_key_preview' => !empty(STRIPE_PUBLISHABLE_KEY) ? substr(STRIPE_PUBLISHABLE_KEY, 0, 12) . '...' : 'NOT SET',
     'debug_mode' => DEBUG_MODE,
     'site_url' => SITE_URL,
-    'timestamp' => date('Y-m-d H:i:s')
+    'timestamp' => date('Y-m-d H:i:s'),
+    'modal_fix_version' => '2.0'
 ];
 ?>
 
@@ -80,7 +81,7 @@ $debugInfo = [
     <link rel="stylesheet" href="../css/components/header.css">
     <link rel="stylesheet" href="../css/components/scrollbar.css">
     
-    <!-- Enhanced Page-specific CSS -->
+    <!-- FIXED Page-specific CSS -->
     <link rel="stylesheet" href="../css/pages/subscription.css">
     
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
@@ -99,6 +100,68 @@ $debugInfo = [
         console.warn('⚠️ Stripe publishable key not configured');
     </script>
     <?php endif; ?>
+    
+    <!-- CRITICAL: Fixed Modal Styles -->
+    <style>
+        /* Additional fixes for payment modal display */
+        .modal {
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .modal-content {
+            position: relative;
+            margin: 20px auto !important;
+            max-height: none !important;
+            height: auto !important;
+        }
+        
+        .modal-body {
+            overflow: visible !important;
+            height: auto !important;
+        }
+        
+        #payment-element {
+            overflow: visible !important;
+            height: auto !important;
+            min-height: 600px !important;
+        }
+        
+        #payment-element > div,
+        #stripe-payment-element {
+            height: auto !important;
+            min-height: 560px !important;
+            overflow: visible !important;
+        }
+        
+        #payment-element iframe {
+            height: auto !important;
+            min-height: 480px !important;
+            max-height: none !important;
+        }
+        
+        /* Force proper display of Stripe elements */
+        .StripeElement,
+        .StripeElement--focus,
+        .StripeElement--invalid {
+            height: auto !important;
+            min-height: 50px !important;
+        }
+        
+        /* Ensure modal is properly positioned */
+        @media (max-width: 768px) {
+            .modal {
+                align-items: flex-start !important;
+                padding: 10px !important;
+            }
+            
+            .modal-content {
+                margin: 10px auto !important;
+                width: calc(100% - 20px) !important;
+                max-width: none !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="main-container">
@@ -110,7 +173,7 @@ $debugInfo = [
             <!-- Header -->
             <?php include '../php/include/header.php'; ?>
 
-            <!-- Enhanced Subscription Content -->
+            <!-- Fixed Subscription Content -->
             <div class="subscription-content">
                 <!-- Header Section -->
                 <div class="subscription-header">
@@ -136,7 +199,7 @@ $debugInfo = [
                 </div>
                 <?php endif; ?>
 
-                <!-- Enhanced Configuration Warning (Development) -->
+                <!-- Fixed Configuration Warning (Development) -->
                 <?php if (DEBUG_MODE && (empty(STRIPE_PUBLISHABLE_KEY) || empty(STRIPE_SECRET_KEY))): ?>
                 <div class="dev-warning">
                     <strong>⚠️ Development Notice:</strong> Stripe keys not configured. Payment functionality will not work.
@@ -147,7 +210,7 @@ $debugInfo = [
                 </div>
                 <?php endif; ?>
 
-                <!-- Enhanced Subscription Plans -->
+                <!-- Fixed Subscription Plans -->
                 <div class="subscription-plans">
                     <!-- Free Plan -->
                     <div class="plan-card <?php echo $subscriptionType === 'free' ? 'current' : ''; ?>">
@@ -295,7 +358,7 @@ $debugInfo = [
                     </div>
                 </div>
 
-                <!-- Enhanced Benefits Section -->
+                <!-- Fixed Benefits Section -->
                 <div class="subscription-benefits">
                     <h2>Why Subscribe?</h2>
                     <div class="benefits-grid">
@@ -323,7 +386,7 @@ $debugInfo = [
                     </div>
                 </div>
 
-                <!-- Enhanced FAQ Section -->
+                <!-- Fixed FAQ Section -->
                 <div class="subscription-faq">
                     <h2>Frequently Asked Questions</h2>
                     <div class="faq-list">
@@ -387,7 +450,7 @@ $debugInfo = [
         </div>
     </div>
 
-    <!-- ===== ENHANCED PAYMENT MODAL ===== -->
+    <!-- ===== FIXED PAYMENT MODAL WITH PROPER HEIGHT ===== -->
     <div id="payment-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -401,7 +464,7 @@ $debugInfo = [
                 </div>
                 
                 <form id="payment-form" autocomplete="on">
-                    <!-- CRITICAL: Payment Element Container with Enhanced Height -->
+                    <!-- CRITICAL: Fixed Payment Element Container -->
                     <div id="payment-element">
                         <div class="stripe-loading">
                             <div class="loading-spinner"></div>
@@ -410,23 +473,23 @@ $debugInfo = [
                         </div>
                     </div>
                     
-                    <!-- Enhanced Payment Security Info -->
+                    <!-- Fixed Payment Security Info -->
                     <div class="payment-security">
                         <img src="../images/icons/lock.webp" alt="Secure">
                         <span>🔒 Secured by Stripe. We never store your payment details.</span>
                     </div>
                     
-                    <!-- Enhanced Error messages -->
+                    <!-- Fixed Error messages -->
                     <div id="payment-message" class="hidden" role="alert" aria-live="polite"></div>
                     
-                    <!-- Enhanced Submit Button -->
+                    <!-- Fixed Submit Button -->
                     <button type="submit" id="submit-payment-btn" class="submit-payment-btn" disabled aria-describedby="payment-message">
                         <span id="button-text">Subscribe Now</span>
                         <span id="spinner" class="hidden" aria-hidden="true"></span>
                     </button>
                 </form>
                 
-                <!-- Enhanced Payment Methods Info -->
+                <!-- Fixed Payment Methods Info -->
                 <div class="payment-methods">
                     <span>Powered by Stripe</span>
                     <img src="../images/icons/visa.webp" alt="Visa" style="height: 16px;">
@@ -441,37 +504,38 @@ $debugInfo = [
     <!-- Scripts -->
     <script src="../js/main.js"></script>
     
-    <!-- Enhanced Stripe initialization with comprehensive error handling -->
+    <!-- Fixed Stripe initialization with comprehensive error handling -->
     <?php if (!empty(STRIPE_PUBLISHABLE_KEY)): ?>
     <script>
-        // Enhanced Stripe initialization with error boundary
-        console.log('🔧 Initializing enhanced Stripe system...');
+        // Fixed Stripe initialization with error boundary
+        console.log('🔧 Initializing fixed Stripe system...');
         
         try {
-            // Initialize Stripe with enhanced configuration
+            // Initialize Stripe with fixed configuration
             const stripe = Stripe('<?php echo STRIPE_PUBLISHABLE_KEY; ?>', {
                 locale: 'auto',
                 stripeAccount: undefined // Can be configured for marketplace applications
             });
             
-            // Make globally available with enhanced error handling
+            // Make globally available with fixed error handling
             window.stripe = stripe;
             
-            // Enhanced debug information
+            // Fixed debug information
             window.debugInfo = <?php echo json_encode($debugInfo, JSON_PRETTY_PRINT); ?>;
             
-            console.log('✅ Enhanced Stripe initialized successfully');
-            console.log('📊 Enhanced debug info:', window.debugInfo);
+            console.log('✅ Fixed Stripe initialized successfully');
+            console.log('📊 Fixed debug info:', window.debugInfo);
             
-            // Enhanced connection test (optional in production)
+            // Fixed connection test (optional in production)
             if (window.debugInfo.debug_mode) {
                 console.log('🔧 Debug mode enabled - additional logging active');
+                console.log('🔧 Modal fix version:', window.debugInfo.modal_fix_version);
             }
             
         } catch (error) {
-            console.error('❌ Enhanced Stripe initialization failed:', error);
+            console.error('❌ Fixed Stripe initialization failed:', error);
             
-            // Enhanced error handling - disable all subscription buttons
+            // Fixed error handling - disable all subscription buttons
             document.addEventListener('DOMContentLoaded', function() {
                 const buttons = document.querySelectorAll('[onclick*="subscribeToPlan"]');
                 buttons.forEach(button => {
@@ -481,7 +545,7 @@ $debugInfo = [
                     button.title = 'Stripe initialization failed: ' + error.message;
                 });
                 
-                // Show enhanced error message
+                // Show fixed error message
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'dev-warning';
                 errorDiv.innerHTML = `
@@ -497,15 +561,15 @@ $debugInfo = [
         }
     </script>
     
-    <!-- Load enhanced subscription functionality -->
+    <!-- Load FIXED subscription functionality -->
     <script src="../js/subscription-stripe.js"></script>
     
     <?php else: ?>
-    <!-- Enhanced fallback for missing Stripe configuration -->
+    <!-- Fixed fallback for missing Stripe configuration -->
     <script>
-        console.error('❌ Enhanced error: Stripe publishable key not configured');
+        console.error('❌ Fixed error: Stripe publishable key not configured');
         
-        // Enhanced configuration error handling
+        // Fixed configuration error handling
         document.addEventListener('DOMContentLoaded', function() {
             const buttons = document.querySelectorAll('[onclick*="subscribeToPlan"]');
             buttons.forEach(button => {
@@ -515,16 +579,16 @@ $debugInfo = [
                 button.title = 'Stripe keys not configured in .env file';
             });
             
-            console.log('🔧 Enhanced debug info:', <?php echo json_encode($debugInfo, JSON_PRETTY_PRINT); ?>);
+            console.log('🔧 Fixed debug info:', <?php echo json_encode($debugInfo, JSON_PRETTY_PRINT); ?>);
         });
         
-        // Enhanced fallback subscription function
+        // Fixed fallback subscription function
         function subscribeToPlan(plan) {
             alert('Payment system not configured. Please contact support.\n\nMissing: Stripe API keys in environment configuration.');
             console.error('subscribeToPlan called but Stripe not configured for plan:', plan);
         }
         
-        // Enhanced fallback management functions
+        // Fixed fallback management functions
         function manageSubscription() {
             alert('Subscription management not available without payment system configuration.');
         }
@@ -560,9 +624,9 @@ $debugInfo = [
     </script>
     <?php endif; ?>
     
-    <!-- Enhanced general subscription management -->
+    <!-- Fixed general subscription management -->
     <script>
-        // Enhanced subscription management functions with better UX
+        // Fixed subscription management functions with better UX
         if (typeof window.manageSubscription !== 'function') {
             window.manageSubscription = function() {
                 const message = 'Would you like to cancel your subscription?\n\n' +
@@ -570,7 +634,7 @@ $debugInfo = [
                               'You can resubscribe at any time.';
                               
                 if (confirm(message)) {
-                    cancelSubscriptionEnhanced();
+                    cancelSubscriptionFixed();
                 }
             };
         }
@@ -585,14 +649,14 @@ $debugInfo = [
                               'You can upgrade again at any time.';
                               
                 if (confirm(message)) {
-                    cancelSubscriptionEnhanced();
+                    cancelSubscriptionFixed();
                 }
             };
         }
         
-        // Enhanced cancellation function
-        function cancelSubscriptionEnhanced() {
-            console.log('🔧 Processing subscription cancellation...');
+        // Fixed cancellation function
+        function cancelSubscriptionFixed() {
+            console.log('🔧 Processing fixed subscription cancellation...');
             
             // Show loading state
             const manageBtn = document.querySelector('.manage-subscription-btn');
@@ -627,7 +691,7 @@ $debugInfo = [
                 }
             })
             .catch(error => {
-                console.error('❌ Enhanced cancel error:', error);
+                console.error('❌ Fixed cancel error:', error);
                 alert('An error occurred. Please try again or contact support.');
                 
                 // Reset button state
@@ -638,14 +702,14 @@ $debugInfo = [
             });
         }
         
-        // Enhanced FAQ toggle function with accessibility
+        // Fixed FAQ toggle function with accessibility
         if (typeof window.toggleFaq !== 'function') {
             window.toggleFaq = function(questionElement) {
                 const faqItem = questionElement.closest('.faq-item');
                 const answer = faqItem.querySelector('.faq-answer');
                 const icon = questionElement.querySelector('img');
                 
-                // Enhanced accessibility
+                // Fixed accessibility
                 const isExpanded = questionElement.classList.contains('active');
                 questionElement.setAttribute('aria-expanded', !isExpanded);
                 
@@ -664,7 +728,7 @@ $debugInfo = [
                     }
                 });
                 
-                // Toggle current FAQ with enhanced animation
+                // Toggle current FAQ with fixed animation
                 questionElement.classList.toggle('active');
                 answer.classList.toggle('show');
                 
@@ -678,7 +742,7 @@ $debugInfo = [
             };
         }
         
-        // Enhanced modal management
+        // Fixed modal management
         document.addEventListener('click', function(e) {
             const modal = document.getElementById('payment-modal');
             if (e.target === modal && modal.classList.contains('show')) {
@@ -688,7 +752,7 @@ $debugInfo = [
             }
         });
         
-        // Enhanced keyboard navigation
+        // Fixed keyboard navigation
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 const modal = document.getElementById('payment-modal');
@@ -700,11 +764,11 @@ $debugInfo = [
             }
         });
         
-        // Enhanced DOM ready check
+        // Fixed DOM ready check
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔧 Enhanced subscription page loaded');
+            console.log('🔧 Fixed subscription page loaded');
             
-            // Enhanced element validation
+            // Fixed element validation
             const modal = document.getElementById('payment-modal');
             const paymentElement = document.getElementById('payment-element');
             
@@ -718,22 +782,27 @@ $debugInfo = [
                 console.error('❌ Payment element container not found in DOM!');
             } else {
                 console.log('✅ Payment element container found and ready');
+                console.log('📐 Payment element dimensions:', {
+                    width: paymentElement.offsetWidth,
+                    height: paymentElement.offsetHeight,
+                    minHeight: getComputedStyle(paymentElement).minHeight
+                });
             }
             
-            // Enhanced accessibility improvements
+            // Fixed accessibility improvements
             const faqButtons = document.querySelectorAll('.faq-question');
             faqButtons.forEach(button => {
                 button.setAttribute('aria-expanded', 'false');
                 button.setAttribute('role', 'button');
             });
             
-            console.log('✅ Enhanced accessibility attributes applied');
+            console.log('✅ Fixed accessibility attributes applied');
         });
         
-        // Enhanced error handling for payment system
+        // Fixed error handling for payment system
         window.addEventListener('error', function(event) {
             if (event.error && event.error.message && event.error.message.toLowerCase().includes('stripe')) {
-                console.error('❌ Enhanced Stripe error detected:', event.error);
+                console.error('❌ Fixed Stripe error detected:', event.error);
                 
                 // Could show user-friendly error message
                 const errorDiv = document.createElement('div');
@@ -748,18 +817,19 @@ $debugInfo = [
             }
         });
         
-        console.log('✅ Enhanced subscription management system loaded');
+        console.log('✅ Fixed subscription management system loaded');
     </script>
     
-    <!-- Enhanced Debug Mode Information -->
+    <!-- Fixed Debug Mode Information -->
     <?php if (DEBUG_MODE && isset($_GET['debug'])): ?>
     <div class="debug-info">
-        <strong>🐛 Enhanced Debug Info:</strong><br>
+        <strong>🐛 Fixed Debug Info:</strong><br>
         User: <?php echo $_SESSION['user_id']; ?> (<?php echo htmlspecialchars($_SESSION['username'] ?? 'Unknown'); ?>)<br>
         Plan: <?php echo htmlspecialchars($subscriptionType); ?><br>
         Active: <?php echo $isSubscriptionActive ? 'Yes' : 'No'; ?><br>
         Expires: <?php echo $subscriptionExpires ? date('M j, Y', strtotime($subscriptionExpires)) : 'N/A'; ?><br>
         Stripe: <?php echo !empty(STRIPE_PUBLISHABLE_KEY) ? 'Configured' : 'Not Configured'; ?><br>
+        Fix Ver: <?php echo $debugInfo['modal_fix_version']; ?><br>
         <a href="../test-stripe.php" target="_blank">🔧 Test Config</a> |
         <a href="?">🚫 Hide Debug</a>
     </div>
