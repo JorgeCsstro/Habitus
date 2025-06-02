@@ -1,4 +1,4 @@
-// subscription-stripe.js - COMPLETE FIX for Stripe Element Display Issues
+// subscription-stripe.js - FIXED VERSION for Stripe Element Display Issues
 
 let selectedPlan = null;
 let elements = null;
@@ -9,7 +9,19 @@ let stripe = null;
 let retryAttempts = 0;
 const maxRetryAttempts = 3;
 
-// COMPLETE FIX: Minimal Stripe appearance configuration
+// ADDED: Debug logging function
+function debugLog(level, message, data = null) {
+    const timestamp = new Date().toISOString();
+    const prefix = `[${timestamp}] [${level.toUpperCase()}]`;
+    
+    if (data) {
+        console.log(`${prefix} ${message}`, data);
+    } else {
+        console.log(`${prefix} ${message}`);
+    }
+}
+
+// FIXED: Stripe appearance configuration
 const appearance = {
     theme: 'stripe',
     variables: {
@@ -70,14 +82,13 @@ const appearance = {
     }
 };
 
-// COMPLETE FIX: Optimal payment element options for full display
-// ENHANCED: More explicit payment element configuration for Google Pay
+// FIXED: Payment element options
 const paymentElementOptions = {
     layout: {
         type: 'tabs',
         defaultCollapsed: false,
         radios: false,
-        spacedAccordionItems: true // Better spacing for wallet buttons
+        spacedAccordionItems: true
     },
     
     fields: {
@@ -100,42 +111,71 @@ const paymentElementOptions = {
         card: 'auto'
     },
     
-    // CRITICAL: Explicit wallet configuration
     wallets: {
-        googlePay: 'auto',  // Let Stripe determine availability
-        link: 'auto'        // Enable Stripe Link
+        googlePay: 'auto',
+        link: 'auto'
     },
     
-    // CRITICAL: Business information for Google Pay
     business: {
         name: 'Habitus Zone'
     },
     
-    // FIXED: Use automatic payment method creation
     paymentMethodCreation: 'automatic'
 };
 
 /**
- * Initialize Stripe with error handling
+ * FIXED: Initialize Stripe with better error handling
  */
 function initializeStripe() {
+    debugLog('info', 'Starting Stripe initialization...');
+    
+    // Check if Stripe library is loaded
     if (typeof window.Stripe === 'undefined') {
-        debugLog('error', 'Stripe library not loaded!');
+        debugLog('error', 'Stripe library not loaded from CDN');
         showAlert('Payment system not available. Please refresh the page.', 'error');
         disableAllSubscriptionButtons('Payment System Error');
         return false;
     }
     
+    // Check if window.stripe was set by the main page
     if (!window.stripe) {
-        debugLog('error', 'Stripe instance not available');
-        showAlert('Payment system not configured. Please contact support.', 'error');
-        disableAllSubscriptionButtons('Configuration Error');
-        return false;
+        debugLog('error', 'window.stripe not available - checking if we can create it...');
+        
+        // Try to get the publishable key from the page
+        const scripts = document.querySelectorAll('script');
+        let publishableKey = null;
+        
+        scripts.forEach(script => {
+            if (script.textContent && script.textContent.includes('Stripe(')) {
+                const match = script.textContent.match(/Stripe\(['"`]([^'"`]+)['"`]/);
+                if (match) {
+                    publishableKey = match[1];
+                }
+            }
+        });
+        
+        if (publishableKey) {
+            debugLog('info', 'Found publishable key, creating Stripe instance...');
+            try {
+                window.stripe = Stripe(publishableKey, { locale: 'auto' });
+                debugLog('success', 'Created Stripe instance successfully');
+            } catch (error) {
+                debugLog('error', 'Failed to create Stripe instance:', error);
+                showAlert('Payment system configuration error. Please contact support.', 'error');
+                disableAllSubscriptionButtons('Configuration Error');
+                return false;
+            }
+        } else {
+            debugLog('error', 'No publishable key found');
+            showAlert('Payment system not configured. Please contact support.', 'error');
+            disableAllSubscriptionButtons('Configuration Error');
+            return false;
+        }
     }
     
     try {
         stripe = window.stripe;
-        debugLog('success', 'Stripe loaded and configured successfully');
+        debugLog('success', 'Stripe initialized successfully');
         return true;
     } catch (error) {
         debugLog('error', 'Stripe initialization failed:', error);
@@ -149,6 +189,8 @@ function initializeStripe() {
  * Set up all event handlers
  */
 function setupEventHandlers() {
+    debugLog('info', 'Setting up event handlers...');
+    
     // Modal handlers
     const modal = document.getElementById('payment-modal');
     const closeButtons = document.querySelectorAll('.close-modal');
@@ -181,27 +223,33 @@ function setupEventHandlers() {
         form.addEventListener('submit', handleSubmit);
     }
     
-    // FAQ handlers
-    const faqQuestions = document.querySelectorAll('.faq-question');
-    faqQuestions.forEach(question => {
-        question.addEventListener('click', function() {
-            toggleFaq(this);
-        });
-    });
+    debugLog('success', 'Event handlers set up successfully');
 }
 
 /**
- * COMPLETE FIX: Subscribe to a plan
+ * FIXED: Subscribe to a plan with better initialization check
  */
 async function subscribeToPlan(planType) {
-    debugLog('info', `COMPLETE FIX: Starting subscription for: ${planType}`);
+    debugLog('info', `Starting subscription for: ${planType}`);
     
     if (!planType || !['adfree', 'premium'].includes(planType)) {
         showAlert('Invalid plan selected', 'error');
         return;
     }
     
+    // FIXED: Initialize Stripe if not already done
     if (!stripe) {
+        debugLog('warning', 'Stripe not initialized, attempting to initialize...');
+        const initialized = initializeStripe();
+        if (!initialized) {
+            debugLog('error', 'Failed to initialize Stripe');
+            return;
+        }
+    }
+    
+    // Double-check stripe is available
+    if (!stripe) {
+        debugLog('error', 'Stripe still not available after initialization attempt');
         showAlert('Payment system not ready. Please refresh the page.', 'error');
         return;
     }
@@ -213,6 +261,8 @@ async function subscribeToPlan(planType) {
         adfree: { name: 'Ad-Free Plan', price: '€1/month' },
         premium: { name: 'Premium Plan', price: '€5/month' }
     };
+    
+    debugLog('info', 'Updating modal content...');
     
     // Update modal content
     const modal = document.getElementById('payment-modal');
@@ -226,6 +276,8 @@ async function subscribeToPlan(planType) {
     modal.classList.add('show');
     document.body.style.overflow = 'hidden';
     
+    debugLog('info', 'Modal shown, initializing payment...');
+    
     // Initialize payment with delay for proper rendering
     setTimeout(() => {
         initializeStripePayment();
@@ -233,14 +285,15 @@ async function subscribeToPlan(planType) {
 }
 
 /**
- * COMPLETE FIX: Initialize Stripe payment form
+ * FIXED: Initialize Stripe payment form
  */
 async function initializeStripePayment() {
-    debugLog('info', 'COMPLETE FIX: Initializing Stripe payment form...');
+    debugLog('info', 'Initializing Stripe payment form...');
     
     const paymentContainer = document.getElementById('payment-element');
     if (!paymentContainer) {
         debugLog('error', 'Payment container not found');
+        showAlert('Payment form container not found. Please refresh the page.', 'error');
         return;
     }
     
@@ -277,15 +330,14 @@ async function initializeStripePayment() {
         
         paymentIntentClientSecret = data.clientSecret;
         
-        // Create Stripe elements with Google Pay support
+        // Create Stripe elements
         elements = stripe.elements({
             clientSecret: data.clientSecret,
             appearance: appearance,
-            // ADDED: Explicit locale for better Google Pay support
             locale: 'auto'
         });
         
-        // Create payment element with enhanced options
+        // Create payment element
         paymentElement = elements.create('payment', paymentElementOptions);
         
         // Clear container and create mount point
@@ -295,7 +347,7 @@ async function initializeStripePayment() {
         debugLog('info', 'Mounting payment element...');
         await paymentElement.mount('#stripe-payment-element');
         
-        debugLog('success', 'COMPLETE FIX: Payment element mounted successfully');
+        debugLog('success', 'Payment element mounted successfully');
         
         // Enable submit button
         const submitBtn = document.getElementById('submit-payment-btn');
@@ -303,44 +355,12 @@ async function initializeStripePayment() {
             submitBtn.disabled = false;
         }
         
-        // Set up event listeners with Google Pay debugging
+        // Set up event listeners
         setupPaymentElementListeners();
         
     } catch (error) {
         debugLog('error', 'Payment initialization failed:', error);
         handlePaymentInitError(error);
-    }
-}
-
-/**
- * COMPLETE FIX: Ensure proper sizing of payment element
- */
-function ensureProperSizing() {
-    const paymentContainer = document.getElementById('payment-element');
-    const stripeContainer = document.getElementById('stripe-payment-element');
-    
-    if (paymentContainer && stripeContainer) {
-        // Force reflow to ensure proper sizing
-        const iframe = stripeContainer.querySelector('iframe');
-        if (iframe) {
-            debugLog('debug', 'COMPLETE FIX: Payment form iframe detected and sized properly');
-            
-            // Log dimensions for debugging
-            debugLog('debug', 'Container dimensions:', {
-                container: {
-                    width: paymentContainer.offsetWidth,
-                    height: paymentContainer.offsetHeight
-                },
-                stripeContainer: {
-                    width: stripeContainer.offsetWidth,
-                    height: stripeContainer.offsetHeight
-                },
-                iframe: {
-                    width: iframe.offsetWidth,
-                    height: iframe.offsetHeight
-                }
-            });
-        }
     }
 }
 
@@ -351,8 +371,7 @@ function setupPaymentElementListeners() {
     if (!paymentElement) return;
     
     paymentElement.on('ready', function() {
-        debugLog('success', 'COMPLETE FIX: Payment element ready for input');
-        ensureProperSizing();
+        debugLog('success', 'Payment element ready for input');
     });
     
     paymentElement.on('change', function(event) {
@@ -363,14 +382,6 @@ function setupPaymentElementListeners() {
             showMessage('');
             debugLog('debug', 'Payment element validation passed');
         }
-    });
-    
-    paymentElement.on('focus', function() {
-        debugLog('debug', 'Payment element focused');
-    });
-    
-    paymentElement.on('blur', function() {
-        debugLog('debug', 'Payment element blurred');
     });
     
     paymentElement.on('loaderror', function(event) {
@@ -406,11 +417,11 @@ function handlePaymentInitError(error) {
 }
 
 /**
- * COMPLETE FIX: Handle form submission
+ * FIXED: Handle form submission
  */
 async function handleSubmit(e) {
     e.preventDefault();
-    debugLog('info', 'COMPLETE FIX: Processing payment submission...');
+    debugLog('info', 'Processing payment submission...');
     
     if (!stripe || !elements || !paymentElement) {
         const errorMsg = 'Payment system not ready. Please try again.';
@@ -530,10 +541,10 @@ async function activateSubscription(paymentIntentId) {
 }
 
 /**
- * COMPLETE FIX: Close payment modal and clean up
+ * FIXED: Close payment modal and clean up
  */
 function closePaymentModal() {
-    debugLog('info', 'COMPLETE FIX: Closing payment modal');
+    debugLog('info', 'Closing payment modal');
     
     const modal = document.getElementById('payment-modal');
     modal.classList.remove('show');
@@ -733,14 +744,12 @@ async function fetchWithRetry(url, options, retries = 2) {
  * Disable all subscription buttons
  */
 function disableAllSubscriptionButtons(reason) {
-    document.addEventListener('DOMContentLoaded', function() {
-        const buttons = document.querySelectorAll('[onclick*="subscribeToPlan"]');
-        buttons.forEach(button => {
-            button.disabled = true;
-            button.textContent = reason || 'Unavailable';
-            button.style.opacity = '0.6';
-            button.style.cursor = 'not-allowed';
-        });
+    const buttons = document.querySelectorAll('[onclick*="subscribeToPlan"]');
+    buttons.forEach(button => {
+        button.disabled = true;
+        button.textContent = reason || 'Unavailable';
+        button.style.opacity = '0.6';
+        button.style.cursor = 'not-allowed';
     });
 }
 
@@ -788,7 +797,23 @@ window.retryPaymentInit = retryPaymentInit;
 window.manageSubscription = manageSubscription;
 window.downgradeToFree = downgradeToFree;
 
-debugLog('success', 'COMPLETE FIX: Stripe subscription handler loaded and ready');
+/**
+ * FIXED: Initialize everything when DOM is ready
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    debugLog('info', 'Initializing subscription system...');
+    
+    // Wait a bit for the main page to set up window.stripe
+    setTimeout(() => {
+        if (!initializeStripe()) {
+            debugLog('error', 'Initial Stripe initialization failed');
+            return;
+        }
+        
+        setupEventHandlers();
+        debugLog('success', 'Subscription system fully initialized');
+    }, 500); // Give the main page time to initialize
+});
 
 // Error boundary for uncaught errors
 window.addEventListener('error', function(event) {
@@ -806,26 +831,4 @@ window.addEventListener('unhandledrejection', function(event) {
     }
 });
 
-/**
- * Initialize everything when DOM is ready
- */
-document.addEventListener('DOMContentLoaded', function() {
-    debugLog('info', 'COMPLETE FIX: Initializing subscription system...');
-    
-    if (!initializeStripe()) {
-        return;
-    }
-    
-    setupEventHandlers();
-    debugLog('success', 'COMPLETE FIX: Subscription system fully initialized');
-
-    setTimeout(() => {
-        testGooglePayAvailability().then(available => {
-            if (available) {
-                console.log('🎉 Google Pay should be available in payment form');
-            } else {
-                console.log('ℹ️ Google Pay not available - check requirements above');
-            }
-        });
-    }, 1000);
-});
+debugLog('success', 'Stripe subscription handler loaded and ready');
