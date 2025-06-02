@@ -143,9 +143,16 @@ try {
         'amount' => $planPrices[$plan],
         'currency' => 'eur',
         'customer' => $customerId,
+        
+        // FIXED: Enable automatic payment methods but restrict redirects
         'automatic_payment_methods' => [
             'enabled' => true,
+            'allow_redirects' => 'never' // This prevents bank transfers, SEPA, etc.
         ],
+        
+        // REMOVED: payment_method_options that was causing the error
+        // For subscriptions, let Stripe handle the capture method automatically
+        
         'metadata' => [
             'user_id' => $_SESSION['user_id'],
             'plan' => $plan,
@@ -154,7 +161,7 @@ try {
         ],
         'description' => "Habitus Zone {$plan} subscription - {$userData['username']}",
         'receipt_email' => $userData['email']
-    ]);
+    ]); 
     
     file_put_contents($logFile, "PAYMENT_INTENT: Created {$paymentIntent->id}\n", FILE_APPEND);
     

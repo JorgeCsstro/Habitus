@@ -525,6 +525,72 @@ iframe[src*="js.stripe.com"] {
     background: transparent ;
 }
 
+/* ===== WALLET PAYMENT BUTTONS STYLING ===== */
+
+/* Apple Pay and Google Pay button styling */
+.StripeElement .Tab[data-testid="tab-applePay"],
+.StripeElement .Tab[data-testid="tab-googlePay"] {
+    margin-bottom: 8px ;
+    padding: 12px 16px ;
+    min-height: 48px ;
+    display: flex ;
+    align-items: center ;
+    justify-content: center ;
+    border-radius: 8px ;
+    font-weight: 600 ;
+}
+
+/* Apple Pay specific styling */
+.StripeElement .Tab[data-testid="tab-applePay"] {
+    background-color: #000 ;
+    color: white ;
+    border: 1px solid #000 ;
+}
+
+.StripeElement .Tab[data-testid="tab-applePay"]:hover {
+    background-color: #333 ;
+}
+
+/* Google Pay specific styling */
+.StripeElement .Tab[data-testid="tab-googlePay"] {
+    background-color: #4285f4 ;
+    color: white ;
+    border: 1px solid #4285f4 ;
+}
+
+.StripeElement .Tab[data-testid="tab-googlePay"]:hover {
+    background-color: #3367d6 ;
+}
+
+/* Card tab styling to match */
+.StripeElement .Tab[data-testid="tab-card"] {
+    border: 1px solid #e9e2d9 ;
+    border-radius: 8px ;
+    padding: 16px ;
+    background-color: white ;
+}
+
+.StripeElement .Tab[data-testid="tab-card"]:hover {
+    border-color: #d6cfc7 ;
+    background-color: #f9f5f0 ;
+}
+
+.StripeElement .Tab[data-testid="tab-card"].Tab--selected {
+    border-color: #6a8d7f ;
+    background-color: #f5f1ea ;
+}
+
+/* Tab container spacing */
+.StripeElement .TabContainer {
+    gap: 8px ;
+}
+
+/* Ensure proper height for all payment method tabs */
+.StripeElement .Tab {
+    min-height: 48px ;
+    transition: all 0.2s ease ;
+}
+
 /* CRITICAL: Stripe container div overrides */
 div[class*="TabContainer"],
 div[class*="FormContainer"],
