@@ -1,5 +1,5 @@
 <?php
-// php/api/subscription/create-payment-intent.php - FIXED VERSION with Better Debugging
+// php/api/subscription/create-payment-intent.php - FIXED VERSION for Stripe API conflict
 
 // Enable comprehensive error reporting
 error_reporting(E_ALL);
@@ -261,15 +261,11 @@ try {
         }
     }
     
-    // Create payment intent
+    // FIXED: Create payment intent with proper Stripe API usage
     $paymentIntentData = [
         'amount' => $amount,
         'currency' => 'eur',
         'customer' => $customerId,
-        'automatic_payment_methods' => [
-            'enabled' => true,
-            'allow_redirects' => 'never'
-        ],
         'metadata' => [
             'user_id' => $_SESSION['user_id'],
             'plan' => $plan,
@@ -280,9 +276,14 @@ try {
         'receipt_email' => $userData['email']
     ];
     
-    if ($enableGooglePay) {
-        $paymentIntentData['payment_method_types'] = ['card', 'google_pay'];
-    }
+    // FIXED: Use automatic payment methods to let Stripe handle available methods
+    // This avoids issues with payment methods not enabled in the dashboard
+    $paymentIntentData['automatic_payment_methods'] = [
+        'enabled' => true,
+        'allow_redirects' => 'never'
+    ];
+    
+    logDebug("Using automatic payment methods (Stripe will include available methods)");
     
     logDebug("Creating payment intent with data:", $paymentIntentData);
     
@@ -306,10 +307,13 @@ try {
         'currency' => $paymentIntent->currency,
         'payment_method_types' => $paymentIntent->payment_method_types,
         'google_pay_available' => in_array('google_pay', $paymentIntent->payment_method_types ?? []),
+        'automatic_payment_methods' => true,
         'debug' => [
             'plan' => $plan,
             'amount_eur' => number_format($amount / 100, 2),
             'user_id' => $_SESSION['user_id'],
+            'payment_method_strategy' => 'automatic',
+            'available_methods' => $paymentIntent->payment_method_types,
             'timestamp' => date('Y-m-d H:i:s')
         ]
     ];
