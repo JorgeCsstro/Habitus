@@ -460,6 +460,27 @@ function showNotification(message, type = 'success') {
     }, 4000);
 }
 
+async function openCustomerPortal() {
+    try {
+        const response = await fetch('/api/create-portal-session.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                customer_id: getStripeCustomerId() // Your function to get customer ID
+            })
+        });
+        
+        const { url } = await response.json();
+        window.location.href = url;
+        
+    } catch (error) {
+        console.error('Error opening customer portal:', error);
+        showErrorMessage('Unable to open subscription management. Please try again.');
+    }
+}
+
 // Close modals when clicking outside
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('modal')) {
