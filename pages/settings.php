@@ -410,6 +410,10 @@ $themes = [
         // Pass PHP theme to JavaScript
         window.initialTheme = '<?php echo $currentTheme; ?>';
         window.initialLanguage = '<?php echo $currentLanguage; ?>';
+                                    
+        // Ensure theme is applied immediately
+        document.documentElement.setAttribute('data-theme', window.initialTheme);
+        document.body.classList.add('theme-' + window.initialTheme);
         
         // Additional settings functions
         function showChangeEmailModal() {

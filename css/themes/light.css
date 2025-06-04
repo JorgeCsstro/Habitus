@@ -4,116 +4,50 @@
 [data-theme="light"] * {
     /* Primary Colors */
     --primary-brown: #8d5b4c;
-    --primary-brown-dark: #7d4b3c;
-    --primary-brown-light: #a66b5c;
     --primary-green: #6a8d7f;
-    --primary-green-dark: #5a7c70;
-    --primary-green-light: #7a9d8f;
-    
+
     /* Background Colors */
     --bg-primary: #f9f5f0;
     --bg-secondary: #f5f1ea;
-    --bg-tertiary: #fbf8f5;
     --bg-panel: #ffffff;
-    --bg-header: #ffffff;
-    --bg-sidebar: #f5f1ea;
-    
+
     /* Text Colors */
     --text-primary: #2d2926;
     --text-secondary: #5a5755;
-    --text-tertiary: #8d8580;
-    --text-muted: #8d8580;
     --text-inverse: #ffffff;
-    
+
     /* Border Colors */
     --border-primary: #e9e2d9;
-    --border-secondary: #d6cfc7;
-    --border-tertiary: #f0ebe4;
-    
+
     /* Shadow Colors */
     --shadow-light: rgba(141, 91, 76, 0.08);
     --shadow-medium: rgba(141, 91, 76, 0.15);
-    --shadow-dark: rgba(141, 91, 76, 0.25);
     
     /* Status Colors */
-    --success-bg: #e4ebe7;
-    --success-text: #6a8d7f;
-    --success-border: #cfdad4;
-    
-    --error-bg: #efe2e2;
-    --error-text: #a15c5c;
-    --error-border: #e0d0d0;
-    
-    --warning-bg: #faf3e5;
-    --warning-text: #c4a356;
-    --warning-border: #e9d8c6;
-    
-    --info-bg: #e8f4f8;
-    --info-text: #5d7b8a;
-    --info-border: #c1e0ea;
-    
+    --success: #6a8d7f;
+    --error: #a15c5c;
+    --warning: #c4a356;
+    --info: #5d7b8a;
+
     /* Button Colors */
     --btn-primary-bg: var(--primary-brown);
-    --btn-primary-hover: var(--primary-brown-dark);
-    --btn-primary-text: var(--text-inverse);
-    
     --btn-secondary-bg: var(--bg-secondary);
-    --btn-secondary-hover: #e9e2d9;
-    --btn-secondary-text: var(--text-primary);
-    --btn-secondary-border: var(--border-primary);
-    
     --btn-success-bg: var(--primary-green);
-    --btn-success-hover: var(--primary-green-dark);
-    --btn-success-text: var(--text-inverse);
     
     /* Form Colors */
     --input-bg: var(--bg-panel);
-    --input-border: var(--border-primary);
-    --input-focus: var(--primary-brown);
-    --input-text: var(--text-primary);
     
     /* Room Colors */
     --room-floor: #FFD700;
-    --room-wall-left: linear-gradient(to bottom, #E0E0E0, #D0D0D0);
-    --room-wall-right: linear-gradient(to left, #D0D0D0, #C0C0C0);
+    --room-wall: linear-gradient(to bottom, #E0E0E0, #D0D0D0);
     --room-door: linear-gradient(to bottom, #8B6347, #654321);
-    --room-door-handle: #FFD700;
     
     /* Scrollbar Colors */
-    --scrollbar-track: var(--bg-secondary);
     --scrollbar-thumb: #d6cfc7;
-    --scrollbar-thumb-hover: #c5bcb3;
-    
-    /* Notification Colors */
-    --notification-bg: var(--bg-panel);
-    --notification-shadow: var(--shadow-medium);
-    
+
     /* Modal Colors */
     --modal-bg: var(--bg-panel);
     --modal-overlay: rgba(45, 41, 38, 0.5);
-    --modal-shadow: var(--shadow-dark);
-    
-    /* Shop Item Colors */
-    --shop-item-bg: #f5f5f5;
-    --shop-item-hover: var(--bg-panel);
-    --shop-item-border: var(--border-primary);
-    
-    /* Task Item Colors */
-    --task-item-bg: var(--bg-panel);
-    --task-item-hover: #f8f8f8;
-    --task-item-completed: #f0f9f0;
-    --task-item-border: var(--border-primary);
-    --task-item-completed-border: #c8e6c9;
-    
-    /* Inventory Colors */
-    --inventory-item-bg: var(--bg-tertiary);
-    --inventory-item-hover: var(--bg-secondary);
-    --inventory-item-disabled: #f0f0f0;
-    --inventory-item-border: var(--border-primary);
-}
-
-html[data-theme="light"] {
-    color-scheme: light;
 }
 
 /* Light theme room styling */
@@ -124,35 +58,17 @@ html[data-theme="light"] {
         linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
 }
 
-.theme-light .room-wall-left {
-    background: var(--room-wall-left);
-}
-
-.theme-light .room-wall-right {
-    background: var(--room-wall-right);
+.theme-light .room-wall {
+    background: var(--room-wall);
 }
 
 .theme-light .room-door {
     background: var(--room-door);
 }
 
-.theme-light .room-door::before {
-    background: var(--room-door-handle);
-}
-
 /* Light theme specific button styles */
 .theme-light .create-task-btn {
     background-color: var(--primary-green);
-    color: var(--text-inverse);
-}
-
-.theme-light .create-task-btn:hover {
-    background-color: var(--primary-green-dark);
-}
-
-/* Light theme notification styles */
-.theme-light .notification-badge {
-    background-color: var(--error-text);
     color: var(--text-inverse);
 }
 
@@ -163,11 +79,11 @@ html[data-theme="light"] {
 
 .theme-light .modal-content {
     background-color: var(--modal-bg);
-    box-shadow: 0 10px 30px var(--modal-shadow);
+    box-shadow: 0 10px 30px var(--shadow-medium);
 }
 
 /* Light theme form styles */
 .theme-light input::placeholder,
 .theme-light textarea::placeholder {
-    color: var(--input-placeholder);
+    color: var(--text-secondary);
 }

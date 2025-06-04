@@ -47,32 +47,37 @@ class ThemeManager {
     }
 
     applyTheme(theme) {
+        console.log(`🎨 Applying theme: ${theme}`);
+        
         const html = document.documentElement;
         const body = document.body;
         
-        // Always prevent transitions during theme change
+        // Prevent transitions during theme change
         body.classList.add('theme-switching');
         
         // Load theme-specific CSS file
         const themeCSSPath = `../css/themes/${theme}.css`;
         this.themeStylesheet.href = themeCSSPath;
         
-        // Set data attribute for CSS targeting
+        // Set data attribute for CSS targeting (most important for CSS variables)
         html.setAttribute('data-theme', theme);
         
-        // Update body classes
+        // Update body classes for additional targeting
         body.classList.remove('theme-light', 'theme-dark');
         body.classList.add(`theme-${theme}`);
         
-        // Update meta theme-color
+        // Update meta theme-color for browser chrome
         this.updateMetaThemeColor(theme);
         
-        // Keep theme-switching class permanently to prevent transitions
+        // Force CSS recalculation
+        html.offsetHeight;
+        
+        // Re-enable transitions after theme is applied
         setTimeout(() => {
             body.classList.remove('theme-switching');
-        }, 50);
+        }, 100);
         
-        // Dispatch custom event
+        // Dispatch custom event for other components
         window.dispatchEvent(new CustomEvent('themeChanged', {
             detail: { theme }
         }));
