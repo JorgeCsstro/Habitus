@@ -1,23 +1,24 @@
-/* sidebar.css */
+/* sidebar.css - Updated with CSS Variables */
 
 .left-menu {
     display: flex;
     flex-direction: column;
     width: 70px;
     height: 100%;
-    background-color: #f5f1ea; /* Cream background */
-    border-right: 5px solid #e9e2d9; /* Warmer border */
+    background-color: var(--sidebar-bg);
+    border-right: 5px solid var(--border-primary);
     align-items: center;
-    justify-content: space-between; /* Changed from space-evenly to space-between */
-    padding: 20px 0; /* Added vertical padding to create space at top and bottom */
+    justify-content: space-between;
+    padding: 20px 0;
+    transition: all 0.3s ease;
 }
 
 /* Container for middle menu items to space them evenly */
 .middle-menu-items {
     display: flex;
     flex-direction: column;
-    flex: 1; /* Take up all available space */
-    justify-content: space-evenly; /* Space items evenly within the container */
+    flex: 1;
+    justify-content: space-evenly;
     align-items: center;
 }
 
@@ -29,25 +30,59 @@
     align-items: center;
     border-radius: 12px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
+    position: relative;
 }
 
 .menu-item:hover, .menu-item.active {
-    background-color: #e9e2d9; /* Darker cream on hover/active */
+    background-color: var(--sidebar-item-hover);
+    transform: scale(1.05);
 }
 
 .menu-item.active {
-    box-shadow: inset 0 0 0 2px #8d5b4c; /* Brown border for active item */
+    box-shadow: inset 0 0 0 2px var(--sidebar-item-active);
+    background-color: var(--sidebar-item-hover);
+}
+
+.menu-item.active::before {
+    content: '';
+    position: absolute;
+    left: -15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 30px;
+    background-color: var(--sidebar-item-active);
+    border-radius: 0 2px 2px 0;
+    transition: all 0.3s ease;
 }
 
 .menu-item img {
     width: 24px;
     height: 24px;
+    transition: all 0.3s ease;
+    filter: brightness(0) saturate(100%) invert(34%) sepia(12%) saturate(1108%) hue-rotate(346deg) brightness(95%) contrast(89%);
+}
+
+.menu-item:hover img {
+    transform: scale(1.1);
+    filter: brightness(0) saturate(100%) invert(55%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
+}
+
+.menu-item.active img {
+    filter: brightness(0) saturate(100%) invert(55%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
 }
 
 .menu-item.logo img {
     width: 32px;
     height: 32px;
+    filter: none;
+}
+
+.menu-item.logo:hover img,
+.menu-item.logo.active img {
+    filter: none;
+    transform: scale(1.1);
 }
 
 /* Add this to ensure links fill the full menu item space */
@@ -57,4 +92,196 @@
     align-items: center;
     width: 100%;
     height: 100%;
+    color: inherit;
+    text-decoration: none;
+    border-radius: inherit;
+}
+
+/* Dark theme specific adjustments */
+.theme-dark .menu-item img {
+    filter: brightness(0) saturate(100%) invert(85%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
+}
+
+.theme-dark .menu-item:hover img,
+.theme-dark .menu-item.active img {
+    filter: brightness(0) saturate(100%) invert(70%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
+}
+
+.theme-dark .menu-item.logo img,
+.theme-dark .menu-item.logo:hover img,
+.theme-dark .menu-item.logo.active img {
+    filter: brightness(0) saturate(100%) invert(85%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
+}
+
+/* Hover animation for better feedback */
+.menu-item {
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-item::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.5s;
+}
+
+.menu-item:hover::after {
+    left: 100%;
+}
+
+/* Tooltip effect for accessibility */
+.menu-item {
+    position: relative;
+}
+
+.menu-item::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 70px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--tooltip-bg);
+    color: var(--tooltip-text);
+    padding: 8px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    font-size: 0.85rem;
+    font-weight: 500;
+    box-shadow: 0 4px 12px var(--tooltip-shadow);
+}
+
+.menu-item:hover::before {
+    opacity: 1;
+    visibility: visible;
+    left: 75px;
+}
+
+/* Active state animation */
+.menu-item.active {
+    animation: activeMenuItem 0.3s ease-out;
+}
+
+@keyframes activeMenuItem {
+    0% {
+        transform: scale(1);
+        box-shadow: inset 0 0 0 0px var(--sidebar-item-active);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: inset 0 0 0 1px var(--sidebar-item-active);
+    }
+    100% {
+        transform: scale(1.05);
+        box-shadow: inset 0 0 0 2px var(--sidebar-item-active);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .left-menu {
+        width: 60px;
+        padding: 15px 0;
+    }
+    
+    .menu-item {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .menu-item img {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .menu-item.logo img {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .menu-item::before {
+        display: none; /* Hide tooltips on mobile */
+    }
+}
+
+/* Focus styles for accessibility */
+.menu-item a:focus {
+    outline: 2px solid var(--primary-brown);
+    outline-offset: 2px;
+    border-radius: 12px;
+}
+
+/* Loading state for menu items */
+.menu-item.loading {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.menu-item.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid transparent;
+    border-top: 2px solid var(--primary-brown);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Settings gear rotation animation */
+.menu-item.settings:hover img {
+    animation: settingsRotate 0.5s ease-in-out;
+}
+
+@keyframes settingsRotate {
+    0% { transform: scale(1.1) rotate(0deg); }
+    100% { transform: scale(1.1) rotate(90deg); }
+}
+
+/* Notification dot for menu items */
+.menu-item .notification-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--error-text);
+    border-radius: 50%;
+    border: 2px solid var(--sidebar-bg);
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
+}
+
+.menu-item.has-notification .notification-dot {
+    opacity: 1;
+    transform: scale(1);
+    animation: notificationPulse 2s infinite;
+}
+
+@keyframes notificationPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.7;
+    }
 }

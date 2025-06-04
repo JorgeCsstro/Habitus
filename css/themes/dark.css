@@ -1,0 +1,337 @@
+/* css/themes/dark.css - Dark Theme Variables */
+
+[data-theme="dark"],
+.theme-dark {
+    /* Primary Colors - Adjusted for dark theme */
+    --primary-brown: #b87a6a;
+    --primary-brown-dark: #a66b5c;
+    --primary-brown-light: #c88a7a;
+    --primary-green: #7ea894;
+    --primary-green-dark: #6e9784;
+    --primary-green-light: #8eb8a4;
+    
+    /* Background Colors - Dark theme */
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2926;
+    --bg-tertiary: #3a352f;
+    --bg-panel: #2a2a2a;
+    --bg-header: #2d2926;
+    --bg-sidebar: #252525;
+    
+    /* Text Colors - Dark theme */
+    --text-primary: #f5f1ea;
+    --text-secondary: #d0c8b8;
+    --text-tertiary: #a8a098;
+    --text-muted: #8d8580;
+    --text-inverse: #1a1a1a;
+    
+    /* Border Colors - Dark theme */
+    --border-primary: #404040;
+    --border-secondary: #4a4a4a;
+    --border-tertiary: #353535;
+    
+    /* Shadow Colors - Dark theme */
+    --shadow-light: rgba(0, 0, 0, 0.3);
+    --shadow-medium: rgba(0, 0, 0, 0.5);
+    --shadow-dark: rgba(0, 0, 0, 0.7);
+    
+    /* Status Colors - Dark theme adjusted */
+    --success-bg: #2d3a32;
+    --success-text: #7ea894;
+    --success-border: #3a4a3f;
+    
+    --error-bg: #3a2d2d;
+    --error-text: #d18a8a;
+    --error-border: #4a3535;
+    
+    --warning-bg: #3a3629;
+    --warning-text: #e6c470;
+    --warning-border: #4a4435;
+    
+    --info-bg: #2d363a;
+    --info-text: #8ab4d1;
+    --info-border: #35424a;
+    
+    /* Button Colors - Dark theme */
+    --btn-primary-bg: var(--primary-brown);
+    --btn-primary-hover: var(--primary-brown-light);
+    --btn-primary-text: var(--text-inverse);
+    
+    --btn-secondary-bg: var(--bg-secondary);
+    --btn-secondary-hover: #3a352f;
+    --btn-secondary-text: var(--text-primary);
+    --btn-secondary-border: var(--border-primary);
+    
+    --btn-success-bg: var(--primary-green);
+    --btn-success-hover: var(--primary-green-light);
+    --btn-success-text: var(--text-inverse);
+    
+    /* Form Colors - Dark theme */
+    --input-bg: #333333;
+    --input-border: var(--border-primary);
+    --input-focus: var(--primary-brown);
+    --input-text: var(--text-primary);
+    --input-placeholder: var(--text-tertiary);
+    
+    /* Room Colors - Dark theme adjusted */
+    --room-floor: #3a3a3a;
+    --room-wall-left: linear-gradient(to bottom, #404040, #353535);
+    --room-wall-right: linear-gradient(to left, #353535, #2a2a2a);
+    --room-door: linear-gradient(to bottom, #5a4a3a, #4a3a2a);
+    --room-door-handle: #ffd700;
+    
+    /* Scrollbar Colors - Dark theme */
+    --scrollbar-track: var(--bg-secondary);
+    --scrollbar-thumb: #5a5a5a;
+    --scrollbar-thumb-hover: #6a6a6a;
+    
+    /* Notification Colors - Dark theme */
+    --notification-bg: var(--bg-panel);
+    --notification-shadow: var(--shadow-dark);
+    
+    /* Modal Colors - Dark theme */
+    --modal-bg: var(--bg-panel);
+    --modal-overlay: rgba(0, 0, 0, 0.8);
+    --modal-shadow: var(--shadow-dark);
+    
+    /* Dropdown Colors - Dark theme */
+    --dropdown-bg: var(--bg-panel);
+    --dropdown-border: var(--border-primary);
+    --dropdown-shadow: var(--shadow-dark);
+    --dropdown-item-hover: var(--bg-secondary);
+    
+    /* Table Colors - Dark theme */
+    --table-bg: var(--bg-panel);
+    --table-stripe: var(--bg-secondary);
+    --table-border: var(--border-primary);
+    --table-hover: var(--bg-tertiary);
+    
+    /* Card Colors - Dark theme */
+    --card-bg: var(--bg-panel);
+    --card-border: var(--border-primary);
+    --card-shadow: var(--shadow-medium);
+    --card-hover-shadow: var(--shadow-dark);
+    
+    /* Navigation Colors - Dark theme */
+    --nav-bg: var(--bg-header);
+    --nav-text: var(--text-primary);
+    --nav-border: var(--border-primary);
+    --nav-item-hover: var(--bg-secondary);
+    --nav-item-active: var(--primary-brown);
+    
+    /* Sidebar Colors - Dark theme */
+    --sidebar-bg: var(--bg-sidebar);
+    --sidebar-border: var(--border-primary);
+    --sidebar-item-hover: var(--bg-tertiary);
+    --sidebar-item-active: var(--primary-brown);
+    
+    /* Progress Colors - Dark theme */
+    --progress-bg: var(--bg-secondary);
+    --progress-fill: var(--primary-green);
+    --progress-text: var(--text-primary);
+    
+    /* Badge Colors - Dark theme */
+    --badge-bg: var(--primary-brown);
+    --badge-text: var(--text-inverse);
+    --badge-success: var(--success-text);
+    --badge-error: var(--error-text);
+    --badge-warning: var(--warning-text);
+    --badge-info: var(--info-text);
+    
+    /* Tooltip Colors - Dark theme */
+    --tooltip-bg: rgba(245, 241, 234, 0.95);
+    --tooltip-text: var(--text-inverse);
+    --tooltip-shadow: var(--shadow-dark);
+    
+    /* Shop Item Colors - Dark theme */
+    --shop-item-bg: #353535;
+    --shop-item-hover: var(--bg-panel);
+    --shop-item-border: var(--border-primary);
+    
+    /* Task Item Colors - Dark theme */
+    --task-item-bg: var(--bg-panel);
+    --task-item-hover: #353535;
+    --task-item-completed: #2a3a2a;
+    --task-item-border: var(--border-primary);
+    --task-item-completed-border: #3a4a3a;
+    
+    /* Difficulty Colors - Dark theme */
+    --difficulty-easy-bg: #2a3a2a;
+    --difficulty-easy-text: #7ea894;
+    --difficulty-medium-bg: #3a3629;
+    --difficulty-medium-text: #e6c470;
+    --difficulty-hard-bg: #3a2f29;
+    --difficulty-hard-text: #d19870;
+    --difficulty-expert-bg: #3a2929;
+    --difficulty-expert-text: #d17070;
+    
+    /* Inventory Colors - Dark theme */
+    --inventory-item-bg: var(--bg-tertiary);
+    --inventory-item-hover: #4a4540;
+    --inventory-item-disabled: #2a2a2a;
+    --inventory-item-border: var(--border-primary);
+    
+    /* Grid Colors - Dark theme */
+    --grid-cell-border: rgba(255, 255, 255, 0.1);
+    --grid-cell-hover: rgba(126, 168, 148, 0.3);
+    --grid-cell-valid: rgba(126, 168, 148, 0.4);
+    --grid-cell-invalid: rgba(209, 138, 138, 0.4);
+    
+    /* Animation Colors - Dark theme */
+    --success-glow: rgba(126, 168, 148, 0.8);
+    --error-glow: rgba(209, 138, 138, 0.8);
+    --warning-glow: rgba(230, 196, 112, 0.8);
+    
+    /* Subscription Colors - Dark theme */
+    --plan-card-bg: var(--bg-panel);
+    --plan-card-border: var(--border-primary);
+    --plan-card-shadow: var(--shadow-medium);
+    --plan-card-hover: var(--shadow-dark);
+    --plan-premium-border: #e6c470;
+    --plan-current-border: var(--primary-green);
+    
+    /* Loading Colors - Dark theme */
+    --loading-bg: var(--bg-secondary);
+    --loading-spinner: var(--primary-brown);
+    --loading-text: var(--text-secondary);
+}
+
+/* Dark theme specific overrides */
+.theme-dark {
+    color-scheme: dark;
+}
+
+.theme-dark .panel-header img,
+.theme-dark .sidebar img {
+    filter: brightness(0) saturate(100%) invert(85%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
+}
+
+.theme-dark .logo img {
+    filter: brightness(0) saturate(100%) invert(85%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
+}
+
+/* Dark theme room styling */
+.theme-dark .room-floor {
+    background: var(--room-floor);
+    background-image: 
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+}
+
+.theme-dark .room-wall-left {
+    background: var(--room-wall-left);
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.3);
+}
+
+.theme-dark .room-wall-right {
+    background: var(--room-wall-right);
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.4);
+}
+
+.theme-dark .room-door {
+    background: var(--room-door);
+}
+
+.theme-dark .room-door::before {
+    background: var(--room-door-handle);
+}
+
+/* Dark theme specific button styles */
+.theme-dark .create-task-btn {
+    background-color: var(--primary-green);
+    color: var(--text-inverse);
+}
+
+.theme-dark .create-task-btn:hover {
+    background-color: var(--primary-green-light);
+}
+
+/* Dark theme notification styles */
+.theme-dark .notification-badge {
+    background-color: var(--error-text);
+    color: var(--text-inverse);
+}
+
+/* Dark theme modal styles */
+.theme-dark .modal {
+    background-color: var(--modal-overlay);
+}
+
+.theme-dark .modal-content {
+    background-color: var(--modal-bg);
+    box-shadow: 0 10px 30px var(--modal-shadow);
+    border: 1px solid var(--border-primary);
+}
+
+/* Dark theme form styles */
+.theme-dark input::placeholder,
+.theme-dark textarea::placeholder {
+    color: var(--input-placeholder);
+}
+
+/* Dark theme specific scrollbar */
+.theme-dark ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+}
+
+.theme-dark ::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    border: 2px solid var(--scrollbar-track);
+}
+
+.theme-dark ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
+}
+
+/* Dark theme specific image adjustments */
+.theme-dark img:not(.logo img):not(.room-item img):not(.shop-item img):not(.inventory-item img) {
+    filter: brightness(0.9) contrast(1.1);
+}
+
+/* Dark theme link styles */
+.theme-dark a {
+    color: var(--primary-brown);
+}
+
+.theme-dark a:hover {
+    color: var(--primary-brown-light);
+}
+
+/* Dark theme code/pre elements */
+.theme-dark code,
+.theme-dark pre {
+    background-color: #1e1e1e;
+    color: #f8f8f2;
+    border: 1px solid var(--border-primary);
+}
+
+/* Dark theme selection */
+.theme-dark ::selection {
+    background-color: rgba(184, 122, 106, 0.3);
+    color: var(--text-primary);
+}
+
+/* Dark theme focus styles */
+.theme-dark *:focus {
+    outline-color: var(--primary-brown);
+}
+
+/* Dark theme specific shadows for better depth */
+.theme-dark .panel,
+.theme-dark .modal-content,
+.theme-dark .notification {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* Dark theme hover effects */
+.theme-dark .panel:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* Dark theme loading states */
+.theme-dark .loading-spinner {
+    border-top-color: var(--primary-brown);
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+}

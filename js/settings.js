@@ -1,13 +1,302 @@
-// settings.js - Settings page functionality
+// settings.js - Enhanced Settings page functionality with Theme System
+
+// Theme management class
+class ThemeManager {
+    constructor() {
+        this.currentTheme = this.getStoredTheme() || this.getSystemTheme();
+        this.transitionDuration = 300;
+        this.init();
+    }
+
+    init() {
+        this.applyTheme(this.currentTheme, false);
+        this.setupTransitions();
+        this.watchSystemTheme();
+    }
+
+    getStoredTheme() {
+        return localStorage.getItem('theme');
+    }
+
+    getSystemTheme() {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    setTheme(theme, animate = true) {
+        if (theme === this.currentTheme) return;
+        
+        console.log(`🎨 Switching theme from ${this.currentTheme} to ${theme}`);
+        
+        if (animate) {
+            this.animateThemeChange(() => {
+                this.applyTheme(theme, true);
+            });
+        } else {
+            this.applyTheme(theme, false);
+        }
+        
+        this.currentTheme = theme;
+        localStorage.setItem('theme', theme);
+        this.updateThemeUI();
+        this.saveThemeToServer(theme);
+    }
+
+    applyTheme(theme, animated = false) {
+        const body = document.body;
+        const html = document.documentElement;
+        
+        // Remove existing theme classes
+        body.classList.remove('theme-light', 'theme-dark');
+        html.classList.remove('theme-light', 'theme-dark');
+        
+        // Add new theme class
+        body.classList.add(`theme-${theme}`);
+        html.classList.add(`theme-${theme}`);
+        
+        // Set data attribute for CSS targeting
+        html.setAttribute('data-theme', theme);
+        
+        // Update theme stylesheet
+        this.updateThemeStylesheet(theme);
+        
+        // Update meta theme-color for browser chrome
+        this.updateMetaThemeColor(theme);
+        
+        if (animated) {
+            // Add transition class temporarily
+            body.classList.add('theme-transitioning');
+            setTimeout(() => {
+                body.classList.remove('theme-transitioning');
+            }, this.transitionDuration);
+        }
+        
+        // Dispatch custom event for other components
+        window.dispatchEvent(new CustomEvent('themeChanged', {
+            detail: { theme, animated }
+        }));
+        
+        console.log(`✅ Theme applied: ${theme}`);
+    }
+
+    animateThemeChange(callback) {
+        const body = document.body;
+        
+        // Add fade effect
+        body.style.transition = `filter ${this.transitionDuration}ms ease`;
+        body.style.filter = 'brightness(0.8) blur(2px)';
+        
+        setTimeout(() => {
+            callback();
+            
+            setTimeout(() => {
+                body.style.filter = 'brightness(1) blur(0px)';
+                
+                setTimeout(() => {
+                    body.style.transition = '';
+                    body.style.filter = '';
+                }, this.transitionDuration);
+            }, 50);
+        }, this.transitionDuration / 2);
+    }
+
+    updateThemeStylesheet(theme) {
+        let themeStylesheet = document.getElementById('theme-stylesheet');
+        
+        if (!themeStylesheet) {
+            themeStylesheet = document.createElement('link');
+            themeStylesheet.id = 'theme-stylesheet';
+            themeStylesheet.rel = 'stylesheet';
+            document.head.appendChild(themeStylesheet);
+        }
+        
+        themeStylesheet.href = `../css/themes/${theme}.css`;
+    }
+
+    updateMetaThemeColor(theme) {
+        let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        
+        if (!metaThemeColor) {
+            metaThemeColor = document.createElement('meta');
+            metaThemeColor.name = 'theme-color';
+            document.head.appendChild(metaThemeColor);
+        }
+        
+        const colors = {
+            light: '#f9f5f0',
+            dark: '#1a1a1a'
+        };
+        
+        metaThemeColor.content = colors[theme] || colors.light;
+    }
+
+    setupTransitions() {
+        // Add CSS for smooth transitions
+        if (!document.getElementById('theme-transitions')) {
+            const style = document.createElement('style');
+            style.id = 'theme-transitions';
+            style.textContent = `
+                .theme-transitioning * {
+                    transition: background-color 0.3s ease, 
+                                color 0.3s ease, 
+                                border-color 0.3s ease,
+                                box-shadow 0.3s ease !important;
+                }
+                
+                .theme-transition-disabled * {
+                    transition: none !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+
+    watchSystemTheme() {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        mediaQuery.addEventListener('change', (e) => {
+            if (!this.getStoredTheme()) {
+                // Only follow system if no user preference is stored
+                this.setTheme(e.matches ? 'dark' : 'light');
+            }
+        });
+    }
+
+    updateThemeUI() {
+        // Update theme selector in settings
+        const themeOptions = document.querySelectorAll('.theme-option');
+        themeOptions.forEach(option => {
+            const input = option.querySelector('input[type="radio"]');
+            option.classList.toggle('active', input.value === this.currentTheme);
+            input.checked = input.value === this.currentTheme;
+        });
+    }
+
+    async saveThemeToServer(theme) {
+        try {
+            const response = await fetch('../php/api/user/update_settings.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    setting: 'theme',
+                    value: theme
+                })
+            });
+            
+            const data = await response.json();
+            if (!data.success) {
+                console.warn('Failed to save theme to server:', data.message);
+            }
+        } catch (error) {
+            console.error('Error saving theme to server:', error);
+        }
+    }
+
+    getTheme() {
+        return this.currentTheme;
+    }
+
+    toggleTheme() {
+        const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+        this.setTheme(newTheme);
+    }
+}
+
+// Global theme manager instance
+let themeManager;
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎨 Initializing theme system...');
+    
+    // Initialize theme manager
+    themeManager = new ThemeManager();
+    
     // Set up form listeners
     setupFormListeners();
     
     // Load saved preferences
     loadSavedPreferences();
+    
+    // Setup theme change listeners
+    setupThemeListeners();
+    
+    // Add keyboard shortcuts
+    setupKeyboardShortcuts();
+    
+    console.log('✅ Settings page initialized');
 });
+
+/**
+ * Set up theme-related event listeners
+ */
+function setupThemeListeners() {
+    // Theme radio buttons
+    document.querySelectorAll('.theme-option input[type="radio"]').forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.checked) {
+                changeTheme(this.value);
+            }
+        });
+    });
+    
+    // Theme option cards (clickable)
+    document.querySelectorAll('.theme-option').forEach(option => {
+        option.addEventListener('click', function() {
+            const input = this.querySelector('input[type="radio"]');
+            if (input && !input.checked) {
+                input.checked = true;
+                changeTheme(input.value);
+            }
+        });
+    });
+}
+
+/**
+ * Set up keyboard shortcuts
+ */
+function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + Shift + T to toggle theme
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'T') {
+            e.preventDefault();
+            themeManager.toggleTheme();
+            showNotification('Theme toggled!', 'info');
+        }
+    });
+}
+
+/**
+ * Change theme with enhanced feedback
+ * @param {string} theme - Theme name (light/dark)
+ */
+function changeTheme(theme) {
+    if (!themeManager) {
+        console.error('Theme manager not initialized');
+        return;
+    }
+    
+    // Show loading state
+    const themeOptions = document.querySelectorAll('.theme-option');
+    themeOptions.forEach(option => {
+        option.style.pointerEvents = 'none';
+        option.style.opacity = '0.7';
+    });
+    
+    // Apply theme
+    themeManager.setTheme(theme);
+    
+    // Show success notification
+    setTimeout(() => {
+        showNotification(`Switched to ${theme} theme`, 'success');
+        
+        // Re-enable theme options
+        themeOptions.forEach(option => {
+            option.style.pointerEvents = '';
+            option.style.opacity = '';
+        });
+    }, themeManager.transitionDuration);
+}
 
 /**
  * Set up form event listeners
@@ -40,12 +329,15 @@ function loadSavedPreferences() {
     const emailNotifications = localStorage.getItem('emailNotifications') !== 'false';
     const taskReminders = localStorage.getItem('taskReminders') !== 'false';
     
-    document.getElementById('email-notifications').checked = emailNotifications;
-    document.getElementById('task-reminders').checked = taskReminders;
+    const emailToggle = document.getElementById('email-notifications');
+    const taskToggle = document.getElementById('task-reminders');
+    
+    if (emailToggle) emailToggle.checked = emailNotifications;
+    if (taskToggle) taskToggle.checked = taskReminders;
 }
 
 /**
- * Handle profile picture change
+ * Handle profile picture change with enhanced preview
  * @param {HTMLInputElement} input - File input element
  */
 function handleProfilePictureChange(input) {
@@ -64,13 +356,25 @@ function handleProfilePictureChange(input) {
             return;
         }
         
+        // Show preview immediately
+        const preview = document.getElementById('profile-picture-preview');
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        
         // Create FormData
         const formData = new FormData();
         formData.append('profile_picture', file);
         
         // Show loading state
-        const preview = document.getElementById('profile-picture-preview');
-        preview.style.opacity = '0.5';
+        const overlay = preview.parentElement.querySelector('.profile-picture-overlay');
+        if (overlay) {
+            overlay.innerHTML = '<div class="loading-spinner"></div>';
+            overlay.style.opacity = '1';
+        }
         
         // Upload image
         fetch('../php/api/user/upload_profile_picture.php', {
@@ -79,7 +383,17 @@ function handleProfilePictureChange(input) {
         })
         .then(response => response.json())
         .then(data => {
-            preview.style.opacity = '1';
+            if (overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.innerHTML = `
+                        <label for="profile-picture-upload" class="change-picture-btn">
+                            <img src="../images/icons/camera.webp" alt="Change">
+                            <span>Change Photo</span>
+                        </label>
+                    `;
+                }, 300);
+            }
             
             if (data.success) {
                 // Update preview
@@ -91,24 +405,30 @@ function handleProfilePictureChange(input) {
                     headerAvatar.src = data.image_url;
                 }
                 
-                showNotification('Profile picture updated successfully');
+                showNotification('Profile picture updated successfully', 'success');
             } else {
                 showNotification(data.message || 'Error uploading image', 'error');
             }
         })
         .catch(error => {
             console.error('Upload error:', error);
-            preview.style.opacity = '1';
+            if (overlay) overlay.style.opacity = '0';
             showNotification('Error uploading image', 'error');
         });
     }
 }
 
 /**
- * Change language
+ * Change language with enhanced feedback
  * @param {string} language - Language code
  */
 function changeLanguage(language) {
+    const select = document.getElementById('language-select');
+    if (select) {
+        select.disabled = true;
+        select.style.opacity = '0.7';
+    }
+    
     // Save language preference
     fetch('../php/api/user/update_settings.php', {
         method: 'POST',
@@ -122,64 +442,28 @@ function changeLanguage(language) {
     })
     .then(response => response.json())
     .then(data => {
+        if (select) {
+            select.disabled = false;
+            select.style.opacity = '1';
+        }
+        
         if (data.success) {
-            showNotification('Language updated. Page will reload...');
+            showNotification('Language updated. Page will reload in 2 seconds...', 'success');
             // Reload page to apply language change
             setTimeout(() => {
                 window.location.reload();
-            }, 1500);
+            }, 2000);
         } else {
             showNotification(data.message || 'Error updating language', 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showNotification('Error updating language', 'error');
-    });
-}
-
-/**
- * Change theme
- * @param {string} theme - Theme name (light/dark)
- */
-function changeTheme(theme) {
-    // Update theme immediately
-    document.body.className = 'theme-' + theme;
-    
-    // Update theme stylesheet
-    const themeStylesheet = document.getElementById('theme-stylesheet');
-    if (themeStylesheet) {
-        themeStylesheet.href = `../css/themes/${theme}.css`;
-    }
-    
-    // Update active theme option
-    document.querySelectorAll('.theme-option').forEach(option => {
-        option.classList.remove('active');
-    });
-    document.querySelector(`.theme-option input[value="${theme}"]`).parentElement.classList.add('active');
-    
-    // Save theme preference
-    fetch('../php/api/user/update_settings.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            setting: 'theme',
-            value: theme
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showNotification('Theme updated successfully');
-        } else {
-            showNotification(data.message || 'Error updating theme', 'error');
+        if (select) {
+            select.disabled = false;
+            select.style.opacity = '1';
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showNotification('Error updating theme', 'error');
+        showNotification('Error updating language', 'error');
     });
 }
 
@@ -187,32 +471,59 @@ function changeTheme(theme) {
  * Show change password modal
  */
 function showChangePasswordModal() {
-    document.getElementById('password-modal').style.display = 'flex';
+    const modal = document.getElementById('password-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+        
+        // Focus first input
+        setTimeout(() => {
+            const firstInput = modal.querySelector('input');
+            if (firstInput) firstInput.focus();
+        }, 100);
+    }
 }
 
 /**
  * Show delete account modal
  */
 function showDeleteAccountModal() {
-    document.getElementById('delete-account-modal').style.display = 'flex';
-}
-
-/**
- * Close modal
- * @param {string} modalId - ID of modal to close
- */
-function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
-    
-    // Reset form
-    const form = document.querySelector(`#${modalId} form`);
-    if (form) {
-        form.reset();
+    const modal = document.getElementById('delete-account-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+        
+        // Focus first input
+        setTimeout(() => {
+            const firstInput = modal.querySelector('input');
+            if (firstInput) firstInput.focus();
+        }, 100);
     }
 }
 
 /**
- * Handle password change
+ * Close modal with animation
+ * @param {string} modalId - ID of modal to close
+ */
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('show');
+        
+        setTimeout(() => {
+            modal.style.display = 'none';
+            
+            // Reset form
+            const form = modal.querySelector('form');
+            if (form) {
+                form.reset();
+            }
+        }, 300);
+    }
+}
+
+/**
+ * Handle password change with enhanced validation
  * @param {Event} e - Form submit event
  */
 function handlePasswordChange(e) {
@@ -222,22 +533,39 @@ function handlePasswordChange(e) {
     const newPassword = document.getElementById('new-password').value;
     const confirmPassword = document.getElementById('confirm-password').value;
     
-    // Validate passwords match
-    if (newPassword !== confirmPassword) {
-        showNotification('New passwords do not match', 'error');
-        return;
+    // Enhanced validation
+    const errors = [];
+    
+    if (!currentPassword) {
+        errors.push('Current password is required');
     }
     
-    // Validate password length
     if (newPassword.length < 8) {
-        showNotification('Password must be at least 8 characters', 'error');
+        errors.push('Password must be at least 8 characters');
+    }
+    
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
+        errors.push('Password must contain uppercase, lowercase, and numbers');
+    }
+    
+    if (newPassword !== confirmPassword) {
+        errors.push('New passwords do not match');
+    }
+    
+    if (newPassword === currentPassword) {
+        errors.push('New password must be different from current password');
+    }
+    
+    if (errors.length > 0) {
+        showNotification(errors.join('. '), 'error');
         return;
     }
     
     // Show loading state
     const submitBtn = e.target.querySelector('.save-btn');
+    const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Updating...';
+    submitBtn.innerHTML = '<span class="spinner"></span> Updating...';
     
     // Send request
     fetch('../php/api/user/change_password.php', {
@@ -253,10 +581,10 @@ function handlePasswordChange(e) {
     .then(response => response.json())
     .then(data => {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Update Password';
+        submitBtn.textContent = originalText;
         
         if (data.success) {
-            showNotification('Password updated successfully');
+            showNotification('Password updated successfully', 'success');
             closeModal('password-modal');
         } else {
             showNotification(data.message || 'Error updating password', 'error');
@@ -265,7 +593,7 @@ function handlePasswordChange(e) {
     .catch(error => {
         console.error('Error:', error);
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Update Password';
+        submitBtn.textContent = originalText;
         showNotification('Error updating password', 'error');
     });
 }
@@ -282,8 +610,9 @@ function handleEmailChange(e) {
     
     // Show loading state
     const submitBtn = e.target.querySelector('.save-btn');
+    const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Updating...';
+    submitBtn.innerHTML = '<span class="spinner"></span> Updating...';
     
     // Send request
     fetch('../php/api/user/change_email.php', {
@@ -299,10 +628,10 @@ function handleEmailChange(e) {
     .then(response => response.json())
     .then(data => {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Update Email';
+        submitBtn.textContent = originalText;
         
         if (data.success) {
-            showNotification('Email updated successfully');
+            showNotification('Email updated successfully', 'success');
             closeModal('email-modal');
             
             // Update displayed email
@@ -317,13 +646,13 @@ function handleEmailChange(e) {
     .catch(error => {
         console.error('Error:', error);
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Update Email';
+        submitBtn.textContent = originalText;
         showNotification('Error updating email', 'error');
     });
 }
 
 /**
- * Handle account deletion
+ * Handle account deletion with confirmation
  * @param {Event} e - Form submit event
  */
 function handleAccountDelete(e) {
@@ -338,10 +667,16 @@ function handleAccountDelete(e) {
         return;
     }
     
+    // Show final confirmation
+    if (!confirm('This action cannot be undone. Are you absolutely sure you want to delete your account?')) {
+        return;
+    }
+    
     // Show loading state
     const submitBtn = e.target.querySelector('.delete-btn');
+    const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Deleting...';
+    submitBtn.innerHTML = '<span class="spinner"></span> Deleting...';
     
     // Send request
     fetch('../php/api/user/delete_account.php', {
@@ -356,21 +691,21 @@ function handleAccountDelete(e) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showNotification('Account deleted. Redirecting...');
+            showNotification('Account deleted. Redirecting...', 'success');
             // Redirect to home page
             setTimeout(() => {
                 window.location.href = '../index.php';
             }, 2000);
         } else {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Delete My Account';
+            submitBtn.textContent = originalText;
             showNotification(data.message || 'Error deleting account', 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Delete My Account';
+        submitBtn.textContent = originalText;
         showNotification('Error deleting account', 'error');
     });
 }
@@ -381,8 +716,6 @@ function handleAccountDelete(e) {
  */
 function toggleEmailNotifications(enabled) {
     localStorage.setItem('emailNotifications', enabled);
-    
-    // Update server preference
     updateNotificationPreference('email_notifications', enabled);
 }
 
@@ -392,8 +725,6 @@ function toggleEmailNotifications(enabled) {
  */
 function toggleTaskReminders(enabled) {
     localStorage.setItem('taskReminders', enabled);
-    
-    // Update server preference
     updateNotificationPreference('task_reminders', enabled);
 }
 
@@ -415,7 +746,9 @@ function updateNotificationPreference(type, enabled) {
     })
     .then(response => response.json())
     .then(data => {
-        if (!data.success) {
+        if (data.success) {
+            showNotification('Notification preferences updated', 'success');
+        } else {
             showNotification('Error updating notification preferences', 'error');
         }
     })
@@ -426,11 +759,12 @@ function updateNotificationPreference(type, enabled) {
 }
 
 /**
- * Show notification
+ * Enhanced notification system
  * @param {string} message - Notification message
  * @param {string} type - Notification type (success, error, warning, info)
+ * @param {number} duration - Display duration in ms (default: 4000)
  */
-function showNotification(message, type = 'success') {
+function showNotification(message, type = 'success', duration = 4000) {
     // Check if notification container exists
     let container = document.querySelector('.notification-container');
     if (!container) {
@@ -439,10 +773,23 @@ function showNotification(message, type = 'success') {
         document.body.appendChild(container);
     }
     
-    // Create notification
+    // Create notification with enhanced styling
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
-    notification.textContent = message;
+    
+    // Add icon based on type
+    const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+    };
+    
+    notification.innerHTML = `
+        <span class="notification-icon">${icons[type] || icons.info}</span>
+        <span class="notification-text">${message}</span>
+        <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+    `;
     
     container.appendChild(notification);
     
@@ -451,39 +798,62 @@ function showNotification(message, type = 'success') {
         notification.classList.add('show');
     }, 10);
     
-    // Remove after delay
+    // Auto remove after delay
     setTimeout(() => {
         notification.classList.remove('show');
         setTimeout(() => {
-            notification.remove();
+            if (notification.parentElement) {
+                notification.remove();
+            }
         }, 300);
-    }, 4000);
+    }, duration);
+    
+    // Make notification clickable to dismiss
+    notification.addEventListener('click', () => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 300);
+    });
 }
 
+/**
+ * Open customer portal for subscription management
+ */
 async function openCustomerPortal() {
     try {
-        const response = await fetch('/api/create-portal-session.php', {
+        showNotification('Opening subscription management...', 'info');
+        
+        const response = await fetch('../php/api/subscription/create-portal-session.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                customer_id: getStripeCustomerId() // Your function to get customer ID
-            })
+            }
         });
         
-        const { url } = await response.json();
-        window.location.href = url;
+        const data = await response.json();
+        
+        if (data.success && data.url) {
+            window.location.href = data.url;
+        } else {
+            throw new Error(data.message || 'Failed to create portal session');
+        }
         
     } catch (error) {
         console.error('Error opening customer portal:', error);
-        showErrorMessage('Unable to open subscription management. Please try again.');
+        showNotification('Unable to open subscription management. Please try again.', 'error');
     }
 }
 
 // Close modals when clicking outside
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('modal')) {
-        e.target.style.display = 'none';
+        const modalId = e.target.id;
+        closeModal(modalId);
     }
 });
+
+// Export theme manager for global access
+window.themeManager = themeManager;

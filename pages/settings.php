@@ -1,5 +1,5 @@
 <?php
-// pages/settings.php
+// pages/settings.php - Updated with enhanced theme system
 
 // Include necessary files
 require_once '../php/include/config.php';
@@ -30,21 +30,30 @@ $languages = [
     'es' => 'Español'
 ];
 
-// Theme options
+// Theme options with descriptions
 $themes = [
-    'light' => 'Light',
-    'dark' => 'Dark'
+    'light' => [
+        'name' => 'Light',
+        'description' => 'Classic light theme with warm colors'
+    ],
+    'dark' => [
+        'name' => 'Dark',
+        'description' => 'Modern dark theme for reduced eye strain'
+    ]
 ];
 ?>
 
 <!DOCTYPE html>
-<html lang="<?php echo $currentLanguage; ?>">
+<html lang="<?php echo $currentLanguage; ?>" data-theme="<?php echo $currentTheme; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - <?php echo SITE_NAME; ?></title>
     
-    <!-- Core CSS -->
+    <!-- Meta theme color for browser chrome -->
+    <meta name="theme-color" content="<?php echo $currentTheme === 'dark' ? '#1a1a1a' : '#f9f5f0'; ?>">
+    
+    <!-- Core CSS with variables -->
     <link rel="stylesheet" href="../css/main.css">
     
     <!-- Component CSS -->
@@ -57,7 +66,13 @@ $themes = [
     
     <!-- Page-specific CSS -->
     <link rel="stylesheet" href="../css/pages/settings.css">
+    
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
+    
+    <!-- Enhanced Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="theme-<?php echo $currentTheme; ?>">
     <div class="main-container">
@@ -119,28 +134,49 @@ $themes = [
                     </div>
                 </div>
 
-                <!-- Appearance Section -->
+                <!-- Appearance Section - Enhanced -->
                 <div class="settings-section">
                     <h2>Appearance</h2>
                     <div class="settings-group">
                         <div class="theme-selector">
-                            <span class="setting-title">Theme</span>
+                            <div class="theme-header">
+                                <span class="setting-title">Theme</span>
+                                <span class="setting-description">Choose between light and dark themes</span>
+                            </div>
                             <div class="theme-options">
-                                <?php foreach ($themes as $themeKey => $themeName): ?>
-                                    <label class="theme-option <?php echo $currentTheme === $themeKey ? 'active' : ''; ?>">
+                                <?php foreach ($themes as $themeKey => $themeInfo): ?>
+                                    <label class="theme-option <?php echo $currentTheme === $themeKey ? 'active' : ''; ?>" 
+                                           data-theme="<?php echo $themeKey; ?>">
                                         <input type="radio" name="theme" value="<?php echo $themeKey; ?>" 
-                                               <?php echo $currentTheme === $themeKey ? 'checked' : ''; ?>
-                                               onchange="changeTheme('<?php echo $themeKey; ?>')">
+                                               <?php echo $currentTheme === $themeKey ? 'checked' : ''; ?>>
+                                        
                                         <div class="theme-preview theme-<?php echo $themeKey; ?>">
                                             <div class="preview-header"></div>
                                             <div class="preview-content">
                                                 <div class="preview-sidebar"></div>
-                                                <div class="preview-main"></div>
+                                                <div class="preview-main">
+                                                    <div class="preview-card"></div>
+                                                    <div class="preview-card"></div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <span><?php echo $themeName; ?></span>
+                                        
+                                        <div class="theme-info">
+                                            <span class="theme-name"><?php echo $themeInfo['name']; ?></span>
+                                            <span class="theme-description"><?php echo $themeInfo['description']; ?></span>
+                                        </div>
+                                        
+                                        <div class="theme-indicator">
+                                            <?php if ($currentTheme === $themeKey): ?>
+                                                <span class="current-badge">Current</span>
+                                            <?php endif; ?>
+                                        </div>
                                     </label>
                                 <?php endforeach; ?>
+                            </div>
+                            
+                            <div class="theme-shortcuts">
+                                <small>💡 Tip: Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> to quickly toggle themes</small>
                             </div>
                         </div>
                     </div>
@@ -166,7 +202,7 @@ $themes = [
                                 <?php if ($currentSubscription === 'free'): ?>
                                     <a href="subscription.php" class="upgrade-btn">Upgrade Plan</a>
                                 <?php else: ?>
-                                    <a href="subscription.php" class="manage-btn">Manage Subscription</a>
+                                    <button class="manage-btn" onclick="openCustomerPortal()">Manage Subscription</button>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -184,6 +220,17 @@ $themes = [
                             <div class="button-text">
                                 <span class="button-title">Change Password</span>
                                 <span class="button-description">Update your account password</span>
+                            </div>
+                            <span class="button-arrow">›</span>
+                        </button>
+                        
+                        <button class="setting-button" onclick="showChangeEmailModal()">
+                            <span class="button-icon">
+                                <img src="../images/icons/email-icon-light.webp" alt="Email">
+                            </span>
+                            <div class="button-text">
+                                <span class="button-title">Change Email</span>
+                                <span class="button-description">Update your email address</span>
                             </div>
                             <span class="button-arrow">›</span>
                         </button>
@@ -222,6 +269,43 @@ $themes = [
                             <input type="checkbox" id="task-reminders" checked onchange="toggleTaskReminders(this.checked)">
                             <span class="toggle-switch"></span>
                         </label>
+                        
+                        <label class="setting-toggle">
+                            <div class="toggle-info">
+                                <span class="toggle-title">Theme Auto-Switch</span>
+                                <span class="toggle-description">Automatically switch theme based on time of day</span>
+                            </div>
+                            <input type="checkbox" id="auto-theme" onchange="toggleAutoTheme(this.checked)">
+                            <span class="toggle-switch"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Advanced Section -->
+                <div class="settings-section">
+                    <h2>Advanced</h2>
+                    <div class="settings-group">
+                        <button class="setting-button" onclick="exportUserData()">
+                            <span class="button-icon">
+                                <img src="../images/icons/download-icon-light.webp" alt="Export">
+                            </span>
+                            <div class="button-text">
+                                <span class="button-title">Export Data</span>
+                                <span class="button-description">Download your account data</span>
+                            </div>
+                            <span class="button-arrow">›</span>
+                        </button>
+                        
+                        <button class="setting-button" onclick="clearCache()">
+                            <span class="button-icon">
+                                <img src="../images/icons/refresh-icon-light.webp" alt="Clear">
+                            </span>
+                            <div class="button-text">
+                                <span class="button-title">Clear Cache</span>
+                                <span class="button-description">Clear stored data and refresh</span>
+                            </div>
+                            <span class="button-arrow">›</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -244,7 +328,7 @@ $themes = [
                     <div class="form-group">
                         <label for="new-password">New Password</label>
                         <input type="password" id="new-password" required>
-                        <span class="field-hint">At least 8 characters</span>
+                        <span class="field-hint">At least 8 characters with uppercase, lowercase, and numbers</span>
                     </div>
                     <div class="form-group">
                         <label for="confirm-password">Confirm New Password</label>
@@ -253,6 +337,33 @@ $themes = [
                     <div class="form-actions">
                         <button type="button" class="cancel-btn" onclick="closeModal('password-modal')">Cancel</button>
                         <button type="submit" class="save-btn">Update Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Email Modal -->
+    <div id="email-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Change Email</h2>
+                <button class="close-modal" onclick="closeModal('email-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="change-email-form">
+                    <div class="form-group">
+                        <label for="new-email">New Email Address</label>
+                        <input type="email" id="new-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email-password">Current Password</label>
+                        <input type="password" id="email-password" required>
+                        <span class="field-hint">Enter your password to confirm this change</span>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="cancel-btn" onclick="closeModal('email-modal')">Cancel</button>
+                        <button type="submit" class="save-btn">Update Email</button>
                     </div>
                 </form>
             </div>
@@ -278,7 +389,7 @@ $themes = [
                     </div>
                     <div class="form-group">
                         <label for="delete-confirm">Type "DELETE" to confirm</label>
-                        <input type="text" id="delete-confirm" required pattern="DELETE">
+                        <input type="text" id="delete-confirm" required pattern="DELETE" placeholder="Type DELETE here">
                     </div>
                     <div class="form-actions">
                         <button type="button" class="cancel-btn" onclick="closeModal('delete-account-modal')">Cancel</button>
@@ -292,5 +403,78 @@ $themes = [
     <!-- Scripts -->
     <script src="../js/main.js"></script>
     <script src="../js/settings.js"></script>
+    
+    <!-- Initialize theme system -->
+    <script>
+        // Pass PHP theme to JavaScript
+        window.initialTheme = '<?php echo $currentTheme; ?>';
+        window.initialLanguage = '<?php echo $currentLanguage; ?>';
+        
+        // Additional settings functions
+        function showChangeEmailModal() {
+            const modal = document.getElementById('email-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.classList.add('show');
+            }
+        }
+        
+        function toggleAutoTheme(enabled) {
+            if (enabled) {
+                // Implement auto theme switching based on time
+                const hour = new Date().getHours();
+                const isDaytime = hour >= 6 && hour < 18;
+                const newTheme = isDaytime ? 'light' : 'dark';
+                
+                if (window.themeManager && window.themeManager.getTheme() !== newTheme) {
+                    window.themeManager.setTheme(newTheme);
+                    showNotification(`Auto-switched to ${newTheme} theme`, 'info');
+                }
+            }
+            
+            localStorage.setItem('autoTheme', enabled);
+        }
+        
+        function exportUserData() {
+            showNotification('Preparing your data export...', 'info');
+            
+            fetch('../php/api/user/export_data.php', {
+                method: 'POST'
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'habitus-zone-data.json';
+                a.click();
+                window.URL.revokeObjectURL(url);
+                showNotification('Data exported successfully', 'success');
+            })
+            .catch(error => {
+                console.error('Export error:', error);
+                showNotification('Error exporting data', 'error');
+            });
+        }
+        
+        function clearCache() {
+            if (confirm('This will clear all cached data and refresh the page. Continue?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Clear service worker cache if available
+                if ('caches' in window) {
+                    caches.keys().then(names => {
+                        names.forEach(name => caches.delete(name));
+                    });
+                }
+                
+                showNotification('Cache cleared. Refreshing...', 'success');
+                setTimeout(() => {
+                    window.location.reload(true);
+                }, 1500);
+            }
+        }
+    </script>
 </body>
 </html>
