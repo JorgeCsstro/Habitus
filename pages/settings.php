@@ -19,10 +19,12 @@ $userHCoins = $userData['hcoin'];
 $userHabitusName = $userData['username'] . "'s Habitus";
 
 // Get current settings
-$currentLanguage = $userData['language'] ?? 'en';
-$currentTheme = $userData['theme'] ?? 'light';
+
 $currentSubscription = $userData['subscription_type'] ?? 'free';
 $profilePicture = $userData['profile_picture'] ?? '../images/avatars/default.webp';
+
+$currentLanguage = $userData['language'] ?? 'en';
+$currentTheme = $userData['theme'] ?? 'light';
 
 // Language options
 $languages = [
@@ -73,6 +75,19 @@ $themes = [
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        // Make theme data available to JavaScript BEFORE theme manager loads
+        window.initialTheme = '<?php echo $currentTheme; ?>';
+        window.initialLanguage = '<?php echo $currentLanguage; ?>';
+        window.userPreferences = {
+            theme: '<?php echo $currentTheme; ?>',
+            language: '<?php echo $currentLanguage; ?>',
+            autoTheme: <?php echo json_encode($userData['auto_theme'] ?? false); ?>
+        };
+        
+        // Prevent flash of unstyled content
+        document.documentElement.className = 'theme-<?php echo $currentTheme; ?>';
+    </script>
 </head>
 <body class="theme-<?php echo $currentTheme; ?>">
     <div class="main-container">
@@ -407,75 +422,25 @@ $themes = [
     
     <!-- Initialize theme system -->
     <script>
-        // Pass PHP theme to JavaScript
-        window.initialTheme = '<?php echo $currentTheme; ?>';
-        window.initialLanguage = '<?php echo $currentLanguage; ?>';
-        
-        // Additional settings functions
-        function showChangeEmailModal() {
-            const modal = document.getElementById('email-modal');
-            if (modal) {
-                modal.style.display = 'flex';
-                modal.classList.add('show');
-            }
-        }
-        
-        function toggleAutoTheme(enabled) {
-            if (enabled) {
-                // Implement auto theme switching based on time
-                const hour = new Date().getHours();
-                const isDaytime = hour >= 6 && hour < 18;
-                const newTheme = isDaytime ? 'light' : 'dark';
-                
-                if (window.themeManager && window.themeManager.getTheme() !== newTheme) {
-                    window.themeManager.setTheme(newTheme);
-                    showNotification(`Auto-switched to ${newTheme} theme`, 'info');
+       document.addEventListener('DOMContentLoaded', function() {
+            // Wait for theme manager to be ready
+            const waitForThemeManager = () => {
+                if (window.themeManager) {
+                    console.log('✅ Theme manager ready, initializing page features...');
+                    
+                    // Initialize your page-specific features here
+                    // For example:
+                    // initializeDashboard();
+                    // setupTaskHandlers();
+                    
+                } else {
+                    // Wait a bit more for theme manager
+                    setTimeout(waitForThemeManager, 50);
                 }
-            }
+            };
             
-            localStorage.setItem('autoTheme', enabled);
-        }
-        
-        function exportUserData() {
-            showNotification('Preparing your data export...', 'info');
-            
-            fetch('../php/api/user/export_data.php', {
-                method: 'POST'
-            })
-            .then(response => response.blob())
-            .then(blob => {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'habitus-zone-data.json';
-                a.click();
-                window.URL.revokeObjectURL(url);
-                showNotification('Data exported successfully', 'success');
-            })
-            .catch(error => {
-                console.error('Export error:', error);
-                showNotification('Error exporting data', 'error');
-            });
-        }
-        
-        function clearCache() {
-            if (confirm('This will clear all cached data and refresh the page. Continue?')) {
-                localStorage.clear();
-                sessionStorage.clear();
-                
-                // Clear service worker cache if available
-                if ('caches' in window) {
-                    caches.keys().then(names => {
-                        names.forEach(name => caches.delete(name));
-                    });
-                }
-                
-                showNotification('Cache cleared. Refreshing...', 'success');
-                setTimeout(() => {
-                    window.location.reload(true);
-                }, 1500);
-            }
-        }
+            waitForThemeManager();
+        });
     </script>
 </body>
 </html>

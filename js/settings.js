@@ -1,227 +1,45 @@
-// settings.js - Simplified Theme System using CSS Variables
-
-// Simplified Theme Management class
-class ThemeManager {
-    constructor() {
-        this.currentTheme = this.getStoredTheme() || this.getSystemTheme();
-        this.transitionDuration = 300;
-        this.init();
-    }
-
-    init() {
-        this.applyTheme(this.currentTheme, false);
-        this.watchSystemTheme();
-        console.log(`🎨 Theme system initialized with: ${this.currentTheme}`);
-    }
-
-    getStoredTheme() {
-        return localStorage.getItem('theme');
-    }
-
-    getSystemTheme() {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-
-    setTheme(theme, animate = true) {
-        if (theme === this.currentTheme) return;
-        
-        console.log(`🎨 Switching theme from ${this.currentTheme} to ${theme}`);
-        
-        if (animate) {
-            this.animateThemeChange(() => {
-                this.applyTheme(theme, true);
-            });
-        } else {
-            this.applyTheme(theme, false);
-        }
-        
-        this.currentTheme = theme;
-        localStorage.setItem('theme', theme);
-        this.updateThemeUI();
-        this.saveThemeToServer(theme);
-    }
-
-    applyTheme(theme, animated = false) {
-        const html = document.documentElement;
-        const body = document.body;
-        
-        // Prevent transitions during theme change if not animated
-        if (!animated) {
-            body.classList.add('theme-switching');
-        }
-        
-        // Simply set the data-theme attribute - CSS variables handle the rest!
-        html.setAttribute('data-theme', theme);
-        
-        // Also add class for any legacy CSS that might need it
-        body.classList.remove('theme-light', 'theme-dark');
-        body.classList.add(`theme-${theme}`);
-        
-        // Update meta theme-color for browser chrome
-        this.updateMetaThemeColor(theme);
-        
-        // Re-enable transitions after a brief delay
-        if (!animated) {
-            setTimeout(() => {
-                body.classList.remove('theme-switching');
-            }, 50);
-        }
-        
-        // Dispatch custom event for other components
-        window.dispatchEvent(new CustomEvent('themeChanged', {
-            detail: { theme, animated }
-        }));
-        
-        console.log(`✅ Theme applied: ${theme}`);
-    }
-
-    animateThemeChange(callback) {
-        const body = document.body;
-        
-        // Add subtle fade effect during transition
-        body.style.transition = `opacity ${this.transitionDuration}ms ease`;
-        body.style.opacity = '0.8';
-        
-        setTimeout(() => {
-            callback();
-            
-            setTimeout(() => {
-                body.style.opacity = '1';
-                
-                setTimeout(() => {
-                    body.style.transition = '';
-                    body.style.opacity = '';
-                }, this.transitionDuration);
-            }, 50);
-        }, this.transitionDuration / 3);
-    }
-
-    updateMetaThemeColor(theme) {
-        let metaThemeColor = document.querySelector('meta[name="theme-color"]');
-        
-        if (!metaThemeColor) {
-            metaThemeColor = document.createElement('meta');
-            metaThemeColor.name = 'theme-color';
-            document.head.appendChild(metaThemeColor);
-        }
-        
-        // Get the actual computed CSS variable values
-        const colors = {
-            light: '#f9f5f0',
-            dark: '#1a1a1a'
-        };
-        
-        metaThemeColor.content = colors[theme] || colors.light;
-    }
-
-    watchSystemTheme() {
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        mediaQuery.addEventListener('change', (e) => {
-            if (!this.getStoredTheme()) {
-                // Only follow system if no user preference is stored
-                this.setTheme(e.matches ? 'dark' : 'light');
-                showNotification(`Auto-switched to ${e.matches ? 'dark' : 'light'} theme`, 'info');
-            }
-        });
-    }
-
-    updateThemeUI() {
-        // Update theme selector in settings
-        const themeOptions = document.querySelectorAll('.theme-option');
-        themeOptions.forEach(option => {
-            const input = option.querySelector('input[type="radio"]');
-            if (input) {
-                option.classList.toggle('active', input.value === this.currentTheme);
-                input.checked = input.value === this.currentTheme;
-            }
-        });
-
-        // Update any theme toggle buttons
-        const themeToggles = document.querySelectorAll('[data-theme-toggle]');
-        themeToggles.forEach(toggle => {
-            toggle.setAttribute('data-current-theme', this.currentTheme);
-        });
-    }
-
-    async saveThemeToServer(theme) {
-        try {
-            const response = await fetch('../php/api/user/update_settings.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    setting: 'theme',
-                    value: theme
-                })
-            });
-            
-            const data = await response.json();
-            if (!data.success) {
-                console.warn('Failed to save theme to server:', data.message);
-            } else {
-                console.log('✅ Theme saved to server');
-            }
-        } catch (error) {
-            console.error('Error saving theme to server:', error);
-        }
-    }
-
-    getTheme() {
-        return this.currentTheme;
-    }
-
-    toggleTheme() {
-        const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        this.setTheme(newTheme);
-        return newTheme;
-    }
-
-    // Quick theme toggle function for testing
-    quickToggle() {
-        const newTheme = this.toggleTheme();
-        showNotification(`Switched to ${newTheme} theme`, 'success');
-        return newTheme;
-    }
-}
-
-// Global theme manager instance
-let themeManager;
+// js/settings.js - Updated to work with new theme manager
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎨 Initializing simplified theme system...');
+    console.log('🔧 Initializing settings page...');
     
-    // Initialize theme manager
-    themeManager = new ThemeManager();
+    // Wait for theme manager to be ready
+    if (window.themeManager) {
+        setupThemeControls();
+    } else {
+        // Wait for theme manager to initialize
+        const checkThemeManager = setInterval(() => {
+            if (window.themeManager) {
+                clearInterval(checkThemeManager);
+                setupThemeControls();
+            }
+        }, 100);
+    }
     
-    // Set up form listeners
+    // Set up other form listeners
     setupFormListeners();
     
     // Load saved preferences
     loadSavedPreferences();
     
-    // Setup theme change listeners
-    setupThemeListeners();
-    
-    // Add keyboard shortcuts
+    // Setup keyboard shortcuts
     setupKeyboardShortcuts();
-    
-    // Add quick access to theme manager for debugging
-    window.themeManager = themeManager;
     
     console.log('✅ Settings page initialized');
 });
 
 /**
- * Set up theme-related event listeners
+ * Set up theme-related controls
  */
-function setupThemeListeners() {
+function setupThemeControls() {
+    console.log('🎨 Setting up theme controls...');
+    
     // Theme radio buttons
     document.querySelectorAll('.theme-option input[type="radio"]').forEach(input => {
         input.addEventListener('change', function() {
-            if (this.checked) {
-                changeTheme(this.value);
+            if (this.checked && window.themeManager) {
+                handleThemeChange(this.value);
             }
         });
     });
@@ -233,39 +51,33 @@ function setupThemeListeners() {
             if (e.target.type === 'radio') return;
             
             const input = this.querySelector('input[type="radio"]');
-            if (input && !input.checked) {
+            if (input && !input.checked && window.themeManager) {
                 input.checked = true;
-                changeTheme(input.value);
+                handleThemeChange(input.value);
             }
         });
     });
+    
+    // Update UI to match current theme
+    if (window.themeManager) {
+        updateThemeUI(window.themeManager.getTheme());
+    }
 }
 
 /**
- * Set up keyboard shortcuts
- */
-function setupKeyboardShortcuts() {
-    document.addEventListener('keydown', function(e) {
-        // Ctrl/Cmd + Shift + T to toggle theme
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'T') {
-            e.preventDefault();
-            const newTheme = themeManager.toggleTheme();
-            showNotification(`Theme toggled to ${newTheme}!`, 'info');
-        }
-    });
-}
-
-/**
- * Change theme with enhanced feedback
+ * Handle theme change with enhanced feedback
  * @param {string} theme - Theme name (light/dark)
  */
-function changeTheme(theme) {
-    if (!themeManager) {
-        console.error('Theme manager not initialized');
+function handleThemeChange(theme) {
+    if (!window.themeManager) {
+        console.error('Theme manager not available');
+        showNotification('Theme system not ready', 'error');
         return;
     }
     
-    // Show loading state briefly
+    console.log(`🎨 Handling theme change to: ${theme}`);
+    
+    // Show loading state
     const themeOptions = document.querySelectorAll('.theme-option');
     themeOptions.forEach(option => {
         option.style.pointerEvents = 'none';
@@ -273,21 +85,56 @@ function changeTheme(theme) {
     });
     
     // Apply theme
-    themeManager.setTheme(theme);
+    const success = window.themeManager.setTheme(theme, true, true);
     
-    // Show success notification and re-enable options
-    setTimeout(() => {
-        showNotification(`Switched to ${theme} theme`, 'success');
+    if (success) {
+        // Mark as manual preference
+        localStorage.setItem('habitus-theme-manual', 'true');
         
+        // Show success notification
+        setTimeout(() => {
+            showNotification(`Switched to ${theme} theme`, 'success');
+            
+            // Re-enable options
+            themeOptions.forEach(option => {
+                option.style.pointerEvents = '';
+                option.style.opacity = '';
+            });
+        }, 200);
+    } else {
+        // Re-enable options immediately on error
         themeOptions.forEach(option => {
             option.style.pointerEvents = '';
             option.style.opacity = '';
         });
-    }, 100);
+        
+        showNotification('Error changing theme', 'error');
+    }
 }
 
-// Rest of your existing settings.js functions remain the same...
-// (setupFormListeners, loadSavedPreferences, handleProfilePictureChange, etc.)
+/**
+ * Update theme UI elements
+ * @param {string} currentTheme - Current theme
+ */
+function updateThemeUI(currentTheme) {
+    const themeOptions = document.querySelectorAll('.theme-option');
+    themeOptions.forEach(option => {
+        const input = option.querySelector('input[type="radio"]');
+        if (input) {
+            const isActive = input.value === currentTheme;
+            option.classList.toggle('active', isActive);
+            input.checked = isActive;
+        }
+    });
+}
+
+/**
+ * Set up keyboard shortcuts
+ */
+function setupKeyboardShortcuts() {
+    // Additional settings-specific shortcuts can go here
+    // The global theme toggle (Ctrl+Shift+T) is handled by the theme manager
+}
 
 /**
  * Set up form event listeners
@@ -316,19 +163,22 @@ function setupFormListeners() {
  * Load saved user preferences
  */
 function loadSavedPreferences() {
-    // Load notification preferences from localStorage or API
+    // Load notification preferences
     const emailNotifications = localStorage.getItem('emailNotifications') !== 'false';
     const taskReminders = localStorage.getItem('taskReminders') !== 'false';
+    const autoTheme = localStorage.getItem('autoTheme') === 'true';
     
     const emailToggle = document.getElementById('email-notifications');
     const taskToggle = document.getElementById('task-reminders');
+    const autoThemeToggle = document.getElementById('auto-theme');
     
     if (emailToggle) emailToggle.checked = emailNotifications;
     if (taskToggle) taskToggle.checked = taskReminders;
+    if (autoThemeToggle) autoThemeToggle.checked = autoTheme;
 }
 
 /**
- * Handle profile picture change with enhanced preview
+ * Handle profile picture change
  * @param {HTMLInputElement} input - File input element
  */
 function handleProfilePictureChange(input) {
@@ -363,7 +213,7 @@ function handleProfilePictureChange(input) {
         // Show loading state
         const overlay = preview.parentElement.querySelector('.profile-picture-overlay');
         if (overlay) {
-            overlay.innerHTML = '<div class="loading-spinner"></div>';
+            overlay.innerHTML = '<div class="loading-spinner">📸</div>';
             overlay.style.opacity = '1';
         }
         
@@ -410,7 +260,7 @@ function handleProfilePictureChange(input) {
 }
 
 /**
- * Change language with enhanced feedback
+ * Change language
  * @param {string} language - Language code
  */
 function changeLanguage(language) {
@@ -440,7 +290,6 @@ function changeLanguage(language) {
         
         if (data.success) {
             showNotification('Language updated. Page will reload in 2 seconds...', 'success');
-            // Reload page to apply language change
             setTimeout(() => {
                 window.location.reload();
             }, 2000);
@@ -459,15 +308,44 @@ function changeLanguage(language) {
 }
 
 /**
- * Show change password modal
+ * Toggle auto theme
+ * @param {boolean} enabled - Whether auto theme is enabled
  */
-function showChangePasswordModal() {
-    const modal = document.getElementById('password-modal');
+function toggleAutoTheme(enabled) {
+    localStorage.setItem('autoTheme', enabled);
+    
+    if (enabled) {
+        // Remove manual preference flag to allow auto-switching
+        localStorage.removeItem('habitus-theme-manual');
+        
+        // Implement auto theme switching based on time
+        const hour = new Date().getHours();
+        const isDaytime = hour >= 6 && hour < 18;
+        const newTheme = isDaytime ? 'light' : 'dark';
+        
+        if (window.themeManager && window.themeManager.getTheme() !== newTheme) {
+            window.themeManager.setTheme(newTheme, true, true);
+            showNotification(`Auto-switched to ${newTheme} theme`, 'info');
+        }
+        
+        showNotification('Auto theme enabled', 'success');
+    } else {
+        // Mark current theme as manual preference
+        localStorage.setItem('habitus-theme-manual', 'true');
+        showNotification('Auto theme disabled', 'info');
+    }
+}
+
+/**
+ * Show modal
+ * @param {string} modalId - Modal ID
+ */
+function showModal(modalId) {
+    const modal = document.getElementById(modalId);
     if (modal) {
         modal.style.display = 'flex';
         modal.classList.add('show');
         
-        // Focus first input
         setTimeout(() => {
             const firstInput = modal.querySelector('input');
             if (firstInput) firstInput.focus();
@@ -476,25 +354,8 @@ function showChangePasswordModal() {
 }
 
 /**
- * Show delete account modal
- */
-function showDeleteAccountModal() {
-    const modal = document.getElementById('delete-account-modal');
-    if (modal) {
-        modal.style.display = 'flex';
-        modal.classList.add('show');
-        
-        // Focus first input
-        setTimeout(() => {
-            const firstInput = modal.querySelector('input');
-            if (firstInput) firstInput.focus();
-        }, 100);
-    }
-}
-
-/**
- * Close modal with animation
- * @param {string} modalId - ID of modal to close
+ * Close modal
+ * @param {string} modalId - Modal ID
  */
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
@@ -504,17 +365,35 @@ function closeModal(modalId) {
         setTimeout(() => {
             modal.style.display = 'none';
             
-            // Reset form
             const form = modal.querySelector('form');
-            if (form) {
-                form.reset();
-            }
+            if (form) form.reset();
         }, 300);
     }
 }
 
 /**
- * Handle password change with enhanced validation
+ * Show change password modal
+ */
+function showChangePasswordModal() {
+    showModal('password-modal');
+}
+
+/**
+ * Show change email modal
+ */
+function showChangeEmailModal() {
+    showModal('email-modal');
+}
+
+/**
+ * Show delete account modal
+ */
+function showDeleteAccountModal() {
+    showModal('delete-account-modal');
+}
+
+/**
+ * Handle password change
  * @param {Event} e - Form submit event
  */
 function handlePasswordChange(e) {
@@ -524,28 +403,16 @@ function handlePasswordChange(e) {
     const newPassword = document.getElementById('new-password').value;
     const confirmPassword = document.getElementById('confirm-password').value;
     
-    // Enhanced validation
+    // Validation
     const errors = [];
     
-    if (!currentPassword) {
-        errors.push('Current password is required');
-    }
-    
-    if (newPassword.length < 8) {
-        errors.push('Password must be at least 8 characters');
-    }
-    
+    if (!currentPassword) errors.push('Current password is required');
+    if (newPassword.length < 8) errors.push('Password must be at least 8 characters');
     if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
         errors.push('Password must contain uppercase, lowercase, and numbers');
     }
-    
-    if (newPassword !== confirmPassword) {
-        errors.push('New passwords do not match');
-    }
-    
-    if (newPassword === currentPassword) {
-        errors.push('New password must be different from current password');
-    }
+    if (newPassword !== confirmPassword) errors.push('New passwords do not match');
+    if (newPassword === currentPassword) errors.push('New password must be different');
     
     if (errors.length > 0) {
         showNotification(errors.join('. '), 'error');
@@ -556,14 +423,12 @@ function handlePasswordChange(e) {
     const submitBtn = e.target.querySelector('.save-btn');
     const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="spinner"></span> Updating...';
+    submitBtn.textContent = 'Updating...';
     
     // Send request
     fetch('../php/api/user/change_password.php', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             current_password: currentPassword,
             new_password: newPassword
@@ -599,22 +464,15 @@ function handleEmailChange(e) {
     const newEmail = document.getElementById('new-email').value;
     const password = document.getElementById('email-password').value;
     
-    // Show loading state
     const submitBtn = e.target.querySelector('.save-btn');
     const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="spinner"></span> Updating...';
+    submitBtn.textContent = 'Updating...';
     
-    // Send request
     fetch('../php/api/user/change_email.php', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            new_email: newEmail,
-            password: password
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ new_email: newEmail, password: password })
     })
     .then(response => response.json())
     .then(data => {
@@ -625,11 +483,8 @@ function handleEmailChange(e) {
             showNotification('Email updated successfully', 'success');
             closeModal('email-modal');
             
-            // Update displayed email
             const emailDisplay = document.querySelector('.profile-info p');
-            if (emailDisplay) {
-                emailDisplay.textContent = newEmail;
-            }
+            if (emailDisplay) emailDisplay.textContent = newEmail;
         } else {
             showNotification(data.message || 'Error updating email', 'error');
         }
@@ -643,7 +498,7 @@ function handleEmailChange(e) {
 }
 
 /**
- * Handle account deletion with confirmation
+ * Handle account deletion
  * @param {Event} e - Form submit event
  */
 function handleAccountDelete(e) {
@@ -652,38 +507,29 @@ function handleAccountDelete(e) {
     const password = document.getElementById('delete-password').value;
     const confirmation = document.getElementById('delete-confirm').value;
     
-    // Validate confirmation
     if (confirmation !== 'DELETE') {
         showNotification('Please type DELETE to confirm', 'error');
         return;
     }
     
-    // Show final confirmation
-    if (!confirm('This action cannot be undone. Are you absolutely sure you want to delete your account?')) {
+    if (!confirm('This action cannot be undone. Are you absolutely sure?')) {
         return;
     }
     
-    // Show loading state
     const submitBtn = e.target.querySelector('.delete-btn');
     const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="spinner"></span> Deleting...';
+    submitBtn.textContent = 'Deleting...';
     
-    // Send request
     fetch('../php/api/user/delete_account.php', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            password: password
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: password })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             showNotification('Account deleted. Redirecting...', 'success');
-            // Redirect to home page
             setTimeout(() => {
                 window.location.href = '../index.php';
             }, 2000);
@@ -703,7 +549,7 @@ function handleAccountDelete(e) {
 
 /**
  * Toggle email notifications
- * @param {boolean} enabled - Whether notifications are enabled
+ * @param {boolean} enabled - Whether enabled
  */
 function toggleEmailNotifications(enabled) {
     localStorage.setItem('emailNotifications', enabled);
@@ -712,7 +558,7 @@ function toggleEmailNotifications(enabled) {
 
 /**
  * Toggle task reminders
- * @param {boolean} enabled - Whether reminders are enabled
+ * @param {boolean} enabled - Whether enabled
  */
 function toggleTaskReminders(enabled) {
     localStorage.setItem('taskReminders', enabled);
@@ -725,22 +571,18 @@ function toggleTaskReminders(enabled) {
  * @param {boolean} enabled - Whether enabled
  */
 function updateNotificationPreference(type, enabled) {
-    fetch('../php/api/user/update_notifications.php', {
+    fetch('../php/api/user/update_settings.php', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            type: type,
-            enabled: enabled
+            setting: type,
+            value: enabled
         })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             showNotification('Notification preferences updated', 'success');
-        } else {
-            showNotification('Error updating notification preferences', 'error');
         }
     })
     .catch(error => {
@@ -751,67 +593,113 @@ function updateNotificationPreference(type, enabled) {
 
 /**
  * Enhanced notification system
- * @param {string} message - Notification message
- * @param {string} type - Notification type (success, error, warning, info)
- * @param {number} duration - Display duration in ms (default: 4000)
  */
 function showNotification(message, type = 'success', duration = 4000) {
-    // Check if notification container exists
     let container = document.querySelector('.notification-container');
     if (!container) {
         container = document.createElement('div');
         container.className = 'notification-container';
+        container.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        `;
         document.body.appendChild(container);
     }
     
-    // Create notification with enhanced styling
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
+    notification.style.cssText = `
+        background: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        transform: translateX(400px);
+        transition: transform 0.3s;
+        max-width: 300px;
+        border-left: 4px solid ${getNotificationColor(type)};
+    `;
     
-    // Add icon based on type
-    const icons = {
-        success: '✅',
-        error: '❌',
-        warning: '⚠️',
-        info: 'ℹ️'
-    };
-    
+    const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
     notification.innerHTML = `
-        <span class="notification-icon">${icons[type] || icons.info}</span>
-        <span class="notification-text">${message}</span>
-        <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span>${icons[type] || icons.info}</span>
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    style="background: none; border: none; cursor: pointer; margin-left: auto;">×</button>
+        </div>
     `;
     
     container.appendChild(notification);
     
-    // Animate in
     setTimeout(() => {
-        notification.classList.add('show');
+        notification.style.transform = 'translateX(0)';
     }, 10);
     
-    // Auto remove after delay
     setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-            if (notification.parentElement) {
-                notification.remove();
-            }
-        }, 300);
+        notification.style.transform = 'translateX(400px)';
+        setTimeout(() => notification.remove(), 300);
     }, duration);
-    
-    // Make notification clickable to dismiss
-    notification.addEventListener('click', () => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-            if (notification.parentElement) {
-                notification.remove();
-            }
-        }, 300);
-    });
+}
+
+function getNotificationColor(type) {
+    const colors = {
+        success: '#6a8d7f',
+        error: '#a15c5c',
+        warning: '#c4a356',
+        info: '#5d7b8a'
+    };
+    return colors[type] || colors.info;
 }
 
 /**
- * Open customer portal for subscription management
+ * Export user data
+ */
+function exportUserData() {
+    showNotification('Preparing your data export...', 'info');
+    
+    fetch('../php/api/user/export_data.php', { method: 'POST' })
+        .then(response => response.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'habitus-zone-data.json';
+            a.click();
+            window.URL.revokeObjectURL(url);
+            showNotification('Data exported successfully', 'success');
+        })
+        .catch(error => {
+            console.error('Export error:', error);
+            showNotification('Error exporting data', 'error');
+        });
+}
+
+/**
+ * Clear cache
+ */
+function clearCache() {
+    if (confirm('This will clear all cached data and refresh the page. Continue?')) {
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        if ('caches' in window) {
+            caches.keys().then(names => {
+                names.forEach(name => caches.delete(name));
+            });
+        }
+        
+        showNotification('Cache cleared. Refreshing...', 'success');
+        setTimeout(() => window.location.reload(true), 1500);
+    }
+}
+
+/**
+ * Open customer portal
  */
 async function openCustomerPortal() {
     try {
@@ -819,9 +707,7 @@ async function openCustomerPortal() {
         
         const response = await fetch('../php/api/subscription/create-portal-session.php', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
+            headers: { 'Content-Type': 'application/json' }
         });
         
         const data = await response.json();
@@ -831,7 +717,6 @@ async function openCustomerPortal() {
         } else {
             throw new Error(data.message || 'Failed to create portal session');
         }
-        
     } catch (error) {
         console.error('Error opening customer portal:', error);
         showNotification('Unable to open subscription management. Please try again.', 'error');
@@ -841,10 +726,11 @@ async function openCustomerPortal() {
 // Close modals when clicking outside
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('modal')) {
-        const modalId = e.target.id;
-        closeModal(modalId);
+        closeModal(e.target.id);
     }
 });
 
-// Export theme manager for global access
-window.themeManager = themeManager;
+// Listen for theme changes from other sources
+window.addEventListener('themeChanged', function(e) {
+    updateThemeUI(e.detail.theme);
+});
