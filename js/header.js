@@ -203,3 +203,41 @@ function updateNotificationBadge() {
         }
     }
 }
+
+function toggleTheme() {
+    if (window.themeManager) {
+        const currentTheme = window.themeManager.getTheme();
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        
+        // Add loading state
+        const button = document.querySelector('.theme-toggle-button');
+        button.style.pointerEvents = 'none';
+        button.style.opacity = '0.7';
+        
+        // Change theme
+        window.themeManager.setTheme(newTheme);
+        
+        // Re-enable button after animation
+        setTimeout(() => {
+            button.style.pointerEvents = '';
+            button.style.opacity = '';
+        }, 500);
+        
+        // Show notification
+        if (typeof showNotification === 'function') {
+            showNotification(`Switched to ${newTheme} theme`, 'success');
+        }
+    } else {
+        console.error('Theme manager not available');
+    }
+}
+
+// The enhanced version doesn't need manual icon updates since CSS handles it
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Theme toggle ready with current theme:', window.initialTheme);
+});
+
+// Listen for theme changes
+window.addEventListener('themeChanged', function(e) {
+    console.log('Theme changed to:', e.detail.theme);
+});

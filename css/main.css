@@ -2,120 +2,46 @@
 
 /* Light Theme Variables (Default) */
 :root {
-    /* Primary Colors */
-    --primary-brown: #8d5b4c;
-    --primary-brown-dark: #7d4b3c;
-    --primary-brown-light: #a66b5c;
-    --primary-green: #6a8d7f;
-    --primary-green-dark: #5a7c70;
-    --primary-green-light: #7a9d8f;
+    /* Core Palette - Only Essential Colors */
+    --primary: #8d5b4c;
+    --primary-dark: #7d4b3c;
+    --primary-light: #a66b5c;
     
-    /* Background Colors */
-    --bg-primary: #f9f5f0;
-    --bg-secondary: #f5f1ea;
-    --bg-tertiary: #fbf8f5;
-    --bg-panel: #ffffff;
-    --bg-header: #ffffff;
-    --bg-sidebar: #f5f1ea;
+    --secondary: #6a8d7f;
+    --secondary-dark: #5a7c70;
+    --secondary-light: #7a9d8f;
     
-    /* Text Colors */
-    --text-primary: #2d2926;
-    --text-secondary: #5a5755;
-    --text-tertiary: #8d8580;
-    --text-muted: #8d8580;
+    --accent: #c4a356;
+    
+    /* Background Layers */
+    --bg-0: #f9f5f0;  /* Page background */
+    --bg-1: #f5f1ea;  /* Card background */
+    --bg-2: #ffffff;  /* Panel background */
+    --bg-3: #fbf8f5;  /* Hover states */
+    
+    /* Text Hierarchy */
+    --text-1: #2d2926;  /* Primary text */
+    --text-2: #5a5755;  /* Secondary text */
+    --text-3: #8d8580;  /* Muted text */
     --text-inverse: #ffffff;
     
-    /* Border Colors */
-    --border-primary: #e9e2d9;
-    --border-secondary: #d6cfc7;
-    --border-tertiary: #f0ebe4;
-    
-    /* Shadow Colors */
-    --shadow-light: rgba(141, 91, 76, 0.08);
-    --shadow-medium: rgba(141, 91, 76, 0.15);
-    --shadow-dark: rgba(141, 91, 76, 0.25);
+    /* Borders */
+    --border-1: #e9e2d9;  /* Primary border */
+    --border-2: #d6cfc7;  /* Secondary border */
     
     /* Status Colors */
-    --success-bg: #e4ebe7;
-    --success-text: #6a8d7f;
-    --success-border: #cfdad4;
+    --success: var(--secondary);
+    --error: #a15c5c;
+    --warning: var(--accent);
+    --info: #5d7b8a;
     
-    --error-bg: #efe2e2;
-    --error-text: #a15c5c;
-    --error-border: #e0d0d0;
-    
-    --warning-bg: #faf3e5;
-    --warning-text: #c4a356;
-    --warning-border: #e9d8c6;
-    
-    --info-bg: #e8f4f8;
-    --info-text: #5d7b8a;
-    --info-border: #c1e0ea;
-    
-    /* Button Colors */
-    --btn-primary-bg: var(--primary-brown);
-    --btn-primary-hover: var(--primary-brown-dark);
-    --btn-primary-text: var(--text-inverse);
-    
-    --btn-secondary-bg: var(--bg-secondary);
-    --btn-secondary-hover: #e9e2d9;
-    --btn-secondary-text: var(--text-primary);
-    --btn-secondary-border: var(--border-primary);
-    
-    --btn-success-bg: var(--primary-green);
-    --btn-success-hover: var(--primary-green-dark);
-    --btn-success-text: var(--text-inverse);
-    
-    /* Form Colors */
-    --input-bg: var(--bg-panel);
-    --input-border: var(--border-primary);
-    --input-focus: var(--primary-brown);
-    --input-text: var(--text-primary);
-    
-    /* Room Colors */
-    --room-floor: #FFD700;
-    --room-wall-left: linear-gradient(to bottom, #E0E0E0, #D0D0D0);
-    --room-wall-right: linear-gradient(to left, #D0D0D0, #C0C0C0);
-    --room-door: linear-gradient(to bottom, #8B6347, #654321);
-    --room-door-handle: #FFD700;
-    
-    /* Scrollbar Colors */
-    --scrollbar-track: var(--bg-secondary);
-    --scrollbar-thumb: #d6cfc7;
-    --scrollbar-thumb-hover: #c5bcb3;
-    
-    /* Notification Colors */
-    --notification-bg: var(--bg-panel);
-    --notification-shadow: var(--shadow-medium);
-    
-    /* Modal Colors */
-    --modal-bg: var(--bg-panel);
-    --modal-overlay: rgba(45, 41, 38, 0.5);
-    --modal-shadow: var(--shadow-dark);
-    
-    /* Shop Item Colors */
-    --shop-item-bg: #f5f5f5;
-    --shop-item-hover: var(--bg-panel);
-    --shop-item-border: var(--border-primary);
-    
-    /* Task Item Colors */
-    --task-item-bg: var(--bg-panel);
-    --task-item-hover: #f8f8f8;
-    --task-item-completed: #f0f9f0;
-    --task-item-border: var(--border-primary);
-    --task-item-completed-border: #c8e6c9;
-    
-    /* Inventory Colors */
-    --inventory-item-bg: var(--bg-tertiary);
-    --inventory-item-hover: var(--bg-secondary);
-    --inventory-item-disabled: #f0f0f0;
-    --inventory-item-border: var(--border-primary);
+    /* Shadows */
+    --shadow: rgba(141, 91, 76, 0.15);
+    --shadow-dark: rgba(141, 91, 76, 0.25);
 }
 
 .theme-switching,
-.theme-switching *,
-.theme-switching *::before,
-.theme-switching *::after {
+.theme-switching * {
     transition: none;
     animation: none;
 }
@@ -131,7 +57,10 @@ html[data-theme] * {
 
 /* Add smooth transitions for theme changes */
 * {
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 /* Font Declarations for Local Fonts */
@@ -162,21 +91,11 @@ html[data-theme] * {
     font-display: swap;
 }
 
-/* Reset and base styles */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
 body {
-    font-family: 'Poppins', 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    margin: 0;
-    padding: 0;
-    color: var(--text-primary);
-    background-color: var(--bg-primary);
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-0);
+    color: var(--text-1);
     overflow-x: hidden;
-    transition: color 0.3s ease, background-color 0.3s ease;
 }
 
 /* Main container layout */
@@ -197,25 +116,21 @@ body {
 
 /* Panel styling */
 .panel {
-    background-color: var(--bg-panel);
+    background-color: var(--bg-2);
+    border: 1px solid var(--border-1);
     border-radius: 15px;
-    box-shadow: 0 5px 15px var(--shadow-light);
-    display: flex;
-    flex-direction: column;
+    box-shadow: 0 5px 15px var(--shadow);
     overflow: hidden;
-    border: 1px solid var(--border-primary);
-    margin-bottom: 5px;
     transition: all 0.3s ease;
 }
 
 .panel-header {
+    background-color: var(--bg-1);
+    border-bottom: 1px solid var(--border-1);
+    padding: 18px 15px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 18px 15px;
-    border-bottom: 2px solid var(--border-primary);
-    background-color: var(--bg-secondary);
-    text-align: center;
 }
 
 .panel-header img {
@@ -226,28 +141,25 @@ body {
 }
 
 .panel-header h2 {
-    margin: 0;
+    color: var(--text-1);
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--text-primary);
-    font-family: 'Quicksand', 'Avenir Next', 'Segoe UI', sans-serif;
-    letter-spacing: 0.02em;
+    margin: 0;
 }
 
 .panel-content {
-    flex: 1;
     padding: 15px;
+    background-color: var(--bg-2);
+    flex: 1;
     overflow-y: auto;
-    background-color: var(--bg-panel);
-    border-bottom: 1px solid var(--border-primary);
 }
 
 .panel-footer {
+    background-color: var(--bg-1);
+    border-top: 1px solid var(--border-1);
     padding: 15px;
-    border-top: 2px solid var(--border-primary);
     display: flex;
     justify-content: center;
-    background-color: var(--bg-secondary);
 }
 
 /* Button styles */
@@ -406,16 +318,18 @@ a:hover {
 
 /* Form Elements */
 input, select, textarea {
-    background-color: var(--input-bg);
-    border: 1px solid var(--input-border);
-    color: var(--input-text);
+    background-color: var(--bg-2);
+    border: 1px solid var(--border-1);
+    color: var(--text-1);
+    padding: 10px 15px;
+    border-radius: 8px;
     transition: all 0.3s ease;
 }
 
 input:focus, select:focus, textarea:focus {
-    border-color: var(--input-focus);
-    box-shadow: 0 0 0 3px rgba(141, 91, 76, 0.1);
+    border-color: var(--primary);
     outline: none;
+    box-shadow: 0 0 0 3px rgba(141, 91, 76, 0.1);
 }
 
 /* Buttons */
@@ -424,23 +338,34 @@ button {
 }
 
 .btn-primary {
-    background-color: var(--btn-primary-bg);
-    color: var(--btn-primary-text);
+    background-color: var(--primary);
+    color: var(--text-inverse);
     border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .btn-primary:hover {
-    background-color: var(--btn-primary-hover);
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
 }
 
 .btn-secondary {
-    background-color: var(--btn-secondary-bg);
-    color: var(--btn-secondary-text);
-    border: 1px solid var(--btn-secondary-border);
+    background-color: var(--bg-1);
+    color: var(--text-1);
+    border: 1px solid var(--border-1);
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .btn-secondary:hover {
-    background-color: var(--btn-secondary-hover);
+    background-color: var(--bg-3);
+    border-color: var(--border-2);
 }
 
 .btn-success {
@@ -456,26 +381,17 @@ button {
 /* Scrollbar styling */
 ::-webkit-scrollbar {
     width: 8px;
-    height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--scrollbar-track);
-    border-radius: 4px;
+    background: var(--bg-1);
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: var(--scrollbar-thumb);
+    background: var(--border-2);
     border-radius: 4px;
-    border: 2px solid var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: var(--scrollbar-thumb-hover);
-}
-
-/* Firefox scrollbar */
-html {
-    scrollbar-width: thin;
-    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    background: var(--border-1);
 }

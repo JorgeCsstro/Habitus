@@ -18,6 +18,9 @@ $userData = getUserData($_SESSION['user_id']);
 $userHCoins = $userData['hcoin'];
 $userHabitusName = $userData['username'] . "'s Habitus";
 
+$currentLanguage = $userData['language'] ?? 'en';
+$currentTheme = $userData['theme'] ?? 'light';
+
 // Get room ID from URL or use default
 $roomId = isset($_GET['room_id']) ? intval($_GET['room_id']) : 0;
 
@@ -131,13 +134,16 @@ $debugInfo = [
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $currentLanguage; ?>" data-theme="<?php echo $currentTheme; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Habitus Room - <?php echo SITE_NAME; ?></title>
     
-    <!-- Core CSS -->
+    <!-- REQUIRED: Theme CSS - Add this to ALL pages -->
+    <link rel="stylesheet" href="../css/themes/<?php echo $currentTheme; ?>.css" id="theme-stylesheet">
+    
+    <!-- Your existing CSS files AFTER theme CSS -->
     <link rel="stylesheet" href="../css/main.css">
     
     <!-- Component CSS -->
@@ -149,7 +155,7 @@ $debugInfo = [
     <link rel="stylesheet" href="../css/pages/habitus.css">
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
 </head>
-<body>
+<body class="theme-<?php echo $currentTheme; ?>">
     <div class="main-container">
         <!-- Left Navigation Menu -->
         <?php include '../php/include/sidebar.php'; ?>
@@ -314,6 +320,17 @@ $debugInfo = [
 
     <!-- Scripts -->
     <script src="../js/main.js"></script>
+
+    <script>
+    // REQUIRED: Theme initialization for ALL pages
+    window.initialTheme = '<?php echo $currentTheme; ?>';
+    document.documentElement.setAttribute('data-theme', window.initialTheme);
+    document.body.classList.add('theme-' + window.initialTheme);
+    </script>
+
+    <!-- Load theme manager on ALL pages -->
+    <script src="../js/theme-manager.js"></script>
+
     <script src="../js/habitus-room.js"></script>
     <script>
         // Enhanced initialization with inventory tracking

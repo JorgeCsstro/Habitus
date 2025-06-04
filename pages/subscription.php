@@ -18,6 +18,9 @@ $userData = getUserData($_SESSION['user_id']);
 $userHCoins = $userData['hcoin'];
 $userHabitusName = $userData['username'] . "'s Habitus";
 
+$currentLanguage = $userData['language'] ?? 'en';
+$currentTheme = $userData['theme'] ?? 'light';
+
 // Get user's subscription info
 $subscriptionType = $userData['subscription_type'] ?? 'free';
 $subscriptionExpires = $userData['subscription_expires'] ?? null;
@@ -67,13 +70,16 @@ $debugInfo = [
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $currentLanguage; ?>" data-theme="<?php echo $currentTheme; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subscription - <?php echo SITE_NAME; ?></title>
     
-    <!-- Core CSS -->
+    <!-- REQUIRED: Theme CSS - Add this to ALL pages -->
+    <link rel="stylesheet" href="../css/themes/<?php echo $currentTheme; ?>.css" id="theme-stylesheet">
+    
+    <!-- Your existing CSS files AFTER theme CSS -->
     <link rel="stylesheet" href="../css/main.css">
     
     <!-- Component CSS -->
@@ -100,7 +106,7 @@ $debugInfo = [
     </script>
     <?php endif; ?>
 </head>
-<body>
+<body class="theme-<?php echo $currentTheme; ?>">
     <div class="main-container">
         <!-- Left Navigation Menu -->
         <?php include '../php/include/sidebar.php'; ?>
@@ -740,5 +746,15 @@ $debugInfo = [
         <a href="?" style="color: #4CAF50;">🚫 Hide Debug</a>
     </div>
     <?php endif; ?>
+    
+    <script>
+    // REQUIRED: Theme initialization for ALL pages
+    window.initialTheme = '<?php echo $currentTheme; ?>';
+    document.documentElement.setAttribute('data-theme', window.initialTheme);
+    document.body.classList.add('theme-' + window.initialTheme);
+    </script>
+
+    <!-- Load theme manager on ALL pages -->
+    <script src="../js/theme-manager.js"></script>
 </body>
 </html>

@@ -9,8 +9,7 @@
     grid-gap: 20px;
     padding: 20px;
     overflow-y: auto;
-    background-color: var(--bg-primary);
-    transition: background-color 0.3s ease;
+    background-color: var(--bg-0);
 }
 
 /* Panel Placements */
@@ -53,17 +52,17 @@
     align-items: center;
     padding: 12px 15px;
     border-radius: 8px;
-    background-color: var(--task-item-bg);
+    background-color: var(--bg-2);
     margin-bottom: 10px;
     transition: all 0.2s ease;
-    border: 1px solid var(--task-item-border);
-    box-shadow: 0 2px 5px var(--shadow-light);
+    border: 1px solid var(--border-1);
+    box-shadow: 0 2px 5px var(--shadow);
 }
 
 .daily-item:hover, .goal-item:hover, .challenge-item:hover {
-    background-color: var(--task-item-hover);
-    border-color: var(--border-secondary);
-    box-shadow: 0 3px 7px var(--shadow-medium);
+    background-color: var(--bg-3);
+    border-color: var(--border-2);
+    box-shadow: 0 3px 7px var(--shadow);
     transform: translateY(-1px);
 }
 
@@ -80,13 +79,8 @@
 }
 
 .daily-title, .goal-title, .challenge-title {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--text-primary);
+    color: var(--text-1);
     font-weight: 500;
-    transition: color 0.3s ease;
 }
 
 .daily-dots, .goal-dots, .challenge-dots {
@@ -107,26 +101,24 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    border: 1px solid var(--border-primary);
-    background-color: var(--bg-panel);
+    border: 1px solid var(--border-1);
+    background-color: var(--bg-2);
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    position: relative;
 }
 
 .complete-button:hover {
-    background-color: var(--bg-secondary);
-    border-color: var(--primary-green);
+    background-color: var(--bg-3);
+    border-color: var(--secondary);
     transform: scale(1.1);
 }
 
 .complete-button.completed {
-    background-color: var(--primary-green);
-    border-color: var(--primary-green);
-    box-shadow: 0 0 10px rgba(126, 168, 148, 0.3);
+    background-color: var(--secondary);
+    border-color: var(--secondary);
 }
 
 .complete-button img {
@@ -168,22 +160,18 @@
 }
 
 .shop-item {
-    position: relative;
-    aspect-ratio: 1/1;
+    background-color: var(--bg-1);
+    border: 1px solid var(--border-1);
     border-radius: 8px;
-    overflow: hidden;
-    background-color: var(--shop-item-bg);
-    border: 1px solid var(--shop-item-border);
-    box-shadow: 0 2px 5px var(--shadow-light);
     transition: all 0.2s ease;
     cursor: pointer;
 }
 
 .shop-item:hover {
-    background-color: var(--shop-item-hover);
-    border-color: var(--border-secondary);
-    box-shadow: 0 4px 10px var(--shadow-medium);
+    background-color: var(--bg-2);
+    border-color: var(--border-2);
     transform: translateY(-2px);
+    box-shadow: 0 4px 10px var(--shadow);
 }
 
 .shop-item img {

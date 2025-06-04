@@ -1,53 +1,43 @@
 /* css/themes/light.css - Light Theme Variables */
 
-[data-theme="light"],
-[data-theme="light"] * {
-    /* Primary Colors */
-    --primary-brown: #8d5b4c;
-    --primary-green: #6a8d7f;
-
-    /* Background Colors */
-    --bg-primary: #f9f5f0;
-    --bg-secondary: #f5f1ea;
-    --bg-panel: #ffffff;
-
-    /* Text Colors */
-    --text-primary: #2d2926;
-    --text-secondary: #5a5755;
+/* css/themes/light.css - Light Theme */
+[data-theme="light"] {
+    /* Core Palette */
+    --primary: #8d5b4c;
+    --primary-dark: #7d4b3c;
+    --primary-light: #a66b5c;
+    
+    --secondary: #6a8d7f;
+    --secondary-dark: #5a7c70;
+    --secondary-light: #7a9d8f;
+    
+    --accent: #c4a356;
+    
+    /* Backgrounds */
+    --bg-0: #f9f5f0;
+    --bg-1: #f5f1ea;
+    --bg-2: #ffffff;
+    --bg-3: #fbf8f5;
+    
+    /* Text */
+    --text-1: #2d2926;
+    --text-2: #5a5755;
+    --text-3: #8d8580;
     --text-inverse: #ffffff;
-
-    /* Border Colors */
-    --border-primary: #e9e2d9;
-
-    /* Shadow Colors */
-    --shadow-light: rgba(141, 91, 76, 0.08);
-    --shadow-medium: rgba(141, 91, 76, 0.15);
     
-    /* Status Colors */
-    --success: #6a8d7f;
+    /* Borders */
+    --border-1: #e9e2d9;
+    --border-2: #d6cfc7;
+    
+    /* Status */
+    --success: var(--secondary);
     --error: #a15c5c;
-    --warning: #c4a356;
+    --warning: var(--accent);
     --info: #5d7b8a;
-
-    /* Button Colors */
-    --btn-primary-bg: var(--primary-brown);
-    --btn-secondary-bg: var(--bg-secondary);
-    --btn-success-bg: var(--primary-green);
     
-    /* Form Colors */
-    --input-bg: var(--bg-panel);
-    
-    /* Room Colors */
-    --room-floor: #FFD700;
-    --room-wall: linear-gradient(to bottom, #E0E0E0, #D0D0D0);
-    --room-door: linear-gradient(to bottom, #8B6347, #654321);
-    
-    /* Scrollbar Colors */
-    --scrollbar-thumb: #d6cfc7;
-
-    /* Modal Colors */
-    --modal-bg: var(--bg-panel);
-    --modal-overlay: rgba(45, 41, 38, 0.5);
+    /* Shadows */
+    --shadow: rgba(141, 91, 76, 0.15);
+    --shadow-dark: rgba(141, 91, 76, 0.25);
 }
 
 /* Light theme room styling */

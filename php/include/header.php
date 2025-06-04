@@ -8,6 +8,13 @@
             <img src="../images/icons/hcoin-icon-light.webp" alt="HCoin">
             <span><?php echo number_format($userHCoins); ?></span>
         </div>
+        <!-- Enhanced Theme Toggle with Animation -->
+        <button class="theme-toggle-button enhanced" onclick="toggleTheme()" title="Toggle Theme">
+            <div class="theme-toggle-inner">
+                <span class="sun-icon">☀️</span>
+                <span class="moon-icon">🌙</span>
+            </div>
+        </button>
         <a href="survey.php" class="survey-button" title="Improve with feedback">
             <img src="../images/icons/survey-icon-light.webp" alt="Survey">
         </a>

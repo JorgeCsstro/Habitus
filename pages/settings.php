@@ -50,19 +50,16 @@ $themes = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - <?php echo SITE_NAME; ?></title>
     
-    <!-- Meta theme color for browser chrome -->
-    <meta name="theme-color" content="<?php echo $currentTheme === 'dark' ? '#1a1a1a' : '#f9f5f0'; ?>">
+        <!-- REQUIRED: Theme CSS - Add this to ALL pages -->
+    <link rel="stylesheet" href="../css/themes/<?php echo $currentTheme; ?>.css" id="theme-stylesheet">
     
-    <!-- Core CSS with variables -->
+    <!-- Your existing CSS files AFTER theme CSS -->
     <link rel="stylesheet" href="../css/main.css">
     
     <!-- Component CSS -->
     <link rel="stylesheet" href="../css/components/sidebar.css">
     <link rel="stylesheet" href="../css/components/header.css">
     <link rel="stylesheet" href="../css/components/scrollbar.css">
-    
-    <!-- Theme CSS -->
-    <link rel="stylesheet" href="../css/themes/<?php echo $currentTheme; ?>.css" id="theme-stylesheet">
     
     <!-- Page-specific CSS -->
     <link rel="stylesheet" href="../css/pages/settings.css">
@@ -403,18 +400,21 @@ $themes = [
 
     <!-- Scripts -->
     <script src="../js/main.js"></script>
+
+    <script>
+    // REQUIRED: Theme initialization for ALL pages
+    window.initialTheme = '<?php echo $currentTheme; ?>';
+    document.documentElement.setAttribute('data-theme', window.initialTheme);
+    document.body.classList.add('theme-' + window.initialTheme);
+    </script>
+
+    <!-- Load theme manager on ALL pages -->
+    <script src="../js/theme-manager.js"></script>
+
     <script src="../js/settings.js"></script>
     
     <!-- Initialize theme system -->
     <script>
-        // Pass PHP theme to JavaScript
-        window.initialTheme = '<?php echo $currentTheme; ?>';
-        window.initialLanguage = '<?php echo $currentLanguage; ?>';
-                                    
-        // Ensure theme is applied immediately
-        document.documentElement.setAttribute('data-theme', window.initialTheme);
-        document.body.classList.add('theme-' + window.initialTheme);
-        
         // Additional settings functions
         function showChangeEmailModal() {
             const modal = document.getElementById('email-modal');

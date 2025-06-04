@@ -18,6 +18,9 @@ $userData = getUserData($_SESSION['user_id']);
 $userHCoins = $userData['hcoin'];
 $userHabitusName = $userData['username'] . "'s Habitus";
 
+$currentLanguage = $userData['language'] ?? 'en';
+$currentTheme = $userData['theme'] ?? 'light';
+
 // Get user's dailies
 $dailies = getUserDailies($_SESSION['user_id']);
 
@@ -114,13 +117,16 @@ foreach ($placedItems as $item) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?php echo $currentLanguage; ?>" data-theme="<?php echo $currentTheme; ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Habitus Zone</title>
     
-    <!-- Core CSS -->
+    <!-- REQUIRED: Theme CSS - Add this to ALL pages -->
+    <link rel="stylesheet" href="../css/themes/<?php echo $currentTheme; ?>.css" id="theme-stylesheet">
+    
+    <!-- Your existing CSS files AFTER theme CSS -->
     <link rel="stylesheet" href="../css/main.css">
     
     <!-- Component CSS -->
@@ -133,7 +139,7 @@ foreach ($placedItems as $item) {
     
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
 </head>
-<body>
+<body class="theme-<?php echo $currentTheme; ?>">
     <div class="main-container">
 
         <!-- Left Navigation Menu -->
@@ -309,6 +315,17 @@ foreach ($placedItems as $item) {
 
     <!-- JavaScript -->
     <script src="../js/main.js"></script>
+
+    <script>
+    // REQUIRED: Theme initialization for ALL pages
+    window.initialTheme = '<?php echo $currentTheme; ?>';
+    document.documentElement.setAttribute('data-theme', window.initialTheme);
+    document.body.classList.add('theme-' + window.initialTheme);
+    </script>
+
+    <!-- Load theme manager on ALL pages -->
+    <script src="../js/theme-manager.js"></script>
+
     <script src="../js/dashboard.js"></script>
     <!-- Habitus Room Script -->
     <script>

@@ -1,83 +1,46 @@
 /* css/themes/dark.css - Dark Theme Variables */
 
-[data-theme="dark"],
-[data-theme="dark"] * {
-    /* Primary Colors */
-    --primary-color: #070F2B;
-    --primary-light: #1c264a;
-
-    --secondary-color: #1B1A55;
-    --secondary-light: #2a2970;
-
-    --accent-color: #535C91;
-    --highlight-color: #9290C3;
-
-    /* Background Colors */
-    --bg-primary: var(--primary-color);
-    --bg-secondary: var(--secondary-color);
-    --bg-panel: #1a1a3a;
-
-    /* Text Colors */
-    --text-primary: #ffffff;
-    --text-secondary: #dcdcf0;
-    --text-inverse: var(--primary-color);
-
-    /* Border Colors */
-    --border-primary: var(--accent-color);
-
-    /* Shadow Colors */
-    --shadow-medium: rgba(0, 0, 0, 0.4);
+/* css/themes/dark.css - Dark Theme */
+[data-theme="dark"] {
+    /* Core Palette */
+    --primary: #a66b5c;
+    --primary-dark: #8d5b4c;
+    --primary-light: #b8785c;
     
-    /* Status Colors */
-    --success: #8fd8b3;
+    --secondary: #7a9d8f;
+    --secondary-dark: #6a8d7f;
+    --secondary-light: #8aad9f;
+    
+    --accent: #d4b366;
+    
+    /* Backgrounds */
+    --bg-0: #070F2B;
+    --bg-1: #1B1A55;
+    --bg-2: #1a1a3a;
+    --bg-3: #2a2970;
+    
+    /* Text */
+    --text-1: #ffffff;
+    --text-2: #dcdcf0;
+    --text-3: #9290C3;
+    --text-inverse: #070F2B;
+    
+    /* Borders */
+    --border-1: #535C91;
+    --border-2: #3a3a5a;
+    
+    /* Status */
+    --success: var(--secondary);
     --error: #e79a9a;
-    --warning: #e6c470;
+    --warning: var(--accent);
     --info: #8ab4d1;
-
-    /* Button Colors */
-    --btn-primary-bg: var(--primary-color);
-    --btn-secondary-bg: var(--secondary-color);
     
-    /* Form Colors */
-    --input-bg: var(--bg-panel);
-    --input-placeholder: var(--text-secondary);
-
-    /* Room Colors */
-    --room-floor: var(--secondary-color);
-    --room-wall: linear-gradient(to bottom, var(--secondary-color), var(--primary-color));
-
-    /* Scrollbar Colors */
-    --scrollbar-thumb: #3a3a5a;
-
-    /* Modal Colors */
-    --modal-bg: var(--bg-panel);
-    --modal-overlay: rgba(0, 0, 0, 0.8);
-
-    /* Dropdown Colors */
-    --dropdown-bg: var(--bg-panel);
-    --dropdown-item-hover: var(--bg-secondary);
-
-    /* Card Colors */
-    --card-bg: var(--bg-panel);
-    --card-shadow: var(--shadow-medium);
-    
-    /* Progress Colors */
-    --progress-bg: var(--bg-secondary);
-    --progress-fill: var(--highlight-color);
-    
-    /* Tooltip Colors */
-    --tooltip-bg: rgba(255, 255, 255, 0.95);
-    --tooltip-text: var(--text-inverse);
-
-    /* Loading Colors */
-    --loading-bg: var(--bg-secondary);
-    --loading-spinner: var(--highlight-color);
-
-    /* Settings Colors */
-    --settings-accent: var(--accent-color);
-    --settings-hover: var(--bg-secondary);
+    /* Shadows */
+    --shadow: rgba(0, 0, 0, 0.4);
+    --shadow-dark: rgba(0, 0, 0, 0.6);
 }
 
+/* Dark theme meta theme-color */
 html[data-theme="dark"] {
     color-scheme: dark;
 }

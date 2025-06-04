@@ -5,9 +5,17 @@
     justify-content: space-between;
     align-items: center;
     padding: 15px 20px;
-    border-bottom: 1px solid var(--border-primary);
-    background-color: var(--bg-header);
+    border-bottom: 1px solid var(--border-1);
+    background-color: var(--bg-2);
     transition: all 0.3s ease;
+}
+
+.user-info .habitus-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-1);
+    margin: 0;
+    font-family: 'Quicksand', sans-serif;
 }
 
 .user-info {
@@ -37,15 +45,6 @@
     object-fit: cover;
 }
 
-.habitus-name {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
-    font-family: 'Quicksand', sans-serif;
-    transition: color 0.3s ease;
-}
-
 .user-actions {
     display: flex;
     align-items: center;
@@ -55,19 +54,19 @@
 .hcoin-balance {
     display: flex;
     align-items: center;
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-1);
     border-radius: 20px;
     padding: 8px 15px;
     margin-right: 5px;
-    border: 1px solid var(--border-primary);
+    border: 1px solid var(--border-1);
     transition: all 0.3s ease;
 }
 
 .hcoin-balance:hover {
-    background-color: var(--bg-tertiary);
-    border-color: var(--border-secondary);
+    background-color: var(--bg-3);
+    border-color: var(--border-2);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px var(--shadow-light);
+    box-shadow: 0 4px 12px var(--shadow);
 }
 
 .hcoin-balance img {
@@ -78,7 +77,7 @@
 
 .hcoin-balance span {
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text-1);
 }
 
 /* Action buttons */
@@ -86,22 +85,22 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: var(--bg-secondary);
+    background-color: var(--bg-1);
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    border: 1px solid var(--border-primary);
+    border: 1px solid var(--border-1);
     position: relative;
     text-decoration: none;
 }
 
 .survey-button:hover, .messages-button:hover, .profile-button:hover {
-    background-color: var(--bg-tertiary);
-    border-color: var(--border-secondary);
+    background-color: var(--bg-3);
+    border-color: var(--border-2);
     transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 4px 12px var(--shadow-light);
+    box-shadow: 0 4px 12px var(--shadow);
 }
 
 .survey-button img, .messages-button img, .profile-button img {
@@ -119,7 +118,7 @@
     position: absolute;
     top: -5px;
     right: -5px;
-    background-color: var(--error-text);
+    background-color: var(--error);
     color: var(--text-inverse);
     border-radius: 50%;
     width: 18px;
@@ -129,8 +128,7 @@
     justify-content: center;
     align-items: center;
     font-weight: bold;
-    border: 2px solid var(--bg-header);
-    animation: notificationPulse 2s infinite;
+    border: 2px solid var(--bg-2);
 }
 
 @keyframes notificationPulse {
@@ -151,15 +149,14 @@
     right: 20px;
     width: 350px;
     max-height: 400px;
-    background-color: var(--dropdown-bg);
+    background-color: var(--bg-2);
     border-radius: 10px;
-    box-shadow: 0 8px 25px var(--dropdown-shadow);
+    box-shadow: 0 8px 25px var(--shadow-dark);
     z-index: 1000;
     display: none;
     flex-direction: column;
     overflow: hidden;
-    border: 1px solid var(--dropdown-border);
-    animation: dropdownSlideIn 0.3s ease-out;
+    border: 1px solid var(--border-1);
 }
 
 .notifications-dropdown.show {
@@ -182,15 +179,15 @@
     justify-content: space-between;
     align-items: center;
     padding: 15px;
-    border-bottom: 1px solid var(--border-tertiary);
-    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-1);
+    background-color: var(--bg-1);
 }
 
 .notifications-header h3 {
     margin: 0;
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text-1);
     font-family: 'Quicksand', sans-serif;
 }
 
@@ -199,7 +196,7 @@
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
-    color: var(--text-tertiary);
+    color: var(--text-3);
     line-height: 1;
     padding: 5px;
     border-radius: 50%;
@@ -207,8 +204,8 @@
 }
 
 .close-notifications:hover {
-    color: var(--text-primary);
-    background-color: var(--bg-tertiary);
+    color: var(--text-1);
+    background-color: var(--bg-3);
     transform: rotate(90deg);
 }
 
@@ -241,20 +238,20 @@
     align-items: center;
     justify-content: space-between;
     padding: 12px 15px;
-    border-bottom: 1px solid var(--border-tertiary);
+    border-bottom: 1px solid var(--border-1);
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
 }
 
 .notification-item:hover {
-    background-color: var(--dropdown-item-hover);
+    background-color: var(--bg-3);
     transform: translateX(5px);
 }
 
 .notification-item.unread {
-    background-color: var(--info-bg);
-    border-left: 3px solid var(--info-text);
+    background-color: var(--bg-1);
+    border-left: 3px solid var(--info);
 }
 
 .notification-item.unread:hover {
@@ -314,24 +311,19 @@
 
 .notification-title {
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text-1);
     font-size: 0.95rem;
     margin-bottom: 3px;
-    transition: color 0.3s ease;
 }
 
 .notification-message {
-    color: var(--text-secondary);
+    color: var(--text-2);
     font-size: 0.85rem;
     margin-bottom: 3px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 230px;
 }
 
 .notification-time {
-    color: var(--text-tertiary);
+    color: var(--text-3);
     font-size: 0.75rem;
 }
 
@@ -490,6 +482,141 @@
     background-color: var(--btn-secondary-hover);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px var(--shadow-light);
+}
+
+.theme-toggle-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--bg-1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-1);
+    position: relative;
+    font-size: 1.2rem;
+}
+
+.theme-toggle-button:hover {
+    background-color: var(--bg-3);
+    border-color: var(--border-2);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.theme-toggle-button:active {
+    transform: translateY(-1px) scale(1.02);
+}
+
+#theme-icon {
+    transition: transform 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-toggle-button:hover #theme-icon {
+    transform: rotate(180deg);
+}
+
+/* Add a subtle glow effect */
+.theme-toggle-button::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, var(--primary), var(--secondary));
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.3s ease;
+}
+
+.theme-toggle-button:hover::before {
+    opacity: 0.1;
+}
+
+/* Ensure proper spacing with other buttons */
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Dark theme specific adjustments */
+[data-theme="dark"] .theme-toggle-button {
+    background-color: var(--bg-1);
+}
+
+[data-theme="dark"] .theme-toggle-button:hover {
+    background-color: var(--bg-3);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+/* Enhanced Theme Toggle Animation */
+.theme-toggle-button.enhanced {
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--bg-1), var(--bg-3));
+}
+
+.theme-toggle-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.5s ease;
+}
+
+.sun-icon, .moon-icon {
+    position: absolute;
+    font-size: 1.2rem;
+    transition: all 0.5s ease;
+}
+
+/* Light theme state */
+[data-theme="light"] .theme-toggle-inner {
+    transform: translateY(0);
+}
+
+[data-theme="light"] .sun-icon {
+    opacity: 0;
+    transform: translateY(-30px) rotate(-180deg);
+}
+
+[data-theme="light"] .moon-icon {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+}
+
+/* Dark theme state */
+[data-theme="dark"] .theme-toggle-inner {
+    transform: translateY(0);
+}
+
+[data-theme="dark"] .sun-icon {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+}
+
+[data-theme="dark"] .moon-icon {
+    opacity: 0;
+    transform: translateY(30px) rotate(180deg);
+}
+
+/* Hover effects for enhanced version */
+.theme-toggle-button.enhanced:hover .theme-toggle-inner {
+    transform: scale(1.1);
+}
+
+.theme-toggle-button.enhanced:hover .sun-icon,
+.theme-toggle-button.enhanced:hover .moon-icon {
+    filter: drop-shadow(0 0 8px currentColor);
 }
 
 /* Responsive design */
