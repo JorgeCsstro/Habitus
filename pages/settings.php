@@ -34,11 +34,11 @@ $languages = [
 $themes = [
     'light' => [
         'name' => 'Light',
-        'description' => 'Classic light theme with warm colors'
+        'description' => 'Warm colors'
     ],
     'dark' => [
         'name' => 'Dark',
-        'description' => 'Modern dark theme for reduced eye strain'
+        'description' => 'Night colors'
     ]
 ];
 ?>
@@ -163,6 +163,7 @@ $themes = [
                                         
                                         <div class="theme-info">
                                             <span class="theme-name"><?php echo $themeInfo['name']; ?></span>
+                                            <br>
                                             <span class="theme-description"><?php echo $themeInfo['description']; ?></span>
                                         </div>
                                         

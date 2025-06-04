@@ -221,6 +221,18 @@
     background-color: #f9f5f0;
 }
 
+.theme-light .preview-header {
+    background-color: #8d5b4c;
+}
+
+.theme-light .preview-sidebar {
+    background-color: #e9e2d9;
+}
+
+.theme-light .preview-main {
+    background-color: white;
+}
+
 .theme-preview.theme-dark {
     background-color: #1a1a1a;
 }

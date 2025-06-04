@@ -61,16 +61,10 @@
     width: 24px;
     height: 24px;
     transition: all 0.3s ease;
-    filter: brightness(0) saturate(100%) invert(34%) sepia(12%) saturate(1108%) hue-rotate(346deg) brightness(95%) contrast(89%);
 }
 
 .menu-item:hover img {
     transform: scale(1.1);
-    filter: brightness(0) saturate(100%) invert(55%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
-}
-
-.menu-item.active img {
-    filter: brightness(0) saturate(100%) invert(55%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
 }
 
 .menu-item.logo img {
@@ -95,22 +89,6 @@
     color: inherit;
     text-decoration: none;
     border-radius: inherit;
-}
-
-/* Dark theme specific adjustments */
-.theme-dark .menu-item img {
-    filter: brightness(0) saturate(100%) invert(85%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
-}
-
-.theme-dark .menu-item:hover img,
-.theme-dark .menu-item.active img {
-    filter: brightness(0) saturate(100%) invert(70%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
-}
-
-.theme-dark .menu-item.logo img,
-.theme-dark .menu-item.logo:hover img,
-.theme-dark .menu-item.logo.active img {
-    filter: brightness(0) saturate(100%) invert(85%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
 }
 
 /* Hover animation for better feedback */

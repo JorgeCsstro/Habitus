@@ -1,6 +1,6 @@
 /* main.css - Core styles for Habitus Zone with Theme Variables */
 
-/* Default Light Theme Variables */
+/* Light Theme Variables (Default) */
 :root {
     /* Primary Colors */
     --primary-brown: #8d5b4c;
@@ -76,6 +76,8 @@
     --room-floor: #FFD700;
     --room-wall-left: linear-gradient(to bottom, #E0E0E0, #D0D0D0);
     --room-wall-right: linear-gradient(to left, #D0D0D0, #C0C0C0);
+    --room-door: linear-gradient(to bottom, #8B6347, #654321);
+    --room-door-handle: #FFD700;
     
     /* Scrollbar Colors */
     --scrollbar-track: var(--bg-secondary);
@@ -90,7 +92,37 @@
     --modal-bg: var(--bg-panel);
     --modal-overlay: rgba(45, 41, 38, 0.5);
     --modal-shadow: var(--shadow-dark);
+    
+    /* Shop Item Colors */
+    --shop-item-bg: #f5f5f5;
+    --shop-item-hover: var(--bg-panel);
+    --shop-item-border: var(--border-primary);
+    
+    /* Task Item Colors */
+    --task-item-bg: var(--bg-panel);
+    --task-item-hover: #f8f8f8;
+    --task-item-completed: #f0f9f0;
+    --task-item-border: var(--border-primary);
+    --task-item-completed-border: #c8e6c9;
+    
+    /* Inventory Colors */
+    --inventory-item-bg: var(--bg-tertiary);
+    --inventory-item-hover: var(--bg-secondary);
+    --inventory-item-disabled: #f0f0f0;
+    --inventory-item-border: var(--border-primary);
 }
+
+/* Add smooth transitions for theme changes */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Remove transitions during theme switch to prevent flash */
+.theme-switching * {
+    transition: none !important;
+}
+
+/* Rest of your existing CSS stays the same... */
 
 /* Font Declarations for Local Fonts */
 @font-face {
@@ -410,11 +442,6 @@ button {
 
 .btn-success:hover {
     background-color: var(--btn-success-hover);
-}
-
-/* Theme transition for all elements */
-* {
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 /* Scrollbar styling */

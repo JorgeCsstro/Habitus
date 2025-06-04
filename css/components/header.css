@@ -107,26 +107,11 @@
 .survey-button img, .messages-button img, .profile-button img {
     width: 20px;
     height: 20px;
-    filter: brightness(0) saturate(100%) invert(34%) sepia(12%) saturate(1108%) hue-rotate(346deg) brightness(95%) contrast(89%);
     transition: all 0.3s ease;
 }
 
 .survey-button:hover img, .messages-button:hover img, .profile-button:hover img {
-    filter: brightness(0) saturate(100%) invert(55%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
     transform: scale(1.1);
-}
-
-/* Dark theme adjustments for action buttons */
-.theme-dark .survey-button img, 
-.theme-dark .messages-button img, 
-.theme-dark .profile-button img {
-    filter: brightness(0) saturate(100%) invert(85%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
-}
-
-.theme-dark .survey-button:hover img, 
-.theme-dark .messages-button:hover img, 
-.theme-dark .profile-button:hover img {
-    filter: brightness(0) saturate(100%) invert(70%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
 }
 
 /* Notification badge */
@@ -321,7 +306,6 @@
 .notification-icon img {
     width: 20px;
     height: 20px;
-    filter: brightness(0) saturate(100%) invert(55%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
 }
 
 .notification-text {

@@ -1,6 +1,6 @@
-// settings.js - Enhanced Settings page functionality with Theme System
+// settings.js - Simplified Theme System using CSS Variables
 
-// Theme management class
+// Simplified Theme Management class
 class ThemeManager {
     constructor() {
         this.currentTheme = this.getStoredTheme() || this.getSystemTheme();
@@ -10,8 +10,8 @@ class ThemeManager {
 
     init() {
         this.applyTheme(this.currentTheme, false);
-        this.setupTransitions();
         this.watchSystemTheme();
+        console.log(`🎨 Theme system initialized with: ${this.currentTheme}`);
     }
 
     getStoredTheme() {
@@ -42,32 +42,29 @@ class ThemeManager {
     }
 
     applyTheme(theme, animated = false) {
-        const body = document.body;
         const html = document.documentElement;
+        const body = document.body;
         
-        // Remove existing theme classes
-        body.classList.remove('theme-light', 'theme-dark');
-        html.classList.remove('theme-light', 'theme-dark');
+        // Prevent transitions during theme change if not animated
+        if (!animated) {
+            body.classList.add('theme-switching');
+        }
         
-        // Add new theme class
-        body.classList.add(`theme-${theme}`);
-        html.classList.add(`theme-${theme}`);
-        
-        // Set data attribute for CSS targeting
+        // Simply set the data-theme attribute - CSS variables handle the rest!
         html.setAttribute('data-theme', theme);
         
-        // Update theme stylesheet
-        this.updateThemeStylesheet(theme);
+        // Also add class for any legacy CSS that might need it
+        body.classList.remove('theme-light', 'theme-dark');
+        body.classList.add(`theme-${theme}`);
         
         // Update meta theme-color for browser chrome
         this.updateMetaThemeColor(theme);
         
-        if (animated) {
-            // Add transition class temporarily
-            body.classList.add('theme-transitioning');
+        // Re-enable transitions after a brief delay
+        if (!animated) {
             setTimeout(() => {
-                body.classList.remove('theme-transitioning');
-            }, this.transitionDuration);
+                body.classList.remove('theme-switching');
+            }, 50);
         }
         
         // Dispatch custom event for other components
@@ -81,35 +78,22 @@ class ThemeManager {
     animateThemeChange(callback) {
         const body = document.body;
         
-        // Add fade effect
-        body.style.transition = `filter ${this.transitionDuration}ms ease`;
-        body.style.filter = 'brightness(0.8) blur(2px)';
+        // Add subtle fade effect during transition
+        body.style.transition = `opacity ${this.transitionDuration}ms ease`;
+        body.style.opacity = '0.8';
         
         setTimeout(() => {
             callback();
             
             setTimeout(() => {
-                body.style.filter = 'brightness(1) blur(0px)';
+                body.style.opacity = '1';
                 
                 setTimeout(() => {
                     body.style.transition = '';
-                    body.style.filter = '';
+                    body.style.opacity = '';
                 }, this.transitionDuration);
             }, 50);
-        }, this.transitionDuration / 2);
-    }
-
-    updateThemeStylesheet(theme) {
-        let themeStylesheet = document.getElementById('theme-stylesheet');
-        
-        if (!themeStylesheet) {
-            themeStylesheet = document.createElement('link');
-            themeStylesheet.id = 'theme-stylesheet';
-            themeStylesheet.rel = 'stylesheet';
-            document.head.appendChild(themeStylesheet);
-        }
-        
-        themeStylesheet.href = `../css/themes/${theme}.css`;
+        }, this.transitionDuration / 3);
     }
 
     updateMetaThemeColor(theme) {
@@ -121,6 +105,7 @@ class ThemeManager {
             document.head.appendChild(metaThemeColor);
         }
         
+        // Get the actual computed CSS variable values
         const colors = {
             light: '#f9f5f0',
             dark: '#1a1a1a'
@@ -129,33 +114,13 @@ class ThemeManager {
         metaThemeColor.content = colors[theme] || colors.light;
     }
 
-    setupTransitions() {
-        // Add CSS for smooth transitions
-        if (!document.getElementById('theme-transitions')) {
-            const style = document.createElement('style');
-            style.id = 'theme-transitions';
-            style.textContent = `
-                .theme-transitioning * {
-                    transition: background-color 0.3s ease, 
-                                color 0.3s ease, 
-                                border-color 0.3s ease,
-                                box-shadow 0.3s ease !important;
-                }
-                
-                .theme-transition-disabled * {
-                    transition: none !important;
-                }
-            `;
-            document.head.appendChild(style);
-        }
-    }
-
     watchSystemTheme() {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
         mediaQuery.addEventListener('change', (e) => {
             if (!this.getStoredTheme()) {
                 // Only follow system if no user preference is stored
                 this.setTheme(e.matches ? 'dark' : 'light');
+                showNotification(`Auto-switched to ${e.matches ? 'dark' : 'light'} theme`, 'info');
             }
         });
     }
@@ -165,8 +130,16 @@ class ThemeManager {
         const themeOptions = document.querySelectorAll('.theme-option');
         themeOptions.forEach(option => {
             const input = option.querySelector('input[type="radio"]');
-            option.classList.toggle('active', input.value === this.currentTheme);
-            input.checked = input.value === this.currentTheme;
+            if (input) {
+                option.classList.toggle('active', input.value === this.currentTheme);
+                input.checked = input.value === this.currentTheme;
+            }
+        });
+
+        // Update any theme toggle buttons
+        const themeToggles = document.querySelectorAll('[data-theme-toggle]');
+        themeToggles.forEach(toggle => {
+            toggle.setAttribute('data-current-theme', this.currentTheme);
         });
     }
 
@@ -186,6 +159,8 @@ class ThemeManager {
             const data = await response.json();
             if (!data.success) {
                 console.warn('Failed to save theme to server:', data.message);
+            } else {
+                console.log('✅ Theme saved to server');
             }
         } catch (error) {
             console.error('Error saving theme to server:', error);
@@ -199,6 +174,14 @@ class ThemeManager {
     toggleTheme() {
         const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
         this.setTheme(newTheme);
+        return newTheme;
+    }
+
+    // Quick theme toggle function for testing
+    quickToggle() {
+        const newTheme = this.toggleTheme();
+        showNotification(`Switched to ${newTheme} theme`, 'success');
+        return newTheme;
     }
 }
 
@@ -207,7 +190,7 @@ let themeManager;
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎨 Initializing theme system...');
+    console.log('🎨 Initializing simplified theme system...');
     
     // Initialize theme manager
     themeManager = new ThemeManager();
@@ -223,6 +206,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add keyboard shortcuts
     setupKeyboardShortcuts();
+    
+    // Add quick access to theme manager for debugging
+    window.themeManager = themeManager;
     
     console.log('✅ Settings page initialized');
 });
@@ -242,7 +228,10 @@ function setupThemeListeners() {
     
     // Theme option cards (clickable)
     document.querySelectorAll('.theme-option').forEach(option => {
-        option.addEventListener('click', function() {
+        option.addEventListener('click', function(e) {
+            // Prevent double-firing if clicking on the radio button directly
+            if (e.target.type === 'radio') return;
+            
             const input = this.querySelector('input[type="radio"]');
             if (input && !input.checked) {
                 input.checked = true;
@@ -260,8 +249,8 @@ function setupKeyboardShortcuts() {
         // Ctrl/Cmd + Shift + T to toggle theme
         if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'T') {
             e.preventDefault();
-            themeManager.toggleTheme();
-            showNotification('Theme toggled!', 'info');
+            const newTheme = themeManager.toggleTheme();
+            showNotification(`Theme toggled to ${newTheme}!`, 'info');
         }
     });
 }
@@ -276,7 +265,7 @@ function changeTheme(theme) {
         return;
     }
     
-    // Show loading state
+    // Show loading state briefly
     const themeOptions = document.querySelectorAll('.theme-option');
     themeOptions.forEach(option => {
         option.style.pointerEvents = 'none';
@@ -286,17 +275,19 @@ function changeTheme(theme) {
     // Apply theme
     themeManager.setTheme(theme);
     
-    // Show success notification
+    // Show success notification and re-enable options
     setTimeout(() => {
         showNotification(`Switched to ${theme} theme`, 'success');
         
-        // Re-enable theme options
         themeOptions.forEach(option => {
             option.style.pointerEvents = '';
             option.style.opacity = '';
         });
-    }, themeManager.transitionDuration);
+    }, 100);
 }
+
+// Rest of your existing settings.js functions remain the same...
+// (setupFormListeners, loadSavedPreferences, handleProfilePictureChange, etc.)
 
 /**
  * Set up form event listeners
