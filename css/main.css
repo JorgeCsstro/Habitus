@@ -222,7 +222,6 @@ body {
     width: 22px;
     height: 22px;
     margin-right: 12px;
-    filter: brightness(0) saturate(100%) invert(55%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
     transition: filter 0.3s ease;
 }
 
