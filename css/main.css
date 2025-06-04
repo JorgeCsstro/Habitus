@@ -112,17 +112,18 @@
     --inventory-item-border: var(--border-primary);
 }
 
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+    transition: none;
+    animation: none;
+}
+
 /* Add smooth transitions for theme changes */
 * {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
-
-/* Remove transitions during theme switch to prevent flash */
-.theme-switching * {
-    transition: none !important;
-}
-
-/* Rest of your existing CSS stays the same... */
 
 /* Font Declarations for Local Fonts */
 @font-face {

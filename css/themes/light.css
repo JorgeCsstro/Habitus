@@ -1,6 +1,7 @@
 /* css/themes/light.css - Light Theme Variables */
 
-:root {
+[data-theme="light"],
+[data-theme="light"] * {
     /* Primary Colors */
     --primary-brown: #8d5b4c;
     --primary-brown-dark: #7d4b3c;
@@ -111,18 +112,8 @@
     --inventory-item-border: var(--border-primary);
 }
 
-/* Light theme specific overrides */
-.theme-light {
+html[data-theme="light"] {
     color-scheme: light;
-}
-
-.theme-light .panel-header img,
-.theme-light .sidebar img {
-    filter: brightness(0) saturate(100%) invert(34%) sepia(12%) saturate(1108%) hue-rotate(346deg) brightness(95%) contrast(89%);
-}
-
-.theme-light .logo img {
-    filter: none;
 }
 
 /* Light theme room styling */

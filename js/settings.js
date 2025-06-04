@@ -1,99 +1,83 @@
 // settings.js - Simplified Theme System using CSS Variables
 
 // Simplified Theme Management class
+// Simplified Theme Management class
 class ThemeManager {
     constructor() {
         this.currentTheme = this.getStoredTheme() || this.getSystemTheme();
-        this.transitionDuration = 300;
+        this.themeStylesheet = null;
         this.init();
     }
 
     init() {
+        this.setupThemeStylesheet();
         this.applyTheme(this.currentTheme, false);
         this.watchSystemTheme();
         console.log(`🎨 Theme system initialized with: ${this.currentTheme}`);
     }
 
     getStoredTheme() {
-        return localStorage.getItem('theme');
+        return localStorage.getItem('habitus-theme');
     }
 
     getSystemTheme() {
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
 
-    setTheme(theme, animate = true) {
-        if (theme === this.currentTheme) return;
-        
-        console.log(`🎨 Switching theme from ${this.currentTheme} to ${theme}`);
-        
-        if (animate) {
-            this.animateThemeChange(() => {
-                this.applyTheme(theme, true);
-            });
-        } else {
-            this.applyTheme(theme, false);
+    setupThemeStylesheet() {
+        this.themeStylesheet = document.getElementById('theme-stylesheet');
+        if (!this.themeStylesheet) {
+            this.themeStylesheet = document.createElement('link');
+            this.themeStylesheet.id = 'theme-stylesheet';
+            this.themeStylesheet.rel = 'stylesheet';
+            document.head.appendChild(this.themeStylesheet);
         }
-        
+    }
+
+    setTheme(theme) {
+        if (theme === this.currentTheme) return;
+
+        console.log(`🎨 Switching theme from ${this.currentTheme} to ${theme}`);
+
+        this.applyTheme(theme);
         this.currentTheme = theme;
-        localStorage.setItem('theme', theme);
+        localStorage.setItem('habitus-theme', theme);
         this.updateThemeUI();
         this.saveThemeToServer(theme);
     }
 
-    applyTheme(theme, animated = false) {
+    applyTheme(theme) {
         const html = document.documentElement;
         const body = document.body;
         
-        // Prevent transitions during theme change if not animated
-        if (!animated) {
-            body.classList.add('theme-switching');
-        }
+        // Always prevent transitions during theme change
+        body.classList.add('theme-switching');
         
-        // Simply set the data-theme attribute - CSS variables handle the rest!
+        // Load theme-specific CSS file
+        const themeCSSPath = `../css/themes/${theme}.css`;
+        this.themeStylesheet.href = themeCSSPath;
+        
+        // Set data attribute for CSS targeting
         html.setAttribute('data-theme', theme);
         
-        // Also add class for any legacy CSS that might need it
+        // Update body classes
         body.classList.remove('theme-light', 'theme-dark');
         body.classList.add(`theme-${theme}`);
         
-        // Update meta theme-color for browser chrome
+        // Update meta theme-color
         this.updateMetaThemeColor(theme);
         
-        // Re-enable transitions after a brief delay
-        if (!animated) {
-            setTimeout(() => {
-                body.classList.remove('theme-switching');
-            }, 50);
-        }
+        // Keep theme-switching class permanently to prevent transitions
+        setTimeout(() => {
+            body.classList.remove('theme-switching');
+        }, 50);
         
-        // Dispatch custom event for other components
+        // Dispatch custom event
         window.dispatchEvent(new CustomEvent('themeChanged', {
-            detail: { theme, animated }
+            detail: { theme }
         }));
         
         console.log(`✅ Theme applied: ${theme}`);
-    }
-
-    animateThemeChange(callback) {
-        const body = document.body;
-        
-        // Add subtle fade effect during transition
-        body.style.transition = `opacity ${this.transitionDuration}ms ease`;
-        body.style.opacity = '0.8';
-        
-        setTimeout(() => {
-            callback();
-            
-            setTimeout(() => {
-                body.style.opacity = '1';
-                
-                setTimeout(() => {
-                    body.style.transition = '';
-                    body.style.opacity = '';
-                }, this.transitionDuration);
-            }, 50);
-        }, this.transitionDuration / 3);
     }
 
     updateMetaThemeColor(theme) {
@@ -105,24 +89,12 @@ class ThemeManager {
             document.head.appendChild(metaThemeColor);
         }
         
-        // Get the actual computed CSS variable values
         const colors = {
             light: '#f9f5f0',
-            dark: '#1a1a1a'
+            dark: '#070F2B'
         };
         
         metaThemeColor.content = colors[theme] || colors.light;
-    }
-
-    watchSystemTheme() {
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        mediaQuery.addEventListener('change', (e) => {
-            if (!this.getStoredTheme()) {
-                // Only follow system if no user preference is stored
-                this.setTheme(e.matches ? 'dark' : 'light');
-                showNotification(`Auto-switched to ${e.matches ? 'dark' : 'light'} theme`, 'info');
-            }
-        });
     }
 
     updateThemeUI() {
@@ -134,12 +106,6 @@ class ThemeManager {
                 option.classList.toggle('active', input.value === this.currentTheme);
                 input.checked = input.value === this.currentTheme;
             }
-        });
-
-        // Update any theme toggle buttons
-        const themeToggles = document.querySelectorAll('[data-theme-toggle]');
-        themeToggles.forEach(toggle => {
-            toggle.setAttribute('data-current-theme', this.currentTheme);
         });
     }
 
@@ -159,8 +125,6 @@ class ThemeManager {
             const data = await response.json();
             if (!data.success) {
                 console.warn('Failed to save theme to server:', data.message);
-            } else {
-                console.log('✅ Theme saved to server');
             }
         } catch (error) {
             console.error('Error saving theme to server:', error);
@@ -177,12 +141,25 @@ class ThemeManager {
         return newTheme;
     }
 
-    // Quick theme toggle function for testing
-    quickToggle() {
-        const newTheme = this.toggleTheme();
-        showNotification(`Switched to ${newTheme} theme`, 'success');
-        return newTheme;
+    watchSystemTheme() {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        mediaQuery.addEventListener('change', (e) => {
+            if (!this.getStoredTheme()) {
+                this.setTheme(e.matches ? 'dark' : 'light');
+            }
+        });
     }
+}
+
+// Updated changeTheme function
+function changeTheme(theme) {
+    if (!themeManager) {
+        console.error('Theme manager not initialized');
+        return;
+    }
+    
+    themeManager.setTheme(theme);
+    showNotification(`Switched to ${theme} theme`, 'success');
 }
 
 // Global theme manager instance

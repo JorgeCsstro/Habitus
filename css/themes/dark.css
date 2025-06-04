@@ -1,8 +1,7 @@
 /* css/themes/dark.css - Dark Theme Variables */
 
-:root,
 [data-theme="dark"],
-.theme-dark {
+[data-theme="dark"] * {
     /* Primary Colors - Adjusted */
     --primary-color: #070F2B;
     --primary-dark: #060c22;
@@ -204,6 +203,10 @@
     --loading-bg: var(--bg-secondary);
     --loading-spinner: var(--highlight-color);
     --loading-text: var(--text-secondary);
+}
+
+html[data-theme="dark"] {
+    color-scheme: dark;
 }
 
 .theme-dark .panel-header img,
