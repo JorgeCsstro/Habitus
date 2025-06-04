@@ -3,9 +3,10 @@
 class ThemeManager {
     constructor() {
         this.currentTheme = null;
-        this.isChanging = false; // Prevent infinite loops
+        this.isChanging = false;
         this.themeStylesheet = null;
         this.observers = new Set();
+        this.isInitialized = false;
         
         this.init();
     }
@@ -13,40 +14,56 @@ class ThemeManager {
     init() {
         console.log('🎨 Initializing FIXED theme manager...');
         
-        // Get initial theme safely
-        this.currentTheme = this.getInitialTheme();
-        
-        // Find or create theme stylesheet
-        this.setupThemeStylesheet();
-        
-        // Apply initial theme
-        this.applyTheme(this.currentTheme, false);
-        
-        // Setup system theme watching
-        this.watchSystemTheme();
-        
-        // Setup keyboard shortcuts
-        this.setupKeyboardShortcuts();
-        
-        // Expose globally for debugging
-        window.themeManager = this;
-        
-        console.log(`✅ Theme manager initialized with: ${this.currentTheme}`);
+        try {
+            // Get initial theme safely
+            this.currentTheme = this.getInitialTheme();
+            
+            // Find or create theme stylesheet
+            this.setupThemeStylesheet();
+            
+            // Apply initial theme immediately
+            this.applyTheme(this.currentTheme, false);
+            
+            // Setup system theme watching
+            this.watchSystemTheme();
+            
+            // Setup keyboard shortcuts
+            this.setupKeyboardShortcuts();
+            
+            // Mark as initialized
+            this.isInitialized = true;
+            
+            // Expose globally
+            window.themeManager = this;
+            
+            // Dispatch ready event
+            window.dispatchEvent(new CustomEvent('themeManagerReady', {
+                detail: { theme: this.currentTheme }
+            }));
+            
+            console.log(`✅ Theme manager initialized with: ${this.currentTheme}`);
+        } catch (error) {
+            console.error('❌ Theme manager initialization failed:', error);
+        }
     }
 
     getInitialTheme() {
         // Priority: PHP provided theme > localStorage > system preference > default
         if (window.initialTheme) {
+            console.log('Using PHP provided theme:', window.initialTheme);
             return window.initialTheme;
         }
         
         const stored = localStorage.getItem('habitus-theme');
         if (stored && ['light', 'dark'].includes(stored)) {
+            console.log('Using stored theme:', stored);
             return stored;
         }
         
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        return systemPrefersDark ? 'dark' : 'light';
+        const systemTheme = systemPrefersDark ? 'dark' : 'light';
+        console.log('Using system theme:', systemTheme);
+        return systemTheme;
     }
 
     setupThemeStylesheet() {
@@ -54,24 +71,36 @@ class ThemeManager {
         this.themeStylesheet = document.getElementById('theme-stylesheet');
         
         if (!this.themeStylesheet) {
-            // Create new theme stylesheet if it doesn't exist
+            console.log('Creating new theme stylesheet');
+            // Create new theme stylesheet
             this.themeStylesheet = document.createElement('link');
             this.themeStylesheet.id = 'theme-stylesheet';
             this.themeStylesheet.rel = 'stylesheet';
             
-            // Insert before the last stylesheet (usually page-specific CSS)
+            // Insert before the last stylesheet
             const lastStylesheet = document.querySelector('link[rel="stylesheet"]:last-of-type');
             if (lastStylesheet) {
                 lastStylesheet.parentNode.insertBefore(this.themeStylesheet, lastStylesheet);
             } else {
                 document.head.appendChild(this.themeStylesheet);
             }
+        } else {
+            console.log('Found existing theme stylesheet');
         }
     }
 
     setTheme(theme, animate = true, saveToServer = true) {
-        // Prevent infinite loops
+        console.log(`🎨 setTheme called: ${theme} (current: ${this.currentTheme})`);
+        
+        // Validate theme
+        if (!['light', 'dark'].includes(theme)) {
+            console.error('Invalid theme:', theme);
+            return false;
+        }
+        
+        // Prevent infinite loops and redundant changes
         if (this.isChanging || theme === this.currentTheme) {
+            console.log('Theme change skipped (already changing or same theme)');
             return false;
         }
 
@@ -104,6 +133,7 @@ class ThemeManager {
             // Notify observers
             this.notifyObservers(theme);
 
+            console.log(`✅ Theme successfully changed to: ${theme}`);
             return true;
         } catch (error) {
             console.error('❌ Error changing theme:', error);
@@ -117,6 +147,8 @@ class ThemeManager {
     }
 
     applyTheme(theme, animated = false) {
+        console.log(`🎨 Applying theme: ${theme} (animated: ${animated})`);
+        
         const html = document.documentElement;
         const body = document.body;
         
@@ -127,6 +159,8 @@ class ThemeManager {
 
         // Update CSS file
         const newHref = this.getThemeCSSPath(theme);
+        console.log(`Loading theme CSS: ${newHref}`);
+        
         if (this.themeStylesheet.href !== newHref) {
             this.themeStylesheet.href = newHref;
         }
@@ -232,6 +266,8 @@ class ThemeManager {
     }
 
     updateThemeUI() {
+        console.log('🎨 Updating theme UI elements');
+        
         // Update theme selector radio buttons
         const themeOptions = document.querySelectorAll('.theme-option');
         themeOptions.forEach(option => {
@@ -249,6 +285,8 @@ class ThemeManager {
             toggle.setAttribute('data-current-theme', this.currentTheme);
             toggle.textContent = this.currentTheme === 'light' ? '🌙' : '☀️';
         });
+        
+        console.log('✅ Theme UI updated');
     }
 
     async saveThemeToServer(theme) {
@@ -280,6 +318,10 @@ class ThemeManager {
 
     getTheme() {
         return this.currentTheme;
+    }
+
+    isReady() {
+        return this.isInitialized;
     }
 
     toggleTheme() {
@@ -333,6 +375,7 @@ class ThemeManager {
             font-size: 14px;
             font-weight: 500;
             animation: slideIn 0.3s ease;
+            border-left: 4px solid ${type === 'info' ? '#5d7b8a' : '#a15c5c'};
         `;
         notification.textContent = message;
         
@@ -357,27 +400,33 @@ style.textContent = `
         to { transform: translateX(100%); opacity: 0; }
     }
     
+    .theme-switching,
     .theme-switching * {
         transition: none !important;
+        animation: none !important;
     }
 `;
 document.head.appendChild(style);
 
-// Initialize theme manager when DOM is ready
+// Initialize theme manager
 let themeManager;
 
 function initializeThemeManager() {
+    console.log('🎨 Starting theme manager initialization...');
+    
     if (!themeManager) {
         themeManager = new ThemeManager();
         window.themeManager = themeManager;
+        console.log('✅ Theme manager created and exposed globally');
     }
     return themeManager;
 }
 
-// Auto-initialize if DOM is ready, otherwise wait
+// Auto-initialize based on document state
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeThemeManager);
 } else {
+    // Document already loaded, initialize immediately
     initializeThemeManager();
 }
 
