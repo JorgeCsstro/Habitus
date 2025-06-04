@@ -1,6 +1,6 @@
-/* css/main.css - Updated with FIXED theme system */
+/* main.css - Core styles for Habitus Zone with Theme Variables */
 
-/* CRITICAL: Default light theme variables (fallback) */
+/* Light Theme Variables (Default) */
 :root {
     /* Primary Colors */
     --primary-brown: #8d5b4c;
@@ -71,7 +71,6 @@
     --input-border: var(--border-primary);
     --input-focus: var(--primary-brown);
     --input-text: var(--text-primary);
-    --input-placeholder: var(--text-tertiary);
     
     /* Room Colors */
     --room-floor: #FFD700;
@@ -80,81 +79,52 @@
     --room-door: linear-gradient(to bottom, #8B6347, #654321);
     --room-door-handle: #FFD700;
     
-    /* Navigation */
-    --sidebar-bg: var(--bg-sidebar);
-    --sidebar-item-hover: rgba(141, 91, 76, 0.1);
-    --sidebar-item-active: var(--primary-brown);
+    /* Scrollbar Colors */
+    --scrollbar-track: var(--bg-secondary);
+    --scrollbar-thumb: #d6cfc7;
+    --scrollbar-thumb-hover: #c5bcb3;
     
-    /* Dropdown */
-    --dropdown-bg: var(--bg-panel);
-    --dropdown-border: var(--border-primary);
-    --dropdown-shadow: var(--shadow-medium);
-    --dropdown-item-hover: var(--bg-secondary);
+    /* Notification Colors */
+    --notification-bg: var(--bg-panel);
+    --notification-shadow: var(--shadow-medium);
     
-    /* Tooltips */
-    --tooltip-bg: rgba(45, 41, 38, 0.9);
-    --tooltip-text: var(--text-inverse);
-    --tooltip-shadow: var(--shadow-dark);
+    /* Modal Colors */
+    --modal-bg: var(--bg-panel);
+    --modal-overlay: rgba(45, 41, 38, 0.5);
+    --modal-shadow: var(--shadow-dark);
     
-    /* Shop Items */
+    /* Shop Item Colors */
     --shop-item-bg: #f5f5f5;
     --shop-item-hover: var(--bg-panel);
     --shop-item-border: var(--border-primary);
     
-    /* Task Items */
+    /* Task Item Colors */
     --task-item-bg: var(--bg-panel);
     --task-item-hover: #f8f8f8;
     --task-item-completed: #f0f9f0;
     --task-item-border: var(--border-primary);
     --task-item-completed-border: #c8e6c9;
     
-    /* Inventory */
+    /* Inventory Colors */
     --inventory-item-bg: var(--bg-tertiary);
     --inventory-item-hover: var(--bg-secondary);
     --inventory-item-disabled: #f0f0f0;
     --inventory-item-border: var(--border-primary);
-    
-    /* Scrollbar */
-    --scrollbar-track: var(--bg-secondary);
-    --scrollbar-thumb: #d6cfc7;
-    --scrollbar-thumb-hover: #c5bcb3;
-    
-    /* Modal */
-    --modal-bg: var(--bg-panel);
-    --modal-overlay: rgba(45, 41, 38, 0.5);
-    --modal-shadow: var(--shadow-dark);
-    
-    /* Notification */
-    --notification-bg: var(--bg-panel);
-    --notification-shadow: var(--shadow-medium);
 }
 
-/* CRITICAL: Prevent theme switching issues */
-.theme-switching,
+/* Add smooth transitions for theme changes */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Remove transitions during theme switch to prevent flash */
 .theme-switching * {
-    transition: none ;
-    animation: none ;
+    transition: none !important;
 }
 
-/* CRITICAL: Smooth transitions for theme changes */
-:not(.theme-switching) {
-    transition: background-color 0.3s ease, 
-                color 0.3s ease, 
-                border-color 0.3s ease, 
-                box-shadow 0.3s ease,
-                fill 0.3s ease;
-}
+/* Rest of your existing CSS stays the same... */
 
-/* CRITICAL: Prevent flash of unstyled content */
-html:not([data-theme]) {
-    visibility: hidden;
-}
-
-html[data-theme] {
-    visibility: visible;
-}
-
-/* Font Declarations */
+/* Font Declarations for Local Fonts */
 @font-face {
     font-family: 'Quicksand';
     src: url('fonts/Quicksand-Regular.woff2') format('woff2'),
@@ -189,7 +159,6 @@ html[data-theme] {
     padding: 0;
 }
 
-/* CRITICAL: Body styling with theme support */
 body {
     font-family: 'Poppins', 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     margin: 0;
@@ -197,15 +166,7 @@ body {
     color: var(--text-primary);
     background-color: var(--bg-primary);
     overflow-x: hidden;
-    min-height: 100vh;
-    
-    /* CRITICAL: Prevent layout shifts during theme changes */
-    contain: layout style;
-}
-
-/* CRITICAL: Prevent scrollbar appearance changes during theme switch */
-body.theme-switching {
-    overflow: hidden;
+    transition: color 0.3s ease, background-color 0.3s ease;
 }
 
 /* Main container layout */
@@ -216,13 +177,12 @@ body.theme-switching {
     overflow: hidden;
 }
 
-/* Content container */
+/* Content container - Main area that holds page content */
 .content-container {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background-color: var(--bg-primary);
 }
 
 /* Panel styling */
@@ -235,6 +195,7 @@ body.theme-switching {
     overflow: hidden;
     border: 1px solid var(--border-primary);
     margin-bottom: 5px;
+    transition: all 0.3s ease;
 }
 
 .panel-header {
@@ -251,7 +212,8 @@ body.theme-switching {
     width: 22px;
     height: 22px;
     margin-right: 12px;
-    filter: brightness(0) saturate(100%) invert(34%) sepia(12%) saturate(1108%) hue-rotate(346deg) brightness(95%) contrast(89%);
+    filter: brightness(0) saturate(100%) invert(55%) sepia(8%) saturate(463%) hue-rotate(346deg) brightness(92%) contrast(89%);
+    transition: filter 0.3s ease;
 }
 
 .panel-header h2 {
@@ -259,7 +221,7 @@ body.theme-switching {
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--text-primary);
-    font-family: 'Quicksand', sans-serif;
+    font-family: 'Quicksand', 'Avenir Next', 'Segoe UI', sans-serif;
     letter-spacing: 0.02em;
 }
 
@@ -288,6 +250,7 @@ body.theme-switching {
     border-radius: 20px;
     font-weight: 600;
     cursor: pointer;
+    transition: all 0.3s ease;
     box-shadow: 0 2px 5px var(--shadow-light);
     width: 100%;
     max-width: 220px;
@@ -338,6 +301,7 @@ body.theme-switching {
     width: 16px;
     height: 16px;
     margin-right: 8px;
+    filter: currentColor;
 }
 
 /* Alerts */
@@ -346,6 +310,7 @@ body.theme-switching {
     border-radius: 8px;
     margin-bottom: 20px;
     font-size: 0.95rem;
+    transition: all 0.3s ease;
 }
 
 .alert-success {
@@ -385,10 +350,45 @@ body.theme-switching {
     font-family: 'Quicksand', sans-serif;
 }
 
+/* HCoin notification */
+.hcoin-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--notification-bg);
+    box-shadow: 0 4px 12px var(--notification-shadow);
+    border-radius: 10px;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    transform: translateY(-100px);
+    opacity: 0;
+    transition: all 0.5s ease;
+    z-index: 1000;
+    border-left: 3px solid var(--warning-text);
+}
+
+.hcoin-notification.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.hcoin-notification img {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+}
+
+.hcoin-notification span {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
 /* General link styling */
 a {
     text-decoration: none;
     color: var(--primary-brown);
+    transition: color 0.3s;
 }
 
 a:hover {
@@ -400,6 +400,7 @@ input, select, textarea {
     background-color: var(--input-bg);
     border: 1px solid var(--input-border);
     color: var(--input-text);
+    transition: all 0.3s ease;
 }
 
 input:focus, select:focus, textarea:focus {
@@ -408,11 +409,11 @@ input:focus, select:focus, textarea:focus {
     outline: none;
 }
 
-input::placeholder, textarea::placeholder {
-    color: var(--input-placeholder);
+/* Buttons */
+button {
+    transition: all 0.3s ease;
 }
 
-/* Buttons */
 .btn-primary {
     background-color: var(--btn-primary-bg);
     color: var(--btn-primary-text);
@@ -443,7 +444,7 @@ input::placeholder, textarea::placeholder {
     background-color: var(--btn-success-hover);
 }
 
-/* CRITICAL: Scrollbar styling with theme support */
+/* Scrollbar styling */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -468,106 +469,4 @@ input::placeholder, textarea::placeholder {
 html {
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-}
-
-/* Logo should never be filtered */
-.logo img {
-    filter: none ;
-}
-
-/* CRITICAL: Notification system */
-.hcoin-notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background-color: var(--notification-bg);
-    box-shadow: 0 4px 12px var(--notification-shadow);
-    border-radius: 10px;
-    padding: 15px 20px;
-    display: flex;
-    align-items: center;
-    transform: translateY(-100px);
-    opacity: 0;
-    z-index: 1000;
-    border-left: 3px solid var(--warning-text);
-}
-
-.hcoin-notification.show {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-.hcoin-notification img {
-    width: 24px;
-    height: 24px;
-    margin-right: 10px;
-}
-
-.hcoin-notification span {
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-/* CRITICAL: Loading states */
-.loading-spinner {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid var(--border-primary);
-    border-radius: 50%;
-    border-top-color: var(--primary-brown);
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* CRITICAL: Responsive adjustments */
-@media (max-width: 768px) {
-    .main-container {
-        flex-direction: column;
-    }
-    
-    .panel {
-        margin-bottom: 15px;
-    }
-}
-
-/* CRITICAL: Print styles */
-@media print {
-    .theme-switching {
-        transition: none ;
-    }
-    
-    body {
-        background: white ;
-        color: black ;
-    }
-}
-
-/* CRITICAL: Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms ;
-        animation-iteration-count: 1 ;
-        transition-duration: 0.01ms ;
-    }
-}
-
-/* CRITICAL: High contrast mode support */
-@media (prefers-contrast: high) {
-    :root {
-        --border-primary: #000000;
-        --text-primary: #000000;
-        --bg-panel: #ffffff;
-    }
-    
-    [data-theme="dark"] {
-        --border-primary: #ffffff;
-        --text-primary: #ffffff;
-        --bg-panel: #000000;
-    }
 }

@@ -1,5 +1,5 @@
 <?php
-// pages/settings.php - FIXED version with proper theme integration
+// pages/settings.php - Updated with enhanced theme system
 
 // Include necessary files
 require_once '../php/include/config.php';
@@ -19,10 +19,10 @@ $userHCoins = $userData['hcoin'];
 $userHabitusName = $userData['username'] . "'s Habitus";
 
 // Get current settings
-$currentSubscription = $userData['subscription_type'] ?? 'free';
-$profilePicture = $userData['profile_picture'] ?? '../images/avatars/default.webp';
 $currentLanguage = $userData['language'] ?? 'en';
 $currentTheme = $userData['theme'] ?? 'light';
+$currentSubscription = $userData['subscription_type'] ?? 'free';
+$profilePicture = $userData['profile_picture'] ?? '../images/avatars/default.webp';
 
 // Language options
 $languages = [
@@ -34,11 +34,11 @@ $languages = [
 $themes = [
     'light' => [
         'name' => 'Light',
-        'description' => 'Warm, bright colors'
+        'description' => 'Warm colors'
     ],
     'dark' => [
-        'name' => 'Dark', 
-        'description' => 'Cool, dark colors'
+        'name' => 'Dark',
+        'description' => 'Night colors'
     ]
 ];
 ?>
@@ -51,9 +51,9 @@ $themes = [
     <title>Settings - <?php echo SITE_NAME; ?></title>
     
     <!-- Meta theme color for browser chrome -->
-    <meta name="theme-color" content="<?php echo $currentTheme === 'dark' ? '#070F2B' : '#f9f5f0'; ?>">
+    <meta name="theme-color" content="<?php echo $currentTheme === 'dark' ? '#1a1a1a' : '#f9f5f0'; ?>">
     
-    <!-- CRITICAL: Load main CSS first -->
+    <!-- Core CSS with variables -->
     <link rel="stylesheet" href="../css/main.css">
     
     <!-- Component CSS -->
@@ -61,10 +61,10 @@ $themes = [
     <link rel="stylesheet" href="../css/components/header.css">
     <link rel="stylesheet" href="../css/components/scrollbar.css">
     
-    <!-- CRITICAL: Theme CSS with proper ID -->
+    <!-- Theme CSS -->
     <link rel="stylesheet" href="../css/themes/<?php echo $currentTheme; ?>.css" id="theme-stylesheet">
     
-    <!-- Page-specific CSS last -->
+    <!-- Page-specific CSS -->
     <link rel="stylesheet" href="../css/pages/settings.css">
     
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
@@ -73,26 +73,6 @@ $themes = [
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- CRITICAL: Initialize theme variables before any scripts -->
-    <script>
-        console.log('🎨 Initializing theme variables...');
-        
-        // Make theme data available to JavaScript BEFORE theme manager loads
-        window.initialTheme = '<?php echo $currentTheme; ?>';
-        window.initialLanguage = '<?php echo $currentLanguage; ?>';
-        window.userPreferences = {
-            theme: '<?php echo $currentTheme; ?>',
-            language: '<?php echo $currentLanguage; ?>',
-            autoTheme: <?php echo json_encode($userData['auto_theme'] ?? false); ?>
-        };
-        
-        // Prevent flash of unstyled content
-        document.documentElement.className = 'theme-<?php echo $currentTheme; ?>';
-        document.documentElement.setAttribute('data-theme', '<?php echo $currentTheme; ?>');
-        
-        console.log('✅ Theme variables initialized:', window.initialTheme);
-    </script>
 </head>
 <body class="theme-<?php echo $currentTheme; ?>">
     <div class="main-container">
@@ -154,7 +134,7 @@ $themes = [
                     </div>
                 </div>
 
-                <!-- Appearance Section - FIXED -->
+                <!-- Appearance Section - Enhanced -->
                 <div class="settings-section">
                     <h2>Appearance</h2>
                     <div class="settings-group">
@@ -163,15 +143,11 @@ $themes = [
                                 <span class="setting-title">Theme</span>
                                 <span class="setting-description">Choose between light and dark themes</span>
                             </div>
-                            <div class="theme-options" id="theme-options">
+                            <div class="theme-options">
                                 <?php foreach ($themes as $themeKey => $themeInfo): ?>
                                     <label class="theme-option <?php echo $currentTheme === $themeKey ? 'active' : ''; ?>" 
-                                           data-theme="<?php echo $themeKey; ?>"
-                                           for="theme-<?php echo $themeKey; ?>">
-                                        <input type="radio" 
-                                               name="theme" 
-                                               id="theme-<?php echo $themeKey; ?>"
-                                               value="<?php echo $themeKey; ?>" 
+                                           data-theme="<?php echo $themeKey; ?>">
+                                        <input type="radio" name="theme" value="<?php echo $themeKey; ?>" 
                                                <?php echo $currentTheme === $themeKey ? 'checked' : ''; ?>>
                                         
                                         <div class="theme-preview theme-<?php echo $themeKey; ?>">
@@ -203,17 +179,6 @@ $themes = [
                             <div class="theme-shortcuts">
                                 <small>💡 Tip: Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> to quickly toggle themes</small>
                             </div>
-                            
-                            <!-- Debug info (remove in production) -->
-                            <?php if (DEBUG_MODE): ?>
-                            <div style="margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 8px; font-size: 0.8rem;">
-                                <strong>Debug Info:</strong><br>
-                                Current Theme: <?php echo $currentTheme; ?><br>
-                                Theme CSS: ../css/themes/<?php echo $currentTheme; ?>.css<br>
-                                <button onclick="window.debugThemeSwitch('light')" style="margin: 5px;">Test Light</button>
-                                <button onclick="window.debugThemeSwitch('dark')" style="margin: 5px;">Test Dark</button>
-                            </div>
-                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -436,55 +401,81 @@ $themes = [
         </div>
     </div>
 
-    <!-- CRITICAL: Load scripts in correct order -->
-    <!-- Main JavaScript -->
+    <!-- Scripts -->
     <script src="../js/main.js"></script>
-    
-    <!-- CRITICAL: Theme manager MUST load before settings.js -->
-    <script src="../js/theme-manager.js"></script>
-    
-    <!-- Settings-specific JavaScript -->
     <script src="../js/settings.js"></script>
     
-    <!-- CRITICAL: Final initialization script -->
+    <!-- Initialize theme system -->
     <script>
-        console.log('🎨 Final theme initialization...');
+        // Pass PHP theme to JavaScript
+        window.initialTheme = '<?php echo $currentTheme; ?>';
+        window.initialLanguage = '<?php echo $currentLanguage; ?>';
         
-        // Ensure theme is applied correctly on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            // Double-check theme application
-            const expectedTheme = '<?php echo $currentTheme; ?>';
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            
-            console.log(`Expected theme: ${expectedTheme}, Current theme: ${currentTheme}`);
-            
-            if (currentTheme !== expectedTheme) {
-                console.warn('⚠️ Theme mismatch detected, correcting...');
-                document.documentElement.setAttribute('data-theme', expectedTheme);
-                document.body.className = document.body.className.replace(/theme-\w+/, `theme-${expectedTheme}`);
+        // Additional settings functions
+        function showChangeEmailModal() {
+            const modal = document.getElementById('email-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.classList.add('show');
+            }
+        }
+        
+        function toggleAutoTheme(enabled) {
+            if (enabled) {
+                // Implement auto theme switching based on time
+                const hour = new Date().getHours();
+                const isDaytime = hour >= 6 && hour < 18;
+                const newTheme = isDaytime ? 'light' : 'dark';
+                
+                if (window.themeManager && window.themeManager.getTheme() !== newTheme) {
+                    window.themeManager.setTheme(newTheme);
+                    showNotification(`Auto-switched to ${newTheme} theme`, 'info');
+                }
             }
             
-            // Add click handlers as fallback
-            const themeOptions = document.querySelectorAll('.theme-option');
-            console.log(`Found ${themeOptions.length} theme options for fallback handlers`);
+            localStorage.setItem('autoTheme', enabled);
+        }
+        
+        function exportUserData() {
+            showNotification('Preparing your data export...', 'info');
             
-            themeOptions.forEach((option, index) => {
-                option.addEventListener('click', function(e) {
-                    console.log(`Fallback handler: Theme option ${index} clicked`);
-                    
-                    const input = this.querySelector('input[type="radio"]');
-                    if (input && !input.checked) {
-                        console.log(`Triggering fallback theme change to: ${input.value}`);
-                        input.checked = true;
-                        
-                        // Use fallback function if available
-                        if (typeof window.debugThemeSwitch === 'function') {
-                            window.debugThemeSwitch(input.value);
-                        }
-                    }
-                });
+            fetch('../php/api/user/export_data.php', {
+                method: 'POST'
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'habitus-zone-data.json';
+                a.click();
+                window.URL.revokeObjectURL(url);
+                showNotification('Data exported successfully', 'success');
+            })
+            .catch(error => {
+                console.error('Export error:', error);
+                showNotification('Error exporting data', 'error');
             });
-        });
+        }
+        
+        function clearCache() {
+            if (confirm('This will clear all cached data and refresh the page. Continue?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Clear service worker cache if available
+                if ('caches' in window) {
+                    caches.keys().then(names => {
+                        names.forEach(name => caches.delete(name));
+                    });
+                }
+                
+                showNotification('Cache cleared. Refreshing...', 'success');
+                setTimeout(() => {
+                    window.location.reload(true);
+                }, 1500);
+            }
+        }
     </script>
 </body>
 </html>
