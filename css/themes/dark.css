@@ -4,202 +4,202 @@
 html[data-theme="dark"]:root,
 html[data-theme="dark"] {
     /* Core Palette - New Dark Colors */
-    --primary: #6497b1 !important;           /* Quaternary for primary elements */
-    --primary-dark: #005b96 !important;      /* Tertiary for darker states */
-    --primary-light: #b3cde0 !important;     /* Lightest for light variations */
-    --primary-brown: #6497b1 !important;     /* Maintaining compatibility */
-    --primary-brown-light: #b3cde0 !important;
+    --primary: #6497b1;           /* Quaternary for primary elements */
+    --primary-dark: #005b96;      /* Tertiary for darker states */
+    --primary-light: #b3cde0;     /* Lightest for light variations */
+    --primary-brown: #6497b1;     /* Maintaining compatibility */
+    --primary-brown-light: #b3cde0;
     
-    --secondary: #b3cde0 !important;         /* Lightest for secondary elements */
-    --secondary-dark: #6497b1 !important;    /* Quaternary as darker secondary */
-    --secondary-light: #d1e5f0 !important;   /* Even lighter tint */
-    --primary-green: #6497b1 !important;     /* Using quaternary for "green" elements */
-    --primary-green-light: #b3cde0 !important;
+    --secondary: #b3cde0;         /* Lightest for secondary elements */
+    --secondary-dark: #6497b1;    /* Quaternary as darker secondary */
+    --secondary-light: #d1e5f0;   /* Even lighter tint */
+    --primary-green: #6497b1;     /* Using quaternary for "green" elements */
+    --primary-green-light: #b3cde0;
     
-    --accent: #b3cde0 !important;           /* Lightest for accents */
+    --accent: #b3cde0;           /* Lightest for accents */
     
     /* Backgrounds */
-    --bg-0: #011f4b !important;             /* Darkest for main background */
-    --bg-1: #03396c !important;             /* Secondary for panels */
-    --bg-2: #005b96 !important;             /* Tertiary for elevated panels */
-    --bg-3: #2d5f7f !important;             /* Lighter variation */
-    --bg-primary: #011f4b !important;
-    --bg-secondary: #03396c !important;
-    --bg-panel: #005b96 !important;
-    --bg-tertiary: #2d5f7f !important;
+    --bg-0: #011f4b;             /* Darkest for main background */
+    --bg-1: #03396c;             /* Secondary for panels */
+    --bg-2: #005b96;             /* Tertiary for elevated panels */
+    --bg-3: #2d5f7f;             /* Lighter variation */
+    --bg-primary: #011f4b;
+    --bg-secondary: #03396c;
+    --bg-panel: #005b96;
+    --bg-tertiary: #2d5f7f;
     
     /* Text */
-    --text-1: #b3cde0 !important;           /* Lightest for primary text */
-    --text-2: #6497b1 !important;           /* Quaternary for secondary text */
-    --text-3: #4a7c95 !important;           /* Dimmed version for muted text */
-    --text-inverse: #011f4b !important;     /* Darkest for inverse text */
-    --text-primary: #b3cde0 !important;
-    --text-secondary: #6497b1 !important;
-    --text-tertiary: #4a7c95 !important;
-    --text-muted: #4a7c95 !important;
+    --text-1: #b3cde0;           /* Lightest for primary text */
+    --text-2: #6497b1;           /* Quaternary for secondary text */
+    --text-3: #4a7c95;           /* Dimmed version for muted text */
+    --text-inverse: #011f4b;     /* Darkest for inverse text */
+    --text-primary: #b3cde0;
+    --text-secondary: #6497b1;
+    --text-tertiary: #4a7c95;
+    --text-muted: #4a7c95;
     
     /* Borders */
-    --border-1: #005b96 !important;         /* Tertiary for borders */
-    --border-2: #6497b1 !important;         /* Quaternary for stronger borders */
-    --border-primary: #005b96 !important;
-    --border-secondary: #6497b1 !important;
-    --border-tertiary: #034768 !important;  /* Between secondary and tertiary */
+    --border-1: #005b96;         /* Tertiary for borders */
+    --border-2: #6497b1;         /* Quaternary for stronger borders */
+    --border-primary: #005b96;
+    --border-secondary: #6497b1;
+    --border-tertiary: #034768;  /* Between secondary and tertiary */
     
     /* Status Colors - Adapted to dark palette */
-    --success: #6497b1 !important;          /* Using quaternary */
-    --error: #c98d8d !important;            /* Lightened red that works with blues */
-    --warning: #b3cde0 !important;          /* Lightest for warnings */
-    --info: #6497b1 !important;             /* Quaternary */
+    --success: #6497b1;          /* Using quaternary */
+    --error: #c98d8d;            /* Lightened red that works with blues */
+    --warning: #b3cde0;          /* Lightest for warnings */
+    --info: #6497b1;             /* Quaternary */
     
-    --success-text: #6497b1 !important;
-    --success-bg: #0a2d4f !important;       /* Very dark blue tint */
-    --success-border: #005b96 !important;
+    --success-text: #6497b1;
+    --success-bg: #0a2d4f;       /* Very dark blue tint */
+    --success-border: #005b96;
     
-    --error-text: #c98d8d !important;
-    --error-bg: #2d1a1a !important;
-    --error-border: #4a2a2a !important;
+    --error-text: #c98d8d;
+    --error-bg: #2d1a1a;
+    --error-border: #4a2a2a;
     
-    --warning-text: #b3cde0 !important;
-    --warning-bg: #1a2d42 !important;
-    --warning-border: #2d4a68 !important;
+    --warning-text: #b3cde0;
+    --warning-bg: #1a2d42;
+    --warning-border: #2d4a68;
     
-    --info-text: #b3cde0 !important;
-    --info-bg: #0a2d4f !important;
-    --info-border: #005b96 !important;
+    --info-text: #b3cde0;
+    --info-bg: #0a2d4f;
+    --info-border: #005b96;
     
     /* Shadows - Using darkest color */
-    --shadow: rgba(1, 31, 75, 0.4) !important;
-    --shadow-dark: rgba(1, 31, 75, 0.6) !important;
-    --shadow-light: rgba(1, 31, 75, 0.2) !important;
-    --shadow-medium: rgba(1, 31, 75, 0.3) !important;
+    --shadow: rgba(1, 31, 75, 0.4);
+    --shadow-dark: rgba(1, 31, 75, 0.6);
+    --shadow-light: rgba(1, 31, 75, 0.2);
+    --shadow-medium: rgba(1, 31, 75, 0.3);
     
     /* Button Variables */
-    --btn-primary-bg: #6497b1 !important;
-    --btn-primary-text: #011f4b !important;
-    --btn-primary-hover: #005b96 !important;
+    --btn-primary-bg: #6497b1;
+    --btn-primary-text: #011f4b;
+    --btn-primary-hover: #005b96;
     
-    --btn-secondary-bg: #03396c !important;
-    --btn-secondary-text: #b3cde0 !important;
-    --btn-secondary-border: #005b96 !important;
-    --btn-secondary-hover: #005b96 !important;
+    --btn-secondary-bg: #03396c;
+    --btn-secondary-text: #b3cde0;
+    --btn-secondary-border: #005b96;
+    --btn-secondary-hover: #005b96;
     
-    --btn-success-bg: #6497b1 !important;
-    --btn-success-text: #011f4b !important;
-    --btn-success-hover: #4a7c95 !important;
+    --btn-success-bg: #6497b1;
+    --btn-success-text: #011f4b;
+    --btn-success-hover: #4a7c95;
     
     /* Input Variables */
-    --input-bg: #005b96 !important;
-    --input-text: #b3cde0 !important;
-    --input-border: #6497b1 !important;
-    --input-focus: #b3cde0 !important;
-    --input-placeholder: #6497b1 !important;
+    --input-bg: #005b96;
+    --input-text: #b3cde0;
+    --input-border: #6497b1;
+    --input-focus: #b3cde0;
+    --input-placeholder: #6497b1;
     
     /* Modal Variables */
-    --modal-bg: #005b96 !important;
-    --modal-overlay: rgba(1, 31, 75, 0.8) !important;
-    --modal-shadow: rgba(0, 0, 0, 0.5) !important;
+    --modal-bg: #005b96;
+    --modal-overlay: rgba(1, 31, 75, 0.8);
+    --modal-shadow: rgba(0, 0, 0, 0.5);
     
     /* Notification Variables */
-    --notification-bg: #005b96 !important;
-    --notification-shadow: rgba(1, 31, 75, 0.4) !important;
+    --notification-bg: #005b96;
+    --notification-shadow: rgba(1, 31, 75, 0.4);
     
     /* Sidebar Variables */
-    --sidebar-bg: #03396c !important;
-    --sidebar-item-hover: rgba(100, 151, 177, 0.2) !important;
-    --sidebar-item-active: #6497b1 !important;
+    --sidebar-bg: #03396c;
+    --sidebar-item-hover: rgba(100, 151, 177, 0.2);
+    --sidebar-item-active: #6497b1;
     
     /* Tooltip Variables */
-    --tooltip-bg: rgba(179, 205, 224, 0.9) !important;
-    --tooltip-text: #011f4b !important;
-    --tooltip-shadow: rgba(0, 0, 0, 0.3) !important;
+    --tooltip-bg: rgba(179, 205, 224, 0.9);
+    --tooltip-text: #011f4b;
+    --tooltip-shadow: rgba(0, 0, 0, 0.3);
     
     /* Scrollbar Variables */
-    --scrollbar-track: #03396c !important;
-    --scrollbar-thumb: #005b96 !important;
-    --scrollbar-thumb-hover: #6497b1 !important;
+    --scrollbar-track: #03396c;
+    --scrollbar-thumb: #005b96;
+    --scrollbar-thumb-hover: #6497b1;
     
     /* Room Variables */
-    --room-floor: #005b96 !important;
-    --room-wall-left: linear-gradient(to bottom, #03396c, #011f4b) !important;
-    --room-wall-right: linear-gradient(to left, #011f4b, #001225) !important;
-    --room-door: linear-gradient(to bottom, #4a7c95, #03396c) !important;
-    --room-door-handle: #b3cde0 !important;
+    --room-floor: #005b96;
+    --room-wall-left: linear-gradient(to bottom, #03396c, #011f4b);
+    --room-wall-right: linear-gradient(to left, #011f4b, #001225);
+    --room-door: linear-gradient(to bottom, #4a7c95, #03396c);
+    --room-door-handle: #b3cde0;
     
     /* Task Item Variables */
-    --task-item-completed: #0a2d4f !important;
-    --task-item-completed-border: #005b96 !important;
+    --task-item-completed: #0a2d4f;
+    --task-item-completed-border: #005b96;
 }
 
 /* CRITICAL: Force application with maximum specificity */
 html[data-theme="dark"] body {
-    background-color: var(--bg-primary) !important;
-    color: var(--text-primary) !important;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 html[data-theme="dark"] .panel {
-    background-color: var(--bg-panel) !important;
-    border-color: var(--border-primary) !important;
-    color: var(--text-primary) !important;
+    background-color: var(--bg-panel);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
 }
 
 html[data-theme="dark"] .panel-header {
-    background-color: var(--bg-secondary) !important;
-    border-color: var(--border-primary) !important;
-    color: var(--text-primary) !important;
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
 }
 
 html[data-theme="dark"] .main-header {
-    background-color: var(--bg-panel) !important;
-    border-color: var(--border-primary) !important;
-    color: var(--text-primary) !important;
+    background-color: var(--bg-panel);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
 }
 
 html[data-theme="dark"] .left-menu {
-    background-color: var(--sidebar-bg) !important;
-    border-color: var(--border-primary) !important;
+    background-color: var(--sidebar-bg);
+    border-color: var(--border-primary);
 }
 
 html[data-theme="dark"] .content-container {
-    background-color: var(--bg-0) !important;
+    background-color: var(--bg-0);
 }
 
 html[data-theme="dark"] .dashboard-content {
-    background-color: var(--bg-0) !important;
+    background-color: var(--bg-0);
 }
 
 html[data-theme="dark"] .tasks-content {
-    background-color: var(--bg-0) !important;
+    background-color: var(--bg-0);
 }
 
 html[data-theme="dark"] .settings-content {
-    background-color: var(--bg-0) !important;
+    background-color: var(--bg-0);
 }
 
 html[data-theme="dark"] .shop-content {
-    background-color: var(--bg-0) !important;
+    background-color: var(--bg-0);
 }
 
 html[data-theme="dark"] .habitus-content {
-    background-color: var(--bg-0) !important;
+    background-color: var(--bg-0);
 }
 
 html[data-theme="dark"] .subscription-content {
-    background-color: var(--bg-0) !important;
+    background-color: var(--bg-0);
 }
 
 /* CRITICAL: Prevent inline style overrides */
 html[data-theme="dark"] * {
-    color: inherit !important;
-    background-color: inherit !important;
+    color: inherit;
+    background-color: inherit;
 }
 
 /* Override for elements that should have specific colors */
 html[data-theme="dark"] .panel * {
-    color: var(--text-primary) !important;
+    color: var(--text-primary);
 }
 
 html[data-theme="dark"] .main-header * {
-    color: var(--text-primary) !important;
+    color: var(--text-primary);
 }
 
 html[data-theme="dark"] h1, 
@@ -208,56 +208,56 @@ html[data-theme="dark"] h3,
 html[data-theme="dark"] h4, 
 html[data-theme="dark"] h5, 
 html[data-theme="dark"] h6 {
-    color: var(--text-primary) !important;
+    color: var(--text-primary);
 }
 
 html[data-theme="dark"] p {
-    color: var(--text-secondary) !important;
+    color: var(--text-secondary);
 }
 
 /* Dark theme specific enhancements with new colors */
 html[data-theme="dark"] input::placeholder,
 html[data-theme="dark"] textarea::placeholder {
-    color: var(--input-placeholder) !important;
+    color: var(--input-placeholder);
 }
 
 html[data-theme="dark"] .setting-button:hover,
 html[data-theme="dark"] .theme-option:hover {
-    box-shadow: 0 4px 15px rgba(1, 31, 75, 0.5) !important;
+    box-shadow: 0 4px 15px rgba(1, 31, 75, 0.5);
 }
 
 html[data-theme="dark"] .complete-button:hover::before {
-    border-color: var(--primary-green-light) !important;
+    border-color: var(--primary-green-light);
 }
 
 html[data-theme="dark"] .shop-item:hover {
-    box-shadow: 0 4px 15px rgba(1, 31, 75, 0.5) !important;
+    box-shadow: 0 4px 15px rgba(1, 31, 75, 0.5);
 }
 
 html[data-theme="dark"] .habitus-preview:hover {
-    box-shadow: 0 4px 20px rgba(1, 31, 75, 0.6) !important;
+    box-shadow: 0 4px 20px rgba(1, 31, 75, 0.6);
 }
 
 /* Dark theme room styling overrides */
 html[data-theme="dark"] .room-floor {
-    background: var(--room-floor) !important;
+    background: var(--room-floor);
     background-image: 
         linear-gradient(rgba(179, 205, 224, 0.05) 1px, transparent 1px), 
-        linear-gradient(90deg, rgba(179, 205, 224, 0.05) 1px, transparent 1px) !important;
+        linear-gradient(90deg, rgba(179, 205, 224, 0.05) 1px, transparent 1px);
 }
 
 html[data-theme="dark"] .room-wall-left {
-    background: var(--room-wall-left) !important;
+    background: var(--room-wall-left);
 }
 
 html[data-theme="dark"] .room-wall-right {
-    background: var(--room-wall-right) !important;
+    background: var(--room-wall-right);
 }
 
 html[data-theme="dark"] .room-door {
-    background: var(--room-door) !important;
+    background: var(--room-door);
 }
 
 html[data-theme="dark"] .room-door::before {
-    background: var(--room-door-handle) !important;
+    background: var(--room-door-handle);
 }

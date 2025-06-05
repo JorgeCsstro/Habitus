@@ -1,216 +1,361 @@
-/* css/themes/light.css - FIXED VERSION (Prevents Color Removal) */
+/* css/themes/light.css - FIXED CALM VERSION */
 
 /* CRITICAL: Use :root for highest specificity and inheritance */
 html[data-theme="light"]:root,
 html[data-theme="light"] {
-    /* Core Palette - New Colors */
-    --primary: #725e45 !important;           /* Primary brown */
-    --primary-dark: #4e4d49 !important;      /* Darker brown for hover states */
-    --primary-light: #b7946a !important;     /* Lighter brown */
-    --primary-brown: #725e45 !important;
-    --primary-brown-light: #b7946a !important;
+    /* Core Palette - Calm & Distinct Colors */
+    --primary: #8d5b4c;           /* Warm earthy brown */
+    --primary-dark: #6d4037;      /* Darker warm brown */
+    --primary-light: #a67c5a;     /* Lighter warm brown */
+    --primary-brown: #8d5b4c;
+    --primary-brown-light: #a67c5a;
     
-    --secondary: #b7946a !important;         /* Tertiary from palette */
-    --secondary-dark: #725e45 !important;    /* Primary as darker secondary */
-    --secondary-light: #e2c58d !important;   /* Quaternary as lighter secondary */
-    --primary-green: #b7946a !important;     /* Using tertiary for "green" elements */
-    --primary-green-light: #e2c58d !important;
+    --secondary: #6a8d7f;         /* Muted sage green */
+    --secondary-dark: #5a7c70;    /* Darker sage */
+    --secondary-light: #8ba499;   /* Lighter sage */
+    --primary-green: #6a8d7f;     /* Muted green for success */
+    --primary-green-light: #8ba499;
     
-    --accent: #e2c58d !important;           /* Quaternary for accents */
+    --accent: #c4a356;           /* Muted gold accent */
     
-    /* Backgrounds */
-    --bg-0: #d6cfbf !important;             /* Lightest for main background */
-    --bg-1: #e2c58d !important;             /* Quaternary for secondary backgrounds */
-    --bg-2: #ffffff !important;             /* White for panels */
-    --bg-3: #f5f3f0 !important;             /* Very light tint */
-    --bg-primary: #d6cfbf !important;
-    --bg-secondary: #e2c58d !important;
-    --bg-panel: #ffffff !important;
-    --bg-tertiary: #f5f3f0 !important;
+    /* Backgrounds - FIXED for visual hierarchy */
+    --bg-0: #f9f5f0;             /* Very light cream main background */
+    --bg-1: #f5f1ea;             /* Light cream for headers/footers */
+    --bg-2: #ffffff;             /* Pure white for panels - creates contrast */
+    --bg-3: #fefcf8;             /* Off-white for hover states */
+    --bg-primary: #f9f5f0;
+    --bg-secondary: #f5f1ea;
+    --bg-panel: #ffffff;
+    --bg-tertiary: #fefcf8;
     
-    /* Text */
-    --text-1: #4e4d49 !important;           /* Darkest for primary text */
-    --text-2: #725e45 !important;           /* Primary for secondary text */
-    --text-3: #b7946a !important;           /* Tertiary for muted text */
-    --text-inverse: #ffffff !important;
-    --text-primary: #4e4d49 !important;
-    --text-secondary: #725e45 !important;
-    --text-tertiary: #b7946a !important;
-    --text-muted: #b7946a !important;
+    /* Text - Calmer, softer contrast */
+    --text-1: #2d2926;           /* Dark charcoal for primary text */
+    --text-2: #5a5755;           /* Medium gray for secondary text */
+    --text-3: #8d8580;           /* Light gray for muted text */
+    --text-inverse: #ffffff;
+    --text-primary: #2d2926;
+    --text-secondary: #5a5755;
+    --text-tertiary: #8d8580;
+    --text-muted: #8d8580;
     
-    /* Borders */
-    --border-1: #e2c58d !important;         /* Quaternary for borders */
-    --border-2: #b7946a !important;         /* Tertiary for stronger borders */
-    --border-primary: #e2c58d !important;
-    --border-secondary: #b7946a !important;
-    --border-tertiary: #f0ede8 !important;  /* Very light version */
+    /* Borders - Subtle and calm */
+    --border-1: #e9e2d9;         /* Very light border */
+    --border-2: #d6cfc7;         /* Slightly stronger border */
+    --border-primary: #e9e2d9;
+    --border-secondary: #d6cfc7;
+    --border-tertiary: #f0ebe4;  /* Barely visible border */
     
-    /* Status Colors - Adapted to new palette */
-    --success: #b7946a !important;          /* Using tertiary */
-    --error: #8b5a3c !important;            /* Darker reddish tone */
-    --warning: #e2c58d !important;          /* Quaternary */
-    --info: #725e45 !important;             /* Primary */
+    /* Status Colors - Muted and calm */
+    --success: #6a8d7f;          /* Muted sage green */
+    --error: #a15c5c;            /* Muted red */
+    --warning: #c4a356;          /* Muted gold */
+    --info: #5d7b8a;             /* Muted blue */
     
-    --success-text: #b7946a !important;
-    --success-bg: #f2ede4 !important;       /* Very light tint */
-    --success-border: #e2c58d !important;
+    --success-text: #6a8d7f;
+    --success-bg: #f0f5f2;       /* Very light sage */
+    --success-border: #cfdad4;
     
-    --error-text: #8b5a3c !important;
-    --error-bg: #f5f0ed !important;
-    --error-border: #d4b89a !important;
+    --error-text: #a15c5c;
+    --error-bg: #f9e8e5;
+    --error-border: #e0d0d0;
     
-    --warning-text: #725e45 !important;
-    --warning-bg: #f8f4ef !important;
-    --warning-border: #e2c58d !important;
+    --warning-text: #b6945a;
+    --warning-bg: #faf3e5;
+    --warning-border: #e9d8c6;
     
-    --info-text: #725e45 !important;
-    --info-bg: #f2ede4 !important;
-    --info-border: #b7946a !important;
+    --info-text: #5d7b8a;
+    --info-bg: #f0f4f6;
+    --info-border: #d0dce2;
     
-    /* Shadows - Using primary colors */
-    --shadow: rgba(78, 77, 73, 0.15) !important;
-    --shadow-dark: rgba(78, 77, 73, 0.25) !important;
-    --shadow-light: rgba(78, 77, 73, 0.08) !important;
-    --shadow-medium: rgba(78, 77, 73, 0.12) !important;
+    /* Shadows - Softer and more subtle */
+    --shadow: rgba(45, 41, 38, 0.08);
+    --shadow-dark: rgba(45, 41, 38, 0.15);
+    --shadow-light: rgba(45, 41, 38, 0.04);
+    --shadow-medium: rgba(45, 41, 38, 0.1);
     
-    /* Button Variables */
-    --btn-primary-bg: #725e45 !important;
-    --btn-primary-text: #ffffff !important;
-    --btn-primary-hover: #4e4d49 !important;
+    /* Button Variables - Calmer colors */
+    --btn-primary-bg: #8d5b4c;
+    --btn-primary-text: #ffffff;
+    --btn-primary-hover: #6d4037;
     
-    --btn-secondary-bg: #e2c58d !important;
-    --btn-secondary-text: #4e4d49 !important;
-    --btn-secondary-border: #b7946a !important;
-    --btn-secondary-hover: #d6cfbf !important;
+    --btn-secondary-bg: #f5f1ea;
+    --btn-secondary-text: #5a5755;
+    --btn-secondary-border: #e2d7cf;
+    --btn-secondary-hover: #e9e2d9;
     
-    --btn-success-bg: #b7946a !important;
-    --btn-success-text: #ffffff !important;
-    --btn-success-hover: #725e45 !important;
+    --btn-success-bg: #6a8d7f;
+    --btn-success-text: #ffffff;
+    --btn-success-hover: #5a7c70;
     
-    /* Input Variables */
-    --input-bg: #ffffff !important;
-    --input-text: #4e4d49 !important;
-    --input-border: #e2c58d !important;
-    --input-focus: #725e45 !important;
-    --input-placeholder: #b7946a !important;
+    /* Input Variables - Clean and calm */
+    --input-bg: #ffffff;
+    --input-text: #2d2926;
+    --input-border: #e9e2d9;
+    --input-focus: #8d5b4c;
+    --input-placeholder: #8d8580;
     
     /* Modal Variables */
-    --modal-bg: #ffffff !important;
-    --modal-overlay: rgba(78, 77, 73, 0.5) !important;
-    --modal-shadow: rgba(78, 77, 73, 0.2) !important;
+    --modal-bg: #ffffff;
+    --modal-overlay: rgba(45, 41, 38, 0.5);
+    --modal-shadow: rgba(45, 41, 38, 0.2);
     
     /* Notification Variables */
-    --notification-bg: #ffffff !important;
-    --notification-shadow: rgba(78, 77, 73, 0.15) !important;
+    --notification-bg: #ffffff;
+    --notification-shadow: rgba(45, 41, 38, 0.15);
     
-    /* Sidebar Variables */
-    --sidebar-bg: #e2c58d !important;
-    --sidebar-item-hover: rgba(114, 94, 69, 0.1) !important;
-    --sidebar-item-active: #725e45 !important;
+    /* Sidebar Variables - Warmer and calmer */
+    --sidebar-bg: #f5f1ea;
+    --sidebar-item-hover: rgba(141, 91, 76, 0.1);
+    --sidebar-item-active: #8d5b4c;
     
     /* Tooltip Variables */
-    --tooltip-bg: rgba(78, 77, 73, 0.9) !important;
-    --tooltip-text: #ffffff !important;
-    --tooltip-shadow: rgba(0, 0, 0, 0.2) !important;
+    --tooltip-bg: rgba(45, 41, 38, 0.9);
+    --tooltip-text: #ffffff;
+    --tooltip-shadow: rgba(0, 0, 0, 0.2);
     
-    /* Scrollbar Variables */
-    --scrollbar-track: #e2c58d !important;
-    --scrollbar-thumb: #b7946a !important;
-    --scrollbar-thumb-hover: #725e45 !important;
+    /* Scrollbar Variables - Warm colors */
+    --scrollbar-track: #f5f1ea;
+    --scrollbar-thumb: #d6cfc7;
+    --scrollbar-thumb-hover: #c5bcb3;
     
-    /* Room Variables */
-    --room-floor: #e2c58d !important;
-    --room-wall-left: linear-gradient(to bottom, #d6cfbf, #b7946a) !important;
-    --room-wall-right: linear-gradient(to left, #b7946a, #725e45) !important;
-    --room-door: linear-gradient(to bottom, #725e45, #4e4d49) !important;
-    --room-door-handle: #e2c58d !important;
+    /* Room Variables - Warm and inviting */
+    --room-floor: #FFD700;
+    --room-wall-left: linear-gradient(to bottom, #E0E0E0, #D0D0D0);
+    --room-wall-right: linear-gradient(to left, #D0D0D0, #C0C0C0);
+    --room-door: linear-gradient(to bottom, #8B6347, #654321);
+    --room-door-handle: #FFD700;
     
     /* Task Item Variables */
-    --task-item-completed: #f2ede4 !important;
-    --task-item-completed-border: #e2c58d !important;
+    --task-item-completed: #f9fffc;
+    --task-item-completed-border: #6a8d7f;
 }
 
 /* CRITICAL: Force application with maximum specificity */
 html[data-theme="light"] body {
-    background-color: var(--bg-primary) !important;
-    color: var(--text-primary) !important;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 html[data-theme="light"] .panel {
-    background-color: var(--bg-panel) !important;
-    border-color: var(--border-primary) !important;
-    color: var(--text-primary) !important;
+    background-color: var(--bg-panel);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
+    /* Add subtle shadow for depth */
+    box-shadow: 0 2px 8px var(--shadow-light), 0 1px 3px var(--shadow);
 }
 
 html[data-theme="light"] .panel-header {
-    background-color: var(--bg-secondary) !important;
-    border-color: var(--border-primary) !important;
-    color: var(--text-primary) !important;
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
 }
 
 html[data-theme="light"] .main-header {
-    background-color: var(--bg-panel) !important;
-    border-color: var(--border-primary) !important;
-    color: var(--text-primary) !important;
+    background-color: var(--bg-panel);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
+    /* Add subtle shadow for separation */
+    box-shadow: 0 1px 3px var(--shadow-light);
 }
 
 html[data-theme="light"] .left-menu {
-    background-color: var(--sidebar-bg) !important;
-    border-color: var(--border-primary) !important;
+    background-color: var(--sidebar-bg);
+    border-color: var(--border-primary);
+    /* Add subtle depth */
+    box-shadow: 2px 0 4px var(--shadow-light);
 }
 
+/* Content areas with proper background hierarchy */
 html[data-theme="light"] .content-container {
-    background-color: var(--bg-0) !important;
+    background-color: var(--bg-0);
 }
 
 html[data-theme="light"] .dashboard-content {
-    background-color: var(--bg-0) !important;
+    background-color: var(--bg-0);
 }
 
 html[data-theme="light"] .tasks-content {
-    background-color: var(--bg-0) !important;
+    background-color: var(--bg-0);
 }
 
 html[data-theme="light"] .settings-content {
-    background-color: var(--bg-0) !important;
+    background-color: var(--bg-0);
 }
 
 html[data-theme="light"] .shop-content {
-    background-color: var(--bg-0) !important;
+    background-color: var(--bg-0);
 }
 
 html[data-theme="light"] .habitus-content {
-    background-color: var(--bg-0) !important;
+    background-color: var(--bg-0);
 }
 
 html[data-theme="light"] .subscription-content {
-    background-color: var(--bg-0) !important;
+    background-color: var(--bg-0);
 }
 
-/* CRITICAL: Prevent inline style overrides */
-html[data-theme="light"] * {
-    color: inherit !important;
-    background-color: inherit !important;
+/* Enhanced visual separation for interactive elements */
+html[data-theme="light"] .daily-item,
+html[data-theme="light"] .goal-item,
+html[data-theme="light"] .challenge-item,
+html[data-theme="light"] .task-item {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
 }
 
-/* Override for elements that should have specific colors */
-html[data-theme="light"] .panel * {
-    color: var(--text-primary) !important;
+html[data-theme="light"] .daily-item:hover,
+html[data-theme="light"] .goal-item:hover,
+html[data-theme="light"] .challenge-item:hover,
+html[data-theme="light"] .task-item:hover {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+    box-shadow: 0 2px 6px var(--shadow);
 }
 
-html[data-theme="light"] .main-header * {
-    color: var(--text-primary) !important;
+/* Shop items with better contrast */
+html[data-theme="light"] .shop-item {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
 }
 
+html[data-theme="light"] .shop-item:hover {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+    box-shadow: 0 3px 8px var(--shadow);
+}
+
+/* Form elements with better distinction */
+html[data-theme="light"] .settings-section {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
+}
+
+html[data-theme="light"] .theme-option {
+    background-color: var(--bg-panel);
+    border: 2px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
+}
+
+html[data-theme="light"] .theme-option:hover {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+    box-shadow: 0 2px 6px var(--shadow);
+}
+
+html[data-theme="light"] .theme-option.active {
+    border-color: var(--primary-brown);
+    background-color: var(--bg-tertiary);
+    box-shadow: 0 0 0 3px rgba(141, 91, 76, 0.1);
+}
+
+/* Inventory items with proper contrast */
+html[data-theme="light"] .inventory-item {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
+}
+
+html[data-theme="light"] .inventory-item:hover:not(.disabled) {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+    box-shadow: 0 2px 6px var(--shadow);
+}
+
+/* Subscription plan cards */
+html[data-theme="light"] .plan-card {
+    background-color: var(--bg-panel);
+    border: 3px solid var(--border-primary);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+html[data-theme="light"] .plan-card:hover {
+    border-color: var(--border-secondary);
+    box-shadow: 0 8px 20px var(--shadow-medium);
+}
+
+/* Override for text to ensure proper inheritance */
 html[data-theme="light"] h1, 
 html[data-theme="light"] h2, 
 html[data-theme="light"] h3, 
 html[data-theme="light"] h4, 
 html[data-theme="light"] h5, 
 html[data-theme="light"] h6 {
-    color: var(--text-primary) !important;
+    color: var(--text-primary);
 }
 
 html[data-theme="light"] p {
-    color: var(--text-secondary) !important;
+    color: var(--text-secondary);
+}
+
+/* Notifications with better styling */
+html[data-theme="light"] .notification {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+/* Habitus preview with better separation */
+html[data-theme="light"] .habitus-preview {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 2px 8px var(--shadow-light);
+}
+
+html[data-theme="light"] .habitus-preview:hover {
+    border-color: var(--border-secondary);
+    box-shadow: 0 4px 15px var(--shadow);
+}
+
+/* Additional improvements for visual hierarchy */
+html[data-theme="light"] .modal-content {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 10px 30px var(--shadow-dark);
+}
+
+html[data-theme="light"] .cart-dropdown {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 8px 25px var(--shadow-medium);
+}
+
+html[data-theme="light"] .notifications-dropdown {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 8px 25px var(--shadow-medium);
+}
+
+/* Button styling improvements */
+html[data-theme="light"] .hcoin-balance {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
+}
+
+html[data-theme="light"] .hcoin-balance:hover {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+    box-shadow: 0 2px 6px var(--shadow);
+}
+
+/* Action buttons */
+html[data-theme="light"] .survey-button, 
+html[data-theme="light"] .messages-button, 
+html[data-theme="light"] .profile-button,
+html[data-theme="light"] .theme-toggle-button {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
+}
+
+html[data-theme="light"] .survey-button:hover, 
+html[data-theme="light"] .messages-button:hover, 
+html[data-theme="light"] .profile-button:hover,
+html[data-theme="light"] .theme-toggle-button:hover {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+    box-shadow: 0 2px 6px var(--shadow);
 }
