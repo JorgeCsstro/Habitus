@@ -1,133 +1,133 @@
-/* css/themes/light.css - FIXED Light Theme Variables with Higher Specificity */
+/* css/themes/light.css - Updated with New Color Palette */
 
 /* Light theme - using html selector for higher specificity */
 html[data-theme="light"],
 html[data-theme="light"] * {
-    /* Core Palette */
-    --primary: #8d5b4c;
-    --primary-dark: #7d4b3c;
-    --primary-light: #a66b5c;
-    --primary-brown: #8d5b4c;
-    --primary-brown-light: #a66b5c;
+    /* Core Palette - New Colors */
+    --primary: #725e45;           /* Primary brown */
+    --primary-dark: #4e4d49;      /* Darker brown for hover states */
+    --primary-light: #b7946a;     /* Lighter brown */
+    --primary-brown: #725e45;
+    --primary-brown-light: #b7946a;
     
-    --secondary: #6a8d7f;
-    --secondary-dark: #5a7c70;
-    --secondary-light: #7a9d8f;
-    --primary-green: #6a8d7f;
-    --primary-green-light: #7a9d8f;
+    --secondary: #b7946a;         /* Tertiary from palette */
+    --secondary-dark: #725e45;    /* Primary as darker secondary */
+    --secondary-light: #e2c58d;   /* Quaternary as lighter secondary */
+    --primary-green: #b7946a;     /* Using tertiary for "green" elements */
+    --primary-green-light: #e2c58d;
     
-    --accent: #c4a356;
+    --accent: #e2c58d;           /* Quaternary for accents */
     
     /* Backgrounds */
-    --bg-0: #f9f5f0;
-    --bg-1: #f5f1ea;
-    --bg-2: #ffffff;
-    --bg-3: #fbf8f5;
-    --bg-primary: #f9f5f0;
-    --bg-secondary: #f5f1ea;
+    --bg-0: #d6cfbf;             /* Lightest for main background */
+    --bg-1: #e2c58d;             /* Quaternary for secondary backgrounds */
+    --bg-2: #ffffff;             /* White for panels */
+    --bg-3: #f5f3f0;             /* Very light tint */
+    --bg-primary: #d6cfbf;
+    --bg-secondary: #e2c58d;
     --bg-panel: #ffffff;
-    --bg-tertiary: #fbf8f5;
+    --bg-tertiary: #f5f3f0;
     
     /* Text */
-    --text-1: #2d2926;
-    --text-2: #5a5755;
-    --text-3: #8d8580;
+    --text-1: #4e4d49;           /* Darkest for primary text */
+    --text-2: #725e45;           /* Primary for secondary text */
+    --text-3: #b7946a;           /* Tertiary for muted text */
     --text-inverse: #ffffff;
-    --text-primary: #2d2926;
-    --text-secondary: #5a5755;
-    --text-tertiary: #8d8580;
-    --text-muted: #8d8580;
+    --text-primary: #4e4d49;
+    --text-secondary: #725e45;
+    --text-tertiary: #b7946a;
+    --text-muted: #b7946a;
     
     /* Borders */
-    --border-1: #e9e2d9;
-    --border-2: #d6cfc7;
-    --border-primary: #e9e2d9;
-    --border-secondary: #d6cfc7;
-    --border-tertiary: #f0ebe4;
+    --border-1: #e2c58d;         /* Quaternary for borders */
+    --border-2: #b7946a;         /* Tertiary for stronger borders */
+    --border-primary: #e2c58d;
+    --border-secondary: #b7946a;
+    --border-tertiary: #f0ede8;  /* Very light version */
     
-    /* Status Colors */
-    --success: #6a8d7f;
-    --error: #a15c5c;
-    --warning: #c4a356;
-    --info: #5d7b8a;
+    /* Status Colors - Adapted to new palette */
+    --success: #b7946a;          /* Using tertiary */
+    --error: #8b5a3c;            /* Darker reddish tone */
+    --warning: #e2c58d;          /* Quaternary */
+    --info: #725e45;             /* Primary */
     
-    --success-text: #6a8d7f;
-    --success-bg: #e4ebe7;
-    --success-border: #cfdad4;
+    --success-text: #b7946a;
+    --success-bg: #f2ede4;       /* Very light tint */
+    --success-border: #e2c58d;
     
-    --error-text: #a15c5c;
-    --error-bg: #efe2e2;
-    --error-border: #e0d0d0;
+    --error-text: #8b5a3c;
+    --error-bg: #f5f0ed;
+    --error-border: #d4b89a;
     
-    --warning-text: #c4a356;
-    --warning-bg: #faf3e5;
-    --warning-border: #e9d8c6;
+    --warning-text: #725e45;
+    --warning-bg: #f8f4ef;
+    --warning-border: #e2c58d;
     
-    --info-text: #5d7b8a;
-    --info-bg: #e8f4f8;
-    --info-border: #d1e7ed;
+    --info-text: #725e45;
+    --info-bg: #f2ede4;
+    --info-border: #b7946a;
     
-    /* Shadows */
-    --shadow: rgba(141, 91, 76, 0.15);
-    --shadow-dark: rgba(141, 91, 76, 0.25);
-    --shadow-light: rgba(141, 91, 76, 0.08);
-    --shadow-medium: rgba(141, 91, 76, 0.12);
+    /* Shadows - Using primary colors */
+    --shadow: rgba(78, 77, 73, 0.15);
+    --shadow-dark: rgba(78, 77, 73, 0.25);
+    --shadow-light: rgba(78, 77, 73, 0.08);
+    --shadow-medium: rgba(78, 77, 73, 0.12);
     
     /* Button Variables */
-    --btn-primary-bg: #8d5b4c;
+    --btn-primary-bg: #725e45;
     --btn-primary-text: #ffffff;
-    --btn-primary-hover: #7d4b3c;
+    --btn-primary-hover: #4e4d49;
     
-    --btn-secondary-bg: #f5f1ea;
-    --btn-secondary-text: #5a5755;
-    --btn-secondary-border: #e9e2d9;
-    --btn-secondary-hover: #e9e2d9;
+    --btn-secondary-bg: #e2c58d;
+    --btn-secondary-text: #4e4d49;
+    --btn-secondary-border: #b7946a;
+    --btn-secondary-hover: #d6cfbf;
     
-    --btn-success-bg: #6a8d7f;
+    --btn-success-bg: #b7946a;
     --btn-success-text: #ffffff;
-    --btn-success-hover: #5a7c70;
+    --btn-success-hover: #725e45;
     
     /* Input Variables */
     --input-bg: #ffffff;
-    --input-text: #2d2926;
-    --input-border: #e9e2d9;
-    --input-focus: #8d5b4c;
-    --input-placeholder: #8d8580;
+    --input-text: #4e4d49;
+    --input-border: #e2c58d;
+    --input-focus: #725e45;
+    --input-placeholder: #b7946a;
     
     /* Modal Variables */
     --modal-bg: #ffffff;
-    --modal-overlay: rgba(45, 41, 38, 0.5);
-    --modal-shadow: rgba(141, 91, 76, 0.2);
+    --modal-overlay: rgba(78, 77, 73, 0.5);
+    --modal-shadow: rgba(78, 77, 73, 0.2);
     
     /* Notification Variables */
     --notification-bg: #ffffff;
-    --notification-shadow: rgba(141, 91, 76, 0.15);
+    --notification-shadow: rgba(78, 77, 73, 0.15);
     
     /* Sidebar Variables */
-    --sidebar-bg: #f5f1ea;
-    --sidebar-item-hover: rgba(141, 91, 76, 0.1);
-    --sidebar-item-active: #8d5b4c;
+    --sidebar-bg: #e2c58d;
+    --sidebar-item-hover: rgba(114, 94, 69, 0.1);
+    --sidebar-item-active: #725e45;
     
     /* Tooltip Variables */
-    --tooltip-bg: rgba(45, 41, 38, 0.9);
+    --tooltip-bg: rgba(78, 77, 73, 0.9);
     --tooltip-text: #ffffff;
     --tooltip-shadow: rgba(0, 0, 0, 0.2);
     
     /* Scrollbar Variables */
-    --scrollbar-track: #f5f1ea;
-    --scrollbar-thumb: #d6cfc7;
-    --scrollbar-thumb-hover: #c5bcb3;
+    --scrollbar-track: #e2c58d;
+    --scrollbar-thumb: #b7946a;
+    --scrollbar-thumb-hover: #725e45;
     
     /* Room Variables */
-    --room-floor: #FFD700;
-    --room-wall-left: linear-gradient(to bottom, #E0E0E0, #D0D0D0);
-    --room-wall-right: linear-gradient(to left, #D0D0D0, #C0C0C0);
-    --room-door: linear-gradient(to bottom, #8B6347, #654321);
-    --room-door-handle: #FFD700;
+    --room-floor: #e2c58d;
+    --room-wall-left: linear-gradient(to bottom, #d6cfbf, #b7946a);
+    --room-wall-right: linear-gradient(to left, #b7946a, #725e45);
+    --room-door: linear-gradient(to bottom, #725e45, #4e4d49);
+    --room-door-handle: #e2c58d;
     
     /* Task Item Variables */
-    --task-item-completed: #f0f9f0;
-    --task-item-completed-border: #c8e6c9;
+    --task-item-completed: #f2ede4;
+    --task-item-completed-border: #e2c58d;
 }
 
 /* Force higher specificity for critical elements */
