@@ -1,4 +1,4 @@
-// js/theme-manager.js - FIXED Theme System
+// js/theme-manager.js - FIXED Theme System (Primary Declaration)
 
 class ThemeManager {
     constructor() {
@@ -408,8 +408,8 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Initialize theme manager
-let themeManager;
+// FIXED: Single global declaration and initialization
+let themeManager; // Only declared here
 
 function initializeThemeManager() {
     console.log('🎨 Starting theme manager initialization...');
@@ -418,6 +418,8 @@ function initializeThemeManager() {
         themeManager = new ThemeManager();
         window.themeManager = themeManager;
         console.log('✅ Theme manager created and exposed globally');
+    } else {
+        console.log('✅ Theme manager already exists');
     }
     return themeManager;
 }
@@ -432,3 +434,10 @@ if (document.readyState === 'loading') {
 
 // Export for use in other files
 window.ThemeManager = ThemeManager;
+
+// FIXED: Global access without redeclaration
+if (typeof window !== 'undefined') {
+    window.getThemeManager = function() {
+        return window.themeManager || initializeThemeManager();
+    };
+}

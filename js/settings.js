@@ -1,25 +1,46 @@
-// settings.js - Simplified Theme System using CSS Variables
+// settings.js - FIXED Theme System (No Redeclaration)
+
+// FIXED: Use global theme manager - NO redeclaration
+function getThemeManager() {
+    return window.themeManager || window.getThemeManager();
+}
 
 // Updated changeTheme function
 function changeTheme(theme) {
-    if (!themeManager) {
+    const manager = getThemeManager();
+    if (!manager) {
         console.error('Theme manager not initialized');
         return;
     }
     
-    themeManager.setTheme(theme);
+    manager.setTheme(theme);
     showNotification(`Switched to ${theme} theme`, 'success');
 }
 
-// Global theme manager instance
-let themeManager;
-
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎨 Initializing simplified theme system...');
+    console.log('🎨 Initializing settings page theme integration...');
     
-    // Initialize theme manager
-    themeManager = new ThemeManager();
+    // Wait for theme manager to be ready
+    if (window.getThemeManager) {
+        setupSettingsAfterThemeManager();
+    } else {
+        // Wait for theme manager ready event
+        window.addEventListener('themeManagerReady', setupSettingsAfterThemeManager);
+        
+        // Fallback timeout
+        setTimeout(() => {
+            if (window.getThemeManager) {
+                setupSettingsAfterThemeManager();
+            } else {
+                console.warn('Theme manager not available after timeout');
+            }
+        }, 1000);
+    }
+});
+
+function setupSettingsAfterThemeManager() {
+    console.log('✅ Setting up settings page with theme manager');
     
     // Set up form listeners
     setupFormListeners();
@@ -33,11 +54,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add keyboard shortcuts
     setupKeyboardShortcuts();
     
-    // Add quick access to theme manager for debugging
-    window.themeManager = themeManager;
-    
     console.log('✅ Settings page initialized');
-});
+}
 
 /**
  * Set up theme-related event listeners
@@ -75,8 +93,11 @@ function setupKeyboardShortcuts() {
         // Ctrl/Cmd + Shift + T to toggle theme
         if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'T') {
             e.preventDefault();
-            const newTheme = themeManager.toggleTheme();
-            showNotification(`Theme toggled to ${newTheme}!`, 'info');
+            const manager = getThemeManager();
+            if (manager) {
+                const newTheme = manager.toggleTheme();
+                showNotification(`Theme toggled to ${newTheme}!`, 'info');
+            }
         }
     });
 }
@@ -86,7 +107,8 @@ function setupKeyboardShortcuts() {
  * @param {string} theme - Theme name (light/dark)
  */
 function changeTheme(theme) {
-    if (!themeManager) {
+    const manager = getThemeManager();
+    if (!manager) {
         console.error('Theme manager not initialized');
         return;
     }
@@ -99,7 +121,7 @@ function changeTheme(theme) {
     });
     
     // Apply theme
-    themeManager.setTheme(theme);
+    manager.setTheme(theme);
     
     // Show success notification and re-enable options
     setTimeout(() => {
@@ -111,9 +133,6 @@ function changeTheme(theme) {
         });
     }, 100);
 }
-
-// Rest of your existing settings.js functions remain the same...
-// (setupFormListeners, loadSavedPreferences, handleProfilePictureChange, etc.)
 
 /**
  * Set up form event listeners
@@ -672,5 +691,5 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Export theme manager for global access
-window.themeManager = themeManager;
+// FIXED: Export theme manager access for global use - no redeclaration
+window.getSettingsThemeManager = getThemeManager;
