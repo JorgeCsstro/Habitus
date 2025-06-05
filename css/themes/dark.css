@@ -1,15 +1,20 @@
-/* css/themes/dark.css - Dark Theme Variables */
+/* css/themes/dark.css - FIXED Dark Theme Variables with Higher Specificity */
 
-/* css/themes/dark.css - Dark Theme */
-[data-theme="dark"] {
+/* Dark theme - using html selector for higher specificity */
+html[data-theme="dark"],
+html[data-theme="dark"] * {
     /* Core Palette */
     --primary: #a66b5c;
     --primary-dark: #8d5b4c;
     --primary-light: #b8785c;
+    --primary-brown: #a66b5c;
+    --primary-brown-light: #b8785c;
     
     --secondary: #7a9d8f;
     --secondary-dark: #6a8d7f;
     --secondary-light: #8aad9f;
+    --primary-green: #7a9d8f;
+    --primary-green-light: #8aad9f;
     
     --accent: #d4b366;
     
@@ -18,26 +23,140 @@
     --bg-1: #1B1A55;
     --bg-2: #1a1a3a;
     --bg-3: #2a2970;
+    --bg-primary: #070F2B;
+    --bg-secondary: #1B1A55;
+    --bg-panel: #1a1a3a;
+    --bg-tertiary: #2a2970;
     
     /* Text */
     --text-1: #ffffff;
     --text-2: #dcdcf0;
     --text-3: #9290C3;
     --text-inverse: #070F2B;
+    --text-primary: #ffffff;
+    --text-secondary: #dcdcf0;
+    --text-tertiary: #9290C3;
+    --text-muted: #9290C3;
     
     /* Borders */
     --border-1: #535C91;
     --border-2: #3a3a5a;
+    --border-primary: #535C91;
+    --border-secondary: #3a3a5a;
+    --border-tertiary: #2a2950;
     
-    /* Status */
-    --success: var(--secondary);
+    /* Status Colors */
+    --success: #7a9d8f;
     --error: #e79a9a;
-    --warning: var(--accent);
+    --warning: #d4b366;
     --info: #8ab4d1;
+    
+    --success-text: #7a9d8f;
+    --success-bg: #1a2e29;
+    --success-border: #2a4a3a;
+    
+    --error-text: #e79a9a;
+    --error-bg: #2e1a1a;
+    --error-border: #4a2a2a;
+    
+    --warning-text: #d4b366;
+    --warning-bg: #2e2a1a;
+    --warning-border: #4a3a2a;
+    
+    --info-text: #8ab4d1;
+    --info-bg: #1a252e;
+    --info-border: #2a3a4a;
     
     /* Shadows */
     --shadow: rgba(0, 0, 0, 0.4);
     --shadow-dark: rgba(0, 0, 0, 0.6);
+    --shadow-light: rgba(0, 0, 0, 0.2);
+    --shadow-medium: rgba(0, 0, 0, 0.3);
+    
+    /* Button Variables */
+    --btn-primary-bg: #a66b5c;
+    --btn-primary-text: #ffffff;
+    --btn-primary-hover: #8d5b4c;
+    
+    --btn-secondary-bg: #1B1A55;
+    --btn-secondary-text: #dcdcf0;
+    --btn-secondary-border: #535C91;
+    --btn-secondary-hover: #2a2970;
+    
+    --btn-success-bg: #7a9d8f;
+    --btn-success-text: #ffffff;
+    --btn-success-hover: #6a8d7f;
+    
+    /* Input Variables */
+    --input-bg: #1a1a3a;
+    --input-text: #ffffff;
+    --input-border: #535C91;
+    --input-focus: #a66b5c;
+    --input-placeholder: #9290C3;
+    
+    /* Modal Variables */
+    --modal-bg: #1a1a3a;
+    --modal-overlay: rgba(7, 15, 43, 0.8);
+    --modal-shadow: rgba(0, 0, 0, 0.5);
+    
+    /* Notification Variables */
+    --notification-bg: #1a1a3a;
+    --notification-shadow: rgba(0, 0, 0, 0.4);
+    
+    /* Sidebar Variables */
+    --sidebar-bg: #1B1A55;
+    --sidebar-item-hover: rgba(166, 107, 92, 0.2);
+    --sidebar-item-active: #a66b5c;
+    
+    /* Tooltip Variables */
+    --tooltip-bg: rgba(255, 255, 255, 0.9);
+    --tooltip-text: #070F2B;
+    --tooltip-shadow: rgba(0, 0, 0, 0.3);
+    
+    /* Scrollbar Variables */
+    --scrollbar-track: #1B1A55;
+    --scrollbar-thumb: #535C91;
+    --scrollbar-thumb-hover: #6a6aa1;
+    
+    /* Room Variables */
+    --room-floor: #4a4a8a;
+    --room-wall-left: linear-gradient(to bottom, #3a3a6a, #2a2a5a);
+    --room-wall-right: linear-gradient(to left, #2a2a5a, #1a1a4a);
+    --room-door: linear-gradient(to bottom, #5a4a3a, #4a3a2a);
+    --room-door-handle: #d4b366;
+    
+    /* Task Item Variables */
+    --task-item-completed: #1a2e29;
+    --task-item-completed-border: #2a4a3a;
+}
+
+/* Force higher specificity for critical elements */
+html[data-theme="dark"] body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+html[data-theme="dark"] .panel {
+    background-color: var(--bg-panel);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
+}
+
+html[data-theme="dark"] .panel-header {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
+}
+
+html[data-theme="dark"] .main-header {
+    background-color: var(--bg-panel);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
+}
+
+html[data-theme="dark"] .left-menu {
+    background-color: var(--sidebar-bg);
+    border-color: var(--border-primary);
 }
 
 /* Dark theme meta theme-color */
@@ -45,36 +164,49 @@ html[data-theme="dark"] {
     color-scheme: dark;
 }
 
-/* Dark theme input placeholders */
-[data-theme="dark"] input::placeholder,
-[data-theme="dark"] textarea::placeholder {
+/* Dark theme specific enhancements */
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
     color: var(--input-placeholder);
 }
 
-/* Dark theme specific button hover effects */
-[data-theme="dark"] .setting-button:hover,
-[data-theme="dark"] .theme-option:hover {
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+html[data-theme="dark"] .setting-button:hover,
+html[data-theme="dark"] .theme-option:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
-/* Dark theme modal styles */
-.theme-dark .modal-content {
-    background-color: var(--modal-bg);
-    box-shadow: 0 10px 30px var(--shadow-medium);
+html[data-theme="dark"] .complete-button:hover::before {
+    border-color: var(--primary-green-light);
 }
 
-/* Dark theme specific scrollbar */
-.theme-dark ::-webkit-scrollbar-thumb {
-    background-color: var(--scrollbar-thumb);
+html[data-theme="dark"] .shop-item:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
-/* Dark theme specific shadows */
-.theme-dark .panel,
-.theme-dark .modal-content {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+html[data-theme="dark"] .habitus-preview:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
 }
 
-/* Dark theme loading states */
-.theme-dark .loading-spinner {
-    border-top-color: var(--primary-color);
+/* Dark theme room styling overrides */
+html[data-theme="dark"] .room-floor {
+    background: var(--room-floor);
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), 
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+html[data-theme="dark"] .room-wall-left {
+    background: var(--room-wall-left);
+}
+
+html[data-theme="dark"] .room-wall-right {
+    background: var(--room-wall-right);
+}
+
+html[data-theme="dark"] .room-door {
+    background: var(--room-door);
+}
+
+html[data-theme="dark"] .room-door::before {
+    background: var(--room-door-handle);
 }

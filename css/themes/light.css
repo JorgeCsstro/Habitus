@@ -1,15 +1,20 @@
-/* css/themes/light.css - Light Theme Variables */
+/* css/themes/light.css - FIXED Light Theme Variables with Higher Specificity */
 
-/* css/themes/light.css - Light Theme */
-[data-theme="light"] {
+/* Light theme - using html selector for higher specificity */
+html[data-theme="light"],
+html[data-theme="light"] * {
     /* Core Palette */
     --primary: #8d5b4c;
     --primary-dark: #7d4b3c;
     --primary-light: #a66b5c;
+    --primary-brown: #8d5b4c;
+    --primary-brown-light: #a66b5c;
     
     --secondary: #6a8d7f;
     --secondary-dark: #5a7c70;
     --secondary-light: #7a9d8f;
+    --primary-green: #6a8d7f;
+    --primary-green-light: #7a9d8f;
     
     --accent: #c4a356;
     
@@ -18,62 +23,138 @@
     --bg-1: #f5f1ea;
     --bg-2: #ffffff;
     --bg-3: #fbf8f5;
+    --bg-primary: #f9f5f0;
+    --bg-secondary: #f5f1ea;
+    --bg-panel: #ffffff;
+    --bg-tertiary: #fbf8f5;
     
     /* Text */
     --text-1: #2d2926;
     --text-2: #5a5755;
     --text-3: #8d8580;
     --text-inverse: #ffffff;
+    --text-primary: #2d2926;
+    --text-secondary: #5a5755;
+    --text-tertiary: #8d8580;
+    --text-muted: #8d8580;
     
     /* Borders */
     --border-1: #e9e2d9;
     --border-2: #d6cfc7;
+    --border-primary: #e9e2d9;
+    --border-secondary: #d6cfc7;
+    --border-tertiary: #f0ebe4;
     
-    /* Status */
-    --success: var(--secondary);
+    /* Status Colors */
+    --success: #6a8d7f;
     --error: #a15c5c;
-    --warning: var(--accent);
+    --warning: #c4a356;
     --info: #5d7b8a;
+    
+    --success-text: #6a8d7f;
+    --success-bg: #e4ebe7;
+    --success-border: #cfdad4;
+    
+    --error-text: #a15c5c;
+    --error-bg: #efe2e2;
+    --error-border: #e0d0d0;
+    
+    --warning-text: #c4a356;
+    --warning-bg: #faf3e5;
+    --warning-border: #e9d8c6;
+    
+    --info-text: #5d7b8a;
+    --info-bg: #e8f4f8;
+    --info-border: #d1e7ed;
     
     /* Shadows */
     --shadow: rgba(141, 91, 76, 0.15);
     --shadow-dark: rgba(141, 91, 76, 0.25);
+    --shadow-light: rgba(141, 91, 76, 0.08);
+    --shadow-medium: rgba(141, 91, 76, 0.12);
+    
+    /* Button Variables */
+    --btn-primary-bg: #8d5b4c;
+    --btn-primary-text: #ffffff;
+    --btn-primary-hover: #7d4b3c;
+    
+    --btn-secondary-bg: #f5f1ea;
+    --btn-secondary-text: #5a5755;
+    --btn-secondary-border: #e9e2d9;
+    --btn-secondary-hover: #e9e2d9;
+    
+    --btn-success-bg: #6a8d7f;
+    --btn-success-text: #ffffff;
+    --btn-success-hover: #5a7c70;
+    
+    /* Input Variables */
+    --input-bg: #ffffff;
+    --input-text: #2d2926;
+    --input-border: #e9e2d9;
+    --input-focus: #8d5b4c;
+    --input-placeholder: #8d8580;
+    
+    /* Modal Variables */
+    --modal-bg: #ffffff;
+    --modal-overlay: rgba(45, 41, 38, 0.5);
+    --modal-shadow: rgba(141, 91, 76, 0.2);
+    
+    /* Notification Variables */
+    --notification-bg: #ffffff;
+    --notification-shadow: rgba(141, 91, 76, 0.15);
+    
+    /* Sidebar Variables */
+    --sidebar-bg: #f5f1ea;
+    --sidebar-item-hover: rgba(141, 91, 76, 0.1);
+    --sidebar-item-active: #8d5b4c;
+    
+    /* Tooltip Variables */
+    --tooltip-bg: rgba(45, 41, 38, 0.9);
+    --tooltip-text: #ffffff;
+    --tooltip-shadow: rgba(0, 0, 0, 0.2);
+    
+    /* Scrollbar Variables */
+    --scrollbar-track: #f5f1ea;
+    --scrollbar-thumb: #d6cfc7;
+    --scrollbar-thumb-hover: #c5bcb3;
+    
+    /* Room Variables */
+    --room-floor: #FFD700;
+    --room-wall-left: linear-gradient(to bottom, #E0E0E0, #D0D0D0);
+    --room-wall-right: linear-gradient(to left, #D0D0D0, #C0C0C0);
+    --room-door: linear-gradient(to bottom, #8B6347, #654321);
+    --room-door-handle: #FFD700;
+    
+    /* Task Item Variables */
+    --task-item-completed: #f0f9f0;
+    --task-item-completed-border: #c8e6c9;
 }
 
-/* Light theme room styling */
-.theme-light .room-floor {
-    background: var(--room-floor);
-    background-image: 
-        linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+/* Force higher specificity for critical elements */
+html[data-theme="light"] body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
 }
 
-.theme-light .room-wall {
-    background: var(--room-wall);
+html[data-theme="light"] .panel {
+    background-color: var(--bg-panel);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
 }
 
-.theme-light .room-door {
-    background: var(--room-door);
+html[data-theme="light"] .panel-header {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
 }
 
-/* Light theme specific button styles */
-.theme-light .create-task-btn {
-    background-color: var(--primary-green);
-    color: var(--text-inverse);
+html[data-theme="light"] .main-header {
+    background-color: var(--bg-panel);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
 }
 
-/* Light theme modal styles */
-.theme-light .modal {
-    background-color: var(--modal-overlay);
-}
-
-.theme-light .modal-content {
-    background-color: var(--modal-bg);
-    box-shadow: 0 10px 30px var(--shadow-medium);
-}
-
-/* Light theme form styles */
-.theme-light input::placeholder,
-.theme-light textarea::placeholder {
-    color: var(--text-secondary);
+html[data-theme="light"] .left-menu {
+    background-color: var(--sidebar-bg);
+    border-color: var(--border-primary);
 }

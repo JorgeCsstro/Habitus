@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🎨 Initializing settings page theme integration...');
     
     // Wait for theme manager to be ready
-    if (window.getThemeManager) {
+    if (window.themeManager) {
         setupSettingsAfterThemeManager();
     } else {
         // Wait for theme manager ready event
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Fallback timeout
         setTimeout(() => {
-            if (window.getThemeManager) {
+            if (window.themeManager) {
                 setupSettingsAfterThemeManager();
             } else {
                 console.warn('Theme manager not available after timeout');
