@@ -1,4 +1,4 @@
-// js/theme-manager.js - FIXED Theme System with Force Updates
+// js/theme-manager.js - FIXED VERSION (No Color Removal)
 
 class ThemeManager {
     constructor() {
@@ -21,8 +21,8 @@ class ThemeManager {
             // Find or create theme stylesheet
             this.setupThemeStylesheet();
             
-            // Apply initial theme immediately with force
-            this.applyTheme(this.currentTheme, false, true);
+            // Apply initial theme WITHOUT forcing visual updates
+            this.applyTheme(this.currentTheme, false, false);
             
             // Setup system theme watching
             this.watchSystemTheme();
@@ -35,11 +35,6 @@ class ThemeManager {
             
             // Expose globally
             window.themeManager = this;
-            
-            // Force a visual update after initialization
-            setTimeout(() => {
-                this.forceVisualUpdate();
-            }, 100);
             
             // Dispatch ready event
             window.dispatchEvent(new CustomEvent('themeManagerReady', {
@@ -82,8 +77,13 @@ class ThemeManager {
             this.themeStylesheet.id = 'theme-stylesheet';
             this.themeStylesheet.rel = 'stylesheet';
             
-            // Insert as the LAST stylesheet for highest specificity
-            document.head.appendChild(this.themeStylesheet);
+            // Insert as the FIRST stylesheet for proper cascade
+            const firstLink = document.head.querySelector('link[rel="stylesheet"]');
+            if (firstLink) {
+                document.head.insertBefore(this.themeStylesheet, firstLink);
+            } else {
+                document.head.appendChild(this.themeStylesheet);
+            }
         } else {
             console.log('Found existing theme stylesheet');
         }
@@ -109,14 +109,8 @@ class ThemeManager {
         this.isChanging = true;
 
         try {
-            if (animate) {
-                this.animateThemeChange(() => {
-                    this.applyTheme(theme, true, true);
-                });
-            } else {
-                this.applyTheme(theme, false, true);
-            }
-
+            // Apply theme immediately without complex animations
+            this.applyTheme(theme, animate, false);
             this.currentTheme = theme;
             
             // Save to localStorage
@@ -130,11 +124,6 @@ class ThemeManager {
             // Update UI elements
             this.updateThemeUI();
             
-            // Force visual update
-            setTimeout(() => {
-                this.forceVisualUpdate();
-            }, 50);
-            
             // Notify observers
             this.notifyObservers(theme);
 
@@ -147,12 +136,12 @@ class ThemeManager {
             // Always reset the changing flag
             setTimeout(() => {
                 this.isChanging = false;
-            }, 200);
+            }, 100);
         }
     }
 
     applyTheme(theme, animated = false, force = false) {
-        console.log(`🎨 Applying theme: ${theme} (animated: ${animated}, force: ${force})`);
+        console.log(`🎨 Applying theme: ${theme} (animated: ${animated})`);
         
         const html = document.documentElement;
         const body = document.body;
@@ -162,19 +151,17 @@ class ThemeManager {
             body.classList.add('theme-switching');
         }
 
-        // Update CSS file with cache busting
+        // Update CSS file
         const newHref = this.getThemeCSSPath(theme);
-        if (force || this.themeStylesheet.href !== newHref) {
+        if (this.themeStylesheet.href !== newHref) {
             console.log(`Loading theme CSS: ${newHref}`);
-            // Add cache busting for force updates
-            this.themeStylesheet.href = force ? `${newHref}?v=${Date.now()}` : newHref;
+            this.themeStylesheet.href = newHref;
         }
 
-        // FORCE update data attribute
+        // Update data attribute
         html.setAttribute('data-theme', theme);
-        html.dataset.theme = theme; // Double ensure
         
-        // FORCE update body classes
+        // Update body classes
         body.classList.remove('theme-light', 'theme-dark');
         body.classList.add(`theme-${theme}`);
         
@@ -190,40 +177,10 @@ class ThemeManager {
 
         // Dispatch custom event
         window.dispatchEvent(new CustomEvent('themeChanged', {
-            detail: { theme, animated, force }
+            detail: { theme, animated }
         }));
 
         console.log(`✅ Theme applied: ${theme}`);
-    }
-
-    forceVisualUpdate() {
-        console.log('🎨 Forcing visual update...');
-        
-        // Force recalculation by temporarily modifying and restoring the theme attribute
-        const html = document.documentElement;
-        const currentTheme = html.getAttribute('data-theme');
-        
-        html.removeAttribute('data-theme');
-        html.offsetHeight; // Force reflow
-        html.setAttribute('data-theme', currentTheme);
-        
-        // Force re-application of styles
-        const allElements = document.querySelectorAll('*');
-        allElements.forEach(el => {
-            const computedStyle = window.getComputedStyle(el);
-            el.style.color = computedStyle.color;
-            el.style.backgroundColor = computedStyle.backgroundColor;
-            
-            // Force redraw
-            el.style.display = 'none';
-            el.offsetHeight; // Force reflow
-            el.style.display = '';
-        });
-        
-        // Trigger resize event to force repaints
-        window.dispatchEvent(new Event('resize'));
-        
-        console.log('✅ Visual update completed');
     }
 
     getThemeCSSPath(theme) {
@@ -231,27 +188,6 @@ class ThemeManager {
         const isInSubdirectory = window.location.pathname.includes('/pages/');
         const basePath = isInSubdirectory ? '../css/themes/' : 'css/themes/';
         return `${basePath}${theme}.css`;
-    }
-
-    animateThemeChange(callback) {
-        const body = document.body;
-        
-        // Add fade effect
-        body.style.transition = 'opacity 0.3s ease';
-        body.style.opacity = '0.3';
-        
-        setTimeout(() => {
-            callback();
-            
-            setTimeout(() => {
-                body.style.opacity = '1';
-                
-                setTimeout(() => {
-                    body.style.transition = '';
-                    body.style.opacity = '';
-                }, 300);
-            }, 50);
-        }, 150);
     }
 
     updateMetaThemeColor(theme) {
@@ -265,7 +201,7 @@ class ThemeManager {
         
         const colors = {
             light: '#f9f5f0',
-            dark: '#070F2B'
+            dark: '#011f4b'
         };
         
         metaThemeColor.content = colors[theme] || colors.light;
@@ -395,62 +331,33 @@ class ThemeManager {
             return;
         }
 
-        // Fallback notification
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${type === 'info' ? 'var(--info-bg)' : 'var(--warning-bg)'};
-            color: ${type === 'info' ? 'var(--info-text)' : 'var(--warning-text)'};
-            padding: 12px 18px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px var(--shadow);
-            z-index: 10000;
-            font-size: 14px;
-            font-weight: 500;
-            animation: slideIn 0.3s ease;
-            border-left: 4px solid ${type === 'info' ? 'var(--info-text)' : 'var(--warning-text)'};
-            max-width: 300px;
-        `;
-        notification.textContent = message;
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
+        // Simple fallback notification that doesn't interfere with theme
+        console.log(`📢 ${type.toUpperCase()}: ${message}`);
     }
 }
 
-// CSS for notifications animation - Enhanced
+// CSS for theme transitions - SIMPLIFIED
 const style = document.createElement('style');
 style.textContent = `
-    @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-    }
-    
     .theme-switching,
     .theme-switching * {
         transition: none !important;
         animation: none !important;
     }
     
-    /* FORCE theme variable inheritance */
+    /* Ensure proper theme inheritance */
+    html[data-theme] {
+        transition: none;
+    }
+    
     html[data-theme] * {
-        --theme-applied: var(--text-1, initial);
+        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     }
 `;
 document.head.appendChild(style);
 
 // FIXED: Single global declaration and initialization
-let themeManager; // Only declared here
+let themeManager;
 
 function initializeThemeManager() {
     console.log('🎨 Starting FIXED theme manager initialization...');
@@ -476,20 +383,11 @@ if (document.readyState === 'loading') {
 // Export for use in other files
 window.ThemeManager = ThemeManager;
 
-// FIXED: Global access without redeclaration
+// Global access without redeclaration
 if (typeof window !== 'undefined') {
     window.getThemeManager = function() {
         return window.themeManager || initializeThemeManager();
     };
 }
-
-// Additional force update on visibility change
-document.addEventListener('visibilitychange', function() {
-    if (!document.hidden && window.themeManager) {
-        setTimeout(() => {
-            window.themeManager.forceVisualUpdate();
-        }, 100);
-    }
-});
 
 console.log('✅ FIXED Theme Manager script loaded');
