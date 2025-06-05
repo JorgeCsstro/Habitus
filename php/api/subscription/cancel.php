@@ -4,7 +4,10 @@
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';
 require_once '../../include/auth.php';
-require_once '../../include/functions.php';
+require_once '../../../vendor/autoload.php';
+
+// Set JSON header
+header('Content-Type: application/json');
 
 // Check if user is logged in
 if (!isLoggedIn()) {
@@ -12,66 +15,64 @@ if (!isLoggedIn()) {
     exit;
 }
 
-// Check if request is POST
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit;
-}
+// Initialize Stripe
+\Stripe\Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
+\Stripe\Stripe::setApiVersion($_ENV['STRIPE_API_VERSION']);
 
 try {
-    // Get current user subscription info
-    $userQuery = "SELECT subscription_type, subscription_expires FROM users WHERE id = ?";
-    $stmt = $conn->prepare($userQuery);
-    $stmt->execute([$_SESSION['user_id']]);
-    $userData = $stmt->fetch();
+    // Get user data
+    $userData = getUserData($_SESSION['user_id']);
     
-    if ($userData['subscription_type'] === 'free') {
+    if (empty($userData['stripe_subscription_id'])) {
         echo json_encode([
             'success' => false,
-            'message' => 'You do not have an active subscription'
+            'message' => 'No active subscription found'
         ]);
         exit;
     }
     
-    $expiresDate = $userData['subscription_expires'];
+    // Retrieve the subscription
+    $subscription = \Stripe\Subscription::retrieve($userData['stripe_subscription_id']);
     
-    // In a real implementation, you would:
-    // 1. Cancel subscription with payment provider (Stripe/PayPal)
-    // 2. Set subscription to not renew
-    // 3. User retains access until expiry date
+    // Cancel at period end (user keeps access until expiry)
+    $subscription->cancel_at_period_end = true;
+    $subscription->save();
     
-    // For this demo, we'll just mark the subscription as cancelled
-    // User will retain access until the expiry date
+    // Get the expiry date
+    $expiresDate = date('F j, Y', $subscription->current_period_end);
     
-    // Send cancellation notification
-    $notificationTitle = "Subscription Cancelled";
-    $notificationMessage = "Your subscription has been cancelled. You will retain access to " . 
-                          ucfirst($userData['subscription_type']) . " features until " . 
-                          date('F j, Y', strtotime($expiresDate));
+    // Log the cancellation
+    $insertQuery = "INSERT INTO subscription_history 
+                   (user_id, event_type, plan_type, amount, created_at) 
+                   VALUES (?, 'cancelled', ?, 0, NOW())";
+    $stmt = $conn->prepare($insertQuery);
+    $stmt->execute([$_SESSION['user_id'], $userData['subscription_type']]);
     
+    // Send notification
+    $notificationMessage = "Your subscription has been cancelled. You will retain access until $expiresDate.";
     $insertNotification = "INSERT INTO notifications 
-                          (user_id, type, title, message) 
-                          VALUES (?, 'update', ?, ?)";
+                          (user_id, type, title, message, created_at) 
+                          VALUES (?, 'update', 'Subscription Cancelled', ?, NOW())";
     $stmt = $conn->prepare($insertNotification);
-    $stmt->execute([$_SESSION['user_id'], $notificationTitle, $notificationMessage]);
-    
-    // Record cancellation in transactions
-    $transactionDesc = "Cancelled " . ucfirst($userData['subscription_type']) . " subscription";
-    $insertTransaction = "INSERT INTO transactions 
-                         (user_id, amount, description, transaction_type, reference_type) 
-                         VALUES (?, 0, ?, 'earn', 'subscription')";
-    $stmt = $conn->prepare($insertTransaction);
-    $stmt->execute([$_SESSION['user_id'], $transactionDesc]);
+    $stmt->execute([$_SESSION['user_id'], $notificationMessage]);
     
     echo json_encode([
         'success' => true,
         'message' => 'Subscription cancelled successfully',
-        'expires_date' => date('F j, Y', strtotime($expiresDate))
+        'expires_date' => $expiresDate
     ]);
     
-} catch (Exception $e) {
+} catch (\Stripe\Exception\ApiErrorException $e) {
+    error_log('Stripe API error: ' . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'Error cancelling subscription: ' . $e->getMessage()
+        'message' => 'Unable to cancel subscription. Please try again.'
+    ]);
+} catch (\Exception $e) {
+    error_log('General error: ' . $e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'message' => 'An error occurred. Please try again.'
     ]);
 }
+?>
