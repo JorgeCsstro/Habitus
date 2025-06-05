@@ -1,34 +1,34 @@
-/* css/themes/dark.css - FIXED VERSION (Prevents Color Removal) */
+/* css/themes/dark.css - UPDATED WITH NEW COLOR PALETTE */
 
 /* CRITICAL: Use :root for highest specificity and inheritance */
 html[data-theme="dark"]:root,
 html[data-theme="dark"] {
     /* Core Palette - New Dark Colors */
-    --primary: #6497b1;           /* Quaternary for primary elements */
-    --primary-dark: #005b96;      /* Tertiary for darker states */
-    --primary-light: #b3cde0;     /* Lightest for light variations */
-    --primary-brown: #6497b1;     /* Maintaining compatibility */
-    --primary-brown-light: #b3cde0;
+    --primary: #b3cde0;           /* Lightest for primary elements in dark theme */
+    --primary-dark: #6497b1;      /* Quaternary for darker states */
+    --primary-light: #d1e5f0;     /* Even lighter tint */
+    --primary-brown: #b3cde0;     /* Maintaining compatibility */
+    --primary-brown-light: #d1e5f0;
     
-    --secondary: #b3cde0;         /* Lightest for secondary elements */
-    --secondary-dark: #6497b1;    /* Quaternary as darker secondary */
-    --secondary-light: #d1e5f0;   /* Even lighter tint */
+    --secondary: #6497b1;         /* Quaternary for secondary elements */
+    --secondary-dark: #005b96;    /* Tertiary as darker secondary */
+    --secondary-light: #b3cde0;   /* Lightest for light variations */
     --primary-green: #6497b1;     /* Using quaternary for "green" elements */
     --primary-green-light: #b3cde0;
     
     --accent: #b3cde0;           /* Lightest for accents */
     
-    /* Backgrounds */
-    --bg-0: #011f4b;             /* Darkest for main background */
-    --bg-1: #03396c;             /* Secondary for panels */
-    --bg-2: #005b96;             /* Tertiary for elevated panels */
-    --bg-3: #2d5f7f;             /* Lighter variation */
+    /* Backgrounds - Proper dark hierarchy */
+    --bg-0: #1a1a3a;             /* Darkest for main background */
+    --bg-1: #03396c;             /* Secondary for headers/footers */
+    --bg-2: #005b96;             /* Tertiary for panels - elevated */
+    --bg-3: #1a4a75;             /* Lighter variation for hover states */
     --bg-primary: #011f4b;
     --bg-secondary: #03396c;
-    --bg-panel: #005b96;
-    --bg-tertiary: #2d5f7f;
+    --bg-panel: #1b1a55;
+    --bg-tertiary: #1a4a75;
     
-    /* Text */
+    /* Text - Using lighter colors for contrast on dark backgrounds */
     --text-1: #b3cde0;           /* Lightest for primary text */
     --text-2: #6497b1;           /* Quaternary for secondary text */
     --text-3: #4a7c95;           /* Dimmed version for muted text */
@@ -38,7 +38,7 @@ html[data-theme="dark"] {
     --text-tertiary: #4a7c95;
     --text-muted: #4a7c95;
     
-    /* Borders */
+    /* Borders - Using middle tones */
     --border-1: #005b96;         /* Tertiary for borders */
     --border-2: #6497b1;         /* Quaternary for stronger borders */
     --border-primary: #005b96;
@@ -67,7 +67,7 @@ html[data-theme="dark"] {
     --info-bg: #0a2d4f;
     --info-border: #005b96;
     
-    /* Shadows - Using darkest color */
+    /* Shadows - Using darkest color for proper depth */
     --shadow: rgba(1, 31, 75, 0.4);
     --shadow-dark: rgba(1, 31, 75, 0.6);
     --shadow-light: rgba(1, 31, 75, 0.2);
@@ -76,7 +76,7 @@ html[data-theme="dark"] {
     /* Button Variables */
     --btn-primary-bg: #6497b1;
     --btn-primary-text: #011f4b;
-    --btn-primary-hover: #005b96;
+    --btn-primary-hover: #b3cde0;
     
     --btn-secondary-bg: #03396c;
     --btn-secondary-text: #b3cde0;
@@ -104,7 +104,7 @@ html[data-theme="dark"] {
     --notification-shadow: rgba(1, 31, 75, 0.4);
     
     /* Sidebar Variables */
-    --sidebar-bg: #03396c;
+    --sidebar-bg: #121233;
     --sidebar-item-hover: rgba(100, 151, 177, 0.2);
     --sidebar-item-active: #6497b1;
     
@@ -117,13 +117,6 @@ html[data-theme="dark"] {
     --scrollbar-track: #03396c;
     --scrollbar-thumb: #005b96;
     --scrollbar-thumb-hover: #6497b1;
-    
-    /* Room Variables */
-    --room-floor: #005b96;
-    --room-wall-left: linear-gradient(to bottom, #03396c, #011f4b);
-    --room-wall-right: linear-gradient(to left, #011f4b, #001225);
-    --room-door: linear-gradient(to bottom, #4a7c95, #03396c);
-    --room-door-handle: #b3cde0;
     
     /* Task Item Variables */
     --task-item-completed: #0a2d4f;
@@ -140,6 +133,7 @@ html[data-theme="dark"] .panel {
     background-color: var(--bg-panel);
     border-color: var(--border-primary);
     color: var(--text-primary);
+    box-shadow: 0 2px 8px var(--shadow-light), 0 1px 3px var(--shadow);
 }
 
 html[data-theme="dark"] .panel-header {
@@ -152,56 +146,30 @@ html[data-theme="dark"] .main-header {
     background-color: var(--bg-panel);
     border-color: var(--border-primary);
     color: var(--text-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
 }
 
 html[data-theme="dark"] .left-menu {
     background-color: var(--sidebar-bg);
     border-color: var(--border-primary);
+    box-shadow: 2px 0 4px var(--shadow-light);
 }
 
+/* Content areas */
 html[data-theme="dark"] .content-container {
     background-color: var(--bg-0);
 }
 
-html[data-theme="dark"] .dashboard-content {
-    background-color: var(--bg-0);
-}
-
-html[data-theme="dark"] .tasks-content {
-    background-color: var(--bg-0);
-}
-
-html[data-theme="dark"] .settings-content {
-    background-color: var(--bg-0);
-}
-
-html[data-theme="dark"] .shop-content {
-    background-color: var(--bg-0);
-}
-
-html[data-theme="dark"] .habitus-content {
-    background-color: var(--bg-0);
-}
-
+html[data-theme="dark"] .dashboard-content,
+html[data-theme="dark"] .tasks-content,
+html[data-theme="dark"] .settings-content,
+html[data-theme="dark"] .shop-content,
+html[data-theme="dark"] .habitus-content,
 html[data-theme="dark"] .subscription-content {
     background-color: var(--bg-0);
 }
 
-/* CRITICAL: Prevent inline style overrides */
-html[data-theme="dark"] * {
-    color: inherit;
-    background-color: inherit;
-}
-
-/* Override for elements that should have specific colors */
-html[data-theme="dark"] .panel * {
-    color: var(--text-primary);
-}
-
-html[data-theme="dark"] .main-header * {
-    color: var(--text-primary);
-}
-
+/* CRITICAL: Text color inheritance for dark theme */
 html[data-theme="dark"] h1, 
 html[data-theme="dark"] h2, 
 html[data-theme="dark"] h3, 
@@ -215,49 +183,149 @@ html[data-theme="dark"] p {
     color: var(--text-secondary);
 }
 
-/* Dark theme specific enhancements with new colors */
+/* Interactive elements with proper dark styling */
+html[data-theme="dark"] .daily-item,
+html[data-theme="dark"] .goal-item,
+html[data-theme="dark"] .challenge-item,
+html[data-theme="dark"] .task-item {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
+    color: var(--text-primary);
+}
+
+html[data-theme="dark"] .daily-item:hover,
+html[data-theme="dark"] .goal-item:hover,
+html[data-theme="dark"] .challenge-item:hover,
+html[data-theme="dark"] .task-item:hover {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+    box-shadow: 0 2px 6px var(--shadow);
+}
+
+/* Shop items */
+html[data-theme="dark"] .shop-item {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
+}
+
+html[data-theme="dark"] .shop-item:hover {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+    box-shadow: 0 3px 8px var(--shadow);
+}
+
+/* Form elements */
+html[data-theme="dark"] .settings-section {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
+}
+
+html[data-theme="dark"] .theme-option {
+    background-color: var(--bg-panel);
+    border: 2px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
+}
+
+html[data-theme="dark"] .theme-option:hover {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+    box-shadow: 0 2px 6px var(--shadow);
+}
+
+html[data-theme="dark"] .theme-option.active {
+    border-color: var(--primary);
+    background-color: var(--bg-tertiary);
+    box-shadow: 0 0 0 3px rgba(179, 205, 224, 0.2);
+}
+
+/* Inventory items */
+html[data-theme="dark"] .inventory-item {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
+}
+
+html[data-theme="dark"] .inventory-item:hover:not(.disabled) {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+    box-shadow: 0 2px 6px var(--shadow);
+}
+
+/* Subscription plan cards */
+html[data-theme="dark"] .plan-card {
+    background-color: var(--bg-panel);
+    border: 3px solid var(--border-primary);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+html[data-theme="dark"] .plan-card:hover {
+    border-color: var(--border-secondary);
+    box-shadow: 0 8px 20px var(--shadow-medium);
+}
+
+/* UI elements with proper dark styling */
+html[data-theme="dark"] .notification,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .cart-dropdown,
+html[data-theme="dark"] .notifications-dropdown {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 8px 25px var(--shadow-medium);
+}
+
+html[data-theme="dark"] .hcoin-balance,
+html[data-theme="dark"] .survey-button, 
+html[data-theme="dark"] .messages-button, 
+html[data-theme="dark"] .profile-button,
+html[data-theme="dark"] .theme-toggle-button {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
+}
+
+html[data-theme="dark"] .hcoin-balance:hover,
+html[data-theme="dark"] .survey-button:hover, 
+html[data-theme="dark"] .messages-button:hover, 
+html[data-theme="dark"] .profile-button:hover,
+html[data-theme="dark"] .theme-toggle-button:hover {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+    box-shadow: 0 2px 6px var(--shadow);
+}
+
+/* Dark theme specific enhancements */
 html[data-theme="dark"] input::placeholder,
 html[data-theme="dark"] textarea::placeholder {
     color: var(--input-placeholder);
-}
-
-html[data-theme="dark"] .setting-button:hover,
-html[data-theme="dark"] .theme-option:hover {
-    box-shadow: 0 4px 15px rgba(1, 31, 75, 0.5);
 }
 
 html[data-theme="dark"] .complete-button:hover::before {
     border-color: var(--primary-green-light);
 }
 
-html[data-theme="dark"] .shop-item:hover {
-    box-shadow: 0 4px 15px rgba(1, 31, 75, 0.5);
+/* Additional dark theme text color fixes */
+html[data-theme="dark"] .daily-title,
+html[data-theme="dark"] .goal-title,
+html[data-theme="dark"] .challenge-title,
+html[data-theme="dark"] .task-title,
+html[data-theme="dark"] .item-name,
+html[data-theme="dark"] .setting-title,
+html[data-theme="dark"] .notification-title {
+    color: var(--text-primary);
 }
 
-html[data-theme="dark"] .habitus-preview:hover {
-    box-shadow: 0 4px 20px rgba(1, 31, 75, 0.6);
+html[data-theme="dark"] .daily-time,
+html[data-theme="dark"] .task-description,
+html[data-theme="dark"] .setting-description,
+html[data-theme="dark"] .notification-message {
+    color: var(--text-secondary);
 }
 
-/* Dark theme room styling overrides */
-html[data-theme="dark"] .room-floor {
-    background: var(--room-floor);
-    background-image: 
-        linear-gradient(rgba(179, 205, 224, 0.05) 1px, transparent 1px), 
-        linear-gradient(90deg, rgba(179, 205, 224, 0.05) 1px, transparent 1px);
-}
-
-html[data-theme="dark"] .room-wall-left {
-    background: var(--room-wall-left);
-}
-
-html[data-theme="dark"] .room-wall-right {
-    background: var(--room-wall-right);
-}
-
-html[data-theme="dark"] .room-door {
-    background: var(--room-door);
-}
-
-html[data-theme="dark"] .room-door::before {
-    background: var(--room-door-handle);
+html[data-theme="dark"] .daily-dots,
+html[data-theme="dark"] .goal-dots,
+html[data-theme="dark"] .challenge-dots {
+    border-color: var(--border-secondary);
 }
