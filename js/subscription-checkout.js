@@ -1,4 +1,4 @@
-// js/subscription-checkout.js - Complete Stripe Checkout Implementation
+// js/subscription-checkout.js - Updated with better error handling
 
 // Global variables
 let selectedPlan = null;
@@ -25,6 +25,8 @@ async function subscribeToPlan(planType) {
     });
     
     try {
+        console.log('Sending subscription request...');
+        
         // Create checkout session
         const response = await fetch('../php/api/subscription/create-checkout-session.php', {
             method: 'POST',
@@ -36,18 +38,57 @@ async function subscribeToPlan(planType) {
             })
         });
         
-        const data = await response.json();
+        console.log('Response status:', response.status);
+        
+        // Check if response is ok
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('HTTP Error:', response.status, errorText);
+            throw new Error(`Server error (${response.status}): ${errorText.substring(0, 100)}`);
+        }
+        
+        // Parse JSON response
+        let data;
+        try {
+            data = await response.json();
+        } catch (jsonError) {
+            console.error('JSON Parse Error:', jsonError);
+            const responseText = await response.text();
+            console.error('Response text:', responseText);
+            throw new Error('Invalid server response. Please check server logs.');
+        }
+        
+        console.log('Parsed response:', data);
         
         if (data.success && data.checkout_url) {
-            // Redirect to Stripe Checkout
-            window.location.href = data.checkout_url;
+            if (data.demo_mode) {
+                showAlert('Demo mode: Subscription activated! 🎉', 'success');
+                setTimeout(() => {
+                    window.location.href = data.checkout_url;
+                }, 1500);
+            } else {
+                // Redirect to Stripe Checkout
+                window.location.href = data.checkout_url;
+            }
         } else {
             throw new Error(data.message || 'Failed to create checkout session');
         }
         
     } catch (error) {
         console.error('Subscription error:', error);
-        showAlert(error.message || 'An error occurred. Please try again.', 'error');
+        
+        let errorMessage = 'An error occurred. Please try again.';
+        
+        // Provide more specific error messages
+        if (error.message.includes('500')) {
+            errorMessage = 'Server configuration error. Please contact support.';
+        } else if (error.message.includes('Invalid server response')) {
+            errorMessage = 'Server response error. Please check your connection and try again.';
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+        
+        showAlert(errorMessage, 'error');
         
         // Re-enable buttons
         buttons.forEach(btn => {
@@ -77,6 +118,10 @@ async function manageSubscription() {
                 'Content-Type': 'application/json',
             }
         });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
         
         const data = await response.json();
         
@@ -112,6 +157,10 @@ async function downgradeToFree() {
                 'Content-Type': 'application/json',
             }
         });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
         
         const data = await response.json();
         
@@ -213,7 +262,11 @@ function checkUrlParams() {
     const urlParams = new URLSearchParams(window.location.search);
     
     if (urlParams.get('success') === 'true') {
-        showAlert('🎉 Subscription activated successfully! Welcome to premium features!', 'success');
+        if (urlParams.get('demo') === 'true') {
+            showAlert('🎉 Demo subscription activated! This is a demo - no payment was processed.', 'success');
+        } else {
+            showAlert('🎉 Subscription activated successfully! Welcome to premium features!', 'success');
+        }
         // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
     } else if (urlParams.get('canceled') === 'true') {
@@ -227,12 +280,30 @@ function checkUrlParams() {
     }
 }
 
+// Debug function to test server connectivity
+async function testConnection() {
+    try {
+        console.log('Testing server connection...');
+        const response = await fetch('../php/api/subscription/test.php');
+        console.log('Test response status:', response.status);
+        const text = await response.text();
+        console.log('Test response:', text);
+    } catch (error) {
+        console.error('Connection test failed:', error);
+    }
+}
+
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Subscription system initialized');
     
     // Check for success/cancel parameters
     checkUrlParams();
+    
+    // Test connection in debug mode
+    if (window.location.hostname === 'localhost' || window.location.search.includes('debug=true')) {
+        testConnection();
+    }
     
     // Add CSS for spinner if not already present
     if (!document.querySelector('#spinner-styles')) {
