@@ -160,7 +160,7 @@ if ($subscriptionExpires) {
                         <div class="plan-header">
                             <h2>Ad-Free</h2>
                             <div class="plan-price">
-                                <span class="price">1€</span>
+                                <span class="price">0.99€</span>
                                 <span class="period">/month</span>
                             </div>
                         </div>
@@ -207,7 +207,7 @@ if ($subscriptionExpires) {
                         <div class="plan-header">
                             <h2>Premium</h2>
                             <div class="plan-price">
-                                <span class="price">5€</span>
+                                <span class="price">4.99€</span>
                                 <span class="period">/month</span>
                             </div>
                         </div>
