@@ -1,110 +1,457 @@
-// js/subscription-checkout.js - Updated with better error handling
+// js/subscription-checkout.js - Complete Stripe Elements implementation
 
-// Global variables
-let selectedPlan = null;
-
-// Subscribe to plan function
-async function subscribeToPlan(planType) {
-    console.log(`Starting subscription for plan: ${planType}`);
-    
-    // Validate plan
-    if (!planType || !['adfree', 'premium'].includes(planType)) {
-        showAlert('Invalid plan selected', 'error');
-        return;
-    }
-    
-    selectedPlan = planType;
-    
-    // Show loading state on button
-    const buttons = document.querySelectorAll('[onclick*="subscribeToPlan"]');
-    buttons.forEach(btn => {
-        if (btn.textContent !== 'Current Plan') {
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Processing...';
-        }
-    });
-    
-    try {
-        console.log('Sending subscription request...');
+class StripePaymentModal {
+    constructor() {
+        this.modal = document.getElementById('stripe-payment-modal');
+        this.form = document.getElementById('stripe-payment-form');
+        this.submitBtn = document.getElementById('stripe-submit-btn');
+        this.errorDiv = document.getElementById('payment-errors');
+        this.successDiv = document.getElementById('payment-success');
         
-        // Create checkout session
+        // Debug mode support
+        this.debugMode = window.debugMode || false;
+        
+        // Stripe configuration
+        this.stripe = null;
+        this.elements = null;
+        this.paymentElement = null;
+        this.clientSecret = null;
+        this.currentPlan = null;
+        
+        this.initializeStripe();
+        this.bindEvents();
+    }
+
+    async initializeStripe() {
+        try {
+            if (!window.stripeConfig?.publishableKey) {
+                throw new Error('Stripe configuration not found');
+            }
+            
+            this.stripe = Stripe(window.stripeConfig.publishableKey);
+            this.log('Stripe initialized successfully');
+        } catch (error) {
+            this.handleError('Failed to initialize Stripe', error);
+        }
+    }
+
+    bindEvents() {
+        // Bind to subscription buttons
+        document.querySelectorAll('.subscribe-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                if (this.debugMode) {
+                    this.handleDebugSubscription(btn);
+                } else {
+                    this.openModal(btn);
+                }
+            });
+        });
+
+        // Form submission
+        if (this.form) {
+            this.form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handlePayment();
+            });
+        }
+
+        // ESC key support
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.modal && !this.modal.classList.contains('hidden')) {
+                this.closeModal();
+            }
+        });
+    }
+
+    async openModal(button) {
+        try {
+            // Extract plan data from button
+            this.currentPlan = {
+                id: button.dataset.planId,
+                name: button.dataset.planName,
+                price: button.dataset.planPrice,
+                priceId: button.dataset.priceId
+            };
+
+            this.log('Opening payment modal for plan:', this.currentPlan);
+
+            // Update modal content
+            document.getElementById('selected-plan-name').textContent = this.currentPlan.name;
+            document.getElementById('selected-plan-price').textContent = this.currentPlan.price;
+
+            // Create checkout session
+            const session = await this.createCheckoutSession();
+            this.clientSecret = session.client_secret;
+
+            // Initialize Stripe Elements
+            await this.initializeElements();
+
+            // Show modal
+            this.modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            this.log('Payment modal opened successfully');
+        } catch (error) {
+            this.handleError('Failed to open payment modal', error);
+        }
+    }
+
+    async createCheckoutSession() {
         const response = await fetch('../php/api/subscription/create-checkout-session.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify({
-                plan: planType
+                price_id: this.currentPlan.priceId,
+                plan_id: this.currentPlan.id,
+                customer_data: {
+                    email: window.currentUser?.email || '',
+                    name: window.currentUser?.username || ''
+                }
             })
         });
-        
-        console.log('Response status:', response.status);
-        
-        // Check if response is ok
+
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('HTTP Error:', response.status, errorText);
-            throw new Error(`Server error (${response.status}): ${errorText.substring(0, 100)}`);
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to create checkout session');
         }
-        
-        // Parse JSON response
-        let data;
+
+        return await response.json();
+    }
+
+    async initializeElements() {
+        if (!this.stripe || !this.clientSecret) {
+            throw new Error('Stripe not properly initialized');
+        }
+
+        const appearance = {
+            theme: 'stripe',
+            variables: {
+                colorPrimary: '#3b82f6',
+                colorBackground: '#ffffff',
+                colorText: '#1f2937',
+                colorDanger: '#dc2626',
+                fontFamily: 'system-ui, sans-serif',
+                spacingUnit: '4px',
+                borderRadius: '6px'
+            }
+        };
+
+        this.elements = this.stripe.elements({
+            clientSecret: this.clientSecret,
+            appearance: appearance
+        });
+
+        this.paymentElement = this.elements.create('payment', {
+            layout: {
+                type: 'tabs',
+                defaultCollapsed: false
+            }
+        });
+
+        this.paymentElement.mount('#stripe-payment-element');
+
+        // Handle real-time validation
+        this.paymentElement.on('change', (event) => {
+            if (event.error) {
+                this.showError(event.error.message);
+            } else {
+                this.clearError();
+            }
+        });
+
+        this.log('Stripe Elements initialized');
+    }
+
+    async handlePayment() {
+        if (!this.stripe || !this.elements) {
+            this.handleError('Payment system not initialized');
+            return;
+        }
+
+        this.setLoading(true);
+        this.clearError();
+
         try {
-            data = await response.json();
-        } catch (jsonError) {
-            console.error('JSON Parse Error:', jsonError);
-            const responseText = await response.text();
-            console.error('Response text:', responseText);
-            throw new Error('Invalid server response. Please check server logs.');
+            // Submit the form to trigger validation
+            const { error: submitError } = await this.elements.submit();
+            if (submitError) {
+                throw submitError;
+            }
+
+            // Confirm the payment
+            const { error, paymentIntent } = await this.stripe.confirmPayment({
+                elements: this.elements,
+                confirmParams: {
+                    return_url: `${window.location.origin}/pages/subscription.php?success=true`,
+                    receipt_email: window.currentUser?.email || ''
+                },
+                redirect: 'if_required'
+            });
+
+            if (error) {
+                throw error;
+            }
+
+            // Payment succeeded
+            this.log('Payment confirmed:', paymentIntent);
+            await this.handlePaymentSuccess(paymentIntent);
+
+        } catch (error) {
+            this.handleError('Payment failed', error);
+        } finally {
+            this.setLoading(false);
+        }
+    }
+
+    async handlePaymentSuccess(paymentIntent) {
+        this.log('Payment successful:', paymentIntent.id);
+
+        // Show success message
+        this.showSuccess('Payment successful! Setting up your subscription...');
+
+        // Wait a moment for webhook processing
+        setTimeout(async () => {
+            try {
+                // Verify subscription status
+                const subscription = await this.verifySubscription(paymentIntent.id);
+
+                if (subscription && subscription.status === 'active') {
+                    this.showSuccess('Subscription activated successfully!');
+                } else {
+                    this.showSuccess('Payment completed! Your subscription will be activated shortly.');
+                }
+
+                // Close modal after delay and reload page
+                setTimeout(() => {
+                    this.closeModal();
+                    window.location.href = 'subscription.php?success=true';
+                }, 2000);
+
+            } catch (error) {
+                this.log('Could not verify subscription:', error);
+                this.showSuccess('Payment completed! Your subscription will be activated shortly.');
+                
+                setTimeout(() => {
+                    this.closeModal();
+                    window.location.href = 'subscription.php?success=true';
+                }, 3000);
+            }
+        }, 1000);
+    }
+
+    async verifySubscription(paymentIntentId) {
+        try {
+            const response = await fetch(`../php/api/subscription/verify-subscription.php?payment_intent=${paymentIntentId}`);
+            if (response.ok) {
+                return await response.json();
+            }
+        } catch (error) {
+            this.log('Could not verify subscription status:', error);
+        }
+        return null;
+    }
+
+    closeModal() {
+        if (this.modal) {
+            this.modal.classList.add('hidden');
+            document.body.style.overflow = '';
         }
         
-        console.log('Parsed response:', data);
+        // Clean up Stripe Elements
+        if (this.paymentElement) {
+            this.paymentElement.unmount();
+            this.paymentElement = null;
+        }
+        if (this.elements) {
+            this.elements = null;
+        }
         
-        if (data.success && data.checkout_url) {
-            if (data.demo_mode) {
+        this.clientSecret = null;
+        this.currentPlan = null;
+        
+        this.log('Payment modal closed');
+    }
+
+    setLoading(loading) {
+        if (!this.submitBtn) return;
+        
+        const btnText = this.submitBtn.querySelector('.btn-text');
+        const spinner = this.submitBtn.querySelector('.spinner');
+        
+        if (loading) {
+            btnText.textContent = 'Processing...';
+            spinner.classList.remove('hidden');
+            this.submitBtn.disabled = true;
+            this.submitBtn.setAttribute('aria-busy', 'true');
+        } else {
+            btnText.textContent = 'Subscribe Now';
+            spinner.classList.add('hidden');
+            this.submitBtn.disabled = false;
+            this.submitBtn.removeAttribute('aria-busy');
+        }
+    }
+
+    showError(message) {
+        if (this.errorDiv) {
+            this.errorDiv.textContent = message;
+            this.errorDiv.classList.add('show');
+        }
+        this.log('Error:', message);
+    }
+
+    clearError() {
+        if (this.errorDiv) {
+            this.errorDiv.textContent = '';
+            this.errorDiv.classList.remove('show');
+        }
+    }
+
+    showSuccess(message) {
+        if (this.successDiv) {
+            this.successDiv.textContent = message;
+            this.successDiv.classList.remove('hidden');
+        }
+    }
+
+    handleError(context, error = null) {
+        this.log(`${context}:`, error);
+        
+        let message = 'An unexpected error occurred. Please try again.';
+        
+        if (error) {
+            switch (error.type) {
+                case 'card_error':
+                case 'validation_error':
+                    message = error.message;
+                    break;
+                case 'api_connection_error':
+                    message = 'Network error. Please check your connection and try again.';
+                    break;
+                case 'rate_limit_error':
+                    message = 'Too many requests. Please wait a moment and try again.';
+                    break;
+                default:
+                    if (error.code) {
+                        switch (error.code) {
+                            case 'card_declined':
+                                message = 'Your card was declined. Please try a different payment method.';
+                                break;
+                            case 'expired_card':
+                                message = 'Your card has expired. Please use a different card.';
+                                break;
+                            case 'insufficient_funds':
+                                message = 'Insufficient funds. Please try a different payment method.';
+                                break;
+                            case 'incorrect_cvc':
+                                message = 'Your card security code is incorrect.';
+                                break;
+                            default:
+                                message = error.message || message;
+                        }
+                    }
+            }
+        }
+        
+        this.showError(message);
+    }
+
+    // Debug mode support - maintain existing functionality
+    async handleDebugSubscription(button) {
+        this.log('Debug mode: simulating subscription');
+        
+        const planId = button.dataset.planId;
+        
+        try {
+            const response = await fetch('../php/api/subscription/create-checkout-session.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    plan: planId,
+                    debug_mode: true 
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.demo_mode) {
+                    showAlert('Demo subscription activated! 🎉', 'success');
+                    setTimeout(() => {
+                        window.location.href = data.checkout_url;
+                    }, 1500);
+                } else {
+                    showAlert('Subscription activated successfully!', 'success');
+                    setTimeout(() => window.location.reload(), 2000);
+                }
+            } else {
+                throw new Error(data.message || 'Failed to create subscription');
+            }
+            
+        } catch (error) {
+            this.log('Debug subscription error:', error);
+            showAlert('Debug subscription failed: ' + error.message, 'error');
+        }
+    }
+
+    log(...args) {
+        if (this.debugMode) {
+            console.log('[StripePaymentModal]', ...args);
+        }
+    }
+}
+
+// Legacy functions for backwards compatibility
+async function subscribeToPlan(planType) {
+    console.log(`Legacy function called: subscribeToPlan(${planType})`);
+    
+    if (window.debugMode) {
+        try {
+            const response = await fetch('../php/api/subscription/create-checkout-session.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    plan: planType
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success && data.demo_mode) {
                 showAlert('Demo mode: Subscription activated! 🎉', 'success');
                 setTimeout(() => {
                     window.location.href = data.checkout_url;
                 }, 1500);
-            } else {
-                // Redirect to Stripe Checkout
+            } else if (data.success) {
                 window.location.href = data.checkout_url;
+            } else {
+                throw new Error(data.message || 'Failed to create checkout session');
             }
-        } else {
-            throw new Error(data.message || 'Failed to create checkout session');
+            
+        } catch (error) {
+            console.error('Subscription error:', error);
+            showAlert(error.message || 'An error occurred. Please try again.', 'error');
         }
-        
-    } catch (error) {
-        console.error('Subscription error:', error);
-        
-        let errorMessage = 'An error occurred. Please try again.';
-        
-        // Provide more specific error messages
-        if (error.message.includes('500')) {
-            errorMessage = 'Server configuration error. Please contact support.';
-        } else if (error.message.includes('Invalid server response')) {
-            errorMessage = 'Server response error. Please check your connection and try again.';
-        } else if (error.message) {
-            errorMessage = error.message;
+    } else {
+        // Find the corresponding button and trigger modal
+        const button = document.querySelector(`[data-plan-id="${planType}"]`);
+        if (button && window.stripePaymentModal) {
+            window.stripePaymentModal.openModal(button);
         }
-        
-        showAlert(errorMessage, 'error');
-        
-        // Re-enable buttons
-        buttons.forEach(btn => {
-            if (btn.textContent.includes('Processing')) {
-                btn.disabled = false;
-                btn.innerHTML = planType === 'premium' ? 'Go Premium' : 'Subscribe';
-            }
-        });
     }
 }
 
-// Manage subscription (open customer portal)
 async function manageSubscription() {
     console.log('Opening customer portal...');
     
-    // Show loading state
     const manageBtn = document.querySelector('.manage-subscription-btn');
     if (manageBtn) {
         manageBtn.disabled = true;
@@ -126,7 +473,6 @@ async function manageSubscription() {
         const data = await response.json();
         
         if (data.success && data.url) {
-            // Redirect to Stripe Customer Portal
             window.location.href = data.url;
         } else {
             throw new Error(data.message || 'Unable to open subscription management');
@@ -136,7 +482,6 @@ async function manageSubscription() {
         console.error('Portal error:', error);
         showAlert('Unable to open subscription management. Please try again.', 'error');
         
-        // Re-enable button
         if (manageBtn) {
             manageBtn.disabled = false;
             manageBtn.textContent = 'Manage Subscription';
@@ -144,7 +489,6 @@ async function manageSubscription() {
     }
 }
 
-// Downgrade to free plan
 async function downgradeToFree() {
     if (!confirm('Are you sure you want to cancel your subscription? You will retain access until the end of your billing period.')) {
         return;
@@ -177,7 +521,6 @@ async function downgradeToFree() {
     }
 }
 
-// Toggle FAQ answers
 function toggleFaq(questionElement) {
     const faqItem = questionElement.closest('.faq-item');
     const answer = faqItem.querySelector('.faq-answer');
@@ -210,7 +553,6 @@ function toggleFaq(questionElement) {
     }
 }
 
-// Show alert notification
 function showAlert(message, type = 'info') {
     const alertDiv = document.createElement('div');
     alertDiv.className = `subscription-alert ${type}`;
@@ -232,7 +574,6 @@ function showAlert(message, type = 'info') {
         color: white;
     `;
     
-    // Set background color based on type
     const colors = {
         success: '#48bb78',
         error: '#f56565',
@@ -243,13 +584,11 @@ function showAlert(message, type = 'info') {
     
     document.body.appendChild(alertDiv);
     
-    // Animate in
     setTimeout(() => {
         alertDiv.style.opacity = '1';
         alertDiv.style.transform = 'translateX(0)';
     }, 10);
     
-    // Remove after delay
     setTimeout(() => {
         alertDiv.style.opacity = '0';
         alertDiv.style.transform = 'translateX(100%)';
@@ -257,7 +596,6 @@ function showAlert(message, type = 'info') {
     }, 5000);
 }
 
-// Check URL parameters for success/cancel messages
 function checkUrlParams() {
     const urlParams = new URLSearchParams(window.location.search);
     
@@ -267,43 +605,29 @@ function checkUrlParams() {
         } else {
             showAlert('🎉 Subscription activated successfully! Welcome to premium features!', 'success');
         }
-        // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
     } else if (urlParams.get('canceled') === 'true') {
         showAlert('Subscription process was cancelled.', 'warning');
-        // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
     } else if (urlParams.get('portal') === 'success') {
         showAlert('Subscription settings updated successfully.', 'success');
-        // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 }
 
-// Debug function to test server connectivity
-async function testConnection() {
-    try {
-        console.log('Testing server connection...');
-        const response = await fetch('../php/api/subscription/test.php');
-        console.log('Test response status:', response.status);
-        const text = await response.text();
-        console.log('Test response:', text);
-    } catch (error) {
-        console.error('Connection test failed:', error);
+// Global functions for modal control
+function closePaymentModal() {
+    if (window.stripePaymentModal) {
+        window.stripePaymentModal.closeModal();
     }
 }
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Subscription system initialized');
+    window.stripePaymentModal = new StripePaymentModal();
     
     // Check for success/cancel parameters
     checkUrlParams();
-    
-    // Test connection in debug mode
-    if (window.location.hostname === 'localhost' || window.location.search.includes('debug=true')) {
-        testConnection();
-    }
     
     // Add CSS for spinner if not already present
     if (!document.querySelector('#spinner-styles')) {
@@ -340,3 +664,4 @@ window.subscribeToPlan = subscribeToPlan;
 window.manageSubscription = manageSubscription;
 window.downgradeToFree = downgradeToFree;
 window.toggleFaq = toggleFaq;
+window.closePaymentModal = closePaymentModal;

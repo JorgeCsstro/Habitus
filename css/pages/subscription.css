@@ -1,4 +1,4 @@
-/* subscription.css - COMPLETE FIX for Stripe Element Display */
+/* subscription.css - Complete with Stripe Elements modal */
 
 /* ===== BASIC RESET AND LAYOUT ===== */
 * {
@@ -37,24 +37,15 @@
     margin-bottom: 0;
 }
 
-/* Development Warning */
-.dev-warning {
+/* Debug notice */
+.debug-notice {
     background: #fff3cd;
     border: 1px solid #ffeaa7;
     padding: 15px;
     border-radius: 8px;
-    margin-bottom: 20px;
+    margin-top: 20px;
     color: #856404;
-}
-
-.dev-warning a {
-    color: #6c5ce7;
-    text-decoration: none;
     font-weight: 500;
-}
-
-.dev-warning a:hover {
-    text-decoration: underline;
 }
 
 /* Current Subscription Status */
@@ -256,7 +247,7 @@
     padding-top: 20px;
 }
 
-.plan-button {
+.plan-button, .subscribe-btn {
     width: 100%;
     padding: 16px 24px;
     border: none;
@@ -273,7 +264,7 @@
     box-shadow: 0 4px 15px rgba(141, 91, 76, 0.3);
 }
 
-.plan-button:hover:not(:disabled) {
+.plan-button:hover:not(:disabled), .subscribe-btn:hover:not(:disabled) {
     background: linear-gradient(135deg, #7d4b3c, #96615c);
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(141, 91, 76, 0.4);
@@ -297,53 +288,53 @@
     border-color: #d6cfc7;
 }
 
-.plan-button.premium-btn {
+.plan-button.premium-btn, .subscribe-btn[data-plan-id="premium"] {
     background: linear-gradient(135deg, #c4a356, #d4b366);
     box-shadow: 0 4px 15px rgba(196, 163, 86, 0.3);
 }
 
-.plan-button.premium-btn:hover {
+.plan-button.premium-btn:hover, .subscribe-btn[data-plan-id="premium"]:hover {
     background: linear-gradient(135deg, #b6945a, #c4a356);
     box-shadow: 0 8px 20px rgba(196, 163, 86, 0.4);
 }
 
-/* ===== CRITICAL: COMPLETE FIX FOR STRIPE MODAL ===== */
+/* ===== STRIPE PAYMENT MODAL ===== */
 .modal {
-    display: none;
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(45, 41, 38, 0.85);
-    z-index: 99999;
-    justify-content: center;
-    align-items: flex-start; /* Changed to flex-start for better scrolling */
-    padding: 20px;
-    box-sizing: border-box;
-    overflow-y: auto;
-    backdrop-filter: blur(5px);
-}
-
-.modal.show {
-    display: flex ;
-}
-
-/* CRITICAL: Modal Content - No height constraints */
-.modal-content {
-    background-color: white;
-    border-radius: 20px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     width: 100%;
-    max-width: 600px; /* Reduced max-width for better form display */
-    min-height: auto; /* Auto height */
-    max-height: none; /* No max height constraint */
+    height: 100%;
+    z-index: 1000;
     display: flex;
-    flex-direction: column;
-    animation: modalSlideIn 0.3s ease-out;
-    overflow: visible; /* Allow content to be visible */
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.modal-container {
+    background: white;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
     position: relative;
-    margin: 20px auto; /* Center with margin */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: modalSlideIn 0.3s ease-out;
 }
 
 @keyframes modalSlideIn {
@@ -358,578 +349,158 @@
 }
 
 .modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 25px 35px;
-    border-bottom: 2px solid #e9e2d9;
-    background: linear-gradient(135deg, #f5f1ea 0%, #e9e2d9 100%);
-    flex-shrink: 0;
 }
 
 .modal-header h2 {
     margin: 0;
-    color: #2d2926;
-    font-size: 1.6rem;
-    font-family: 'Quicksand', sans-serif;
+    font-size: 1.25rem;
     font-weight: 600;
+    color: #2d2926;
 }
 
-.close-modal {
+.modal-close {
     background: none;
     border: none;
-    font-size: 2rem;
+    font-size: 1.5rem;
     cursor: pointer;
-    color: #8d8580;
-    line-height: 1;
-    padding: 8px;
+    padding: 0.25rem;
+    color: #6b7280;
     border-radius: 50%;
-    transition: all 0.2s;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    transition: all 0.2s ease;
 }
 
-.close-modal:hover {
+.modal-close:hover {
     color: #2d2926;
     background-color: rgba(141, 91, 76, 0.1);
     transform: rotate(90deg);
 }
 
-/* CRITICAL: Modal Body - Allow natural content flow */
 .modal-body {
-    padding: 30px 40px 40px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0; /* Important for flexbox */
-    overflow: visible; /* Allow content to overflow naturally */
+    padding: 1.5rem;
 }
 
-.payment-summary {
-    background: linear-gradient(135deg, #f5f1ea 0%, #e9e2d9 100%);
-    border-radius: 15px;
-    padding: 30px;
-    margin-bottom: 30px;
+.subscription-info {
+    background: #f9fafb;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
     text-align: center;
-    border: 2px solid #e9e2d9;
-    box-shadow: inset 0 2px 10px rgba(141, 91, 76, 0.05);
-    flex-shrink: 0;
 }
 
-.payment-summary h3 {
-    margin: 0 0 15px;
+.subscription-info h3 {
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
     color: #2d2926;
-    font-size: 1.6rem;
-    font-weight: 600;
-    font-family: 'Quicksand', sans-serif;
 }
 
-.payment-summary p {
+.subscription-info p {
     margin: 0;
-    color: #8d5b4c;
-    font-size: 2.2rem;
-    font-weight: 800;
-    font-family: 'Quicksand', sans-serif;
+    color: #6b7280;
 }
 
-/* ===== CRITICAL: COMPLETE STRIPE ELEMENT FIXES ===== */
-
-/* Payment Form - No constraints */
-#payment-form {
-    display: flex ;
-    flex-direction: column ;
-    flex: 1 ;
-    min-height: 0 ;
-    height: auto ;
-    overflow: visible ;
-}
-
-/* CRITICAL: Payment Element Container - ZERO constraints */
-#payment-element {
-    width: 100% ;
-    height: auto ;
-    min-height: auto ;
-    max-height: none ;
-    margin: 0 0 20px 0 ;
-    padding: 0 ;
-    border: none ;
-    border-radius: 0 ;
-    background: transparent ;
-    overflow: visible ;
-    position: relative ;
-    display: block ;
-    flex: none ; /* Don't grow or shrink */
-}
-
-/* CRITICAL: Remove ALL constraints from Stripe containers */
-#payment-element > *,
-#payment-element div,
-#stripe-payment-element,
-#stripe-payment-element > *,
-#stripe-payment-element div {
-    width: 100% ;
-    height: auto ;
-    min-height: auto ;
-    max-height: none ;
-    padding: 0 ;
-    margin: 0 ;
-    border: none ;
-    border-radius: 0 ;
-    box-sizing: border-box ;
-    overflow: visible ;
-    background: transparent ;
-    position: static ;
-    display: block ;
-    transform: none ;
-}
-
-/* CRITICAL: Stripe iframe fixes */
-#payment-element iframe,
-#stripe-payment-element iframe,
-iframe[src*="js.stripe.com"] {
-    width: 100% ;
-    height: auto ;
-    min-height: 400px ; /* Ensure minimum height for card form */
-    max-height: none ;
-    border: none ;
-    border-radius: 0 ;
-    background: transparent ;
-    overflow: visible ;
-    position: static ;
-    display: block ;
-    transform: none ;
-    backface-visibility: visible ;
-    visibility: visible ;
-    opacity: 1 ;
-}
-
-/* CRITICAL: Stripe Elements specific overrides */
-.StripeElement,
-.StripeElement--focus,
-.StripeElement--invalid,
-.StripeElement--complete,
-.StripeElement div,
-.StripeElement iframe {
-    height: auto ;
-    min-height: auto ;
-    max-height: none ;
-    overflow: visible ;
-    display: block ;
-    width: 100% ;
-    padding: 0 ;
-    margin: 0 ;
-    border: none ;
-    background: transparent ;
-}
-
-/* ===== WALLET PAYMENT BUTTONS STYLING ===== */
-
-/* Apple Pay and Google Pay button styling */
-.StripeElement .Tab[data-testid="tab-applePay"],
-.StripeElement .Tab[data-testid="tab-googlePay"] {
-    margin-bottom: 8px ;
-    padding: 12px 16px ;
-    min-height: 48px ;
-    display: flex ;
-    align-items: center ;
-    justify-content: center ;
-    border-radius: 8px ;
-    font-weight: 600 ;
-}
-
-/* Apple Pay specific styling */
-.StripeElement .Tab[data-testid="tab-applePay"] {
-    background-color: #000 ;
-    color: white ;
-    border: 1px solid #000 ;
-}
-
-.StripeElement .Tab[data-testid="tab-applePay"]:hover {
-    background-color: #333 ;
-}
-
-/* Google Pay specific styling */
-.StripeElement .Tab[data-testid="tab-googlePay"] {
-    background-color: #4285f4 ;
-    color: white ;
-    border: 1px solid #4285f4 ;
-}
-
-.StripeElement .Tab[data-testid="tab-googlePay"]:hover {
-    background-color: #3367d6 ;
-}
-
-/* Card tab styling to match */
-.StripeElement .Tab[data-testid="tab-card"] {
-    border: 1px solid #e9e2d9 ;
-    border-radius: 8px ;
-    padding: 16px ;
-    background-color: white ;
-}
-
-.StripeElement .Tab[data-testid="tab-card"]:hover {
-    border-color: #d6cfc7 ;
-    background-color: #f9f5f0 ;
-}
-
-.StripeElement .Tab[data-testid="tab-card"].Tab--selected {
-    border-color: #6a8d7f ;
-    background-color: #f5f1ea ;
-}
-
-/* Tab container spacing */
-.StripeElement .TabContainer {
-    gap: 8px ;
-}
-
-/* Ensure proper height for all payment method tabs */
-.StripeElement .Tab {
-    min-height: 48px ;
-    transition: all 0.2s ease ;
-}
-
-/* CRITICAL: Stripe container div overrides */
-div[class*="TabContainer"],
-div[class*="FormContainer"],
-div[class*="PaymentElement"] {
-    height: auto ;
-    min-height: auto ;
-    max-height: none ;
-    overflow: visible ;
-}
-
-/* Stripe Loading State */
-.stripe-loading {
+/* Payment Form Styles */
+#stripe-payment-form {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+}
+
+#stripe-payment-element {
+    margin-bottom: 1rem;
     min-height: 200px;
-    padding: 40px;
-    text-align: center;
-    background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
-    border-radius: 15px;
-    border: 2px solid #e9e2d9;
 }
 
-.loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #8d5b4c;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 25px;
+.error-message {
+    color: #dc2626;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    display: none;
 }
 
-.stripe-loading p {
-    margin: 0 0 10px;
-    color: #6c757d;
-    font-size: 1.1rem;
-    font-weight: 500;
-    font-family: 'Quicksand', sans-serif;
-}
-
-.stripe-loading small {
-    color: #999;
-    font-size: 0.9rem;
+.error-message.show {
     display: block;
-    margin-top: 10px;
 }
 
-/* Stripe Error State */
-.stripe-error {
+.success-message {
+    color: #059669;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+}
+
+.success-message.hidden {
+    display: none;
+}
+
+.form-actions {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
-    padding: 40px;
-    text-align: center;
-    background: linear-gradient(135deg, #fff5f5, #ffe5e5);
-    border: 2px solid #feb2b2;
-    border-radius: 15px;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
 }
 
-.error-icon {
-    font-size: 3rem;
-    margin-bottom: 20px;
-}
-
-.stripe-error h4 {
-    margin: 0 0 15px;
-    color: #c53030;
-    font-size: 1.3rem;
-    font-weight: 600;
-}
-
-.stripe-error p {
-    margin: 0 0 25px;
-    color: #742a2a;
-    line-height: 1.5;
-    font-size: 1rem;
-}
-
-.retry-btn {
-    padding: 12px 24px;
-    background-color: #8d5b4c;
-    color: white;
-    border: none;
-    border-radius: 8px;
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 500;
     cursor: pointer;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: background-color 0.2s;
-    margin: 0 6px;
-}
-
-.retry-btn:hover {
-    background-color: #7d4b3c;
-}
-
-/* Payment Security */
-.payment-security {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 25px 0;
-    padding: 18px;
-    background-color: #f5f1ea;
-    border-radius: 8px;
-    font-size: 14px;
-    color: #5a5755;
-    border: 1px solid #e9e2d9;
-    flex-shrink: 0;
-}
-
-.payment-security img {
-    width: 24px;
-    height: 24px;
-}
-
-/* Submit Button */
-.submit-payment-btn {
-    width: 100%;
-    padding: 20px;
-    background: linear-gradient(135deg, #6a8d7f, #7a9d8f);
-    color: white;
-    border: none;
-    border-radius: 15px;
-    font-size: 1.2rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s;
-    min-height: 65px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
+    transition: all 0.2s;
+    border: 1px solid transparent;
     font-family: 'Quicksand', sans-serif;
-    margin-top: 30px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: 0 6px 20px rgba(106, 141, 127, 0.3);
-    flex-shrink: 0;
 }
 
-.submit-payment-btn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #5a7c70, #6a8d7f);
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(106, 141, 127, 0.4);
+.btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+    border-color: #d1d5db;
 }
 
-.submit-payment-btn:disabled {
-    opacity: 0.6;
+.btn-secondary:hover {
+    background: #e5e7eb;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+    position: relative;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+.btn-primary:disabled {
+    background: #9ca3af;
     cursor: not-allowed;
-    transform: none;
-    background: linear-gradient(135deg, #cccccc, #dddddd);
 }
 
-/* Loading Spinner in Button */
-#spinner {
+.spinner {
     display: inline-block;
-    width: 24px;
-    height: 24px;
-    border: 3px solid #ffffff;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ffffff;
     border-radius: 50%;
     border-top-color: transparent;
     animation: spin 1s linear infinite;
+    margin-right: 8px;
 }
 
-#spinner.hidden {
-    display: none;
-}
-
-#button-text.hidden {
-    display: none;
-}
-
-/* Payment Message */
-#payment-message {
-    background: linear-gradient(135deg, #fff5f5, #ffe5e5);
-    color: #c53030;
-    border: 2px solid #feb2b2;
-    padding: 18px 22px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    font-size: 1rem;
-    line-height: 1.5;
-    font-weight: 500;
-    box-shadow: 0 3px 10px rgba(197, 48, 48, 0.1);
-}
-
-#payment-message.hidden {
-    display: none;
-}
-
-/* Payment Methods */
-.payment-methods {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    margin-top: 25px;
-    padding-top: 20px;
-    border-top: 1px solid #e9e2d9;
-    font-size: 14px;
-    color: #8d8580;
-    flex-shrink: 0;
-}
-
-.payment-methods img {
-    height: 20px;
-    opacity: 0.7;
-    transition: opacity 0.3s;
-}
-
-.payment-methods img:hover {
-    opacity: 1;
-}
-
-/* Hidden class */
-.hidden {
-    display: none ;
-}
-
-/* Animations */
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    to { transform: rotate(360deg); }
 }
 
-/* ===== RESPONSIVE DESIGN WITH STRIPE FIXES ===== */
-@media (max-width: 768px) {
-    .modal {
-        padding: 10px;
-        align-items: flex-start;
-    }
-    
-    .modal-content {
-        max-width: calc(100% - 20px);
-        margin: 10px auto;
-    }
-    
-    .modal-header {
-        padding: 20px 25px;
-    }
-    
-    .modal-body {
-        padding: 25px 20px 30px;
-    }
-    
-    .payment-summary {
-        padding: 25px 20px;
-        margin-bottom: 25px;
-    }
-    
-    /* CRITICAL: Mobile iframe fixes */
-    #payment-element iframe,
-    #stripe-payment-element iframe,
-    iframe[src*="js.stripe.com"] {
-        min-height: 350px ; /* Smaller minimum for mobile */
-    }
-}
-
-@media (max-width: 480px) {
-    .modal {
-        padding: 5px;
-    }
-    
-    .modal-content {
-        border-radius: 15px;
-        margin: 5px auto;
-        max-width: calc(100% - 10px);
-    }
-    
-    .modal-header h2 {
-        font-size: 1.4rem;
-    }
-    
-    .payment-summary h3 {
-        font-size: 1.4rem;
-    }
-    
-    .payment-summary p {
-        font-size: 2rem;
-    }
-    
-    .submit-payment-btn {
-        padding: 18px;
-        font-size: 1.1rem;
-        min-height: 60px;
-        margin-top: 25px;
-    }
-    
-    /* CRITICAL: Smaller mobile screens iframe fixes */
-    #payment-element iframe,
-    #stripe-payment-element iframe,
-    iframe[src*="js.stripe.com"] {
-        min-height: 300px ;
-    }
-}
-
-/* ===== CRITICAL: FORCE OVERRIDES FOR STRIPE ===== */
-
-/* Remove any potential transform constraints */
-.modal-content *,
-.modal-body *,
-#payment-element *,
-#stripe-payment-element * {
-    transform: none ;
-    backface-visibility: visible ;
-}
-
-/* Ensure modal scrolls when needed */
-.modal {
-    -webkit-overflow-scrolling: touch;
-}
-
-.modal-content {
-    overflow-y: visible ;
-    -webkit-overflow-scrolling: touch ;
-}
-
-/* Force proper z-index layering */
-.modal {
-    z-index: 999999 ;
-}
-
-.modal-content {
-    z-index: 1000000 ;
-    position: relative ;
-}
-
-#payment-element,
-#stripe-payment-element {
-    z-index: 1 ;
-    position: relative ;
-    isolation: isolate ;
-}
-
-/* Additional benefits/FAQ sections from original */
+/* ===== BENEFITS SECTION ===== */
 .subscription-benefits {
     background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
     border-radius: 20px;
@@ -991,6 +562,7 @@ div[class*="PaymentElement"] {
     line-height: 1.6;
 }
 
+/* ===== FAQ SECTION ===== */
 .subscription-faq {
     background-color: white;
     border-radius: 20px;
@@ -1070,4 +642,83 @@ div[class*="PaymentElement"] {
     color: #5a5755;
     line-height: 1.6;
     font-size: 1rem;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .subscription-content {
+        padding: 15px;
+    }
+    
+    .subscription-header h1 {
+        font-size: 2rem;
+    }
+    
+    .subscription-plans {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .plan-card {
+        padding: 25px;
+        min-height: auto;
+    }
+    
+    .current-subscription {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
+    
+    .subscription-benefits, .subscription-faq {
+        padding: 30px 20px;
+    }
+    
+    .benefits-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    /* Modal responsive */
+    .modal-container {
+        width: 95%;
+        margin: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .subscription-header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .plan-price .price {
+        font-size: 2.5rem;
+    }
+    
+    .modal-container {
+        border-radius: 15px;
+        margin: 5px auto;
+        max-width: calc(100% - 10px);
+    }
+    
+    .modal-header h2 {
+        font-size: 1.2rem;
+    }
+    
+    .subscription-info {
+        padding: 0.75rem;
+    }
+}
+
+/* Hidden class */
+.hidden {
+    display: none !important;
 }

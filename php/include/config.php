@@ -1,5 +1,4 @@
 <?php
-
 // config.php - Updated with enhanced Stripe support
 
 // Start session if not already started
@@ -50,26 +49,18 @@ define('HCOIN_DAILY_MULTIPLIER', 1.0);
 define('HCOIN_GOAL_MULTIPLIER', 1.5);
 define('HCOIN_CHALLENGE_MULTIPLIER', 2.0);
 
-// Stripe Configuration
-// For development/demo - replace with your actual keys
-define('STRIPE_PUBLISHABLE_KEY', $_ENV['STRIPE_PUBLISHABLE_KEY'] ?? 'pk_test_your_key_here');
-define('STRIPE_SECRET_KEY', $_ENV['STRIPE_SECRET_KEY'] ?? 'sk_test_your_key_here');
-define('STRIPE_WEBHOOK_SECRET', $_ENV['STRIPE_WEBHOOK_SECRET'] ?? 'whsec_your_webhook_secret');
+// Stripe Configuration - Use your actual live keys from .env
+define('STRIPE_PUBLISHABLE_KEY', $_ENV['STRIPE_PUBLISHABLE_KEY'] ?? 'pk_live_51RUWHJP82CUp8m3N275XjggSuOHD8BQfDUdtpID4zNNy6GeMIzb6xJvz7PMmOyU4QLd63utdrcxKVUuETrsMGU7i00V7mL8I4F');
+define('STRIPE_SECRET_KEY', $_ENV['STRIPE_SECRET_KEY'] ?? 'sk_live_');
+define('STRIPE_WEBHOOK_SECRET', $_ENV['STRIPE_WEBHOOK_SECRET'] ?? 'whsec_o7HOHbtpOSx4lhw2o9KWMcN3ARmreJks');
 
-// Stripe Price IDs (replace with your actual Price IDs from Stripe Dashboard)
-define('STRIPE_PRICE_ADFREE_MONTHLY', $_ENV['STRIPE_PRICE_ADFREE_MONTHLY'] ?? 'price_test_adfree');
-define('STRIPE_PRICE_PREMIUM_MONTHLY', $_ENV['STRIPE_PRICE_PREMIUM_MONTHLY'] ?? 'price_test_premium');
-
-// Validate Stripe configuration
-if (DEBUG_MODE) {
-    if (STRIPE_SECRET_KEY === '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') {
-        error_log('Warning: Using demo Stripe keys. Update with your actual keys for production.');
-    }
-}
+// Stripe Price IDs from your .env file
+define('STRIPE_PRICE_ADFREE_MONTHLY', $_ENV['STRIPE_PRICE_ADFREE_MONTHLY'] ?? 'price_1RVz3AP82CUp8m3N7XY0qGFt');
+define('STRIPE_PRICE_SUPPORTER_MONTHLY', $_ENV['STRIPE_PRICE_SUPPORTER_MONTHLY'] ?? 'price_1RVz3tP82CUp8m3NUjURWxQn');
 
 // Payment settings
-define('PAYMENT_CURRENCY', 'eur');
-define('PAYMENT_STATEMENT_DESCRIPTOR', 'HABITUS ZONE');
+define('PAYMENT_CURRENCY', $_ENV['PAYMENT_CURRENCY'] ?? 'eur');
+define('PAYMENT_STATEMENT_DESCRIPTOR', $_ENV['PAYMENT_STATEMENT_DESCRIPTOR'] ?? 'HABITUS ZONE');
 
 // Enable/disable payment methods
 define('ENABLE_APPLE_PAY', true);
@@ -94,8 +85,8 @@ define('DEFAULT_TAX_RATE', 0);
 // Security settings
 define('REQUIRE_3D_SECURE', 'automatic');
 
-// Demo mode flag (set to false when using real Stripe)
-define('STRIPE_DEMO_MODE', true);
+// Demo mode flag - set to false for production with real Stripe
+define('STRIPE_DEMO_MODE', false);
 
 // Demo prices (used when STRIPE_DEMO_MODE is true)
 define('DEMO_PRICE_ADFREE', 0.99);
@@ -107,7 +98,9 @@ if (DEBUG_MODE) {
     if (STRIPE_DEMO_MODE) {
         error_log("Demo prices - AdFree: €" . DEMO_PRICE_ADFREE . ", Premium: €" . DEMO_PRICE_PREMIUM);
     } else {
-        error_log("Config loaded - Stripe PK: " . (empty(STRIPE_PUBLISHABLE_KEY) ? 'NOT SET' : 'SET'));
-        error_log("Config loaded - Stripe SK: " . (empty(STRIPE_SECRET_KEY) ? 'NOT SET' : 'SET'));
+        error_log("Config loaded - Using live Stripe keys");
+        error_log("AdFree Price ID: " . STRIPE_PRICE_ADFREE_MONTHLY);
+        error_log("Premium Price ID: " . STRIPE_PRICE_SUPPORTER_MONTHLY);
     }
 }
+?>

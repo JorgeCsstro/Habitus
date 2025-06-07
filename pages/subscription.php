@@ -1,5 +1,5 @@
 <?php
-// pages/subscription.php - Updated for Stripe Checkout
+// pages/subscription.php - Complete file with Stripe Elements modal
 
 // Include necessary files
 require_once '../php/include/config.php';
@@ -41,6 +41,9 @@ if ($subscriptionExpires) {
         $subscriptionExpires = null;
     }
 }
+
+// Debug mode check
+$debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
 ?>
 
 <!DOCTYPE html>
@@ -70,6 +73,9 @@ if ($subscriptionExpires) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body class="theme-<?php echo $currentTheme; ?>">
     <div class="main-container">
@@ -87,6 +93,11 @@ if ($subscriptionExpires) {
                 <div class="subscription-header">
                     <h1>Subscription Plans</h1>
                     <p>Choose the plan that's right for you and unlock premium features</p>
+                    <?php if ($debugMode): ?>
+                        <div class="debug-notice">
+                            <strong>Debug Mode Active:</strong> Subscriptions will be simulated for testing
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Current Subscription Status -->
@@ -196,7 +207,13 @@ if ($subscriptionExpires) {
                             <?php if ($subscriptionType === 'adfree'): ?>
                                 <button class="plan-button current-plan" disabled>Current Plan</button>
                             <?php else: ?>
-                                <button class="plan-button" onclick="subscribeToPlan('adfree')">Subscribe</button>
+                                <button class="plan-button subscribe-btn" 
+                                        data-plan-id="adfree"
+                                        data-plan-name="Ad-Free Plan"
+                                        data-plan-price="€0.99/month"
+                                        data-price-id="<?php echo STRIPE_PRICE_ADFREE_MONTHLY; ?>">
+                                    Subscribe
+                                </button>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -243,7 +260,13 @@ if ($subscriptionExpires) {
                             <?php if ($subscriptionType === 'premium'): ?>
                                 <button class="plan-button current-plan" disabled>Current Plan</button>
                             <?php else: ?>
-                                <button class="plan-button premium-btn" onclick="subscribeToPlan('premium')">Go Premium</button>
+                                <button class="plan-button premium-btn subscribe-btn" 
+                                        data-plan-id="premium"
+                                        data-plan-name="Premium Plan"
+                                        data-plan-price="€4.99/month"
+                                        data-price-id="<?php echo STRIPE_PRICE_SUPPORTER_MONTHLY; ?>">
+                                    Go Premium
+                                </button>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -323,6 +346,41 @@ if ($subscriptionExpires) {
         </div>
     </div>
 
+    <!-- Stripe Payment Modal -->
+    <div id="stripe-payment-modal" class="modal hidden" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+        <div class="modal-overlay" onclick="closePaymentModal()"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 id="modal-title">Complete Your Subscription</h2>
+                <button class="modal-close" onclick="closePaymentModal()" aria-label="Close">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div id="subscription-details" class="subscription-info">
+                    <h3 id="selected-plan-name"></h3>
+                    <p id="selected-plan-price"></p>
+                </div>
+                
+                <form id="stripe-payment-form">
+                    <div id="stripe-payment-element">
+                        <!-- Stripe Elements will mount here -->
+                    </div>
+                    
+                    <div id="payment-errors" class="error-message" role="alert"></div>
+                    <div id="payment-success" class="success-message hidden"></div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closePaymentModal()">Cancel</button>
+                        <button type="submit" id="stripe-submit-btn" class="btn btn-primary">
+                            <span class="btn-text">Subscribe Now</span>
+                            <div class="spinner hidden"></div>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="../js/main.js"></script>
     
@@ -331,6 +389,22 @@ if ($subscriptionExpires) {
     window.initialTheme = '<?php echo $currentTheme; ?>';
     document.documentElement.setAttribute('data-theme', window.initialTheme);
     document.body.classList.add('theme-' + window.initialTheme);
+    
+    // Debug mode configuration
+    window.debugMode = <?php echo $debugMode ? 'true' : 'false'; ?>;
+    
+    // User data for Stripe
+    window.currentUser = {
+        email: '<?php echo htmlspecialchars($userData['email']); ?>',
+        username: '<?php echo htmlspecialchars($userData['username']); ?>',
+        id: <?php echo $userData['id']; ?>
+    };
+    
+    // Stripe configuration
+    window.stripeConfig = {
+        publishableKey: '<?php echo STRIPE_PUBLISHABLE_KEY; ?>',
+        currency: '<?php echo PAYMENT_CURRENCY; ?>'
+    };
     </script>
 
     <!-- Load theme manager -->
