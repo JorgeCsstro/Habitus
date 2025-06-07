@@ -346,34 +346,34 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
         </div>
     </div>
 
-    <!-- Stripe Payment Modal -->
-    <div id="stripe-payment-modal" class="modal hidden" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+    <!-- Stripe Payment Modal - FIXED -->
+    <div id="stripe-payment-modal" class="modal hidden" role="dialog" aria-labelledby="modal-title" aria-modal="true" style="display: none;">
         <div class="modal-overlay" onclick="closePaymentModal()"></div>
         <div class="modal-container">
             <div class="modal-header">
                 <h2 id="modal-title">Complete Your Subscription</h2>
-                <button class="modal-close" onclick="closePaymentModal()" aria-label="Close">&times;</button>
+                <button class="modal-close" onclick="closePaymentModal()" aria-label="Close" type="button">&times;</button>
             </div>
-            
+                                
             <div class="modal-body">
                 <div id="subscription-details" class="subscription-info">
-                    <h3 id="selected-plan-name"></h3>
-                    <p id="selected-plan-price"></p>
+                    <h3 id="selected-plan-name">Plan Name</h3>
+                    <p id="selected-plan-price">€0.00/month</p>
                 </div>
-                
+                                
                 <form id="stripe-payment-form">
                     <div id="stripe-payment-element">
                         <!-- Stripe Elements will mount here -->
                     </div>
-                    
+                                
                     <div id="payment-errors" class="error-message" role="alert"></div>
                     <div id="payment-success" class="success-message hidden"></div>
-                    
+                                
                     <div class="form-actions">
                         <button type="button" class="btn btn-secondary" onclick="closePaymentModal()">Cancel</button>
                         <button type="submit" id="stripe-submit-btn" class="btn btn-primary">
+                            <div class="spinner"></div>
                             <span class="btn-text">Subscribe Now</span>
-                            <div class="spinner hidden"></div>
                         </button>
                     </div>
                 </form>

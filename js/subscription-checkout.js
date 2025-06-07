@@ -1,4 +1,4 @@
-// js/subscription-checkout.js - Complete Stripe Elements implementation
+// js/subscription-checkout.js - Complete Stripe Elements implementation - FIXED
 
 class StripePaymentModal {
     constructor() {
@@ -18,8 +18,19 @@ class StripePaymentModal {
         this.clientSecret = null;
         this.currentPlan = null;
         
+        // Ensure modal is hidden on initialization
+        this.ensureModalHidden();
+        
         this.initializeStripe();
         this.bindEvents();
+    }
+
+    ensureModalHidden() {
+        if (this.modal) {
+            this.modal.classList.add('hidden');
+            this.modal.classList.remove('show');
+            this.modal.style.display = 'none';
+        }
     }
 
     async initializeStripe() {
@@ -40,6 +51,7 @@ class StripePaymentModal {
         document.querySelectorAll('.subscribe-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
+                this.log('Subscribe button clicked:', btn.dataset.planId);
                 
                 if (this.debugMode) {
                     this.handleDebugSubscription(btn);
@@ -48,6 +60,36 @@ class StripePaymentModal {
                 }
             });
         });
+
+        // Bind close modal events
+        if (this.modal) {
+            // Close button
+            const closeBtn = this.modal.querySelector('.modal-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.closeModal();
+                });
+            }
+
+            // Overlay click
+            const overlay = this.modal.querySelector('.modal-overlay');
+            if (overlay) {
+                overlay.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.closeModal();
+                });
+            }
+
+            // Cancel button
+            const cancelBtn = this.modal.querySelector('.btn-secondary');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.closeModal();
+                });
+            }
+        }
 
         // Form submission
         if (this.form) {
@@ -67,6 +109,8 @@ class StripePaymentModal {
 
     async openModal(button) {
         try {
+            this.log('Opening modal for button:', button);
+            
             // Extract plan data from button
             this.currentPlan = {
                 id: button.dataset.planId,
@@ -77,9 +121,19 @@ class StripePaymentModal {
 
             this.log('Opening payment modal for plan:', this.currentPlan);
 
+            if (!this.currentPlan.priceId) {
+                throw new Error('Price ID not found on button');
+            }
+
             // Update modal content
-            document.getElementById('selected-plan-name').textContent = this.currentPlan.name;
-            document.getElementById('selected-plan-price').textContent = this.currentPlan.price;
+            const planNameEl = document.getElementById('selected-plan-name');
+            const planPriceEl = document.getElementById('selected-plan-price');
+            
+            if (planNameEl) planNameEl.textContent = this.currentPlan.name;
+            if (planPriceEl) planPriceEl.textContent = this.currentPlan.price;
+
+            // Show modal first
+            this.showModal();
 
             // Create checkout session
             const session = await this.createCheckoutSession();
@@ -88,17 +142,25 @@ class StripePaymentModal {
             // Initialize Stripe Elements
             await this.initializeElements();
 
-            // Show modal
-            this.modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-
             this.log('Payment modal opened successfully');
         } catch (error) {
             this.handleError('Failed to open payment modal', error);
+            this.closeModal();
+        }
+    }
+
+    showModal() {
+        if (this.modal) {
+            this.modal.classList.remove('hidden');
+            this.modal.classList.add('show');
+            this.modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         }
     }
 
     async createCheckoutSession() {
+        this.log('Creating checkout session for:', this.currentPlan);
+        
         const response = await fetch('../php/api/subscription/create-checkout-session.php', {
             method: 'POST',
             headers: {
@@ -120,13 +182,17 @@ class StripePaymentModal {
             throw new Error(error.message || 'Failed to create checkout session');
         }
 
-        return await response.json();
+        const data = await response.json();
+        this.log('Checkout session created:', data);
+        return data;
     }
 
     async initializeElements() {
         if (!this.stripe || !this.clientSecret) {
             throw new Error('Stripe not properly initialized');
         }
+
+        this.log('Initializing Stripe Elements with client secret');
 
         const appearance = {
             theme: 'stripe',
@@ -153,7 +219,14 @@ class StripePaymentModal {
             }
         });
 
-        this.paymentElement.mount('#stripe-payment-element');
+        // Clear any existing content
+        const paymentElementContainer = document.getElementById('stripe-payment-element');
+        if (paymentElementContainer) {
+            paymentElementContainer.innerHTML = '';
+            this.paymentElement.mount('#stripe-payment-element');
+        } else {
+            throw new Error('Payment element container not found');
+        }
 
         // Handle real-time validation
         this.paymentElement.on('change', (event) => {
@@ -164,7 +237,7 @@ class StripePaymentModal {
             }
         });
 
-        this.log('Stripe Elements initialized');
+        this.log('Stripe Elements initialized and mounted');
     }
 
     async handlePayment() {
@@ -177,6 +250,8 @@ class StripePaymentModal {
         this.clearError();
 
         try {
+            this.log('Submitting payment...');
+            
             // Submit the form to trigger validation
             const { error: submitError } = await this.elements.submit();
             if (submitError) {
@@ -257,8 +332,12 @@ class StripePaymentModal {
     }
 
     closeModal() {
+        this.log('Closing modal');
+        
         if (this.modal) {
             this.modal.classList.add('hidden');
+            this.modal.classList.remove('show');
+            this.modal.style.display = 'none';
             document.body.style.overflow = '';
         }
         
@@ -274,7 +353,13 @@ class StripePaymentModal {
         this.clientSecret = null;
         this.currentPlan = null;
         
-        this.log('Payment modal closed');
+        // Clear any messages
+        this.clearError();
+        if (this.successDiv) {
+            this.successDiv.classList.add('hidden');
+        }
+        
+        this.log('Payment modal closed and cleaned up');
     }
 
     setLoading(loading) {
@@ -284,13 +369,13 @@ class StripePaymentModal {
         const spinner = this.submitBtn.querySelector('.spinner');
         
         if (loading) {
-            btnText.textContent = 'Processing...';
-            spinner.classList.remove('hidden');
+            if (btnText) btnText.textContent = 'Processing...';
+            if (spinner) spinner.classList.add('show');
             this.submitBtn.disabled = true;
             this.submitBtn.setAttribute('aria-busy', 'true');
         } else {
-            btnText.textContent = 'Subscribe Now';
-            spinner.classList.add('hidden');
+            if (btnText) btnText.textContent = 'Subscribe Now';
+            if (spinner) spinner.classList.remove('show');
             this.submitBtn.disabled = false;
             this.submitBtn.removeAttribute('aria-busy');
         }
@@ -401,7 +486,7 @@ class StripePaymentModal {
     }
 
     log(...args) {
-        if (this.debugMode) {
+        if (this.debugMode || window.location.hostname === 'localhost') {
             console.log('[StripePaymentModal]', ...args);
         }
     }
@@ -624,39 +709,13 @@ function closePaymentModal() {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the modal system
     window.stripePaymentModal = new StripePaymentModal();
     
     // Check for success/cancel parameters
     checkUrlParams();
     
-    // Add CSS for spinner if not already present
-    if (!document.querySelector('#spinner-styles')) {
-        const style = document.createElement('style');
-        style.id = 'spinner-styles';
-        style.textContent = `
-            .spinner {
-                display: inline-block;
-                width: 16px;
-                height: 16px;
-                border: 2px solid #ffffff;
-                border-radius: 50%;
-                border-top-color: transparent;
-                animation: spin 0.8s linear infinite;
-                vertical-align: middle;
-                margin-right: 8px;
-            }
-            
-            @keyframes spin {
-                to { transform: rotate(360deg); }
-            }
-            
-            button:disabled {
-                opacity: 0.6;
-                cursor: not-allowed;
-            }
-        `;
-        document.head.appendChild(style);
-    }
+    console.log('StripePaymentModal initialized successfully');
 });
 
 // Export functions for global access
