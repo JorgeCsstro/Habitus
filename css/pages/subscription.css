@@ -318,16 +318,16 @@
 
 /* CRITICAL: Ensure hidden class takes absolute precedence */
 .modal.hidden {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
+    display: none;
+    visibility: hidden;
+    opacity: 0;
 }
 
 /* Show the modal */
 .modal.show {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+    display: flex;
+    visibility: visible;
+    opacity: 1;
 }
 
 .modal-overlay {

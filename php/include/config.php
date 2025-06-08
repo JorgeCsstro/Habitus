@@ -1,5 +1,5 @@
 <?php
-// config.php - Updated with enhanced Stripe support
+// config.php - Updated with enhanced Stripe support and validation
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
@@ -49,9 +49,27 @@ define('HCOIN_DAILY_MULTIPLIER', 1.0);
 define('HCOIN_GOAL_MULTIPLIER', 1.5);
 define('HCOIN_CHALLENGE_MULTIPLIER', 2.0);
 
-// Stripe Configuration - Use your actual live keys from .env
-define('STRIPE_PUBLISHABLE_KEY', $_ENV['STRIPE_PUBLISHABLE_KEY'] ?? 'pk_live_51RUWHJP82CUp8m3N275XjggSuOHD8BQfDUdtpID4zNNy6GeMIzb6xJvz7PMmOyU4QLd63utdrcxKVUuETrsMGU7i00V7mL8I4F');
-define('STRIPE_SECRET_KEY', $_ENV['STRIPE_SECRET_KEY'] ?? 'sk_live_');
+// Stripe Configuration - Enhanced validation
+$stripePublishableKey = $_ENV['STRIPE_PUBLISHABLE_KEY'] ?? 'pk_live_51RUWHJP82CUp8m3N275XjggSuOHD8BQfDUdtpID4zNNy6GeMIzb6xJvz7PMmOyU4QLd63utdrcxKVUuETrsMGU7i00V7mL8I4F';
+$stripeSecretKey = $_ENV['STRIPE_SECRET_KEY'] ?? '';
+
+// Validate Stripe keys
+if (DEBUG_MODE) {
+    if (empty($stripePublishableKey) || $stripePublishableKey === 'pk_live_') {
+        error_log('WARNING: Stripe publishable key is not configured');
+    } elseif (!preg_match('/^pk_(test_|live_)[a-zA-Z0-9]+$/', $stripePublishableKey)) {
+        error_log('WARNING: Invalid Stripe publishable key format');
+    }
+    
+    if (empty($stripeSecretKey) || $stripeSecretKey === 'sk_live_') {
+        error_log('WARNING: Stripe secret key is not configured');
+    } elseif (!preg_match('/^sk_(test_|live_)[a-zA-Z0-9]+$/', $stripeSecretKey)) {
+        error_log('WARNING: Invalid Stripe secret key format');
+    }
+}
+
+define('STRIPE_PUBLISHABLE_KEY', $stripePublishableKey);
+define('STRIPE_SECRET_KEY', $stripeSecretKey);
 define('STRIPE_WEBHOOK_SECRET', $_ENV['STRIPE_WEBHOOK_SECRET'] ?? 'whsec_o7HOHbtpOSx4lhw2o9KWMcN3ARmreJks');
 
 // Stripe Price IDs from your .env file
@@ -95,10 +113,12 @@ define('DEMO_PRICE_PREMIUM', 4.99);
 // Log configuration status in debug mode
 if (DEBUG_MODE) {
     error_log("Config loaded - Stripe Demo Mode: " . (STRIPE_DEMO_MODE ? 'ENABLED' : 'DISABLED'));
+    error_log("Stripe Publishable Key: " . (STRIPE_PUBLISHABLE_KEY ? substr(STRIPE_PUBLISHABLE_KEY, 0, 12) . '...' : 'NOT SET'));
+    error_log("Stripe Secret Key: " . (STRIPE_SECRET_KEY ? substr(STRIPE_SECRET_KEY, 0, 12) . '...' : 'NOT SET'));
+    
     if (STRIPE_DEMO_MODE) {
         error_log("Demo prices - AdFree: €" . DEMO_PRICE_ADFREE . ", Premium: €" . DEMO_PRICE_PREMIUM);
     } else {
-        error_log("Config loaded - Using live Stripe keys");
         error_log("AdFree Price ID: " . STRIPE_PRICE_ADFREE_MONTHLY);
         error_log("Premium Price ID: " . STRIPE_PRICE_SUPPORTER_MONTHLY);
     }

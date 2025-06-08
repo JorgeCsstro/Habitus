@@ -400,13 +400,33 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
         id: <?php echo $userData['id']; ?>
     };
     
-    // Stripe configuration
+    // Enhanced Stripe configuration with validation
+    <?php if (empty(STRIPE_PUBLISHABLE_KEY) || STRIPE_PUBLISHABLE_KEY === 'sk_live_'): ?>
+    console.error('Stripe publishable key is not configured properly!');
+    window.stripeConfig = null;
+    <?php else: ?>
     window.stripeConfig = {
         publishableKey: '<?php echo STRIPE_PUBLISHABLE_KEY; ?>',
         currency: '<?php echo PAYMENT_CURRENCY; ?>'
     };
+    <?php endif; ?>
     
-    console.log('Stripe Config:', window.stripeConfig);
+    // Debug logging
+    console.log('Configuration Debug:', {
+        debugMode: window.debugMode,
+        hasStripeConfig: !!window.stripeConfig,
+        stripeKeyPrefix: window.stripeConfig ? window.stripeConfig.publishableKey.substring(0, 12) + '...' : 'NOT SET',
+        currency: window.stripeConfig ? window.stripeConfig.currency : 'NOT SET',
+        currentUser: window.currentUser
+    });
+    
+    // Validate Stripe configuration
+    if (window.stripeConfig && window.stripeConfig.publishableKey) {
+        if (!window.stripeConfig.publishableKey.startsWith('pk_')) {
+            console.error('Invalid Stripe publishable key format - should start with pk_');
+            window.stripeConfig = null;
+        }
+    }
     </script>
 
     <!-- Load theme manager -->

@@ -1,4 +1,4 @@
-// js/subscription-checkout.js - Complete working Stripe Elements implementation
+// js/subscription-checkout.js - Complete working Stripe Elements implementation with fixes
 
 class StripePaymentModal {
     constructor() {
@@ -18,12 +18,13 @@ class StripePaymentModal {
         this.clientSecret = null;
         this.currentPlan = null;
         this.isProcessing = false;
+        this.stripeInitialized = false; // Add initialization flag
         
         // Ensure modal is hidden on initialization
         this.ensureModalHidden();
         
-        this.initializeStripe();
         this.bindEvents();
+        this.initializeStripe(); // This will set stripeInitialized when done
     }
 
     ensureModalHidden() {
@@ -38,13 +39,28 @@ class StripePaymentModal {
 
     async initializeStripe() {
         try {
-            if (!window.stripeConfig?.publishableKey) {
-                throw new Error('Stripe configuration not found');
+            // Add detailed debugging
+            this.log('Initializing Stripe...');
+            this.log('Window stripeConfig:', window.stripeConfig);
+            
+            if (!window.stripeConfig) {
+                throw new Error('Stripe configuration object not found');
+            }
+            
+            if (!window.stripeConfig.publishableKey) {
+                throw new Error('Stripe publishable key not found in configuration');
+            }
+            
+            if (!window.stripeConfig.publishableKey.startsWith('pk_')) {
+                throw new Error('Invalid Stripe publishable key format');
             }
             
             this.stripe = Stripe(window.stripeConfig.publishableKey);
-            this.log('Stripe initialized successfully');
+            this.stripeInitialized = true;
+            this.log('Stripe initialized successfully with key:', window.stripeConfig.publishableKey.substring(0, 12) + '...');
         } catch (error) {
+            this.log('Stripe initialization failed:', error);
+            this.stripeInitialized = false;
             this.handleError('Failed to initialize Stripe', error);
         }
     }
@@ -153,6 +169,21 @@ class StripePaymentModal {
                 return;
             }
 
+            // Wait for Stripe to be initialized
+            if (!this.stripeInitialized) {
+                this.log('Waiting for Stripe initialization...');
+                // Wait up to 5 seconds for Stripe to initialize
+                let attempts = 0;
+                while (!this.stripeInitialized && attempts < 50) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+                
+                if (!this.stripeInitialized) {
+                    throw new Error('Stripe failed to initialize after 5 seconds');
+                }
+            }
+
             this.isProcessing = true;
             this.log('Opening modal for button:', button);
             
@@ -186,6 +217,11 @@ class StripePaymentModal {
             // Create subscription with Payment Intent
             this.log('Creating subscription...');
             const subscription = await this.createSubscription();
+            
+            if (!subscription.client_secret) {
+                throw new Error('No client_secret received from server');
+            }
+            
             this.clientSecret = subscription.client_secret;
 
             // Initialize Stripe Elements
@@ -225,38 +261,57 @@ class StripePaymentModal {
     async createSubscription() {
         this.log('Creating subscription for:', this.currentPlan);
         
-        const response = await fetch('../php/api/subscription/create-checkout-session.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({
-                price_id: this.currentPlan.priceId,
-                plan_id: this.currentPlan.id,
-                customer_data: {
-                    email: window.currentUser?.email || '',
-                    name: window.currentUser?.username || ''
-                }
-            })
-        });
+        try {
+            const response = await fetch('../php/api/subscription/create-checkout-session.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    price_id: this.currentPlan.priceId,
+                    plan_id: this.currentPlan.id,
+                    customer_data: {
+                        email: window.currentUser?.email || '',
+                        name: window.currentUser?.username || ''
+                    }
+                })
+            });
 
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to create subscription');
+            if (!response.ok) {
+                const errorText = await response.text();
+                this.log('Response not OK:', response.status, errorText);
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+
+            const data = await response.json();
+            this.log('Subscription response:', data);
+            
+            if (!data.success) {
+                throw new Error(data.message || 'Unknown error from server');
+            }
+            
+            if (!data.client_secret) {
+                throw new Error('No client_secret received from server');
+            }
+            
+            return data;
+        } catch (error) {
+            this.log('Create subscription error:', error);
+            throw error;
         }
-
-        const data = await response.json();
-        this.log('Subscription created:', data);
-        return data;
     }
 
     async initializeElements() {
-        if (!this.stripe || !this.clientSecret) {
-            throw new Error('Stripe not properly initialized');
+        if (!this.stripe) {
+            throw new Error('Stripe not initialized');
+        }
+        
+        if (!this.clientSecret) {
+            throw new Error('Client secret not available');
         }
 
-        this.log('Initializing Stripe Elements with client secret');
+        this.log('Initializing Stripe Elements with client secret:', this.clientSecret.substring(0, 20) + '...');
 
         const appearance = {
             theme: 'stripe',
@@ -371,7 +426,11 @@ class StripePaymentModal {
         
         // Clean up Stripe Elements
         if (this.paymentElement) {
-            this.paymentElement.unmount();
+            try {
+                this.paymentElement.unmount();
+            } catch (e) {
+                this.log('Error unmounting payment element:', e);
+            }
             this.paymentElement = null;
         }
         if (this.elements) {
@@ -476,6 +535,11 @@ function closePaymentModal() {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
+    // Add detailed debugging
+    console.log('Initializing Stripe Payment Modal...');
+    console.log('Stripe Config at init:', window.stripeConfig);
+    console.log('Debug Mode:', window.debugMode);
+    
     window.stripeModal = new StripePaymentModal();
     console.log('Stripe Payment Modal initialized');
 });
