@@ -17,6 +17,7 @@ class StripePaymentModal {
         this.paymentElement = null;
         this.clientSecret = null;
         this.currentPlan = null;
+        this.isProcessing = false;
         
         // Ensure modal is hidden on initialization
         this.ensureModalHidden();
@@ -30,6 +31,8 @@ class StripePaymentModal {
             this.modal.classList.add('hidden');
             this.modal.classList.remove('show');
             this.modal.style.display = 'none';
+            this.modal.style.visibility = 'hidden';
+            this.modal.style.opacity = '0';
         }
     }
 
@@ -47,68 +50,110 @@ class StripePaymentModal {
     }
 
     bindEvents() {
-        // Bind to subscription buttons
+        // Bind to subscription buttons with proper event handling
         document.querySelectorAll('.subscribe-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.log('Subscribe button clicked:', btn.dataset.planId);
-                
-                if (this.debugMode) {
-                    this.handleDebugSubscription(btn);
-                } else {
-                    this.openModal(btn);
-                }
-            });
+            // Remove any existing listeners
+            btn.removeEventListener('click', this.handleSubscribeClick);
+            
+            // Add new listener with proper binding
+            btn.addEventListener('click', this.handleSubscribeClick.bind(this));
         });
 
-        // Bind close modal events
+        // Only bind modal events if modal exists
         if (this.modal) {
             // Close button
             const closeBtn = this.modal.querySelector('.modal-close');
             if (closeBtn) {
-                closeBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.closeModal();
-                });
+                closeBtn.removeEventListener('click', this.handleCloseClick);
+                closeBtn.addEventListener('click', this.handleCloseClick.bind(this));
             }
 
-            // Overlay click
+            // Overlay click - but prevent immediate closure
             const overlay = this.modal.querySelector('.modal-overlay');
             if (overlay) {
-                overlay.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.closeModal();
-                });
+                overlay.removeEventListener('click', this.handleOverlayClick);
+                overlay.addEventListener('click', this.handleOverlayClick.bind(this));
             }
 
             // Cancel button
             const cancelBtn = this.modal.querySelector('.btn-secondary');
             if (cancelBtn) {
-                cancelBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.closeModal();
-                });
+                cancelBtn.removeEventListener('click', this.handleCancelClick);
+                cancelBtn.addEventListener('click', this.handleCancelClick.bind(this));
             }
         }
 
         // Form submission
         if (this.form) {
-            this.form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.handlePayment();
-            });
+            this.form.removeEventListener('submit', this.handleFormSubmit);
+            this.form.addEventListener('submit', this.handleFormSubmit.bind(this));
         }
 
         // ESC key support
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.modal && !this.modal.classList.contains('hidden')) {
-                this.closeModal();
-            }
-        });
+        document.removeEventListener('keydown', this.handleKeydown);
+        document.addEventListener('keydown', this.handleKeydown.bind(this));
+    }
+
+    handleSubscribeClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (this.isProcessing) {
+            this.log('Already processing, ignoring click');
+            return;
+        }
+
+        this.log('Subscribe button clicked:', e.currentTarget.dataset.planId);
+        
+        if (this.debugMode) {
+            this.handleDebugSubscription(e.currentTarget);
+        } else {
+            this.openModal(e.currentTarget);
+        }
+    }
+
+    handleCloseClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.closeModal();
+    }
+
+    handleOverlayClick(e) {
+        // Only close if clicking directly on overlay, not on modal content
+        if (e.target === e.currentTarget) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.closeModal();
+        }
+    }
+
+    handleCancelClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.closeModal();
+    }
+
+    handleFormSubmit(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.handlePayment();
+    }
+
+    handleKeydown(e) {
+        if (e.key === 'Escape' && this.modal && !this.modal.classList.contains('hidden')) {
+            e.preventDefault();
+            this.closeModal();
+        }
     }
 
     async openModal(button) {
         try {
+            if (this.isProcessing) {
+                this.log('Already processing, skipping modal open');
+                return;
+            }
+
+            this.isProcessing = true;
             this.log('Opening modal for button:', button);
             
             // Extract plan data from button
@@ -132,29 +177,48 @@ class StripePaymentModal {
             if (planNameEl) planNameEl.textContent = this.currentPlan.name;
             if (planPriceEl) planPriceEl.textContent = this.currentPlan.price;
 
-            // Show modal first
+            // Clear any previous errors
+            this.clearError();
+
+            // Show modal FIRST
             this.showModal();
 
             // Create subscription with Payment Intent
+            this.log('Creating subscription...');
             const subscription = await this.createSubscription();
             this.clientSecret = subscription.client_secret;
 
             // Initialize Stripe Elements
+            this.log('Initializing Stripe Elements...');
             await this.initializeElements();
 
             this.log('Payment modal opened successfully');
+            
         } catch (error) {
             this.handleError('Failed to open payment modal', error);
             this.closeModal();
+        } finally {
+            this.isProcessing = false;
         }
     }
 
     showModal() {
         if (this.modal) {
-            this.modal.classList.remove('hidden');
-            this.modal.classList.add('show');
-            this.modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
+            // Use timeout to ensure DOM is ready
+            setTimeout(() => {
+                this.modal.classList.remove('hidden');
+                this.modal.style.display = 'flex';
+                this.modal.style.visibility = 'visible';
+                this.modal.style.opacity = '1';
+                
+                // Add show class after display is set
+                requestAnimationFrame(() => {
+                    this.modal.classList.add('show');
+                });
+                
+                document.body.style.overflow = 'hidden';
+                this.log('Modal shown');
+            }, 10);
         }
     }
 
@@ -197,9 +261,9 @@ class StripePaymentModal {
         const appearance = {
             theme: 'stripe',
             variables: {
-                colorPrimary: '#3b82f6',
+                colorPrimary: '#8d5b4c',
                 colorBackground: '#ffffff',
-                colorText: '#1f2937',
+                colorText: '#2d2926',
                 colorDanger: '#dc2626',
                 fontFamily: 'system-ui, sans-serif',
                 spacingUnit: '4px',
@@ -219,125 +283,89 @@ class StripePaymentModal {
             }
         });
 
-        // Clear any existing content
+        // Clear any existing content and mount
         const paymentElementContainer = document.getElementById('stripe-payment-element');
         if (paymentElementContainer) {
             paymentElementContainer.innerHTML = '';
-            this.paymentElement.mount('#stripe-payment-element');
+            await this.paymentElement.mount('#stripe-payment-element');
+            this.log('Stripe Elements mounted successfully');
         } else {
             throw new Error('Payment element container not found');
         }
-
-        // Handle real-time validation
-        this.paymentElement.on('change', (event) => {
-            if (event.error) {
-                this.showError(event.error.message);
-            } else {
-                this.clearError();
-            }
-        });
-
-        this.log('Stripe Elements initialized and mounted');
     }
 
     async handlePayment() {
-        if (!this.stripe || !this.elements) {
-            this.handleError('Payment system not initialized');
+        if (this.isProcessing) {
             return;
         }
 
-        this.setLoading(true);
-        this.clearError();
-
         try {
-            this.log('Submitting payment...');
-            
-            // Submit the form to trigger validation
-            const { error: submitError } = await this.elements.submit();
-            if (submitError) {
-                throw submitError;
+            this.isProcessing = true;
+            this.setLoading(true);
+            this.clearError();
+
+            this.log('Processing payment...');
+
+            if (!this.stripe || !this.elements) {
+                throw new Error('Stripe not properly initialized');
             }
 
-            // Confirm the payment
-            const { error, paymentIntent } = await this.stripe.confirmPayment({
+            const { error } = await this.stripe.confirmPayment({
                 elements: this.elements,
                 confirmParams: {
-                    return_url: `${window.location.origin}/pages/subscription.php?success=true`,
-                    receipt_email: window.currentUser?.email || ''
+                    return_url: window.location.origin + '/pages/subscription.php?success=true',
                 },
                 redirect: 'if_required'
             });
 
             if (error) {
-                throw error;
+                // Payment failed
+                if (error.type === "card_error" || error.type === "validation_error") {
+                    this.showError(error.message);
+                } else {
+                    this.showError("An unexpected error occurred.");
+                }
+                this.log('Payment error:', error);
+            } else {
+                // Payment succeeded
+                this.handlePaymentSuccess();
             }
 
-            // Payment succeeded
-            this.log('Payment confirmed:', paymentIntent);
-            await this.handlePaymentSuccess(paymentIntent);
-
         } catch (error) {
-            this.handleError('Payment failed', error);
+            this.handleError('Payment processing failed', error);
         } finally {
             this.setLoading(false);
+            this.isProcessing = false;
         }
     }
 
-    async handlePaymentSuccess(paymentIntent) {
-        this.log('Payment successful:', paymentIntent.id);
-
+    handlePaymentSuccess() {
+        this.log('Payment successful!');
+        
         // Show success message
-        this.showSuccess('Payment successful! Setting up your subscription...');
-
-        // Wait a moment for webhook processing
-        setTimeout(async () => {
-            try {
-                // Verify subscription status
-                const subscription = await this.verifySubscription(paymentIntent.id);
-
-                if (subscription && subscription.status === 'active') {
-                    this.showSuccess('Subscription activated successfully!');
-                } else {
-                    this.showSuccess('Payment completed! Your subscription will be activated shortly.');
-                }
-
-                // Close modal after delay and reload page
-                setTimeout(() => {
-                    this.closeModal();
-                    window.location.href = 'subscription.php?success=true';
-                }, 2000);
-
-            } catch (error) {
-                this.log('Could not verify subscription:', error);
-                this.showSuccess('Payment completed! Your subscription will be activated shortly.');
-                
-                setTimeout(() => {
-                    this.closeModal();
-                    window.location.href = 'subscription.php?success=true';
-                }, 3000);
-            }
-        }, 1000);
-    }
-
-    async verifySubscription(paymentIntentId) {
-        try {
-            const response = await fetch(`../php/api/subscription/verify-subscription.php?payment_intent=${paymentIntentId}`);
-            if (response.ok) {
-                return await response.json();
-            }
-        } catch (error) {
-            this.log('Could not verify subscription status:', error);
+        this.showSuccess('Payment completed! Your subscription is now active.');
+        
+        // Disable form
+        if (this.form) {
+            this.form.style.pointerEvents = 'none';
         }
-        return null;
+
+        // Close modal and redirect after delay
+        setTimeout(() => {
+            this.closeModal();
+            window.location.href = 'subscription.php?success=true';
+        }, 2000);
     }
 
     closeModal() {
         this.log('Closing modal');
         
         if (this.modal) {
-            this.modal.classList.add('hidden');
             this.modal.classList.remove('show');
+            this.modal.classList.add('hidden');
             this.modal.style.display = 'none';
+            this.modal.style.visibility = 'hidden';
+            this.modal.style.opacity = '0';
             document.body.style.overflow = '';
         }
         
@@ -352,6 +380,7 @@ class StripePaymentModal {
         
         this.clientSecret = null;
         this.currentPlan = null;
+        this.isProcessing = false;
         
         // Clear any messages
         this.clearError();
@@ -409,318 +438,44 @@ class StripePaymentModal {
         let message = 'An unexpected error occurred. Please try again.';
         
         if (error) {
-            switch (error.type) {
-                case 'card_error':
-                case 'validation_error':
-                    message = error.message;
-                    break;
-                case 'api_connection_error':
-                    message = 'Network error. Please check your connection and try again.';
-                    break;
-                case 'rate_limit_error':
-                    message = 'Too many requests. Please wait a moment and try again.';
-                    break;
-                default:
-                    if (error.code) {
-                        switch (error.code) {
-                            case 'card_declined':
-                                message = 'Your card was declined. Please try a different payment method.';
-                                break;
-                            case 'expired_card':
-                                message = 'Your card has expired. Please use a different card.';
-                                break;
-                            case 'insufficient_funds':
-                                message = 'Insufficient funds. Please try a different payment method.';
-                                break;
-                            case 'incorrect_cvc':
-                                message = 'Your card security code is incorrect.';
-                                break;
-                            default:
-                                message = error.message || message;
-                        }
-                    }
+            if (typeof error === 'string') {
+                message = error;
+            } else if (error.message) {
+                message = error.message;
             }
         }
         
         this.showError(message);
+        this.setLoading(false);
+        this.isProcessing = false;
     }
 
-    // Debug mode support - maintain existing functionality
-    async handleDebugSubscription(button) {
-        this.log('Debug mode: simulating subscription');
-        
-        const planId = button.dataset.planId;
-        
-        try {
-            const response = await fetch('../php/api/subscription/create-checkout-session.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 
-                    plan: planId,
-                    debug_mode: true 
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                if (data.demo_mode) {
-                    showAlert('Demo subscription activated! 🎉', 'success');
-                    setTimeout(() => {
-                        window.location.href = data.checkout_url;
-                    }, 1500);
-                } else {
-                    showAlert('Subscription activated successfully!', 'success');
-                    setTimeout(() => window.location.reload(), 2000);
-                }
-            } else {
-                throw new Error(data.message || 'Failed to create subscription');
-            }
-            
-        } catch (error) {
-            this.log('Debug subscription error:', error);
-            showAlert('Debug subscription failed: ' + error.message, 'error');
-        }
+    handleDebugSubscription(button) {
+        this.log('Debug mode: simulating subscription for', button.dataset.planId);
+        alert(`Debug Mode: Would subscribe to ${button.dataset.planName} for ${button.dataset.planPrice}`);
     }
 
-    log(...args) {
-        if (this.debugMode || window.location.hostname === 'localhost') {
-            console.log('[StripePaymentModal]', ...args);
+    log(message, ...args) {
+        if (this.debugMode) {
+            console.log(`[StripePaymentModal] ${message}`, ...args);
         }
     }
 }
 
-// Legacy functions for backwards compatibility
-async function subscribeToPlan(planType) {
-    console.log(`Legacy function called: subscribeToPlan(${planType})`);
-    
-    if (window.debugMode) {
-        try {
-            const response = await fetch('../php/api/subscription/create-checkout-session.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    plan: planType
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success && data.demo_mode) {
-                showAlert('Demo mode: Subscription activated! 🎉', 'success');
-                setTimeout(() => {
-                    window.location.href = data.checkout_url;
-                }, 1500);
-            } else if (data.success) {
-                window.location.href = data.checkout_url;
-            } else {
-                throw new Error(data.message || 'Failed to create checkout session');
-            }
-            
-        } catch (error) {
-            console.error('Subscription error:', error);
-            showAlert(error.message || 'An error occurred. Please try again.', 'error');
-        }
-    } else {
-        // Find the corresponding button and trigger modal
-        const button = document.querySelector(`[data-plan-id="${planType}"]`);
-        if (button && window.stripePaymentModal) {
-            window.stripePaymentModal.openModal(button);
-        }
-    }
+// Global functions for backward compatibility
+function openPaymentModal() {
+    // This function is kept for any external calls
+    console.warn('openPaymentModal() is deprecated. Use StripePaymentModal class instead.');
 }
 
-async function manageSubscription() {
-    console.log('Opening customer portal...');
-    
-    const manageBtn = document.querySelector('.manage-subscription-btn');
-    if (manageBtn) {
-        manageBtn.disabled = true;
-        manageBtn.innerHTML = '<span class="spinner"></span> Loading...';
-    }
-    
-    try {
-        const response = await fetch('../php/api/subscription/create-portal-session.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.success && data.url) {
-            window.location.href = data.url;
-        } else {
-            throw new Error(data.message || 'Unable to open subscription management');
-        }
-        
-    } catch (error) {
-        console.error('Portal error:', error);
-        showAlert('Unable to open subscription management. Please try again.', 'error');
-        
-        if (manageBtn) {
-            manageBtn.disabled = false;
-            manageBtn.textContent = 'Manage Subscription';
-        }
-    }
-}
-
-async function downgradeToFree() {
-    if (!confirm('Are you sure you want to cancel your subscription? You will retain access until the end of your billing period.')) {
-        return;
-    }
-    
-    try {
-        const response = await fetch('../php/api/subscription/cancel.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showAlert('Subscription cancelled. You will retain access until ' + data.expires_date, 'info');
-            setTimeout(() => window.location.reload(), 2000);
-        } else {
-            throw new Error(data.message || 'Error cancelling subscription');
-        }
-        
-    } catch (error) {
-        console.error('Cancel error:', error);
-        showAlert('An error occurred. Please try again.', 'error');
-    }
-}
-
-function toggleFaq(questionElement) {
-    const faqItem = questionElement.closest('.faq-item');
-    const answer = faqItem.querySelector('.faq-answer');
-    const icon = questionElement.querySelector('img');
-    
-    // Close other open FAQs
-    document.querySelectorAll('.faq-question.active').forEach(activeQuestion => {
-        if (activeQuestion !== questionElement) {
-            const activeFaq = activeQuestion.closest('.faq-item');
-            const activeAnswer = activeFaq.querySelector('.faq-answer');
-            const activeIcon = activeQuestion.querySelector('img');
-            
-            activeQuestion.classList.remove('active');
-            activeAnswer.classList.remove('show');
-            activeAnswer.style.maxHeight = '0';
-            if (activeIcon) activeIcon.style.transform = 'rotate(0deg)';
-        }
-    });
-    
-    // Toggle current FAQ
-    questionElement.classList.toggle('active');
-    answer.classList.toggle('show');
-    
-    if (answer.classList.contains('show')) {
-        answer.style.maxHeight = answer.scrollHeight + 'px';
-        if (icon) icon.style.transform = 'rotate(180deg)';
-    } else {
-        answer.style.maxHeight = '0';
-        if (icon) icon.style.transform = 'rotate(0deg)';
-    }
-}
-
-function showAlert(message, type = 'info') {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `subscription-alert ${type}`;
-    alertDiv.textContent = message;
-    alertDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 100000;
-        max-width: 400px;
-        opacity: 0;
-        transform: translateX(100%);
-        transition: all 0.3s ease;
-        font-family: system-ui, -apple-system, sans-serif;
-        font-weight: 500;
-        color: white;
-    `;
-    
-    const colors = {
-        success: '#48bb78',
-        error: '#f56565',
-        info: '#4299e1',
-        warning: '#ed8936'
-    };
-    alertDiv.style.backgroundColor = colors[type] || colors.info;
-    
-    document.body.appendChild(alertDiv);
-    
-    setTimeout(() => {
-        alertDiv.style.opacity = '1';
-        alertDiv.style.transform = 'translateX(0)';
-    }, 10);
-    
-    setTimeout(() => {
-        alertDiv.style.opacity = '0';
-        alertDiv.style.transform = 'translateX(100%)';
-        setTimeout(() => alertDiv.remove(), 400);
-    }, 5000);
-}
-
-function checkUrlParams() {
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    if (urlParams.get('success') === 'true') {
-        if (urlParams.get('demo') === 'true') {
-            showAlert('🎉 Demo subscription activated! This is a demo - no payment was processed.', 'success');
-        } else {
-            showAlert('🎉 Subscription activated successfully! Welcome to premium features!', 'success');
-        }
-        window.history.replaceState({}, document.title, window.location.pathname);
-    } else if (urlParams.get('canceled') === 'true') {
-        showAlert('Subscription process was cancelled.', 'warning');
-        window.history.replaceState({}, document.title, window.location.pathname);
-    } else if (urlParams.get('portal') === 'success') {
-        showAlert('Subscription settings updated successfully.', 'success');
-        window.history.replaceState({}, document.title, window.location.pathname);
-    }
-}
-
-// Global functions for modal control
 function closePaymentModal() {
-    if (window.stripePaymentModal) {
-        window.stripePaymentModal.closeModal();
+    if (window.stripeModal) {
+        window.stripeModal.closeModal();
     }
 }
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the modal system
-    window.stripePaymentModal = new StripePaymentModal();
-    
-    // Check for success/cancel parameters
-    checkUrlParams();
-    
-    console.log('StripePaymentModal initialized successfully');
+    window.stripeModal = new StripePaymentModal();
+    console.log('Stripe Payment Modal initialized');
 });
-
-// Export functions for global access
-window.subscribeToPlan = subscribeToPlan;
-window.manageSubscription = manageSubscription;
-window.downgradeToFree = downgradeToFree;
-window.toggleFaq = toggleFaq;
-window.closePaymentModal = closePaymentModal;

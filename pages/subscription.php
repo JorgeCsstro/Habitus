@@ -347,12 +347,12 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
     </div>
 
     <!-- Stripe Payment Modal -->
-    <div id="stripe-payment-modal" class="modal hidden" role="dialog" aria-labelledby="modal-title" aria-modal="true" style="display: none;">
-        <div class="modal-overlay" onclick="closePaymentModal()"></div>
+    <div id="stripe-payment-modal" class="modal hidden" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+        <div class="modal-overlay"></div>
         <div class="modal-container">
             <div class="modal-header">
                 <h2 id="modal-title">Complete Your Subscription</h2>
-                <button class="modal-close" onclick="closePaymentModal()" aria-label="Close" type="button">&times;</button>
+                <button class="modal-close" type="button" aria-label="Close">&times;</button>
             </div>
                                 
             <div class="modal-body">
@@ -370,7 +370,7 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                     <div id="payment-success" class="success-message hidden"></div>
                                 
                     <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="closePaymentModal()">Cancel</button>
+                        <button type="button" class="btn btn-secondary">Cancel</button>
                         <button type="submit" id="stripe-submit-btn" class="btn btn-primary">
                             <div class="spinner"></div>
                             <span class="btn-text">Subscribe Now</span>

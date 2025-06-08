@@ -306,35 +306,28 @@
     width: 100%;
     height: 100%;
     z-index: 10000;
-    display: none; /* Changed from flex to none by default */
+    display: none; /* Always start hidden */
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(2px);
     background: rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-/* CRITICAL: Ensure hidden class takes precedence */
+/* CRITICAL: Ensure hidden class takes absolute precedence */
 .modal.hidden {
-    display: none;
-    visibility: hidden;
-    opacity: 0;
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
 }
 
 /* Show the modal */
 .modal.show {
-    display: flex;
-    visibility: visible;
-    opacity: 1;
-    animation: modalFadeIn 0.3s ease-out;
-}
-
-@keyframes modalFadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .modal-overlay {
@@ -343,7 +336,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6);
+    background: transparent; /* Don't double-layer the background */
 }
 
 .modal-container {
@@ -357,6 +350,7 @@
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     animation: modalSlideIn 0.3s ease-out;
     z-index: 10001;
+    transform: translateY(0);
 }
 
 @keyframes modalSlideIn {
@@ -483,48 +477,57 @@
 
 .btn {
     padding: 0.75rem 1.5rem;
-    border-radius: 6px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
-    border: 1px solid transparent;
-    font-family: 'Quicksand', sans-serif;
-    font-size: 1rem;
-}
-
-.btn-secondary {
-    background: #f3f4f6;
-    color: #374151;
-    border-color: #d1d5db;
-}
-
-.btn-secondary:hover {
-    background: #e5e7eb;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
 }
 
 .btn-primary {
-    background: #3b82f6;
+    background: linear-gradient(135deg, #8d5b4c, #a66b5c);
     color: white;
-    position: relative;
-    min-width: 140px;
+    box-shadow: 0 2px 4px rgba(141, 91, 76, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
+    background: linear-gradient(135deg, #7d4b3c, #96615c);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(141, 91, 76, 0.4);
 }
 
 .btn-primary:disabled {
-    background: #9ca3af;
+    background: #d1d5db;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
+.btn-secondary {
+    background: #f9fafb;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+}
+
+.btn-secondary:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+/* Loading spinner */
 .spinner {
     display: none;
     width: 16px;
     height: 16px;
-    border: 2px solid #ffffff;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
     border-radius: 50%;
-    border-top-color: transparent;
     animation: spin 1s linear infinite;
     margin-right: 8px;
 }
@@ -534,9 +537,9 @@
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
-
 /* ===== BENEFITS SECTION ===== */
 .subscription-benefits {
     background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
