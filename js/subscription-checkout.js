@@ -1,4 +1,4 @@
-// js/subscription-checkout.js - Complete Stripe Elements implementation - FIXED
+// js/subscription-checkout.js - Complete working Stripe Elements implementation
 
 class StripePaymentModal {
     constructor() {
@@ -135,9 +135,9 @@ class StripePaymentModal {
             // Show modal first
             this.showModal();
 
-            // Create checkout session
-            const session = await this.createCheckoutSession();
-            this.clientSecret = session.client_secret;
+            // Create subscription with Payment Intent
+            const subscription = await this.createSubscription();
+            this.clientSecret = subscription.client_secret;
 
             // Initialize Stripe Elements
             await this.initializeElements();
@@ -158,8 +158,8 @@ class StripePaymentModal {
         }
     }
 
-    async createCheckoutSession() {
-        this.log('Creating checkout session for:', this.currentPlan);
+    async createSubscription() {
+        this.log('Creating subscription for:', this.currentPlan);
         
         const response = await fetch('../php/api/subscription/create-checkout-session.php', {
             method: 'POST',
@@ -179,11 +179,11 @@ class StripePaymentModal {
 
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.message || 'Failed to create checkout session');
+            throw new Error(error.message || 'Failed to create subscription');
         }
 
         const data = await response.json();
-        this.log('Checkout session created:', data);
+        this.log('Subscription created:', data);
         return data;
     }
 

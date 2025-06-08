@@ -1,5 +1,5 @@
 <?php
-// pages/subscription.php - Complete file with Stripe Elements modal
+// pages/subscription.php - Updated with proper Stripe configuration
 
 // Include necessary files
 require_once '../php/include/config.php';
@@ -346,7 +346,7 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
         </div>
     </div>
 
-    <!-- Stripe Payment Modal - FIXED -->
+    <!-- Stripe Payment Modal -->
     <div id="stripe-payment-modal" class="modal hidden" role="dialog" aria-labelledby="modal-title" aria-modal="true" style="display: none;">
         <div class="modal-overlay" onclick="closePaymentModal()"></div>
         <div class="modal-container">
@@ -405,6 +405,8 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
         publishableKey: '<?php echo STRIPE_PUBLISHABLE_KEY; ?>',
         currency: '<?php echo PAYMENT_CURRENCY; ?>'
     };
+    
+    console.log('Stripe Config:', window.stripeConfig);
     </script>
 
     <!-- Load theme manager -->

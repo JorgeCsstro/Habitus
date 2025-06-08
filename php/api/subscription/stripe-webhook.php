@@ -1,5 +1,5 @@
 <?php
-// php/api/subscription/stripe-webhook.php
+// php/api/subscription/stripe-webhook.php - Complete webhook handler
 
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';
@@ -9,13 +9,12 @@ require_once '../../../vendor/autoload.php';
 http_response_code(200);
 
 // Initialize Stripe
-\Stripe\Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
-\Stripe\Stripe::setApiVersion($_ENV['STRIPE_API_VERSION']);
+\Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
 
 // Get the webhook payload and signature
 $payload = @file_get_contents('php://input');
 $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? '';
-$endpoint_secret = $_ENV['STRIPE_WEBHOOK_SECRET'];
+$endpoint_secret = STRIPE_WEBHOOK_SECRET;
 
 $event = null;
 
@@ -85,58 +84,74 @@ try {
 http_response_code(200);
 
 /**
- * Handle completed checkout session
+ * Handle invoice payment succeeded - This is the key event for subscription activation
  */
-function handleCheckoutSessionCompleted($session) {
+function handleInvoicePaymentSucceeded($invoice) {
     global $conn;
     
-    // Get subscription details
-    $subscriptionId = $session->subscription;
-    $customerId = $session->customer;
-    
-    // Retrieve the subscription
-    $subscription = \Stripe\Subscription::retrieve($subscriptionId);
-    
-    // Get user ID from metadata
-    $userId = $subscription->metadata->user_id ?? null;
-    $planType = $subscription->metadata->plan_type ?? 'adfree';
-    
-    if (!$userId) {
-        // Try to get user ID from customer
-        $customer = \Stripe\Customer::retrieve($customerId);
-        $userId = $customer->metadata->user_id ?? null;
-    }
-    
-    if (!$userId) {
-        error_log('No user ID found in webhook data');
+    // Only process subscription invoices
+    if (!$invoice->subscription) {
         return;
     }
     
-    // Update user subscription in database
-    $expiresAt = date('Y-m-d H:i:s', $subscription->current_period_end);
-    
-    $updateQuery = "UPDATE users SET 
-                    subscription_type = ?,
-                    subscription_expires = ?,
-                    stripe_subscription_id = ?
-                    WHERE id = ?";
-    
-    $stmt = $conn->prepare($updateQuery);
-    $stmt->execute([$planType, $expiresAt, $subscriptionId, $userId]);
-    
-    // Log the subscription
-    logSubscriptionEvent($userId, 'created', $planType, $session->amount_total / 100);
-    
-    // Send confirmation notification
-    sendSubscriptionNotification($userId, 'subscription_created', $planType);
+    try {
+        // Get subscription details
+        $subscription = \Stripe\Subscription::retrieve($invoice->subscription);
+        
+        // Get user ID from subscription metadata
+        $userId = $subscription->metadata->user_id ?? null;
+        $planType = $subscription->metadata->plan_id ?? 'adfree';
+        
+        if (!$userId) {
+            // Try to get user ID from customer
+            $customer = \Stripe\Customer::retrieve($subscription->customer);
+            $userId = $customer->metadata->user_id ?? null;
+            
+            if (!$userId) {
+                // Try to get from database by customer ID
+                $stmt = $conn->prepare("SELECT id FROM users WHERE stripe_customer_id = ?");
+                $stmt->execute([$subscription->customer]);
+                $user = $stmt->fetch();
+                $userId = $user['id'] ?? null;
+            }
+        }
+        
+        if (!$userId) {
+            error_log('No user ID found for subscription: ' . $subscription->id);
+            return;
+        }
+        
+        // Update user subscription in database
+        $expiresAt = date('Y-m-d H:i:s', $subscription->current_period_end);
+        
+        $updateQuery = "UPDATE users SET 
+                        subscription_type = ?,
+                        subscription_expires = ?,
+                        stripe_subscription_id = ?
+                        WHERE id = ?";
+        
+        $stmt = $conn->prepare($updateQuery);
+        $stmt->execute([$planType, $expiresAt, $subscription->id, $userId]);
+        
+        // Log the successful payment
+        logSubscriptionEvent($userId, 'payment_success', $planType, $invoice->amount_paid / 100);
+        
+        // Send confirmation notification
+        sendSubscriptionNotification($userId, 'subscription_activated', $planType);
+        
+        error_log("Subscription activated for user $userId: $planType until $expiresAt");
+        
+    } catch (Exception $e) {
+        error_log('Failed to handle invoice payment succeeded: ' . $e->getMessage());
+    }
 }
 
 /**
  * Handle subscription created
  */
 function handleSubscriptionCreated($subscription) {
-    // Already handled in checkout.session.completed
     error_log('Subscription created: ' . $subscription->id);
+    // The actual activation happens in invoice.payment_succeeded
 }
 
 /**
@@ -146,10 +161,18 @@ function handleSubscriptionUpdated($subscription) {
     global $conn;
     
     $userId = $subscription->metadata->user_id ?? null;
+    if (!$userId) {
+        // Try to get from database
+        $stmt = $conn->prepare("SELECT id FROM users WHERE stripe_subscription_id = ?");
+        $stmt->execute([$subscription->id]);
+        $user = $stmt->fetch();
+        $userId = $user['id'] ?? null;
+    }
+    
     if (!$userId) return;
     
+    $planType = $subscription->metadata->plan_id ?? 'adfree';
     $status = $subscription->status;
-    $planType = $subscription->metadata->plan_type ?? 'adfree';
     
     if ($status === 'active') {
         $expiresAt = date('Y-m-d H:i:s', $subscription->current_period_end);
@@ -161,6 +184,9 @@ function handleSubscriptionUpdated($subscription) {
         
         $stmt = $conn->prepare($updateQuery);
         $stmt->execute([$planType, $expiresAt, $userId]);
+    } elseif ($status === 'canceled') {
+        // Don't immediately cancel - let them use until expiry
+        logSubscriptionEvent($userId, 'cancelled', $planType, 0);
     }
 }
 
@@ -171,40 +197,26 @@ function handleSubscriptionDeleted($subscription) {
     global $conn;
     
     $userId = $subscription->metadata->user_id ?? null;
-    if (!$userId) return;
-    
-    // Don't immediately remove access - they have until expiry
-    logSubscriptionEvent($userId, 'cancelled', 'free', 0);
-    
-    // Send cancellation notification
-    sendSubscriptionNotification($userId, 'subscription_cancelled');
-}
-
-/**
- * Handle successful invoice payment
- */
-function handleInvoicePaymentSucceeded($invoice) {
-    global $conn;
-    
-    // Get subscription
-    $subscriptionId = $invoice->subscription;
-    if (!$subscriptionId) return;
-    
-    $subscription = \Stripe\Subscription::retrieve($subscriptionId);
-    $userId = $subscription->metadata->user_id ?? null;
+    if (!$userId) {
+        $stmt = $conn->prepare("SELECT id FROM users WHERE stripe_subscription_id = ?");
+        $stmt->execute([$subscription->id]);
+        $user = $stmt->fetch();
+        $userId = $user['id'] ?? null;
+    }
     
     if (!$userId) return;
     
-    // Update subscription expiry
-    $expiresAt = date('Y-m-d H:i:s', $subscription->current_period_end);
+    // Update to free plan
+    $updateQuery = "UPDATE users SET 
+                    subscription_type = 'free',
+                    subscription_expires = NULL
+                    WHERE id = ?";
     
-    $updateQuery = "UPDATE users SET subscription_expires = ? WHERE id = ?";
     $stmt = $conn->prepare($updateQuery);
-    $stmt->execute([$expiresAt, $userId]);
+    $stmt->execute([$userId]);
     
-    // Log payment
-    $amount = $invoice->amount_paid / 100;
-    logSubscriptionEvent($userId, 'payment_success', null, $amount);
+    logSubscriptionEvent($userId, 'cancelled', 'free', 0);
+    sendSubscriptionNotification($userId, 'subscription_cancelled');
 }
 
 /**
@@ -213,23 +225,30 @@ function handleInvoicePaymentSucceeded($invoice) {
 function handleInvoicePaymentFailed($invoice) {
     global $conn;
     
-    $customerId = $invoice->customer;
+    if (!$invoice->subscription) return;
     
-    // Get user by customer ID
-    $query = "SELECT id FROM users WHERE stripe_customer_id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->execute([$customerId]);
+    $subscription = \Stripe\Subscription::retrieve($invoice->subscription);
+    $userId = $subscription->metadata->user_id ?? null;
     
-    if ($stmt->rowCount() > 0) {
+    if (!$userId) {
+        $stmt = $conn->prepare("SELECT id FROM users WHERE stripe_subscription_id = ?");
+        $stmt->execute([$subscription->id]);
         $user = $stmt->fetch();
-        $userId = $user['id'];
-        
-        // Send payment failed notification
+        $userId = $user['id'] ?? null;
+    }
+    
+    if ($userId) {
         sendSubscriptionNotification($userId, 'payment_failed');
-        
-        // Log the failure
         logSubscriptionEvent($userId, 'payment_failed', null, 0);
     }
+}
+
+/**
+ * Handle completed checkout session
+ */
+function handleCheckoutSessionCompleted($session) {
+    // This is handled by invoice.payment_succeeded for subscriptions
+    error_log('Checkout session completed: ' . $session->id);
 }
 
 /**
@@ -257,7 +276,7 @@ function sendSubscriptionNotification($userId, $type, $planType = null) {
     global $conn;
     
     $messages = [
-        'subscription_created' => 'Welcome to ' . ucfirst($planType) . '! Your subscription is now active.',
+        'subscription_activated' => 'Welcome to ' . ucfirst($planType) . '! Your subscription is now active.',
         'subscription_cancelled' => 'Your subscription has been cancelled. You will retain access until the end of your billing period.',
         'payment_failed' => 'We were unable to process your payment. Please update your payment method.'
     ];

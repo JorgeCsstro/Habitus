@@ -1,5 +1,5 @@
 <?php
-// php/api/subscription/create-checkout-session.php - Complete Stripe Elements implementation
+// php/api/subscription/create-checkout-session.php - Working Stripe subscription creation
 
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';
@@ -138,20 +138,14 @@ try {
     http_response_code(400);
     echo json_encode([
         'success' => false,
-        'error' => [
-            'type' => $e->getStripeCode() ?: 'stripe_error',
-            'message' => getStripeErrorMessage($e)
-        ]
+        'message' => getStripeErrorMessage($e)
     ]);
 } catch (Exception $e) {
     error_log('General error: ' . $e->getMessage());
     http_response_code(400);
     echo json_encode([
         'success' => false,
-        'error' => [
-            'type' => 'general_error',
-            'message' => $e->getMessage()
-        ]
+        'message' => $e->getMessage()
     ]);
 }
 
