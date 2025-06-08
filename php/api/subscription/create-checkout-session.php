@@ -1,5 +1,5 @@
 <?php
-// php/api/subscription/create-checkout-session.php - Working Stripe subscription creation
+// php/api/subscription/create-checkout-session.php - Enhanced with better client_secret handling
 
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';
@@ -25,6 +25,17 @@ if (DEBUG_MODE) {
     error_reporting(E_ALL);
 }
 
+// Enhanced logging function
+function debugLog($message, $data = null) {
+    if (DEBUG_MODE) {
+        $logMessage = "[DEBUG] " . $message;
+        if ($data !== null) {
+            $logMessage .= " | Data: " . json_encode($data, JSON_PRETTY_PRINT);
+        }
+        error_log($logMessage);
+    }
+}
+
 try {
     // Check if user is logged in
     if (!isLoggedIn()) {
@@ -46,6 +57,7 @@ try {
         if (file_exists($path)) {
             require_once $path;
             $stripeLoaded = true;
+            debugLog("Stripe loaded from: " . $path);
             break;
         }
     }
@@ -61,10 +73,12 @@ try {
 
     // Initialize Stripe
     \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
+    debugLog("Stripe initialized with API key: " . substr(STRIPE_SECRET_KEY, 0, 12) . "...");
 
     // Get request data
     $input = file_get_contents('php://input');
     $data = json_decode($input, true);
+    debugLog("Received request data", $data);
 
     if (!$data) {
         throw new Exception('Invalid JSON data');
@@ -76,6 +90,8 @@ try {
     if (empty($userData)) {
         throw new Exception('User data not found');
     }
+
+    debugLog("User data retrieved", ['user_id' => $userId, 'email' => $userData['email']]);
 
     // Handle debug/demo mode (maintain existing functionality)
     if (isset($data['plan']) && (STRIPE_DEMO_MODE || isset($data['debug_mode']))) {
@@ -91,6 +107,8 @@ try {
     $planId = sanitizeString($data['plan_id']);
     $customerData = $data['customer_data'] ?? [];
 
+    debugLog("Processing subscription", ['price_id' => $priceId, 'plan_id' => $planId]);
+
     // Validate price ID format
     if (!preg_match('/^price_[a-zA-Z0-9]+$/', $priceId)) {
         throw new Exception('Invalid price ID format');
@@ -103,52 +121,175 @@ try {
 
     // Create or retrieve Stripe customer
     $customer = createOrRetrieveCustomer($userData, $customerData);
+    debugLog("Customer created/retrieved", ['customer_id' => $customer->id]);
 
-    // Create subscription with Payment Intent
-    $subscription = \Stripe\Subscription::create([
-        'customer' => $customer->id,
-        'items' => [[
-            'price' => $priceId,
-        ]],
-        'payment_behavior' => 'default_incomplete',
-        'payment_settings' => [
-            'save_default_payment_method' => 'on_subscription',
-            'payment_method_types' => ['card']
-        ],
-        'expand' => ['latest_invoice.payment_intent'],
-        'metadata' => [
-            'plan_id' => $planId,
-            'user_id' => (string)$userId,
-            'source' => 'payment_modal'
-        ]
-    ]);
+    // First, let's try to get the price to understand what we're dealing with
+    try {
+        $price = \Stripe\Price::retrieve($priceId);
+        debugLog("Price retrieved", [
+            'price_id' => $price->id,
+            'amount' => $price->unit_amount,
+            'currency' => $price->currency,
+            'type' => $price->type
+        ]);
+    } catch (Exception $e) {
+        debugLog("Failed to retrieve price: " . $e->getMessage());
+        throw new Exception('Invalid price ID: ' . $priceId);
+    }
+
+    // Create subscription with enhanced error handling
+    debugLog("Creating subscription...");
+    
+    try {
+        $subscription = \Stripe\Subscription::create([
+            'customer' => $customer->id,
+            'items' => [[
+                'price' => $priceId,
+            ]],
+            'payment_behavior' => 'default_incomplete',
+            'payment_settings' => [
+                'save_default_payment_method' => 'on_subscription',
+                'payment_method_types' => ['card']
+            ],
+            'expand' => ['latest_invoice.payment_intent'],
+            'metadata' => [
+                'plan_id' => $planId,
+                'user_id' => (string)$userId,
+                'source' => 'payment_modal'
+            ]
+        ]);
+
+        debugLog("Subscription created", [
+            'subscription_id' => $subscription->id,
+            'status' => $subscription->status,
+            'has_latest_invoice' => isset($subscription->latest_invoice),
+            'invoice_id' => $subscription->latest_invoice->id ?? 'none'
+        ]);
+
+    } catch (\Stripe\Exception\StripeException $e) {
+        debugLog("Stripe subscription creation failed: " . $e->getMessage());
+        throw $e;
+    }
+
+    // Enhanced client_secret extraction with fallbacks
+    $clientSecret = null;
+    
+    // Method 1: Try to get from expanded subscription
+    if (isset($subscription->latest_invoice) && 
+        isset($subscription->latest_invoice->payment_intent) && 
+        isset($subscription->latest_invoice->payment_intent->client_secret)) {
+        
+        $clientSecret = $subscription->latest_invoice->payment_intent->client_secret;
+        debugLog("Client secret retrieved from expanded subscription");
+        
+    } else {
+        debugLog("No client secret in expanded subscription, trying fallback methods...");
+        
+        // Method 2: Retrieve the invoice separately
+        if (isset($subscription->latest_invoice)) {
+            try {
+                $invoice = \Stripe\Invoice::retrieve($subscription->latest_invoice->id, [
+                    'expand' => ['payment_intent']
+                ]);
+                
+                if (isset($invoice->payment_intent->client_secret)) {
+                    $clientSecret = $invoice->payment_intent->client_secret;
+                    debugLog("Client secret retrieved from separate invoice call");
+                }
+                
+            } catch (Exception $e) {
+                debugLog("Failed to retrieve invoice separately: " . $e->getMessage());
+            }
+        }
+        
+        // Method 3: Create a separate Payment Intent if all else fails
+        if (!$clientSecret) {
+            debugLog("Creating separate payment intent as fallback...");
+            
+            try {
+                $paymentIntent = \Stripe\PaymentIntent::create([
+                    'amount' => $price->unit_amount,
+                    'currency' => $price->currency,
+                    'customer' => $customer->id,
+                    'setup_future_usage' => 'off_session',
+                    'metadata' => [
+                        'subscription_id' => $subscription->id,
+                        'plan_id' => $planId,
+                        'user_id' => (string)$userId,
+                        'source' => 'fallback_payment_intent'
+                    ]
+                ]);
+                
+                $clientSecret = $paymentIntent->client_secret;
+                debugLog("Fallback payment intent created", ['payment_intent_id' => $paymentIntent->id]);
+                
+                // Update user record with payment intent ID
+                updateUserPaymentIntent($userId, $paymentIntent->id);
+                
+            } catch (Exception $e) {
+                debugLog("Failed to create fallback payment intent: " . $e->getMessage());
+                throw new Exception('Unable to create payment intent for subscription');
+            }
+        }
+    }
+
+    // Final validation
+    if (!$clientSecret) {
+        debugLog("ERROR: No client secret available after all attempts");
+        throw new Exception('Unable to generate client secret for payment');
+    }
 
     // Store subscription in database with pending status
     storePendingSubscription($customer->id, $subscription, $planId, $userId);
 
-    echo json_encode([
+    $response = [
         'success' => true,
         'subscription_id' => $subscription->id,
-        'client_secret' => $subscription->latest_invoice->payment_intent->client_secret,
+        'client_secret' => $clientSecret,
         'customer_id' => $customer->id
-    ]);
+    ];
+
+    debugLog("Successful response", $response);
+    
+    echo json_encode($response);
 
 } catch (\Stripe\Exception\StripeException $e) {
-    error_log('Stripe error: ' . $e->getMessage());
+    $errorMessage = getStripeErrorMessage($e);
+    debugLog('Stripe error: ' . $e->getMessage(), ['stripe_code' => $e->getStripeCode()]);
+    
     http_response_code(400);
     echo json_encode([
         'success' => false,
-        'message' => getStripeErrorMessage($e)
+        'message' => $errorMessage,
+        'error_type' => 'stripe_error',
+        'stripe_code' => $e->getStripeCode()
     ]);
+    
 } catch (Exception $e) {
-    error_log('General error: ' . $e->getMessage());
+    debugLog('General error: ' . $e->getMessage());
+    
     http_response_code(400);
     echo json_encode([
         'success' => false,
-        'message' => $e->getMessage()
+        'message' => $e->getMessage(),
+        'error_type' => 'general_error'
     ]);
 }
 
+// Add the new helper function
+function updateUserPaymentIntent($userId, $paymentIntentId) {
+    global $conn;
+    
+    try {
+        $stmt = $conn->prepare("UPDATE users SET last_payment_intent = ? WHERE id = ?");
+        $stmt->execute([$paymentIntentId, $userId]);
+        debugLog("Updated user payment intent", ['user_id' => $userId, 'payment_intent_id' => $paymentIntentId]);
+    } catch (Exception $e) {
+        debugLog("Failed to update user payment intent: " . $e->getMessage());
+    }
+}
+
+// Keep your existing functions (handleDemoMode, createOrRetrieveCustomer, etc.)
 function handleDemoMode($data, $userData, $userId) {
     global $conn;
     
@@ -221,10 +362,12 @@ function createOrRetrieveCustomer($userData, $customerData) {
             // Return existing Stripe customer
             $customer = \Stripe\Customer::retrieve($userData['stripe_customer_id']);
             if (!$customer->deleted) {
+                debugLog("Existing customer retrieved", ['customer_id' => $customer->id]);
                 return $customer;
             }
         } catch (\Stripe\Exception\InvalidRequestException $e) {
             // Customer doesn't exist in Stripe, create new one
+            debugLog("Existing customer not found in Stripe, creating new one");
         }
     }
     
@@ -239,6 +382,7 @@ function createOrRetrieveCustomer($userData, $customerData) {
     ];
     
     $customer = \Stripe\Customer::create($customerParams);
+    debugLog("New customer created", ['customer_id' => $customer->id]);
     
     // Update user record with Stripe customer ID
     $stmt = $conn->prepare("UPDATE users SET stripe_customer_id = ? WHERE id = ?");
@@ -250,9 +394,7 @@ function createOrRetrieveCustomer($userData, $customerData) {
 function storePendingSubscription($customerId, $subscription, $planId, $userId) {
     global $conn;
     
-    $priceId = $subscription->items->data[0]->price->id;
     $subscriptionId = $subscription->id;
-    $expiryDate = date('Y-m-d H:i:s', $subscription->current_period_end);
     
     // Update user record with subscription info
     $stmt = $conn->prepare("
@@ -271,6 +413,8 @@ function storePendingSubscription($customerId, $subscription, $planId, $userId) 
         VALUES (?, 'payment_attempt', ?, 0, NOW())
     ");
     $stmt->execute([$userId, $planId]);
+    
+    debugLog("Pending subscription stored", ['subscription_id' => $subscriptionId, 'user_id' => $userId]);
 }
 
 function getStripeErrorMessage($error) {

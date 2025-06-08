@@ -23,7 +23,7 @@ define('SITE_URL', $_ENV['SITE_URL'] ?? 'https://habitus.zone');
 define('ADMIN_EMAIL', $_ENV['ADMIN_EMAIL'] ?? 'jorgecastrot2005@gmail.com');
 
 // Debug mode
-define('DEBUG_MODE', filter_var($_ENV['DEBUG_MODE'] ?? 'false', FILTER_VALIDATE_BOOLEAN));
+define('DEBUG_MODE', filter_var($_ENV['DEBUG_MODE'] ?? 'true', FILTER_VALIDATE_BOOLEAN));
 
 // Default timezone
 date_default_timezone_set('UTC');
