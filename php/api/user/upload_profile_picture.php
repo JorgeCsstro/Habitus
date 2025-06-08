@@ -1,8 +1,10 @@
 <?php
 session_start();
-require_once '../../config/database.php';
+require_once '../../include/config.php';
+require_once '../../include/db_connect.php';
 
 header('Content-Type: application/json');
+header('Cache-Control: no-cache, no-store, must-revalidate');
 
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'Not authenticated']);
@@ -17,17 +19,30 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_FILES['profile_picture']))
 $file = $_FILES['profile_picture'];
 $userId = $_SESSION['user_id'];
 
-// Validation
-$allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-$maxSize = 50 * 1024 * 1024; // 5MB
+// Enhanced validation
+$allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+$maxSize = 5 * 1024 * 1024; // 5MB
+
+// Check for upload errors
+if ($file['error'] !== UPLOAD_ERR_OK) {
+    echo json_encode(['success' => false, 'message' => 'File upload error']);
+    exit;
+}
 
 if (!in_array($file['type'], $allowedTypes)) {
-    echo json_encode(['success' => false, 'message' => 'Invalid file type']);
+    echo json_encode(['success' => false, 'message' => 'Invalid file type. Please use JPEG, PNG, or WebP']);
     exit;
 }
 
 if ($file['size'] > $maxSize) {
-    echo json_encode(['success' => false, 'message' => 'File too large']);
+    echo json_encode(['success' => false, 'message' => 'File too large. Maximum size is 5MB']);
+    exit;
+}
+
+// Validate actual image
+$imageInfo = getimagesize($file['tmp_name']);
+if ($imageInfo === false) {
+    echo json_encode(['success' => false, 'message' => 'Invalid image file']);
     exit;
 }
 
@@ -38,7 +53,7 @@ try {
     $currentPicture = $stmt->fetchColumn();
     
     // Generate unique filename
-    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+    $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
     $filename = 'profile_' . $userId . '_' . time() . '.' . $extension;
     $uploadDir = '../../uploads/profiles/';
     $uploadPath = $uploadDir . $filename;
@@ -46,31 +61,40 @@ try {
     
     // Create directory if it doesn't exist
     if (!file_exists($uploadDir)) {
-        mkdir($uploadDir, 0755, true);
+        if (!mkdir($uploadDir, 0755, true)) {
+            echo json_encode(['success' => false, 'message' => 'Could not create upload directory']);
+            exit;
+        }
     }
     
     // Move uploaded file
     if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
         // Update database
         $stmt = $conn->prepare("UPDATE users SET profile_picture = ? WHERE id = ?");
-        $stmt->execute([$dbPath, $userId]);
-        
-        // Clean up old profile picture (if not default)
-        if ($currentPicture && $currentPicture !== 'images/icons/profile-icon.webp' 
-            && file_exists('../../' . $currentPicture)) {
-            unlink('../../' . $currentPicture);
+        if ($stmt->execute([$dbPath, $userId])) {
+            // Clean up old profile picture (if not default)
+            if ($currentPicture && 
+                $currentPicture !== 'images/icons/profile-icon.webp' && 
+                file_exists('../../' . $currentPicture)) {
+                unlink('../../' . $currentPicture);
+            }
+            
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Profile picture updated successfully',
+                'profile_picture_url' => $dbPath
+            ]);
+        } else {
+            // Database update failed, remove uploaded file
+            unlink($uploadPath);
+            echo json_encode(['success' => false, 'message' => 'Database update failed']);
         }
-        
-        echo json_encode([
-            'success' => true, 
-            'message' => 'Profile picture updated',
-            'profile_picture_url' => $dbPath
-        ]);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Upload failed']);
+        echo json_encode(['success' => false, 'message' => 'File upload failed']);
     }
     
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => 'Database error']);
+    error_log("Profile picture upload error: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Server error occurred']);
 }
 ?>

@@ -213,7 +213,10 @@ async function uploadProfilePicture(file) {
     
     // Show loading state
     const overlay = document.querySelector('.profile-picture-overlay');
-    overlay.innerHTML = '<div class="loading-spinner"></div>';
+    const preview = document.getElementById('profile-picture-preview');
+    const originalSrc = preview.src; // Store original for potential revert
+    
+    overlay.innerHTML = '<div class="loading-spinner"></div><span>Uploading...</span>';
     
     try {
         const response = await fetch('../php/api/user/upload_profile_picture.php', {
@@ -221,22 +224,45 @@ async function uploadProfilePicture(file) {
             body: formData
         });
         
-        const result = await response.json();
+        // Log response for debugging
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const text = await response.text();
+        console.log('Raw response:', text);
+        
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (parseError) {
+            console.error('JSON parse error:', parseError);
+            console.error('Response text:', text);
+            throw new Error('Invalid server response');
+        }
         
         if (result.success) {
-            showNotification('Profile picture updated successfully!', 'success');
+            // Update preview with the actual uploaded image
+            const newImageUrl = '../' + result.profile_picture_url + '?t=' + Date.now();
+            preview.src = newImageUrl;
+            
             // Update all profile pictures on the page
-            updateAllProfilePictures(result.profile_picture_url);
+            updateAllProfilePictures(newImageUrl);
+            
+            showNotification('Profile picture updated successfully!', 'success');
         } else {
-            // Revert to previous image on error
-            document.getElementById('profile-picture-preview').src = 
-                result.previous_url || 'images/icons/profile-icon.webp';
+            // Revert to original image on server error
+            preview.src = originalSrc;
             showNotification(result.message || 'Upload failed', 'error');
         }
     } catch (error) {
-        showNotification('Network error occurred', 'error');
-        // Revert to default on network error
-        document.getElementById('profile-picture-preview').src = 'images/icons/profile-icon.webp';
+        console.error('Upload error:', error);
+        // Revert to original image on network/parsing error
+        preview.src = originalSrc;
+        showNotification(`Error: ${error.message}`, 'error');
     } finally {
         // Restore overlay
         overlay.innerHTML = `
@@ -250,11 +276,11 @@ async function uploadProfilePicture(file) {
 
 function updateAllProfilePictures(newUrl) {
     // Update header profile picture
-    const headerProfile = document.querySelector('.user-profile img');
+    const headerProfile = document.querySelector('.user-avatar img');
     if (headerProfile) headerProfile.src = newUrl;
     
     // Update any other profile pictures on the page
-    document.querySelectorAll('.profile-picture').forEach(img => {
+    document.querySelectorAll('.profile-picture, .user-profile img').forEach(img => {
         img.src = newUrl;
     });
 }

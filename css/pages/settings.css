@@ -87,15 +87,23 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: var(--modal-overlay);
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: opacity 0.3s;
-    cursor: pointer;
+    transition: opacity 0.3s ease;
+    border-radius: 50%;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.profile-picture-overlay:hover,
+.profile-picture-overlay:has(.loading-spinner) {
+    opacity: 1;
 }
 
 .current-profile-picture:hover .profile-picture-overlay {
@@ -836,14 +844,13 @@
 
 /* Loading States */
 .loading-spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--border-primary);
-    border-top: 2px solid var(--primary-brown);
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    display: inline-block;
-    margin-right: 8px;
+    margin-bottom: 5px;
 }
 
 @keyframes spin {
