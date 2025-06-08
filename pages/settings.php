@@ -94,7 +94,9 @@ $themes = [
                     <div class="settings-group">
                         <div class="profile-picture-section">
                             <div class="current-profile-picture">
-                                <img src="<?php echo htmlspecialchars($profilePicture); ?>" alt="Profile Picture" id="profile-picture-preview">
+                                <img src="<?php echo htmlspecialchars($user['profile_picture'] ?? '/images/icons/profile-icon.webp'); ?>" 
+                                     alt="Profile Picture" 
+                                     id="profile-picture-preview">
                                 <div class="profile-picture-overlay">
                                     <label for="profile-picture-upload" class="change-picture-btn">
                                         <img src="../images/icons/camera.webp" alt="Change">
@@ -102,11 +104,8 @@ $themes = [
                                     </label>
                                 </div>
                             </div>
-                            <input type="file" id="profile-picture-upload" accept="image/*" style="display: none;" onchange="handleProfilePictureChange(this)">
-                            <div class="profile-info">
-                                <h3><?php echo htmlspecialchars($userData['username']); ?></h3>
-                                <p><?php echo htmlspecialchars($userData['email']); ?></p>
-                            </div>
+                            <input type="file" id="profile-picture-upload" accept="image/*" style="display: none;" 
+                                   onchange="handleProfilePictureChange(this)">
                         </div>
                     </div>
                 </div>
@@ -187,7 +186,7 @@ $themes = [
                         <div class="subscription-info">
                             <div class="subscription-status">
                                 <div class="status-icon">
-                                    <img src="../images/icons/sub-icon-light.webp" alt="Subscription">
+                                    <img src="../images/icons/sub-icon.webp" alt="Subscription">
                                 </div>
                                 <div class="status-details">
                                     <h3>Current Plan: <span class="plan-name"><?php echo ucfirst($currentSubscription); ?></span></h3>
@@ -213,7 +212,7 @@ $themes = [
                     <div class="settings-group">
                         <button class="setting-button" onclick="showChangePasswordModal()">
                             <span class="button-icon">
-                                <img src="../images/icons/key-icon-light.webp" alt="Password">
+                                <img src="../images/icons/key-icon.webp" alt="Password">
                             </span>
                             <div class="button-text">
                                 <span class="button-title">Change Password</span>
@@ -224,7 +223,7 @@ $themes = [
                         
                         <button class="setting-button" onclick="showChangeEmailModal()">
                             <span class="button-icon">
-                                <img src="../images/icons/email-icon-light.webp" alt="Email">
+                                <img src="../images/icons/email-icon.webp" alt="Email">
                             </span>
                             <div class="button-text">
                                 <span class="button-title">Change Email</span>
@@ -285,7 +284,7 @@ $themes = [
                     <div class="settings-group">
                         <button class="setting-button" onclick="exportUserData()">
                             <span class="button-icon">
-                                <img src="../images/icons/download-icon-light.webp" alt="Export">
+                                <img src="../images/icons/download-icon.webp" alt="Export">
                             </span>
                             <div class="button-text">
                                 <span class="button-title">Export Data</span>
@@ -296,7 +295,7 @@ $themes = [
                         
                         <button class="setting-button" onclick="clearCache()">
                             <span class="button-icon">
-                                <img src="../images/icons/refresh-icon-light.webp" alt="Clear">
+                                <img src="../images/icons/refresh-icon.webp" alt="Clear">
                             </span>
                             <div class="button-text">
                                 <span class="button-title">Clear Cache</span>

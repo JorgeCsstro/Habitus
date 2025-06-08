@@ -155,7 +155,7 @@ foreach ($placedItems as $item) {
                 <!-- Dailies Panel -->
                 <div class="panel dailies-panel">
                     <div class="panel-header">
-                        <img src="../images/icons/dailies-icon-light.webp" alt="Calendar">
+                        <img src="../images/icons/dailies-icon.webp" alt="Calendar">
                         <h2>Dailies</h2>
                     </div>
                     <div class="panel-content">
@@ -183,7 +183,7 @@ foreach ($placedItems as $item) {
                     </div>
                     <div class="panel-footer">
                         <button class="add-new-button" onclick="location.href='tasks.php?add=daily'">
-                            <img src="../images/icons/task_add-icon-light.webp" alt="Add">
+                            <img src="../images/icons/task_add-icon.webp" alt="Add">
                             Add new daily...
                         </button>
                     </div>
@@ -192,7 +192,7 @@ foreach ($placedItems as $item) {
                 <!-- Featured Shop Panel -->
                 <div class="panel shop-panel">
                     <div class="panel-header">
-                        <img src="../images/icons/shop-icon-light.webp" alt="Shop">
+                        <img src="../images/icons/shop-icon.webp" alt="Shop">
                         <h2>Featured Shop</h2>
                     </div>
                     <div class="panel-content">
@@ -215,7 +215,7 @@ foreach ($placedItems as $item) {
                     </div>
                     <div class="panel-footer">
                         <button class="go-to-shop-button" onclick="location.href='shop.php'">
-                            <img src="../images/icons/cart-icon-light.webp" alt="Shop">
+                            <img src="../images/icons/cart-icon.webp" alt="Shop">
                             Go to Shop
                         </button>
                     </div>
@@ -224,7 +224,7 @@ foreach ($placedItems as $item) {
                 <!-- Habitus Preview Panel -->
                 <div class="panel habitus-panel">
                     <div class="panel-header">
-                        <img src="../images/icons/home-icon-light.webp" alt="Habitus">
+                        <img src="../images/icons/home-icon.webp" alt="Habitus">
                         <h2>Habitus</h2>
                     </div>
                     <div class="panel-content">
@@ -236,7 +236,7 @@ foreach ($placedItems as $item) {
                     </div>
                     <div class="panel-footer">
                         <button class="edit-habitus-button" onclick="location.href='habitus.php'">
-                            <img src="../images/icons/edit-icon-light.webp" alt="Edit">
+                            <img src="../images/icons/edit-icon.webp" alt="Edit">
                             Edit your Habitus...
                         </button>
                     </div>
@@ -245,7 +245,7 @@ foreach ($placedItems as $item) {
                 <!-- Goals Panel -->
                 <div class="panel goals-panel">
                     <div class="panel-header">
-                        <img src="../images/icons/goals-icon-light.webp" alt="Goals">
+                        <img src="../images/icons/goals-icon.webp" alt="Goals">
                         <h2>Goals</h2>
                     </div>
                     <div class="panel-content">
@@ -270,7 +270,7 @@ foreach ($placedItems as $item) {
                     </div>
                     <div class="panel-footer">
                         <button class="add-new-button" onclick="location.href='tasks.php?add=goal'">
-                            <img src="../images/icons/task_add-icon-light.webp" alt="Add">
+                            <img src="../images/icons/task_add-icon.webp" alt="Add">
                             Add new objective...
                         </button>
                     </div>
@@ -279,7 +279,7 @@ foreach ($placedItems as $item) {
                 <!-- Challenges Panel -->
                 <div class="panel challenges-panel">
                     <div class="panel-header">
-                        <img src="../images/icons/challenge-icon-light.webp" alt="Challenges">
+                        <img src="../images/icons/challenge-icon.webp" alt="Challenges">
                         <h2>Challenges</h2>
                     </div>
                     <div class="panel-content">
@@ -304,7 +304,7 @@ foreach ($placedItems as $item) {
                     </div>
                     <div class="panel-footer">
                         <button class="add-new-button" onclick="location.href='tasks.php?add=challenge'">
-                            <img src="../images/icons/task_add-icon-light.webp" alt="Add">
+                            <img src="../images/icons/task_add-icon.webp" alt="Add">
                             Add new challenge...
                         </button>
                     </div>

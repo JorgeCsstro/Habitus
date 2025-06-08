@@ -1,126 +1,126 @@
-/* css/themes/light.css - UPDATED WITH NEW COLOR PALETTE */
+/* css/themes/light.css - UPDATED WITH WARMER BACKGROUNDS */
 
 /* CRITICAL: Use :root for highest specificity and inheritance */
 html[data-theme="light"]:root,
 html[data-theme="light"] {
-    /* Core Palette - New Light Colors */
-    --primary: #4e4d49;           /* Darkest for primary elements */
-    --primary-dark: #3a3936;      /* Even darker for hover states */
-    --primary-light: #725e45;     /* Secondary for lighter variations */
-    --primary-brown: #4e4d49;     /* Maintaining compatibility */
-    --primary-brown-light: #725e45;
+    /* Core Palette - New Brown/Golden Colors */
+    --primary: #3e1e04 !important;           /* Darkest brown for primary elements */
+    --primary-dark: #2d1603 !important;      /* Even darker brown for hover states */
+    --primary-light: #6a3005 !important;     /* Dark brown for lighter variations */
+    --primary-brown: #3e1e04 !important;     /* Maintaining compatibility */
+    --primary-brown-light: #6a3005 !important;
     
-    --secondary: #b7946a;         /* Tertiary for secondary elements */
-    --secondary-dark: #9a7b56;    /* Darker version of tertiary */
-    --secondary-light: #e2c58d;   /* Quaternary for light secondary */
-    --primary-green: #b7946a;     /* Using tertiary for "green" elements */
-    --primary-green-light: #e2c58d;
+    --secondary: #965015 !important;         /* Medium brown for secondary elements */
+    --secondary-dark: #7a4012 !important;    /* Darker version of medium brown */
+    --secondary-light: #c4923e !important;   /* Golden brown for light secondary */
+    --primary-green: #965015 !important;     /* Using medium brown for "green" elements */
+    --primary-green-light: #c4923e !important;
     
-    --accent: #e2c58d;           /* Quaternary for accents */
+    --accent: #c4923e !important;           /* Golden brown for accents */
     
-    /* Backgrounds - Proper hierarchy */
-    --bg-0: #d6cfbf;             /* Lightest for main background */
-    --bg-1: #e2c58d;             /* Quaternary for headers/footers */
-    --bg-2: #ffffff;             /* Pure white for panels - creates contrast */
-    --bg-3: #f5f3ef;             /* Very light tint for hover states */
-    --bg-primary: #d6cfbf;
-    --bg-secondary: #e2c58d;
-    --bg-panel: #ffffff;
-    --bg-tertiary: #f5f3ef;
+    /* Backgrounds - Warmer, softer hierarchy */
+    --bg-0: #f2ede6 !important;             /* Warm cream for main background */
+    --bg-1: #cbac85 !important;             /* Light beige for headers/footers */
+    --bg-2: #f9f6f0 !important;             /* Warm off-white for panels (no pure white!) */
+    --bg-3: #f5f1ea !important;             /* Soft cream for hover states */
+    --bg-primary: #f2ede6 !important;
+    --bg-secondary: #cbac85 !important;
+    --bg-panel: #f9f6f0 !important;         /* Soft warm panel background */
+    --bg-tertiary: #f5f1ea !important;
     
     /* Text - Using darker colors for good contrast */
-    --text-1: #4e4d49;           /* Darkest for primary text */
-    --text-2: #725e45;           /* Secondary for secondary text */
-    --text-3: #9a7b56;           /* Muted version for muted text */
-    --text-inverse: #ffffff;     /* White for dark backgrounds */
-    --text-primary: #4e4d49;
-    --text-secondary: #725e45;
-    --text-tertiary: #9a7b56;
-    --text-muted: #9a7b56;
+    --text-1: #3e1e04 !important;           /* Darkest brown for primary text */
+    --text-2: #6a3005 !important;           /* Dark brown for secondary text */
+    --text-3: #965015 !important;           /* Medium brown for muted text */
+    --text-inverse: #f9f6f0 !important;     /* Warm off-white for dark backgrounds */
+    --text-primary: #3e1e04 !important;
+    --text-secondary: #6a3005 !important;
+    --text-tertiary: #965015 !important;
+    --text-muted: #965015 !important;
     
-    /* Borders - Using middle tones */
-    --border-1: #e2c58d;         /* Quaternary for borders */
-    --border-2: #b7946a;         /* Tertiary for stronger borders */
-    --border-primary: #e2c58d;
-    --border-secondary: #b7946a;
-    --border-tertiary: #ede5d6;  /* Very light border */
+    /* Borders - Using medium tones */
+    --border-1: #e6d5c0 !important;         /* Light border derived from beige */
+    --border-2: #c4923e !important;         /* Golden brown for stronger borders */
+    --border-primary: #e6d5c0 !important;
+    --border-secondary: #c4923e !important;
+    --border-tertiary: #f0e7db !important;  /* Very light border */
     
     /* Status Colors - Adapted to new palette */
-    --success: #b7946a;          /* Using tertiary */
-    --error: #c16b5c;            /* Reddish tone that works with palette */
-    --warning: #e2c58d;          /* Quaternary for warnings */
-    --info: #725e45;             /* Secondary for info */
+    --success: #965015 !important;          /* Medium brown for success */
+    --error: #c4441a !important;            /* Reddish brown that complements palette */
+    --warning: #c4923e !important;          /* Golden brown for warnings */
+    --info: #6a3005 !important;             /* Dark brown for info */
     
-    --success-text: #b7946a;
-    --success-bg: #f5f1eb;       /* Very light version */
-    --success-border: #e2c58d;
+    --success-text: #965015 !important;
+    --success-bg: #f5f1eb !important;       /* Very light version */
+    --success-border: #c4923e !important;
     
-    --error-text: #c16b5c;
-    --error-bg: #fdf5f4;
-    --error-border: #e8b4b0;
+    --error-text: #c4441a !important;
+    --error-bg: #fdf6f4 !important;
+    --error-border: #e8a690 !important;
     
-    --warning-text: #725e45;
-    --warning-bg: #faf8f4;
-    --warning-border: #e2c58d;
+    --warning-text: #6a3005 !important;
+    --warning-bg: #fcf8f4 !important;
+    --warning-border: #c4923e !important;
     
-    --info-text: #725e45;
-    --info-bg: #f7f5f2;
-    --info-border: #b7946a;
+    --info-text: #6a3005 !important;
+    --info-bg: #f7f4f0 !important;
+    --info-border: #965015 !important;
     
     /* Shadows - Using primary color */
-    --shadow: rgba(78, 77, 73, 0.12);
-    --shadow-dark: rgba(78, 77, 73, 0.20);
-    --shadow-light: rgba(78, 77, 73, 0.06);
-    --shadow-medium: rgba(78, 77, 73, 0.15);
+    --shadow: rgba(62, 30, 4, 0.12) !important;
+    --shadow-dark: rgba(62, 30, 4, 0.20) !important;
+    --shadow-light: rgba(62, 30, 4, 0.06) !important;
+    --shadow-medium: rgba(62, 30, 4, 0.15) !important;
     
     /* Button Variables */
-    --btn-primary-bg: #4e4d49;
-    --btn-primary-text: #ffffff;
-    --btn-primary-hover: #3a3936;
+    --btn-primary-bg: #3e1e04 !important;
+    --btn-primary-text: #f9f6f0 !important;     /* Warm off-white text */
+    --btn-primary-hover: #2d1603 !important;
     
-    --btn-secondary-bg: #e2c58d;
-    --btn-secondary-text: #4e4d49;
-    --btn-secondary-border: #b7946a;
-    --btn-secondary-hover: #d6cfbf;
+    --btn-secondary-bg: #c4923e !important;
+    --btn-secondary-text: #f9f6f0 !important;   /* Warm off-white text */
+    --btn-secondary-border: #965015 !important;
+    --btn-secondary-hover: #b8863a !important;
     
-    --btn-success-bg: #b7946a;
-    --btn-success-text: #ffffff;
-    --btn-success-hover: #9a7b56;
+    --btn-success-bg: #965015 !important;
+    --btn-success-text: #f9f6f0 !important;     /* Warm off-white text */
+    --btn-success-hover: #7a4012 !important;
     
     /* Input Variables */
-    --input-bg: #ffffff;
-    --input-text: #4e4d49;
-    --input-border: #e2c58d;
-    --input-focus: #b7946a;
-    --input-placeholder: #9a7b56;
+    --input-bg: #f9f6f0 !important;             /* Warm off-white input background */
+    --input-text: #3e1e04 !important;
+    --input-border: #c4923e !important;
+    --input-focus: #965015 !important;
+    --input-placeholder: #965015 !important;
     
     /* Modal Variables */
-    --modal-bg: #ffffff;
-    --modal-overlay: rgba(78, 77, 73, 0.6);
-    --modal-shadow: rgba(78, 77, 73, 0.25);
+    --modal-bg: #f9f6f0 !important;             /* Warm off-white modal background */
+    --modal-overlay: rgba(62, 30, 4, 0.6) !important;
+    --modal-shadow: rgba(62, 30, 4, 0.25) !important;
     
     /* Notification Variables */
-    --notification-bg: #ffffff;
-    --notification-shadow: rgba(78, 77, 73, 0.18);
+    --notification-bg: #f9f6f0 !important;      /* Warm off-white notification background */
+    --notification-shadow: rgba(62, 30, 4, 0.18) !important;
     
     /* Sidebar Variables */
-    --sidebar-bg: #e2c58d;
-    --sidebar-item-hover: rgba(78, 77, 73, 0.1);
-    --sidebar-item-active: #4e4d49;
+    --sidebar-bg: #cbac85 !important;
+    --sidebar-item-hover: rgba(62, 30, 4, 0.1) !important;
+    --sidebar-item-active: #3e1e04 !important;
     
     /* Tooltip Variables */
-    --tooltip-bg: rgba(78, 77, 73, 0.9);
-    --tooltip-text: #ffffff;
-    --tooltip-shadow: rgba(0, 0, 0, 0.2);
+    --tooltip-bg: rgba(62, 30, 4, 0.9) !important;
+    --tooltip-text: #f9f6f0 !important;         /* Warm off-white text */
+    --tooltip-shadow: rgba(0, 0, 0, 0.2) !important;
     
     /* Scrollbar Variables */
-    --scrollbar-track: #e2c58d;
-    --scrollbar-thumb: #b7946a;
-    --scrollbar-thumb-hover: #9a7b56;
+    --scrollbar-track: #cbac85 !important;
+    --scrollbar-thumb: #c4923e !important;
+    --scrollbar-thumb-hover: #965015 !important;
     
     /* Task Item Variables */
-    --task-item-completed: #f5f1eb;
-    --task-item-completed-border: #b7946a;
+    --task-item-completed: #f5f1eb !important;
+    --task-item-completed-border: #c4923e !important;
 }
 
 /* CRITICAL: Force application with maximum specificity */
@@ -169,128 +169,163 @@ html[data-theme="light"] .subscription-content {
     background-color: var(--bg-0);
 }
 
-/* Enhanced visual separation for interactive elements */
-html[data-theme="light"] .daily-item,
-html[data-theme="light"] .goal-item,
-html[data-theme="light"] .challenge-item,
+/* Enhanced visual separation */
 html[data-theme="light"] .task-item {
     background-color: var(--bg-panel);
-    border: 1px solid var(--border-primary);
+    border-color: var(--border-primary);
     box-shadow: 0 1px 3px var(--shadow-light);
 }
 
-html[data-theme="light"] .daily-item:hover,
-html[data-theme="light"] .goal-item:hover,
-html[data-theme="light"] .challenge-item:hover,
 html[data-theme="light"] .task-item:hover {
-    background-color: var(--bg-tertiary);
+    box-shadow: 0 2px 6px var(--shadow-medium);
     border-color: var(--border-secondary);
-    box-shadow: 0 2px 6px var(--shadow);
 }
 
-/* Shop items with better contrast */
-html[data-theme="light"] .shop-item {
-    background-color: var(--bg-panel);
-    border: 1px solid var(--border-primary);
-    box-shadow: 0 1px 3px var(--shadow-light);
-}
-
-html[data-theme="light"] .shop-item:hover {
-    background-color: var(--bg-tertiary);
-    border-color: var(--border-secondary);
-    box-shadow: 0 3px 8px var(--shadow);
+html[data-theme="light"] .task-item.completed {
+    background-color: var(--task-item-completed);
+    border-color: var(--task-item-completed-border);
 }
 
 /* Form elements */
-html[data-theme="light"] .settings-section {
+html[data-theme="light"] input,
+html[data-theme="light"] textarea,
+html[data-theme="light"] select {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border-color: var(--input-border);
+}
+
+html[data-theme="light"] input:focus,
+html[data-theme="light"] textarea:focus,
+html[data-theme="light"] select:focus {
+    border-color: var(--input-focus);
+    box-shadow: 0 0 0 2px rgba(150, 80, 21, 0.2);
+}
+
+html[data-theme="light"] input::placeholder,
+html[data-theme="light"] textarea::placeholder {
+    color: var(--input-placeholder);
+    opacity: 0.7;
+}
+
+/* Buttons */
+html[data-theme="light"] .btn-primary {
+    background-color: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    border-color: var(--btn-primary-bg);
+}
+
+html[data-theme="light"] .btn-primary:hover {
+    background-color: var(--btn-primary-hover);
+    border-color: var(--btn-primary-hover);
+}
+
+html[data-theme="light"] .btn-secondary {
+    background-color: var(--btn-secondary-bg);
+    color: var(--btn-secondary-text);
+    border-color: var(--btn-secondary-border);
+}
+
+html[data-theme="light"] .btn-secondary:hover {
+    background-color: var(--btn-secondary-hover);
+}
+
+html[data-theme="light"] .btn-success {
+    background-color: var(--btn-success-bg);
+    color: var(--btn-success-text);
+    border-color: var(--btn-success-bg);
+}
+
+html[data-theme="light"] .btn-success:hover {
+    background-color: var(--btn-success-hover);
+    border-color: var(--btn-success-hover);
+}
+
+/* Links */
+html[data-theme="light"] a {
+    color: var(--accent);
+}
+
+html[data-theme="light"] a:hover {
+    color: var(--secondary);
+}
+
+/* Modals */
+html[data-theme="light"] .modal {
+    background-color: var(--modal-bg);
+    box-shadow: 0 10px 25px var(--modal-shadow);
+}
+
+html[data-theme="light"] .modal-overlay {
+    background-color: var(--modal-overlay);
+}
+
+/* Notifications */
+html[data-theme="light"] .notification {
+    background-color: var(--notification-bg);
+    box-shadow: 0 4px 12px var(--notification-shadow);
+    border-color: var(--border-primary);
+}
+
+html[data-theme="light"] .notification.success {
+    background-color: var(--success-bg);
+    color: var(--success-text);
+    border-color: var(--success-border);
+}
+
+html[data-theme="light"] .notification.error {
+    background-color: var(--error-bg);
+    color: var(--error-text);
+    border-color: var(--error-border);
+}
+
+html[data-theme="light"] .notification.warning {
+    background-color: var(--warning-bg);
+    color: var(--warning-text);
+    border-color: var(--warning-border);
+}
+
+/* Scrollbars */
+html[data-theme="light"] ::-webkit-scrollbar-track {
+    background-color: var(--scrollbar-track);
+}
+
+html[data-theme="light"] ::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+}
+
+html[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
+}
+
+/* Table elements */
+html[data-theme="light"] table {
     background-color: var(--bg-panel);
-    border: 1px solid var(--border-primary);
-    box-shadow: 0 1px 3px var(--shadow-light);
+    border-color: var(--border-primary);
 }
 
-html[data-theme="light"] .theme-option {
-    background-color: var(--bg-panel);
-    border: 2px solid var(--border-primary);
-    box-shadow: 0 1px 3px var(--shadow-light);
+html[data-theme="light"] th {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-primary);
 }
 
-html[data-theme="light"] .theme-option:hover {
-    background-color: var(--bg-tertiary);
-    border-color: var(--border-secondary);
-    box-shadow: 0 2px 6px var(--shadow);
-}
-
-html[data-theme="light"] .theme-option.active {
-    border-color: var(--primary);
-    background-color: var(--bg-tertiary);
-    box-shadow: 0 0 0 3px rgba(78, 77, 73, 0.1);
-}
-
-/* Inventory items */
-html[data-theme="light"] .inventory-item {
-    background-color: var(--bg-panel);
-    border: 1px solid var(--border-primary);
-    box-shadow: 0 1px 3px var(--shadow-light);
-}
-
-html[data-theme="light"] .inventory-item:hover:not(.disabled) {
-    background-color: var(--bg-tertiary);
-    border-color: var(--border-secondary);
-    box-shadow: 0 2px 6px var(--shadow);
-}
-
-/* Subscription plan cards */
-html[data-theme="light"] .plan-card {
-    background-color: var(--bg-panel);
-    border: 3px solid var(--border-primary);
-    box-shadow: 0 4px 12px var(--shadow);
-}
-
-html[data-theme="light"] .plan-card:hover {
-    border-color: var(--border-secondary);
-    box-shadow: 0 8px 20px var(--shadow-medium);
-}
-
-/* Text color inheritance */
-html[data-theme="light"] h1, 
-html[data-theme="light"] h2, 
-html[data-theme="light"] h3, 
-html[data-theme="light"] h4, 
-html[data-theme="light"] h5, 
-html[data-theme="light"] h6 {
+html[data-theme="light"] td {
+    border-color: var(--border-primary);
     color: var(--text-primary);
 }
 
-html[data-theme="light"] p {
-    color: var(--text-secondary);
+html[data-theme="light"] tr:hover {
+    background-color: var(--bg-3);
 }
 
-/* Additional UI elements */
-html[data-theme="light"] .notification,
-html[data-theme="light"] .modal-content,
-html[data-theme="light"] .cart-dropdown,
-html[data-theme="light"] .notifications-dropdown {
+/* Cards and containers */
+html[data-theme="light"] .card {
     background-color: var(--bg-panel);
-    border: 1px solid var(--border-primary);
-    box-shadow: 0 8px 25px var(--shadow-medium);
+    border-color: var(--border-primary);
+    box-shadow: 0 2px 4px var(--shadow-light);
 }
 
-html[data-theme="light"] .hcoin-balance,
-html[data-theme="light"] .survey-button, 
-html[data-theme="light"] .messages-button, 
-html[data-theme="light"] .profile-button,
-html[data-theme="light"] .theme-toggle-button {
-    background-color: var(--bg-panel);
-    border: 1px solid var(--border-primary);
-    box-shadow: 0 1px 3px var(--shadow-light);
-}
-
-html[data-theme="light"] .hcoin-balance:hover,
-html[data-theme="light"] .survey-button:hover, 
-html[data-theme="light"] .messages-button:hover, 
-html[data-theme="light"] .profile-button:hover,
-html[data-theme="light"] .theme-toggle-button:hover {
-    background-color: var(--bg-tertiary);
-    border-color: var(--border-secondary);
-    box-shadow: 0 2px 6px var(--shadow);
+html[data-theme="light"] .card:hover {
+    box-shadow: 0 4px 8px var(--shadow-medium);
 }

@@ -5,7 +5,7 @@
     </div>
     <div class="user-actions">
         <div class="hcoin-balance">
-            <img src="../images/icons/hcoin-icon-light.webp" alt="HCoin">
+            <img src="../images/icons/hcoin-icon.webp" alt="HCoin">
             <span><?php echo number_format($userHCoins); ?></span>
         </div>
         <!-- Enhanced Theme Toggle with Animation -->
@@ -16,10 +16,10 @@
             </div>
         </button>
         <a href="survey.php" class="survey-button" title="Improve with feedback">
-            <img src="../images/icons/survey-icon-light.webp" alt="Survey">
+            <img src="../images/icons/survey-icon.webp" alt="Survey">
         </a>
         <div class="messages-button" id="messages-toggle" title="Notifications">
-            <img src="../images/icons/messages-icon-light.webp" alt="Messages">
+            <img src="../images/icons/messages-icon.webp" alt="Messages">
             <?php
             // Check if there are unread messages/notifications
             $unreadCount = getUnreadNotificationsCount($_SESSION['user_id']);
@@ -29,7 +29,7 @@
             <?php endif; ?>
         </div>
         <a href="settings.php" class="profile-button" title="Profile settings">
-            <img src="../images/icons/profile-icon-light.webp" alt="Profile">
+            <img src="../images/icons/profile-icon.webp" alt="Profile">
         </a>
     </div>
     
@@ -61,9 +61,9 @@
                         <div class="notification-content">
                             <div class="notification-icon">
                                 <?php if ($notification['type'] == 'update'): ?>
-                                    <img src="../images/icons/update-icon-light.webp" alt="Update">
+                                    <img src="../images/icons/update-icon.webp" alt="Update">
                                 <?php elseif ($notification['type'] == 'task'): ?>
-                                    <img src="../images/icons/task-reminder-icon-light.webp" alt="Task Reminder">
+                                    <img src="../images/icons/task-reminder-icon.webp" alt="Task Reminder">
                                 <?php endif; ?>
                             </div>
                             <div class="notification-text">
@@ -73,7 +73,7 @@
                             </div>
                         </div>
                         <button class="delete-notification" data-id="<?php echo $notification['id']; ?>">
-                            <img src="../images/icons/trash-icon-light.webp" alt="Delete">
+                            <img src="../images/icons/trash-icon.webp" alt="Delete">
                         </button>
                     </div>
                 <?php endforeach; ?>

@@ -112,7 +112,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                                     <?php echo ucfirst(isset($daily['difficulty']) ? $daily['difficulty'] : 'medium'); ?>
                                                  </span>
                                                  <span class="reward">
-                                                     <img src="../images/icons/hcoin-icon-light.webp" alt="HCoin">
+                                                     <img src="../images/icons/hcoin-icon.webp" alt="HCoin">
                                                     <?php echo $daily['hcoin_reward']; ?>
                                                 </span>
                                             </div>
@@ -143,7 +143,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                             </button>
                                         <?php endif; ?>
                                         <button class="edit-btn" onclick="openTaskModal('daily', <?php echo $daily['id']; ?>)">
-                                            <img src="../images/icons/edit-icon-light.webp" alt="Edit">
+                                            <img src="../images/icons/edit-icon.webp" alt="Edit">
                                         </button>
                                         <button class="delete-btn" onclick="showDeleteConfirmation(<?php echo $daily['id']; ?>, 'daily')">
                                             <img src="../images/icons/trash.webp" alt="Delete">
@@ -177,7 +177,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                                     <?php echo ucfirst(isset($goal['difficulty']) ? $goal['difficulty'] : 'medium'); ?>
                                                 </span>
                                                 <span class="reward">
-                                                    <img src="../images/icons/hcoin-icon-light.webp" alt="HCoin">
+                                                    <img src="../images/icons/hcoin-icon.webp" alt="HCoin">
                                                     <?php echo $goal['hcoin_reward']; ?>
                                                 </span>
                                                 <?php if (!empty($goal['deadline'])): ?>
@@ -224,7 +224,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                             </button>
                                         <?php endif; ?>
                                         <button class="edit-btn" onclick="openTaskModal('goal', <?php echo $goal['id']; ?>)">
-                                            <img src="../images/icons/edit-icon-light.webp" alt="Edit">
+                                            <img src="../images/icons/edit-icon.webp" alt="Edit">
                                         </button>
                                         <button class="delete-btn" onclick="showDeleteConfirmation(<?php echo $goal['id']; ?>, 'goal')">
                                             <img src="../images/icons/trash.webp" alt="Delete">
@@ -258,7 +258,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                                     <?php echo ucfirst(isset($challenge['difficulty']) ? $challenge['difficulty'] : 'medium'); ?>
                                                 </span>
                                                 <span class="reward">
-                                                    <img src="../images/icons/hcoin-icon-light.webp" alt="HCoin">
+                                                    <img src="../images/icons/hcoin-icon.webp" alt="HCoin">
                                                     <?php echo $challenge['hcoin_reward']; ?>
                                                 </span>
                                             </div>
@@ -320,7 +320,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                             </button>
                                         <?php endif; ?>
                                         <button class="edit-btn" onclick="openTaskModal('challenge', <?php echo $challenge['id']; ?>)">
-                                            <img src="../images/icons/edit-icon-light.webp" alt="Edit">
+                                            <img src="../images/icons/edit-icon.webp" alt="Edit">
                                         </button>
                                         <button class="delete-btn" onclick="showDeleteConfirmation(<?php echo $challenge['id']; ?>, 'challenge')">
                                             <img src="../images/icons/trash.webp" alt="Delete">

@@ -200,21 +200,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="decoration-features">
                     <div class="decoration-feature">
                         <div class="feature-icon">
-                            <img src="../images/icons/tasks-icon-light.webp" alt="Tasks Icon">
+                            <img src="../images/icons/tasks-icon.webp" alt="Tasks Icon">
                         </div>
                         <div class="feature-text">Track Daily Tasks</div>
                     </div>
                     
                     <div class="decoration-feature">
                         <div class="feature-icon">
-                            <img src="../images/icons/hcoin-icon-light.webp" alt="HCoin Icon">
+                            <img src="../images/icons/hcoin-icon.webp" alt="HCoin Icon">
                         </div>
                         <div class="feature-text">Earn HCoins</div>
                     </div>
                     
                     <div class="decoration-feature">
                         <div class="feature-icon">
-                            <img src="../images/icons/home-icon-light.webp" alt="Habitus Icon">
+                            <img src="../images/icons/home-icon.webp" alt="Habitus Icon">
                         </div>
                         <div class="feature-text">Build Your Habitus</div>
                     </div>

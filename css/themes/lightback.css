@@ -1,197 +1,172 @@
-/* css/themes/light.css - FIXED CALM VERSION */
+/* css/themes/light.css - UPDATED WITH NEW COLOR PALETTE */
 
 /* CRITICAL: Use :root for highest specificity and inheritance */
 html[data-theme="light"]:root,
 html[data-theme="light"] {
-    /* Core Palette - Calm & Distinct Colors */
-    --primary: #8d5b4c !important;           /* Warm earthy brown */
-    --primary-dark: #6d4037 !important;      /* Darker warm brown */
-    --primary-light: #a67c5a !important;     /* Lighter warm brown */
-    --primary-brown: #8d5b4c !important;
-    --primary-brown-light: #a67c5a !important;
+    /* Core Palette - New Light Colors */
+    --primary: #4e4d49;           /* Darkest for primary elements */
+    --primary-dark: #3a3936;      /* Even darker for hover states */
+    --primary-light: #725e45;     /* Secondary for lighter variations */
+    --primary-brown: #4e4d49;     /* Maintaining compatibility */
+    --primary-brown-light: #725e45;
     
-    --secondary: #6a8d7f !important;         /* Muted sage green */
-    --secondary-dark: #5a7c70 !important;    /* Darker sage */
-    --secondary-light: #8ba499 !important;   /* Lighter sage */
-    --primary-green: #6a8d7f !important;     /* Muted green for success */
-    --primary-green-light: #8ba499 !important;
+    --secondary: #b7946a;         /* Tertiary for secondary elements */
+    --secondary-dark: #9a7b56;    /* Darker version of tertiary */
+    --secondary-light: #e2c58d;   /* Quaternary for light secondary */
+    --primary-green: #b7946a;     /* Using tertiary for "green" elements */
+    --primary-green-light: #e2c58d;
     
-    --accent: #c4a356 !important;           /* Muted gold accent */
+    --accent: #e2c58d;           /* Quaternary for accents */
     
-    /* Backgrounds - FIXED for visual hierarchy */
-    --bg-0: #f9f5f0 !important;             /* Very light cream main background */
-    --bg-1: #f5f1ea !important;             /* Light cream for headers/footers */
-    --bg-2: #ffffff !important;             /* Pure white for panels - creates contrast */
-    --bg-3: #fefcf8 !important;             /* Off-white for hover states */
-    --bg-primary: #f9f5f0 !important;
-    --bg-secondary: #f5f1ea !important;
-    --bg-panel: #ffffff !important;
-    --bg-tertiary: #fefcf8 !important;
+    /* Backgrounds - Proper hierarchy */
+    --bg-0: #d6cfbf;             /* Lightest for main background */
+    --bg-1: #e2c58d;             /* Quaternary for headers/footers */
+    --bg-2: #ffffff;             /* Pure white for panels - creates contrast */
+    --bg-3: #f5f3ef;             /* Very light tint for hover states */
+    --bg-primary: #d6cfbf;
+    --bg-secondary: #e2c58d;
+    --bg-panel: #ffffff;
+    --bg-tertiary: #f5f3ef;
     
-    /* Text - Calmer, softer contrast */
-    --text-1: #2d2926 !important;           /* Dark charcoal for primary text */
-    --text-2: #5a5755 !important;           /* Medium gray for secondary text */
-    --text-3: #8d8580 !important;           /* Light gray for muted text */
-    --text-inverse: #ffffff !important;
-    --text-primary: #2d2926 !important;
-    --text-secondary: #5a5755 !important;
-    --text-tertiary: #8d8580 !important;
-    --text-muted: #8d8580 !important;
+    /* Text - Using darker colors for good contrast */
+    --text-1: #4e4d49;           /* Darkest for primary text */
+    --text-2: #725e45;           /* Secondary for secondary text */
+    --text-3: #9a7b56;           /* Muted version for muted text */
+    --text-inverse: #ffffff;     /* White for dark backgrounds */
+    --text-primary: #4e4d49;
+    --text-secondary: #725e45;
+    --text-tertiary: #9a7b56;
+    --text-muted: #9a7b56;
     
-    /* Borders - Subtle and calm */
-    --border-1: #e9e2d9 !important;         /* Very light border */
-    --border-2: #d6cfc7 !important;         /* Slightly stronger border */
-    --border-primary: #e9e2d9 !important;
-    --border-secondary: #d6cfc7 !important;
-    --border-tertiary: #f0ebe4 !important;  /* Barely visible border */
+    /* Borders - Using middle tones */
+    --border-1: #e2c58d;         /* Quaternary for borders */
+    --border-2: #b7946a;         /* Tertiary for stronger borders */
+    --border-primary: #e2c58d;
+    --border-secondary: #b7946a;
+    --border-tertiary: #ede5d6;  /* Very light border */
     
-    /* Status Colors - Muted and calm */
-    --success: #6a8d7f !important;          /* Muted sage green */
-    --error: #a15c5c !important;            /* Muted red */
-    --warning: #c4a356 !important;          /* Muted gold */
-    --info: #5d7b8a !important;             /* Muted blue */
+    /* Status Colors - Adapted to new palette */
+    --success: #b7946a;          /* Using tertiary */
+    --error: #c16b5c;            /* Reddish tone that works with palette */
+    --warning: #e2c58d;          /* Quaternary for warnings */
+    --info: #725e45;             /* Secondary for info */
     
-    --success-text: #6a8d7f !important;
-    --success-bg: #f0f5f2 !important;       /* Very light sage */
-    --success-border: #cfdad4 !important;
+    --success-text: #b7946a;
+    --success-bg: #f5f1eb;       /* Very light version */
+    --success-border: #e2c58d;
     
-    --error-text: #a15c5c !important;
-    --error-bg: #f9e8e5 !important;
-    --error-border: #e0d0d0 !important;
+    --error-text: #c16b5c;
+    --error-bg: #fdf5f4;
+    --error-border: #e8b4b0;
     
-    --warning-text: #b6945a !important;
-    --warning-bg: #faf3e5 !important;
-    --warning-border: #e9d8c6 !important;
+    --warning-text: #725e45;
+    --warning-bg: #faf8f4;
+    --warning-border: #e2c58d;
     
-    --info-text: #5d7b8a !important;
-    --info-bg: #f0f4f6 !important;
-    --info-border: #d0dce2 !important;
+    --info-text: #725e45;
+    --info-bg: #f7f5f2;
+    --info-border: #b7946a;
     
-    /* Shadows - Softer and more subtle */
-    --shadow: rgba(45, 41, 38, 0.08) !important;
-    --shadow-dark: rgba(45, 41, 38, 0.15) !important;
-    --shadow-light: rgba(45, 41, 38, 0.04) !important;
-    --shadow-medium: rgba(45, 41, 38, 0.1) !important;
+    /* Shadows - Using primary color */
+    --shadow: rgba(78, 77, 73, 0.12);
+    --shadow-dark: rgba(78, 77, 73, 0.20);
+    --shadow-light: rgba(78, 77, 73, 0.06);
+    --shadow-medium: rgba(78, 77, 73, 0.15);
     
-    /* Button Variables - Calmer colors */
-    --btn-primary-bg: #8d5b4c !important;
-    --btn-primary-text: #ffffff !important;
-    --btn-primary-hover: #6d4037 !important;
+    /* Button Variables */
+    --btn-primary-bg: #4e4d49;
+    --btn-primary-text: #ffffff;
+    --btn-primary-hover: #3a3936;
     
-    --btn-secondary-bg: #f5f1ea !important;
-    --btn-secondary-text: #5a5755 !important;
-    --btn-secondary-border: #e2d7cf !important;
-    --btn-secondary-hover: #e9e2d9 !important;
+    --btn-secondary-bg: #e2c58d;
+    --btn-secondary-text: #4e4d49;
+    --btn-secondary-border: #b7946a;
+    --btn-secondary-hover: #d6cfbf;
     
-    --btn-success-bg: #6a8d7f !important;
-    --btn-success-text: #ffffff !important;
-    --btn-success-hover: #5a7c70 !important;
+    --btn-success-bg: #b7946a;
+    --btn-success-text: #ffffff;
+    --btn-success-hover: #9a7b56;
     
-    /* Input Variables - Clean and calm */
-    --input-bg: #ffffff !important;
-    --input-text: #2d2926 !important;
-    --input-border: #e9e2d9 !important;
-    --input-focus: #8d5b4c !important;
-    --input-placeholder: #8d8580 !important;
+    /* Input Variables */
+    --input-bg: #ffffff;
+    --input-text: #4e4d49;
+    --input-border: #e2c58d;
+    --input-focus: #b7946a;
+    --input-placeholder: #9a7b56;
     
     /* Modal Variables */
-    --modal-bg: #ffffff !important;
-    --modal-overlay: rgba(45, 41, 38, 0.5) !important;
-    --modal-shadow: rgba(45, 41, 38, 0.2) !important;
+    --modal-bg: #ffffff;
+    --modal-overlay: rgba(78, 77, 73, 0.6);
+    --modal-shadow: rgba(78, 77, 73, 0.25);
     
     /* Notification Variables */
-    --notification-bg: #ffffff !important;
-    --notification-shadow: rgba(45, 41, 38, 0.15) !important;
+    --notification-bg: #ffffff;
+    --notification-shadow: rgba(78, 77, 73, 0.18);
     
-    /* Sidebar Variables - Warmer and calmer */
-    --sidebar-bg: #f5f1ea !important;
-    --sidebar-item-hover: rgba(141, 91, 76, 0.1) !important;
-    --sidebar-item-active: #8d5b4c !important;
+    /* Sidebar Variables */
+    --sidebar-bg: #e2c58d;
+    --sidebar-item-hover: rgba(78, 77, 73, 0.1);
+    --sidebar-item-active: #4e4d49;
     
     /* Tooltip Variables */
-    --tooltip-bg: rgba(45, 41, 38, 0.9) !important;
-    --tooltip-text: #ffffff !important;
-    --tooltip-shadow: rgba(0, 0, 0, 0.2) !important;
+    --tooltip-bg: rgba(78, 77, 73, 0.9);
+    --tooltip-text: #ffffff;
+    --tooltip-shadow: rgba(0, 0, 0, 0.2);
     
-    /* Scrollbar Variables - Warm colors */
-    --scrollbar-track: #f5f1ea !important;
-    --scrollbar-thumb: #d6cfc7 !important;
-    --scrollbar-thumb-hover: #c5bcb3 !important;
-    
-    /* Room Variables - Warm and inviting */
-    --room-floor: #FFD700 !important;
-    --room-wall-left: linear-gradient(to bottom, #E0E0E0, #D0D0D0) !important;
-    --room-wall-right: linear-gradient(to left, #D0D0D0, #C0C0C0) !important;
-    --room-door: linear-gradient(to bottom, #8B6347, #654321) !important;
-    --room-door-handle: #FFD700 !important;
+    /* Scrollbar Variables */
+    --scrollbar-track: #e2c58d;
+    --scrollbar-thumb: #b7946a;
+    --scrollbar-thumb-hover: #9a7b56;
     
     /* Task Item Variables */
-    --task-item-completed: #f9fffc !important;
-    --task-item-completed-border: #6a8d7f !important;
+    --task-item-completed: #f5f1eb;
+    --task-item-completed-border: #b7946a;
 }
 
 /* CRITICAL: Force application with maximum specificity */
 html[data-theme="light"] body {
-    background-color: var(--bg-primary) !important;
-    color: var(--text-primary) !important;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 html[data-theme="light"] .panel {
-    background-color: var(--bg-panel) !important;
-    border-color: var(--border-primary) !important;
-    color: var(--text-primary) !important;
-    /* Add subtle shadow for depth */
-    box-shadow: 0 2px 8px var(--shadow-light), 0 1px 3px var(--shadow) !important;
+    background-color: var(--bg-panel);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
+    box-shadow: 0 2px 8px var(--shadow-light), 0 1px 3px var(--shadow);
 }
 
 html[data-theme="light"] .panel-header {
-    background-color: var(--bg-secondary) !important;
-    border-color: var(--border-primary) !important;
-    color: var(--text-primary) !important;
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
 }
 
 html[data-theme="light"] .main-header {
-    background-color: var(--bg-panel) !important;
-    border-color: var(--border-primary) !important;
-    color: var(--text-primary) !important;
-    /* Add subtle shadow for separation */
-    box-shadow: 0 1px 3px var(--shadow-light) !important;
+    background-color: var(--bg-panel);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
 }
 
 html[data-theme="light"] .left-menu {
-    background-color: var(--sidebar-bg) !important;
-    border-color: var(--border-primary) !important;
-    /* Add subtle depth */
-    box-shadow: 2px 0 4px var(--shadow-light) !important;
+    background-color: var(--sidebar-bg);
+    border-color: var(--border-primary);
+    box-shadow: 2px 0 4px var(--shadow-light);
 }
 
 /* Content areas with proper background hierarchy */
 html[data-theme="light"] .content-container {
-    background-color: var(--bg-0) !important;
+    background-color: var(--bg-0);
 }
 
-html[data-theme="light"] .dashboard-content {
-    background-color: var(--bg-0) !important;
-}
-
-html[data-theme="light"] .tasks-content {
-    background-color: var(--bg-0) !important;
-}
-
-html[data-theme="light"] .settings-content {
-    background-color: var(--bg-0) !important;
-}
-
-html[data-theme="light"] .shop-content {
-    background-color: var(--bg-0) !important;
-}
-
-html[data-theme="light"] .habitus-content {
-    background-color: var(--bg-0) !important;
-}
-
+html[data-theme="light"] .dashboard-content,
+html[data-theme="light"] .tasks-content,
+html[data-theme="light"] .settings-content,
+html[data-theme="light"] .shop-content,
+html[data-theme="light"] .habitus-content,
 html[data-theme="light"] .subscription-content {
-    background-color: var(--bg-0) !important;
+    background-color: var(--bg-0);
 }
 
 /* Enhanced visual separation for interactive elements */
@@ -199,163 +174,123 @@ html[data-theme="light"] .daily-item,
 html[data-theme="light"] .goal-item,
 html[data-theme="light"] .challenge-item,
 html[data-theme="light"] .task-item {
-    background-color: var(--bg-panel) !important;
-    border: 1px solid var(--border-primary) !important;
-    box-shadow: 0 1px 3px var(--shadow-light) !important;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
 }
 
 html[data-theme="light"] .daily-item:hover,
 html[data-theme="light"] .goal-item:hover,
 html[data-theme="light"] .challenge-item:hover,
 html[data-theme="light"] .task-item:hover {
-    background-color: var(--bg-tertiary) !important;
-    border-color: var(--border-secondary) !important;
-    box-shadow: 0 2px 6px var(--shadow) !important;
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+    box-shadow: 0 2px 6px var(--shadow);
 }
 
 /* Shop items with better contrast */
 html[data-theme="light"] .shop-item {
-    background-color: var(--bg-panel) !important;
-    border: 1px solid var(--border-primary) !important;
-    box-shadow: 0 1px 3px var(--shadow-light) !important;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
 }
 
 html[data-theme="light"] .shop-item:hover {
-    background-color: var(--bg-tertiary) !important;
-    border-color: var(--border-secondary) !important;
-    box-shadow: 0 3px 8px var(--shadow) !important;
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+    box-shadow: 0 3px 8px var(--shadow);
 }
 
-/* Form elements with better distinction */
+/* Form elements */
 html[data-theme="light"] .settings-section {
-    background-color: var(--bg-panel) !important;
-    border: 1px solid var(--border-primary) !important;
-    box-shadow: 0 1px 3px var(--shadow-light) !important;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
 }
 
 html[data-theme="light"] .theme-option {
-    background-color: var(--bg-panel) !important;
-    border: 2px solid var(--border-primary) !important;
-    box-shadow: 0 1px 3px var(--shadow-light) !important;
+    background-color: var(--bg-panel);
+    border: 2px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
 }
 
 html[data-theme="light"] .theme-option:hover {
-    background-color: var(--bg-tertiary) !important;
-    border-color: var(--border-secondary) !important;
-    box-shadow: 0 2px 6px var(--shadow) !important;
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+    box-shadow: 0 2px 6px var(--shadow);
 }
 
 html[data-theme="light"] .theme-option.active {
-    border-color: var(--primary-brown) !important;
-    background-color: var(--bg-tertiary) !important;
-    box-shadow: 0 0 0 3px rgba(141, 91, 76, 0.1) !important;
+    border-color: var(--primary);
+    background-color: var(--bg-tertiary);
+    box-shadow: 0 0 0 3px rgba(78, 77, 73, 0.1);
 }
 
-/* Inventory items with proper contrast */
+/* Inventory items */
 html[data-theme="light"] .inventory-item {
-    background-color: var(--bg-panel) !important;
-    border: 1px solid var(--border-primary) !important;
-    box-shadow: 0 1px 3px var(--shadow-light) !important;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
 }
 
 html[data-theme="light"] .inventory-item:hover:not(.disabled) {
-    background-color: var(--bg-tertiary) !important;
-    border-color: var(--border-secondary) !important;
-    box-shadow: 0 2px 6px var(--shadow) !important;
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+    box-shadow: 0 2px 6px var(--shadow);
 }
 
 /* Subscription plan cards */
 html[data-theme="light"] .plan-card {
-    background-color: var(--bg-panel) !important;
-    border: 3px solid var(--border-primary) !important;
-    box-shadow: 0 4px 12px var(--shadow) !important;
+    background-color: var(--bg-panel);
+    border: 3px solid var(--border-primary);
+    box-shadow: 0 4px 12px var(--shadow);
 }
 
 html[data-theme="light"] .plan-card:hover {
-    border-color: var(--border-secondary) !important;
-    box-shadow: 0 8px 20px var(--shadow-medium) !important;
+    border-color: var(--border-secondary);
+    box-shadow: 0 8px 20px var(--shadow-medium);
 }
 
-/* Override for text to ensure proper inheritance */
+/* Text color inheritance */
 html[data-theme="light"] h1, 
 html[data-theme="light"] h2, 
 html[data-theme="light"] h3, 
 html[data-theme="light"] h4, 
 html[data-theme="light"] h5, 
 html[data-theme="light"] h6 {
-    color: var(--text-primary) !important;
+    color: var(--text-primary);
 }
 
 html[data-theme="light"] p {
-    color: var(--text-secondary) !important;
+    color: var(--text-secondary);
 }
 
-/* Notifications with better styling */
-html[data-theme="light"] .notification {
-    background-color: var(--bg-panel) !important;
-    border: 1px solid var(--border-primary) !important;
-    box-shadow: 0 4px 12px var(--shadow) !important;
-}
-
-/* Habitus preview with better separation */
-html[data-theme="light"] .habitus-preview {
-    background-color: var(--bg-secondary) !important;
-    border: 1px solid var(--border-primary) !important;
-    box-shadow: 0 2px 8px var(--shadow-light) !important;
-}
-
-html[data-theme="light"] .habitus-preview:hover {
-    border-color: var(--border-secondary) !important;
-    box-shadow: 0 4px 15px var(--shadow) !important;
-}
-
-/* Additional improvements for visual hierarchy */
-html[data-theme="light"] .modal-content {
-    background-color: var(--bg-panel) !important;
-    border: 1px solid var(--border-primary) !important;
-    box-shadow: 0 10px 30px var(--shadow-dark) !important;
-}
-
-html[data-theme="light"] .cart-dropdown {
-    background-color: var(--bg-panel) !important;
-    border: 1px solid var(--border-primary) !important;
-    box-shadow: 0 8px 25px var(--shadow-medium) !important;
-}
-
+/* Additional UI elements */
+html[data-theme="light"] .notification,
+html[data-theme="light"] .modal-content,
+html[data-theme="light"] .cart-dropdown,
 html[data-theme="light"] .notifications-dropdown {
-    background-color: var(--bg-panel) !important;
-    border: 1px solid var(--border-primary) !important;
-    box-shadow: 0 8px 25px var(--shadow-medium) !important;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 8px 25px var(--shadow-medium);
 }
 
-/* Button styling improvements */
-html[data-theme="light"] .hcoin-balance {
-    background-color: var(--bg-panel) !important;
-    border: 1px solid var(--border-primary) !important;
-    box-shadow: 0 1px 3px var(--shadow-light) !important;
-}
-
-html[data-theme="light"] .hcoin-balance:hover {
-    background-color: var(--bg-tertiary) !important;
-    border-color: var(--border-secondary) !important;
-    box-shadow: 0 2px 6px var(--shadow) !important;
-}
-
-/* Action buttons */
+html[data-theme="light"] .hcoin-balance,
 html[data-theme="light"] .survey-button, 
 html[data-theme="light"] .messages-button, 
 html[data-theme="light"] .profile-button,
 html[data-theme="light"] .theme-toggle-button {
-    background-color: var(--bg-panel) !important;
-    border: 1px solid var(--border-primary) !important;
-    box-shadow: 0 1px 3px var(--shadow-light) !important;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 1px 3px var(--shadow-light);
 }
 
+html[data-theme="light"] .hcoin-balance:hover,
 html[data-theme="light"] .survey-button:hover, 
 html[data-theme="light"] .messages-button:hover, 
 html[data-theme="light"] .profile-button:hover,
 html[data-theme="light"] .theme-toggle-button:hover {
-    background-color: var(--bg-tertiary) !important;
-    border-color: var(--border-secondary) !important;
-    box-shadow: 0 2px 6px var(--shadow) !important;
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-secondary);
+    box-shadow: 0 2px 6px var(--shadow);
 }

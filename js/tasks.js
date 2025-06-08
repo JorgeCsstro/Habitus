@@ -950,7 +950,7 @@ function updateSubtasksList() {
                 </div>
                 <div class="subtask-actions">
                     <button class="subtask-edit-btn" onclick="editSubtask(${subtask.id})">
-                        <img src="../images/icons/edit-icon-light.webp" alt="Edit">
+                        <img src="../images/icons/edit-icon.webp" alt="Edit">
                     </button>
                     <button class="subtask-delete-btn" onclick="deleteSubtask(${subtask.id})">
                         <img src="../images/icons/trash.webp" alt="Delete">

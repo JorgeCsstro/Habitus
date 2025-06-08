@@ -180,13 +180,14 @@ function handleProfilePictureChange(input) {
     if (input.files && input.files[0]) {
         const file = input.files[0];
         
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            showNotification('Please select an image file', 'error');
+        // Enhanced validation
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            showNotification('Please select a valid image (JPEG, PNG, or WebP)', 'error');
             return;
         }
         
-        // Validate file size (max 5MB)
+        // Size validation (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
             showNotification('Image size must be less than 5MB', 'error');
             return;
@@ -201,57 +202,61 @@ function handleProfilePictureChange(input) {
         };
         reader.readAsDataURL(file);
         
-        // Create FormData
-        const formData = new FormData();
-        formData.append('profile_picture', file);
-        
-        // Show loading state
-        const overlay = preview.parentElement.querySelector('.profile-picture-overlay');
-        if (overlay) {
-            overlay.innerHTML = '<div class="loading-spinner"></div>';
-            overlay.style.opacity = '1';
-        }
-        
-        // Upload image
-        fetch('../php/api/user/upload_profile_picture.php', {
+        // Upload to server
+        uploadProfilePicture(file);
+    }
+}
+
+async function uploadProfilePicture(file) {
+    const formData = new FormData();
+    formData.append('profile_picture', file);
+    
+    // Show loading state
+    const overlay = document.querySelector('.profile-picture-overlay');
+    overlay.innerHTML = '<div class="loading-spinner"></div>';
+    
+    try {
+        const response = await fetch('../php/api/user/upload_profile_picture.php', {
             method: 'POST',
             body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (overlay) {
-                overlay.style.opacity = '0';
-                setTimeout(() => {
-                    overlay.innerHTML = `
-                        <label for="profile-picture-upload" class="change-picture-btn">
-                            <img src="../images/icons/camera.webp" alt="Change">
-                            <span>Change Photo</span>
-                        </label>
-                    `;
-                }, 300);
-            }
-            
-            if (data.success) {
-                // Update preview
-                preview.src = data.image_url;
-                
-                // Update profile picture in header if exists
-                const headerAvatar = document.querySelector('.user-avatar img');
-                if (headerAvatar) {
-                    headerAvatar.src = data.image_url;
-                }
-                
-                showNotification('Profile picture updated successfully', 'success');
-            } else {
-                showNotification(data.message || 'Error uploading image', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Upload error:', error);
-            if (overlay) overlay.style.opacity = '0';
-            showNotification('Error uploading image', 'error');
         });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Profile picture updated successfully!', 'success');
+            // Update all profile pictures on the page
+            updateAllProfilePictures(result.profile_picture_url);
+        } else {
+            // Revert to previous image on error
+            document.getElementById('profile-picture-preview').src = 
+                result.previous_url || 'images/icons/profile-icon.webp';
+            showNotification(result.message || 'Upload failed', 'error');
+        }
+    } catch (error) {
+        showNotification('Network error occurred', 'error');
+        // Revert to default on network error
+        document.getElementById('profile-picture-preview').src = 'images/icons/profile-icon.webp';
+    } finally {
+        // Restore overlay
+        overlay.innerHTML = `
+            <label for="profile-picture-upload" class="change-picture-btn">
+                <img src="../images/icons/camera.webp" alt="Change">
+                <span>Change Photo</span>
+            </label>
+        `;
     }
+}
+
+function updateAllProfilePictures(newUrl) {
+    // Update header profile picture
+    const headerProfile = document.querySelector('.user-profile img');
+    if (headerProfile) headerProfile.src = newUrl;
+    
+    // Update any other profile pictures on the page
+    document.querySelectorAll('.profile-picture').forEach(img => {
+        img.src = newUrl;
+    });
 }
 
 /**

@@ -104,7 +104,7 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                 <?php if ($subscriptionType !== 'free'): ?>
                 <div class="current-subscription">
                     <div class="subscription-status">
-                        <img src="../images/icons/sub-icon-light.webp" alt="Subscription">
+                        <img src="../images/icons/sub-icon.webp" alt="Subscription">
                         <div>
                             <h3>Current Plan: <?php echo ucfirst($subscriptionType); ?></h3>
                             <?php if ($subscriptionExpires && $isSubscriptionActive): ?>
@@ -278,21 +278,21 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                     <div class="benefits-grid">
                         <div class="benefit">
                             <div class="benefit-icon">
-                                <img src="../images/icons/ads-icon-light.webp" alt="No Ads">
+                                <img src="../images/icons/ads-icon.webp" alt="No Ads">
                             </div>
                             <h3>Ad-Free Experience</h3>
                             <p>Focus on your tasks without any distractions or interruptions from advertisements. Enjoy a clean, professional interface.</p>
                         </div>
                         <div class="benefit">
                             <div class="benefit-icon">
-                                <img src="../images/icons/exclusive-icon-light.webp" alt="Exclusive">
+                                <img src="../images/icons/exclusive-icon.webp" alt="Exclusive">
                             </div>
                             <h3>Exclusive Content</h3>
                             <p>Access special items, themes, and features not available to free users. Customize your Habitus with premium decorations.</p>
                         </div>
                         <div class="benefit">
                             <div class="benefit-icon">
-                                <img src="../images/icons/support-icon-light.webp" alt="Support">
+                                <img src="../images/icons/support-icon.webp" alt="Support">
                             </div>
                             <h3>Support Development</h3>
                             <p>Help us continue improving Habitus Zone and adding new features for everyone. Your support keeps the platform growing.</p>
