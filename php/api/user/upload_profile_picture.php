@@ -19,7 +19,7 @@ $userId = $_SESSION['user_id'];
 
 // Validation
 $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-$maxSize = 5 * 1024 * 1024; // 5MB
+$maxSize = 50 * 1024 * 1024; // 5MB
 
 if (!in_array($file['type'], $allowedTypes)) {
     echo json_encode(['success' => false, 'message' => 'Invalid file type']);
