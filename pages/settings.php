@@ -110,23 +110,71 @@ $themes = [
                     </div>
                 </div>
 
-                <!-- Language Section -->
+                <!-- Translation Section -->
                 <div class="settings-section">
-                    <h2>Language</h2>
+                    <h2>Translation & Language</h2>
                     <div class="settings-group">
+                        <!-- Enhanced Language Selector -->
                         <label for="language-select" class="setting-label">
                             <div class="setting-info">
                                 <span class="setting-title">Display Language</span>
                                 <span class="setting-description">Choose your preferred language</span>
                             </div>
                             <select id="language-select" class="setting-select" onchange="changeLanguage(this.value)">
-                                <?php foreach ($languages as $code => $name): ?>
-                                    <option value="<?php echo $code; ?>" <?php echo $currentLanguage === $code ? 'selected' : ''; ?>>
-                                        <?php echo $name; ?>
-                                    </option>
-                                <?php endforeach; ?>
+                                <option value="en" <?php echo $currentLanguage === 'en' ? 'selected' : ''; ?>>🇺🇸 English</option>
+                                <option value="es" <?php echo $currentLanguage === 'es' ? 'selected' : ''; ?>>🇪🇸 Español</option>
+                                <option value="fr" <?php echo $currentLanguage === 'fr' ? 'selected' : ''; ?>>🇫🇷 Français</option>
+                                <option value="de" <?php echo $currentLanguage === 'de' ? 'selected' : ''; ?>>🇩🇪 Deutsch</option>
+                                <option value="it" <?php echo $currentLanguage === 'it' ? 'selected' : ''; ?>>🇮🇹 Italiano</option>
+                                <option value="pt" <?php echo $currentLanguage === 'pt' ? 'selected' : ''; ?>>🇵🇹 Português</option>
+                                <option value="ru" <?php echo $currentLanguage === 'ru' ? 'selected' : ''; ?>>🇷🇺 Русский</option>
+                                <option value="ja" <?php echo $currentLanguage === 'ja' ? 'selected' : ''; ?>>🇯🇵 日本語</option>
+                                <option value="ko" <?php echo $currentLanguage === 'ko' ? 'selected' : ''; ?>>🇰🇷 한국어</option>
+                                <option value="zh" <?php echo $currentLanguage === 'zh' ? 'selected' : ''; ?>>🇨🇳 中文</option>
                             </select>
                         </label>
+
+                        <!-- Auto-Translation Toggle -->
+                        <label class="setting-toggle">
+                            <div class="toggle-info">
+                                <span class="toggle-title">🌐 Auto-Translation</span>
+                                <span class="toggle-description">Automatically translate content to your language</span>
+                            </div>
+                            <input type="checkbox" id="auto-translation" onchange="toggleAutoTranslation(this.checked)">
+                            <span class="toggle-switch"></span>
+                        </label>
+
+                        <!-- Translation Quality Setting -->
+                        <label class="setting-toggle">
+                            <div class="toggle-info">
+                                <span class="toggle-title">✨ High-Quality Translation</span>
+                                <span class="toggle-description">Use premium translation service for better accuracy</span>
+                            </div>
+                            <input type="checkbox" id="high-quality-translation" onchange="toggleHighQualityTranslation(this.checked)">
+                            <span class="toggle-switch"></span>
+                        </label>
+
+                        <!-- Translation Usage Info -->
+                        <div class="translation-usage-info">
+                            <div class="usage-header">
+                                <h4>Translation Usage This Month</h4>
+                                <button class="refresh-usage-btn" onclick="refreshUsageStats()">🔄</button>
+                            </div>
+                            <div class="usage-stats" id="usage-stats">
+                                <div class="usage-item">
+                                    <span class="usage-label">Characters Translated:</span>
+                                    <span class="usage-value" id="characters-used">Loading...</span>
+                                </div>
+                                <div class="usage-item">
+                                    <span class="usage-label">API Calls:</span>
+                                    <span class="usage-value" id="api-calls">Loading...</span>
+                                </div>
+                                <div class="usage-item">
+                                    <span class="usage-label">Free Tier Remaining:</span>
+                                    <span class="usage-value" id="free-tier-remaining">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -411,6 +459,9 @@ $themes = [
     <script src="../js/theme-manager.js"></script>
 
     <script src="../js/settings.js"></script>
+
+    <!-- Load translation manager -->
+    <script src="../js/translation-manager.js"></script>
     
     <!-- Initialize theme system -->
     <script>

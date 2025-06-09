@@ -332,6 +332,10 @@ $debugInfo = [
     <script src="../js/theme-manager.js"></script>
 
     <script src="../js/habitus-room.js"></script>
+    
+    <!-- Load translation manager -->
+    <script src="../js/translation-manager.js"></script>
+
     <script>
         // Enhanced initialization with inventory tracking
         document.addEventListener('DOMContentLoaded', function() {

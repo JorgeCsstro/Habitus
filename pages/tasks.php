@@ -538,6 +538,9 @@ $challenges = getUserChallenges($_SESSION['user_id']);
 
     <!-- Tasks-specific JavaScript -->
     <script src="../js/tasks.js"></script>
+
+    <!-- Load translation manager -->
+    <script src="../js/translation-manager.js"></script>
     <script>
         // Wait for the document to be fully loaded
         document.addEventListener('DOMContentLoaded', function() {

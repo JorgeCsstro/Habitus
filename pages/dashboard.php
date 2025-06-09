@@ -327,6 +327,10 @@ foreach ($placedItems as $item) {
     <script src="../js/theme-manager.js"></script>
 
     <script src="../js/dashboard.js"></script>
+    
+    <!-- Load translation manager -->
+    <script src="../js/translation-manager.js"></script>
+
     <!-- Habitus Room Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {

@@ -434,5 +434,8 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
     
     <!-- Load subscription functionality -->
     <script src="../js/subscription-checkout.js"></script>
+
+    <!-- Load translation manager -->
+    <script src="../js/translation-manager.js"></script>
 </body>
 </html>

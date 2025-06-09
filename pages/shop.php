@@ -200,5 +200,7 @@ $categories = $categoryStmt->fetchAll();
     <!-- Load theme manager on ALL pages -->
     <script src="../js/theme-manager.js"></script>
     <script src="../js/shop.js"></script>
+    <!-- Load translation manager -->
+    <script src="../js/translation-manager.js"></script>
 </body>
 </html>

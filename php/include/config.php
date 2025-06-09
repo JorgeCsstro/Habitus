@@ -1,5 +1,5 @@
 <?php
-// config.php - Updated with enhanced Stripe support and validation
+// php/config.php - Updated with enhanced Stripe support and validation
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
@@ -123,4 +123,16 @@ if (DEBUG_MODE) {
         error_log("Premium Price ID: " . STRIPE_PRICE_SUPPORTER_MONTHLY);
     }
 }
+
+// Load environment variables for translation
+if (file_exists(__DIR__ . '/../../.env')) {
+    $envFile = file(__DIR__ . '/../../.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($envFile as $line) {
+        if (strpos($line, '=') !== false && strpos($line, '#') !== 0) {
+            list($key, $value) = explode('=', $line, 2);
+            $_ENV[trim($key)] = trim($value);
+        }
+    }
+}
+
 ?>

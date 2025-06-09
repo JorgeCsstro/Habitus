@@ -1,4 +1,4 @@
-// settings.js - FIXED Theme System and Profile Picture Upload
+// js/settings.js - FIXED Theme System and Profile Picture Upload
 
 // FIXED: Use global theme manager - NO redeclaration
 function getThemeManager() {
@@ -853,6 +853,297 @@ async function openCustomerPortal() {
         showNotification('Unable to open subscription management. Please try again.', 'error');
     }
 }
+
+// Translation-related functions for settings page
+
+// Load translation settings on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadTranslationSettings();
+    loadUsageStats();
+});
+
+function loadTranslationSettings() {
+    // Load auto-translation preference
+    const autoTranslation = localStorage.getItem('translationEnabled') === 'true';
+    const autoTranslationToggle = document.getElementById('auto-translation');
+    if (autoTranslationToggle) {
+        autoTranslationToggle.checked = autoTranslation;
+    }
+    
+    // Load high-quality translation preference
+    const highQuality = localStorage.getItem('highQualityTranslation') === 'true';
+    const highQualityToggle = document.getElementById('high-quality-translation');
+    if (highQualityToggle) {
+        highQualityToggle.checked = highQuality;
+    }
+}
+
+function changeLanguage(language) {
+    const select = document.getElementById('language-select');
+    if (select) {
+        select.disabled = true;
+        select.style.opacity = '0.7';
+    }
+    
+    // Update user language preference
+    fetch('../php/api/user/update_settings.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            setting: 'language',
+            value: language
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (select) {
+            select.disabled = false;
+            select.style.opacity = '1';
+        }
+        
+        if (data.success) {
+            // Update local storage
+            localStorage.setItem('userLanguage', language);
+            
+            // Notify translation manager
+            if (window.habitusTranslator) {
+                window.habitusTranslator.switchLanguage(language);
+            }
+            
+            showNotification(`Language changed to ${getLanguageName(language)}`, 'success');
+            
+            // Reload page after delay to apply server-side language changes
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            showNotification(data.message || 'Error updating language', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (select) {
+            select.disabled = false;
+            select.style.opacity = '1';
+        }
+        showNotification('Error updating language', 'error');
+    });
+}
+
+function toggleAutoTranslation(enabled) {
+    localStorage.setItem('translationEnabled', enabled.toString());
+    
+    // Notify translation manager
+    if (window.habitusTranslator) {
+        window.habitusTranslator.toggleTranslation();
+    }
+    
+    // Update server preference
+    updateTranslationPreference('auto_translation', enabled);
+    
+    if (enabled) {
+        showNotification('🌐 Auto-translation enabled', 'success');
+    } else {
+        showNotification('🚫 Auto-translation disabled', 'info');
+    }
+}
+
+function toggleHighQualityTranslation(enabled) {
+    localStorage.setItem('highQualityTranslation', enabled.toString());
+    
+    // Update server preference
+    updateTranslationPreference('high_quality_translation', enabled);
+    
+    if (enabled) {
+        showNotification('✨ High-quality translation enabled', 'success');
+    } else {
+        showNotification('📝 Standard translation enabled', 'info');
+    }
+}
+
+function updateTranslationPreference(type, enabled) {
+    fetch('../php/api/user/update_settings.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            setting: type,
+            value: enabled
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            console.error('Failed to update translation preference:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error updating translation preference:', error);
+    });
+}
+
+async function loadUsageStats() {
+    try {
+        const response = await fetch('../php/api/translation/stats.php');
+        const data = await response.json();
+        
+        if (data.success && data.stats) {
+            updateUsageDisplay(data.stats);
+        }
+    } catch (error) {
+        console.error('Failed to load usage stats:', error);
+        updateUsageDisplay(null);
+    }
+}
+
+function updateUsageDisplay(stats) {
+    const charactersUsed = document.getElementById('characters-used');
+    const apiCalls = document.getElementById('api-calls');
+    const freeTierRemaining = document.getElementById('free-tier-remaining');
+    
+    if (!stats) {
+        if (charactersUsed) charactersUsed.textContent = 'N/A';
+        if (apiCalls) apiCalls.textContent = 'N/A';
+        if (freeTierRemaining) freeTierRemaining.textContent = 'N/A';
+        return;
+    }
+    
+    const totalCharacters = stats.total_characters || 0;
+    const totalCalls = stats.total_calls || 0;
+    const freeLimit = 2000000; // 2M characters for Azure free tier
+    const remaining = Math.max(0, freeLimit - totalCharacters);
+    
+    if (charactersUsed) {
+        charactersUsed.textContent = formatNumber(totalCharacters);
+    }
+    
+    if (apiCalls) {
+        apiCalls.textContent = formatNumber(totalCalls);
+    }
+    
+    if (freeTierRemaining) {
+        freeTierRemaining.textContent = formatNumber(remaining);
+        freeTierRemaining.style.color = remaining < 100000 ? 'var(--error-text)' : 'var(--success-text)';
+    }
+}
+
+function refreshUsageStats() {
+    const refreshBtn = document.querySelector('.refresh-usage-btn');
+    if (refreshBtn) {
+        refreshBtn.style.animation = 'spin 1s linear infinite';
+    }
+    
+    loadUsageStats().finally(() => {
+        if (refreshBtn) {
+            refreshBtn.style.animation = '';
+        }
+    });
+}
+
+function formatNumber(num) {
+    if (num >= 1000000) {
+        return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+        return (num / 1000).toFixed(1) + 'K';
+    } else {
+        return num.toString();
+    }
+}
+
+function getLanguageName(langCode) {
+    const names = {
+        'en': 'English',
+        'es': 'Español',
+        'fr': 'Français',
+        'de': 'Deutsch',
+        'it': 'Italiano',
+        'pt': 'Português',
+        'ru': 'Русский',
+        'ja': '日本語',
+        'ko': '한국어',
+        'zh': '中文'
+    };
+    return names[langCode] || langCode.toUpperCase();
+}
+
+// Add CSS for usage stats
+const usageStatsCSS = `
+.translation-usage-info {
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    border: 1px solid var(--border-primary);
+}
+
+.usage-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.usage-header h4 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.refresh-usage-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 5px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.refresh-usage-btn:hover {
+    background-color: var(--bg-tertiary);
+    transform: scale(1.1);
+}
+
+.usage-stats {
+    display: grid;
+    gap: 10px;
+}
+
+.usage-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-tertiary);
+}
+
+.usage-item:last-child {
+    border-bottom: none;
+}
+
+.usage-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.usage-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+`;
+
+// Add the CSS to the page
+const usageStyleSheet = document.createElement('style');
+usageStyleSheet.textContent = usageStatsCSS;
+document.head.appendChild(usageStyleSheet);
 
 // Close modals when clicking outside
 document.addEventListener('click', function(e) {
