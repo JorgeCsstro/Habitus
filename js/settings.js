@@ -344,49 +344,41 @@ function updateAllProfilePictures(newUrl) {
  * Change language with enhanced feedback
  * @param {string} language - Language code
  */
-function changeLanguage(language) {
-    const select = document.getElementById('language-select');
-    if (select) {
-        select.disabled = true;
-        select.style.opacity = '0.7';
-    }
-    
-    // Save language preference
-    fetch('../php/api/user/update_settings.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            setting: 'language',
-            value: language
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (select) {
-            select.disabled = false;
-            select.style.opacity = '1';
+async function changeLanguage(languageCode) {
+    try {
+        const response = await fetch('../php/api/user/update_settings.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                setting: 'preferred_language',
+                value: languageCode
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
+
+        const data = await response.json();
         
         if (data.success) {
-            showNotification('Language updated. Page will reload in 2 seconds...', 'success');
-            // Reload page to apply language change
-            setTimeout(() => {
-                window.location.reload();
-            }, 2000);
+            // Update translation manager
+            if (window.habitusTranslator) {
+                await window.habitusTranslator.changeLanguage(languageCode);
+            }
+            
+            showNotification('🌐 Language preference updated', 'success');
         } else {
-            showNotification(data.message || 'Error updating language', 'error');
+            throw new Error(data.error || 'Failed to update language preference');
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        if (select) {
-            select.disabled = false;
-            select.style.opacity = '1';
-        }
-        showNotification('Error updating language', 'error');
-    });
+        
+    } catch (error) {
+        console.error('Language change error:', error);
+        showNotification('❌ Failed to change language: ' + error.message, 'error');
+    }
 }
 
 /**
@@ -932,21 +924,68 @@ function changeLanguage(language) {
     });
 }
 
-function toggleAutoTranslation(enabled) {
-    localStorage.setItem('translationEnabled', enabled.toString());
+/**
+ * Settings Management for Habitus Zone
+ * Fixed toggleAutoTranslation function with proper error handling
+ */
+
+// Your existing settings.js code here, with this updated function:
+
+async function toggleAutoTranslation(enabled) {
+    const checkbox = document.getElementById('auto-translation');
     
-    // Notify translation manager
-    if (window.habitusTranslator) {
-        window.habitusTranslator.toggleTranslation();
-    }
-    
-    // Update server preference
-    updateTranslationPreference('auto_translation', enabled);
-    
-    if (enabled) {
-        showNotification('🌐 Auto-translation enabled', 'success');
-    } else {
-        showNotification('🚫 Auto-translation disabled', 'info');
+    try {
+        // Update localStorage immediately
+        localStorage.setItem('translationEnabled', enabled.toString());
+        
+        // Notify translation manager
+        if (window.habitusTranslator) {
+            window.habitusTranslator.toggleTranslation();
+        }
+        
+        // Update server preference with proper data format
+        const response = await fetch('../php/api/user/update_settings.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                setting: 'auto_translation',
+                value: enabled ? 1 : 0
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || data.message || 'Unknown error');
+        }
+        
+        // Show success notification
+        if (enabled) {
+            showNotification('🌐 Auto-translation enabled', 'success');
+        } else {
+            showNotification('🚫 Auto-translation disabled', 'info');
+        }
+        
+    } catch (error) {
+        console.error('Failed to update translation preference:', error);
+        
+        // Revert checkbox state on error
+        if (checkbox) {
+            checkbox.checked = !enabled;
+        }
+        
+        // Revert localStorage
+        localStorage.setItem('translationEnabled', (!enabled).toString());
+        
+        // Show error notification
+        showNotification('❌ Failed to update translation setting: ' + error.message, 'error');
     }
 }
 
@@ -1158,8 +1197,26 @@ window.getSettingsThemeManager = getThemeManager;
 
 // Initialize profile picture system when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if there's a current profile picture URL to use
-    if (window.currentProfilePictureUrl) {
-        updateAllProfilePictures(window.currentProfilePictureUrl);
+    // Load auto-translation state
+    const autoTranslationCheckbox = document.getElementById('auto-translation');
+    if (autoTranslationCheckbox) {
+        const isEnabled = localStorage.getItem('translationEnabled') === 'true';
+        autoTranslationCheckbox.checked = isEnabled;
+        
+        // Add event listener
+        autoTranslationCheckbox.addEventListener('change', function() {
+            toggleAutoTranslation(this.checked);
+        });
+    }
+    
+    // Load language selector
+    const languageSelector = document.getElementById('language-selector');
+    if (languageSelector) {
+        const savedLanguage = localStorage.getItem('userLanguage') || 'en';
+        languageSelector.value = savedLanguage;
+        
+        languageSelector.addEventListener('change', function() {
+            changeLanguage(this.value);
+        });
     }
 });

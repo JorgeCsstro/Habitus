@@ -1,164 +1,199 @@
 <?php
-// php/api/user/update_settings.php - API endpoint for updating user settings
+/**
+ * User Settings Update API for Habitus Zone
+ * Handles translation preferences and other user settings
+ */
 
-require_once '../../include/config.php';
-require_once '../../include/db_connect.php';
-require_once '../../include/auth.php';
+require_once '../config/database.php';
+require_once '../includes/auth.php';
 
-// Set JSON header
+// Set response headers
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, X-Requested-With');
 
-// Check if user is logged in
-if (!isLoggedIn()) {
-    echo json_encode(['success' => false, 'message' => 'User not logged in']);
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
     exit;
 }
 
-// Only allow POST requests
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Only POST requests allowed']);
-    exit;
-}
+// Start session and check authentication
+session_start();
 
-// Get JSON data
-$data = json_decode(file_get_contents('php://input'), true);
-
-if (!$data || !isset($data['setting']) || !isset($data['value'])) {
-    echo json_encode(['success' => false, 'message' => 'Invalid data format']);
-    exit;
-}
-
-$setting = $data['setting'];
-$value = $data['value'];
-$userId = $_SESSION['user_id'];
-
-// Validate setting type and value
-$allowedSettings = [
-    'theme' => ['light', 'dark'],
-    'language' => ['en', 'es'],
-    'notifications' => [true, false, 'true', 'false', 1, 0],
-    'timezone' => null, // Allow any timezone
-    'email_notifications' => [true, false, 'true', 'false', 1, 0],
-    'task_reminders' => [true, false, 'true', 'false', 1, 0],
-    'auto_theme' => [true, false, 'true', 'false', 1, 0]
-];
-
-// Check if setting is allowed
-if (!array_key_exists($setting, $allowedSettings)) {
-    echo json_encode(['success' => false, 'message' => 'Invalid setting type']);
-    exit;
-}
-
-// Validate value if restrictions exist
-if ($allowedSettings[$setting] !== null && !in_array($value, $allowedSettings[$setting], true)) {
-    echo json_encode(['success' => false, 'message' => 'Invalid value for setting']);
-    exit;
-}
-
-// Prepare update query based on setting type
-try {
-    $conn->beginTransaction();
-    
-    switch ($setting) {
-        case 'theme':
-            $query = "UPDATE users SET theme = ? WHERE id = ?";
-            $stmt = $conn->prepare($query);
-            $stmt->execute([$value, $userId]);
-            
-            // Log theme change
-            logSecurityEvent("Theme changed to: $value", $userId);
-            break;
-            
-        case 'language':
-            $query = "UPDATE users SET language = ? WHERE id = ?";
-            $stmt = $conn->prepare($query);
-            $stmt->execute([$value, $userId]);
-            
-            // Log language change
-            logSecurityEvent("Language changed to: $value", $userId);
-            break;
-            
-        case 'email_notifications':
-        case 'task_reminders':
-        case 'auto_theme':
-            // Convert boolean values
-            $boolValue = in_array($value, [true, 'true', 1], true) ? 1 : 0;
-            
-            // Check if user_preferences table exists, if not create it
-            $checkTable = "SHOW TABLES LIKE 'user_preferences'";
-            $result = $conn->query($checkTable);
-            
-            if ($result->rowCount() === 0) {
-                // Create user_preferences table
-                $createTable = "CREATE TABLE user_preferences (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    user_id INT NOT NULL,
-                    preference_key VARCHAR(50) NOT NULL,
-                    preference_value TEXT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-                    UNIQUE KEY unique_user_preference (user_id, preference_key)
-                )";
-                $conn->exec($createTable);
-            }
-            
-            // Insert or update preference
-            $query = "INSERT INTO user_preferences (user_id, preference_key, preference_value) 
-                     VALUES (?, ?, ?) 
-                     ON DUPLICATE KEY UPDATE preference_value = VALUES(preference_value), updated_at = CURRENT_TIMESTAMP";
-            $stmt = $conn->prepare($query);
-            $stmt->execute([$userId, $setting, $boolValue]);
-            break;
-            
-        case 'timezone':
-            // Validate timezone
-            if (!in_array($value, timezone_identifiers_list())) {
-                throw new Exception('Invalid timezone');
-            }
-            
-            $query = "UPDATE users SET timezone = ? WHERE id = ?";
-            $stmt = $conn->prepare($query);
-            $stmt->execute([$value, $userId]);
-            break;
-            
-        default:
-            throw new Exception('Unhandled setting type');
-    }
-    
-    $conn->commit();
-    
-    // Prepare success response with additional data
-    $response = [
-        'success' => true,
-        'message' => 'Setting updated successfully',
-        'setting' => $setting,
-        'value' => $value,
-        'timestamp' => date('Y-m-d H:i:s')
+function validateInput($setting, $value) {
+    $allowedSettings = [
+        'auto_translation',
+        'preferred_language', 
+        'translation_quality',
+        'theme_preference',
+        'notification_settings'
     ];
     
-    // Add specific responses for certain settings
-    if ($setting === 'theme') {
-        $response['theme_applied'] = $value;
-        $response['css_file'] = "../css/themes/{$value}.css";
+    if (!in_array($setting, $allowedSettings)) {
+        throw new InvalidArgumentException("Invalid setting type: " . htmlspecialchars($setting));
     }
     
-    if ($setting === 'language') {
-        $response['reload_required'] = true;
-        $response['message'] = 'Language updated. Page reload recommended.';
+    switch ($setting) {
+        case 'auto_translation':
+            // Accept boolean, string boolean, or integer
+            if (is_bool($value)) {
+                return $value ? 1 : 0;
+            } else if (is_string($value)) {
+                $lowerValue = strtolower(trim($value));
+                if (in_array($lowerValue, ['true', '1', 'yes', 'on'])) {
+                    return 1;
+                } else if (in_array($lowerValue, ['false', '0', 'no', 'off'])) {
+                    return 0;
+                }
+            } else if (is_numeric($value)) {
+                return intval($value) ? 1 : 0;
+            }
+            throw new InvalidArgumentException("auto_translation must be a boolean value");
+            
+        case 'preferred_language':
+            $allowedLanguages = ['en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'zh', 'ja', 'ko'];
+            $value = trim($value);
+            if (!in_array($value, $allowedLanguages)) {
+                throw new InvalidArgumentException("Invalid language code: " . htmlspecialchars($value));
+            }
+            return $value;
+            
+        case 'translation_quality':
+            $allowedQualities = ['standard', 'high', 'premium'];
+            if (!in_array($value, $allowedQualities)) {
+                throw new InvalidArgumentException("Invalid translation quality");
+            }
+            return $value;
+            
+        case 'theme_preference':
+            $allowedThemes = ['light', 'dark', 'auto'];
+            if (!in_array($value, $allowedThemes)) {
+                throw new InvalidArgumentException("Invalid theme preference");
+            }
+            return $value;
+            
+        default:
+            return $value;
+    }
+}
+
+function updateUserSetting($userId, $setting, $value) {
+    global $conn;
+    
+    try {
+        // Validate input
+        $validatedValue = validateInput($setting, $value);
+        
+        // Check if setting exists for user
+        $checkStmt = $conn->prepare("SELECT id FROM user_settings WHERE user_id = ? AND setting_name = ?");
+        $checkStmt->bind_param("is", $userId, $setting);
+        $checkStmt->execute();
+        $result = $checkStmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            // Update existing setting
+            $updateStmt = $conn->prepare("UPDATE user_settings SET setting_value = ?, updated_at = NOW() WHERE user_id = ? AND setting_name = ?");
+            $updateStmt->bind_param("sis", $validatedValue, $userId, $setting);
+            $success = $updateStmt->execute();
+        } else {
+            // Insert new setting
+            $insertStmt = $conn->prepare("INSERT INTO user_settings (user_id, setting_name, setting_value, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())");
+            $insertStmt->bind_param("iss", $userId, $setting, $validatedValue);
+            $success = $insertStmt->execute();
+        }
+        
+        if ($success) {
+            // Log the setting change
+            error_log("User {$userId} updated setting '{$setting}' to '{$validatedValue}'");
+            
+            return [
+                'success' => true,
+                'message' => 'Setting updated successfully',
+                'setting' => $setting,
+                'value' => $validatedValue
+            ];
+        } else {
+            throw new Exception("Failed to update database: " . $conn->error);
+        }
+        
+    } catch (InvalidArgumentException $e) {
+        return [
+            'success' => false,
+            'error' => $e->getMessage(),
+            'error_type' => 'validation'
+        ];
+    } catch (Exception $e) {
+        error_log("Database error in updateUserSetting: " . $e->getMessage());
+        return [
+            'success' => false,
+            'error' => 'Internal server error',
+            'error_type' => 'database'
+        ];
+    }
+}
+
+// Main request handling
+try {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception('Only POST method allowed');
     }
     
-    echo json_encode($response);
+    // Check if user is authenticated
+    if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
+        http_response_code(401);
+        echo json_encode([
+            'success' => false,
+            'error' => 'User not authenticated',
+            'error_type' => 'auth'
+        ]);
+        exit;
+    }
     
-} catch (Exception $e) {
-    $conn->rollBack();
+    $userId = $_SESSION['user_id'];
     
-    // Log error
-    error_log("Settings update error: " . $e->getMessage());
+    // Get request data
+    $input = file_get_contents('php://input');
+    $data = json_decode($input, true);
     
+    // Handle both JSON and form-encoded data
+    if ($data === null) {
+        $setting = $_POST['setting'] ?? '';
+        $value = $_POST['value'] ?? '';
+    } else {
+        $setting = $data['setting'] ?? '';
+        $value = $data['value'] ?? '';
+    }
+    
+    if (empty($setting)) {
+        throw new InvalidArgumentException('Setting name is required');
+    }
+    
+    $result = updateUserSetting($userId, $setting, $value);
+    
+    if ($result['success']) {
+        http_response_code(200);
+    } else {
+        http_response_code(400);
+    }
+    
+    echo json_encode($result);
+    
+} catch (InvalidArgumentException $e) {
+    http_response_code(400);
     echo json_encode([
-        'success' => false, 
-        'message' => 'Error updating setting: ' . $e->getMessage()
+        'success' => false,
+        'error' => $e->getMessage(),
+        'error_type' => 'validation'
+    ]);
+} catch (Exception $e) {
+    error_log("Error in update_settings.php: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Internal server error',
+        'error_type' => 'server'
     ]);
 }
 ?>

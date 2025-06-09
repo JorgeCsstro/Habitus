@@ -120,18 +120,18 @@ $themes = [
                                 <span class="setting-title">Display Language</span>
                                 <span class="setting-description">Choose your preferred language</span>
                             </div>
-                            <select id="language-select" class="setting-select" onchange="changeLanguage(this.value)">
-                                <option value="en" <?php echo $currentLanguage === 'en' ? 'selected' : ''; ?>>🇺🇸 English</option>
-                                <option value="es" <?php echo $currentLanguage === 'es' ? 'selected' : ''; ?>>🇪🇸 Español</option>
-                                <option value="fr" <?php echo $currentLanguage === 'fr' ? 'selected' : ''; ?>>🇫🇷 Français</option>
-                                <option value="de" <?php echo $currentLanguage === 'de' ? 'selected' : ''; ?>>🇩🇪 Deutsch</option>
-                                <option value="it" <?php echo $currentLanguage === 'it' ? 'selected' : ''; ?>>🇮🇹 Italiano</option>
-                                <option value="pt" <?php echo $currentLanguage === 'pt' ? 'selected' : ''; ?>>🇵🇹 Português</option>
-                                <option value="ru" <?php echo $currentLanguage === 'ru' ? 'selected' : ''; ?>>🇷🇺 Русский</option>
-                                <option value="ja" <?php echo $currentLanguage === 'ja' ? 'selected' : ''; ?>>🇯🇵 日本語</option>
-                                <option value="ko" <?php echo $currentLanguage === 'ko' ? 'selected' : ''; ?>>🇰🇷 한국어</option>
-                                <option value="zh" <?php echo $currentLanguage === 'zh' ? 'selected' : ''; ?>>🇨🇳 中文</option>
-                            </select>
+                                <select id="language-selector" class="form-control">
+                                    <option value="en">English</option>
+                                    <option value="es">Español</option>
+                                    <option value="fr">Français</option>
+                                    <option value="de">Deutsch</option>
+                                    <option value="it">Italiano</option>
+                                    <option value="pt">Português</option>
+                                    <option value="ru">Русский</option>
+                                    <option value="zh">中文</option>
+                                    <option value="ja">日本語</option>
+                                    <option value="ko">한국어</option>
+                                </select>
                         </label>
 
                         <!-- Auto-Translation Toggle -->
