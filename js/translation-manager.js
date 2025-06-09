@@ -12,9 +12,9 @@
             this.translationCache = new Map();
             this.isTranslating = false;
             this.config = {
-                endpoint: '/php/api/translation/translate.php',
+                endpoint: '/php/api/translation/translate.php',  // Make sure this matches your file path
                 supportedLanguages: ['en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'zh', 'ja', 'ko'],
-                cacheExpiry: 24 * 60 * 60 * 1000 // 24 hours
+                cacheExpiry: 24 * 60 * 60 * 1000
             };
             
             this.init();
@@ -201,8 +201,10 @@
             if (cached && Date.now() - cached.timestamp < this.config.cacheExpiry) {
                 return cached.translation;
             }
-
+        
             try {
+                console.log('🔄 Translating:', { text, target: this.currentLanguage, endpoint: this.config.endpoint });
+
                 const response = await fetch(this.config.endpoint, {
                     method: 'POST',
                     headers: {
@@ -215,26 +217,45 @@
                         sourceLanguage: 'en'
                     })
                 });
+            
+                console.log('📡 Response status:', response.status, response.statusText);
 
+                // Get response as text first to debug
+                const responseText = await response.text();
+                console.log('📄 Raw response:', responseText);
+            
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}\nResponse: ${responseText}`);
                 }
+            
+                // Check if response is actually JSON
+                if (!responseText.trim().startsWith('{') && !responseText.trim().startsWith('[')) {
+                    throw new Error(`Server returned HTML instead of JSON. Response: ${responseText.substring(0, 200)}...`);
+                }
+            
+                const result = JSON.parse(responseText);
 
-                const result = await response.json();
-                
                 if (result.success && result.translatedText) {
                     // Cache the translation
                     this.translationCache.set(cacheKey, {
                         translation: result.translatedText,
                         timestamp: Date.now()
                     });
-                    
+
+                    console.log('✅ Translation successful:', result.translatedText);
                     return result.translatedText;
                 } else {
                     throw new Error(result.error || 'Translation failed');
                 }
+
             } catch (error) {
-                console.error('Translation API error:', error);
+                console.error('❌ Translation API error:', error);
+
+                // Show user-friendly error
+                if (error.message.includes('HTML instead of JSON')) {
+                    console.error('🚨 Server configuration issue - check PHP endpoint');
+                }
+
                 return text; // Return original text on error
             }
         }
