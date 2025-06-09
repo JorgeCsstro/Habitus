@@ -28,9 +28,43 @@
             <span class="notification-badge"><?php echo $unreadCount; ?></span>
             <?php endif; ?>
         </div>
-        <a href="settings.php" class="profile-button" title="Profile settings">
-            <img src="../images/icons/profile-icon.webp" alt="Profile">
-        </a>
+
+        <!-- header.php (just the profile picture part) -->
+        <div class="user-avatar">
+            <a href="settings.php" class="profile-button" title="Profile settings">
+                <?php
+                // FIXED: Better profile picture path handling
+                $profilePic = $userData['profile_picture'] ?? 'uploads/profile-icon.webp';
+
+                // Create proper URL based on path type
+                if (strpos($profilePic, 'http') === 0) {
+                    // Absolute URL
+                    $profileUrl = $profilePic;
+                } else if (strpos($profilePic, '/') === 0) {
+                    // Absolute path from root
+                    $profileUrl = $profilePic;
+                } else if (strpos($profilePic, 'uploads/') === 0) {
+                    // Relative path from uploads - use absolute path
+                    $profileUrl = '/' . $profilePic;
+                } else {
+                    // Default or other paths
+                    $profileUrl = '../' . $profilePic;
+                }
+
+                // Add cache buster for uploaded images
+                if (strpos($profilePic, 'uploads/profiles/') === 0) {
+                    $fullPath = $_SERVER['DOCUMENT_ROOT'] . '/' . $profilePic;
+                    if (file_exists($fullPath)) {
+                        $modTime = filemtime($fullPath);
+                        $profileUrl .= '?v=' . $modTime;
+                    }
+                }
+                ?>
+                <img src="<?php echo htmlspecialchars($profileUrl); ?>" 
+                     alt="Profile Picture"
+                     onerror="this.src='../uploads/profile-icon.webp'">
+            </a>
+        </div>
     </div>
     
     <!-- Notifications dropdown (hidden by default) -->

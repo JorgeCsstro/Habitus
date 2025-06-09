@@ -148,3 +148,54 @@ function setupSmoothScrolling() {
         });
     });
 }
+
+/**
+ * ENHANCED: Global function to update profile pictures across the site with cache busting
+ * @param {string} newUrl - The new image URL (should include cache buster)
+ */
+window.updateGlobalProfilePicture = function(newUrl) {
+    console.log('🖼️ Updating global profile picture to:', newUrl);
+    
+    // Update all profile picture elements
+    const selectors = [
+        '.user-avatar img',           // Header
+        '.profile-picture',          // General profile pictures
+        '.user-profile img',         // User profile sections
+        '#profile-picture-preview',  // Settings page
+        '.current-profile-picture img', // Settings page current picture
+        '.profile-avatar img'        // Any other profile avatars
+    ];
+    
+    let updatedCount = 0;
+    
+    selectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(element => {
+            if (element && element.src !== newUrl) {
+                // Force browser to reload image by clearing src first
+                element.src = '';
+                setTimeout(() => {
+                    element.src = newUrl;
+                    updatedCount++;
+                    console.log(`✅ Updated profile picture: ${selector}`);
+                }, 25);
+            }
+        });
+    });
+    
+    console.log(`🖼️ Total profile pictures updated: ${updatedCount}`);
+    
+    // Store the current URL for future use
+    window.currentProfilePictureUrl = newUrl;
+};
+
+/**
+ * Create unique cache buster for images
+ * @param {string} baseUrl - Base image URL
+ * @returns {string} URL with cache buster
+ */
+window.createCacheBustedUrl = function(baseUrl, cacheBuster = null) {
+    const separator = baseUrl.includes('?') ? '&' : '?';
+    const timestamp = cacheBuster || Date.now();
+    return `${baseUrl}${separator}v=${timestamp}`;
+};

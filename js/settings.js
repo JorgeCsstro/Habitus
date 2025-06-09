@@ -1,4 +1,4 @@
-// settings.js - FIXED Theme System (No Redeclaration)
+// settings.js - FIXED Theme System and Profile Picture Upload
 
 // FIXED: Use global theme manager - NO redeclaration
 function getThemeManager() {
@@ -173,14 +173,14 @@ function loadSavedPreferences() {
 }
 
 /**
- * Handle profile picture change with enhanced preview
+ * Handle profile picture change with enhanced preview and caching fix
  * @param {HTMLInputElement} input - File input element
  */
 function handleProfilePictureChange(input) {
     if (input.files && input.files[0]) {
         const file = input.files[0];
         
-        // Enhanced validation
+        // Basic validation
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
         if (!allowedTypes.includes(file.type)) {
             showNotification('Please select a valid image (JPEG, PNG, or WebP)', 'error');
@@ -193,96 +193,151 @@ function handleProfilePictureChange(input) {
             return;
         }
         
-        // Show preview immediately
-        const preview = document.getElementById('profile-picture-preview');
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            preview.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-        
         // Upload to server
         uploadProfilePicture(file);
     }
 }
 
+/**
+ * FIXED: Upload profile picture with better error handling and debugging
+ * @param {File} file - The file to upload
+ */
 async function uploadProfilePicture(file) {
     const formData = new FormData();
     formData.append('profile_picture', file);
     
     // Show loading state
     const overlay = document.querySelector('.profile-picture-overlay');
-    const preview = document.getElementById('profile-picture-preview');
-    const originalSrc = preview.src; // Store original for potential revert
-    
-    overlay.innerHTML = '<div class="loading-spinner"></div><span>Uploading...</span>';
+    const originalOverlayContent = overlay.innerHTML;
+    overlay.innerHTML = '<div class="loading-spinner">Uploading...</div>';
     
     try {
+        console.log('Starting upload for file:', file.name);
+        
         const response = await fetch('../php/api/user/upload_profile_picture.php', {
             method: 'POST',
             body: formData
         });
         
-        // Log response for debugging
-        console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
-        
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        const text = await response.text();
-        console.log('Raw response:', text);
-        
-        let result;
-        try {
-            result = JSON.parse(text);
-        } catch (parseError) {
-            console.error('JSON parse error:', parseError);
-            console.error('Response text:', text);
-            throw new Error('Invalid server response');
-        }
+        const result = await response.json();
+        console.log('Upload response:', result);
         
         if (result.success) {
-            // Update preview with the actual uploaded image
-            const newImageUrl = '../' + result.profile_picture_url + '?t=' + Date.now();
-            preview.src = newImageUrl;
+            console.log('Upload successful:', result);
             
-            // Update all profile pictures on the page
-            updateAllProfilePictures(newImageUrl);
+            // Debug the paths
+            if (result.debug_info) {
+                console.log('Debug info:', result.debug_info);
+            }
             
-            showNotification('Profile picture updated successfully!', 'success');
+            // Build the complete image URL with cache busting
+            const baseUrl = '../' + result.profile_picture_url;
+            const cacheBuster = result.cache_buster || Date.now();
+            const imageUrl = `${baseUrl}?v=${cacheBuster}`;
+            
+            console.log('New image URL:', imageUrl);
+            
+            // Test if the image URL is accessible before updating UI
+            const testImage = new Image();
+            testImage.onload = function() {
+                console.log('✅ Image is accessible, updating UI');
+                updateAllProfilePictures(imageUrl);
+                showNotification('Profile picture updated successfully!', 'success');
+            };
+            
+            testImage.onerror = function() {
+                console.error('❌ Image not accessible at URL:', imageUrl);
+                showNotification('Upload succeeded but image not accessible. Please refresh the page.', 'warning');
+                
+                // Try alternative URL constructions
+                const altUrl1 = '/' + result.profile_picture_url + '?v=' + cacheBuster;
+                const altUrl2 = result.profile_picture_url + '?v=' + cacheBuster;
+                
+                console.log('Trying alternative URL 1:', altUrl1);
+                const testImage2 = new Image();
+                testImage2.onload = function() {
+                    console.log('✅ Alternative URL 1 works');
+                    updateAllProfilePictures(altUrl1);
+                };
+                testImage2.onerror = function() {
+                    console.log('Trying alternative URL 2:', altUrl2);
+                    const testImage3 = new Image();
+                    testImage3.onload = function() {
+                        console.log('✅ Alternative URL 2 works');
+                        updateAllProfilePictures(altUrl2);
+                    };
+                    testImage3.onerror = function() {
+                        console.error('❌ All URL alternatives failed');
+                        showNotification('Image uploaded but cannot be displayed. Please contact support.', 'error');
+                    };
+                    testImage3.src = altUrl2;
+                };
+                testImage2.src = altUrl1;
+            };
+            
+            testImage.src = imageUrl;
+            
+            // Clear the file input
+            const fileInput = document.getElementById('profile-picture-upload');
+            if (fileInput) {
+                fileInput.value = '';
+            }
+            
         } else {
-            // Revert to original image on server error
-            preview.src = originalSrc;
+            console.error('Upload failed:', result);
             showNotification(result.message || 'Upload failed', 'error');
         }
     } catch (error) {
         console.error('Upload error:', error);
-        // Revert to original image on network/parsing error
-        preview.src = originalSrc;
-        showNotification(`Error: ${error.message}`, 'error');
+        showNotification('Error uploading image: ' + error.message, 'error');
     } finally {
         // Restore overlay
-        overlay.innerHTML = `
-            <label for="profile-picture-upload" class="change-picture-btn">
-                <img src="../images/icons/camera.webp" alt="Change">
-                <span>Change Photo</span>
-            </label>
-        `;
+        overlay.innerHTML = originalOverlayContent;
     }
 }
 
+/**
+ * FIXED: Update all profile pictures across the site with proper cache busting
+ * @param {string} newUrl - The new image URL with cache buster
+ */
 function updateAllProfilePictures(newUrl) {
-    // Update header profile picture
-    const headerProfile = document.querySelector('.user-avatar img');
-    if (headerProfile) headerProfile.src = newUrl;
+    console.log('Updating all profile pictures to:', newUrl);
     
-    // Update any other profile pictures on the page
-    document.querySelectorAll('.profile-picture, .user-profile img').forEach(img => {
-        img.src = newUrl;
+    // Define all possible profile picture selectors
+    const selectors = [
+        '.user-avatar img',              // Header profile picture
+        '#profile-picture-preview',      // Settings page preview
+        '.current-profile-picture img',  // Settings page current picture
+        '.profile-picture',              // General profile pictures
+        '.user-profile img',             // User profile sections
+        '.profile-avatar img'            // Any other profile avatars
+    ];
+    
+    let updatedCount = 0;
+    
+    selectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(element => {
+            if (element) {
+                // Force reload by changing src
+                element.src = '';
+                setTimeout(() => {
+                    element.src = newUrl;
+                    updatedCount++;
+                    console.log(`Updated profile picture: ${selector}`);
+                }, 50);
+            }
+        });
     });
+    
+    console.log(`Total profile pictures updated: ${updatedCount}`);
+    
+    // Also update any profile pictures that might be loaded later
+    window.currentProfilePictureUrl = newUrl;
 }
 
 /**
@@ -339,6 +394,23 @@ function changeLanguage(language) {
  */
 function showChangePasswordModal() {
     const modal = document.getElementById('password-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+        
+        // Focus first input
+        setTimeout(() => {
+            const firstInput = modal.querySelector('input');
+            if (firstInput) firstInput.focus();
+        }, 100);
+    }
+}
+
+/**
+ * Show change email modal
+ */
+function showChangeEmailModal() {
+    const modal = document.getElementById('email-modal');
     if (modal) {
         modal.style.display = 'flex';
         modal.classList.add('show');
@@ -596,6 +668,27 @@ function toggleTaskReminders(enabled) {
 }
 
 /**
+ * Toggle auto theme switching
+ * @param {boolean} enabled - Whether auto theme is enabled
+ */
+function toggleAutoTheme(enabled) {
+    if (enabled) {
+        // Implement auto theme switching based on time
+        const hour = new Date().getHours();
+        const isDaytime = hour >= 6 && hour < 18;
+        const newTheme = isDaytime ? 'light' : 'dark';
+        
+        const manager = getThemeManager();
+        if (manager && manager.getTheme() !== newTheme) {
+            manager.setTheme(newTheme);
+            showNotification(`Auto-switched to ${newTheme} theme`, 'info');
+        }
+    }
+    
+    localStorage.setItem('autoTheme', enabled);
+}
+
+/**
  * Update notification preference on server
  * @param {string} type - Notification type
  * @param {boolean} enabled - Whether enabled
@@ -623,6 +716,53 @@ function updateNotificationPreference(type, enabled) {
         console.error('Error:', error);
         showNotification('Error updating notification preferences', 'error');
     });
+}
+
+/**
+ * Export user data
+ */
+function exportUserData() {
+    showNotification('Preparing your data export...', 'info');
+    
+    fetch('../php/api/user/export_data.php', {
+        method: 'POST'
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'habitus-zone-data.json';
+        a.click();
+        window.URL.revokeObjectURL(url);
+        showNotification('Data exported successfully', 'success');
+    })
+    .catch(error => {
+        console.error('Export error:', error);
+        showNotification('Error exporting data', 'error');
+    });
+}
+
+/**
+ * Clear cache
+ */
+function clearCache() {
+    if (confirm('This will clear all cached data and refresh the page. Continue?')) {
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Clear service worker cache if available
+        if ('caches' in window) {
+            caches.keys().then(names => {
+                names.forEach(name => caches.delete(name));
+            });
+        }
+        
+        showNotification('Cache cleared. Refreshing...', 'success');
+        setTimeout(() => {
+            window.location.reload(true);
+        }, 1500);
+    }
 }
 
 /**
@@ -724,3 +864,11 @@ document.addEventListener('click', function(e) {
 
 // FIXED: Export theme manager access for global use - no redeclaration
 window.getSettingsThemeManager = getThemeManager;
+
+// Initialize profile picture system when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if there's a current profile picture URL to use
+    if (window.currentProfilePictureUrl) {
+        updateAllProfilePictures(window.currentProfilePictureUrl);
+    }
+});
