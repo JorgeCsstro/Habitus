@@ -170,7 +170,7 @@ html[data-theme="light"] a:hover {
 
 /* Modals */
 html[data-theme="light"] .modal {
-    background-color: var(--bg-panel);
+    background-color: color-mix(in srgb, var(--secondary) 70%, transparent);
     box-shadow: 0 10px 25px var(--shadow);
 }
 

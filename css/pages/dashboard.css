@@ -12,6 +12,15 @@
     background-color: var(--bg-primary);
 }
 
+.dailies-panel,
+.shop-panel,
+.goals-panel,
+.challenges-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 370px; /* Reduced from 400px */
+}
+
 /* Panel Placements */
 .dailies-panel {
     grid-column: 1;
@@ -26,6 +35,7 @@
 .habitus-panel {
     grid-column: 3;
     grid-row: 1 / span 2;
+    min-height: 760px; /* Reduced from 820px */
 }
 
 .goals-panel {
@@ -224,13 +234,14 @@
     background-color: var(--bg-secondary);
     border-radius: 8px;
     overflow: hidden;
-    margin: 5px auto 15px;
+    margin: 5px auto;
     border: 1px solid var(--border-primary);
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
+    flex-shrink: 0; /* Don't shrink the preview */
 }
 
 .habitus-preview:hover {
@@ -404,7 +415,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start; /* Align content to top */
     padding: 10px;
     overflow: hidden;
 }
@@ -480,6 +491,19 @@
     animation: buttonPulse 0.6s ease-in-out;
 }
 
+/* Dark theme specific adjustments */
+.theme-dark .complete-button:hover::before {
+    border-color: var(--accent);
+}
+
+.theme-dark .shop-item:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.theme-dark .habitus-preview:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
 @keyframes buttonPulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.15); }
@@ -492,9 +516,17 @@
         grid-template-rows: auto auto auto;
     }
     
+    .dailies-panel,
+    .shop-panel,
+    .goals-panel,
+    .challenges-panel {
+        min-height: 320px; /* Reduced from 350px */
+    }
+    
     .habitus-panel {
         grid-column: 1 / span 2;
         grid-row: 3;
+        min-height: 370px; /* Reduced from 400px */
     }
 }
 
@@ -506,31 +538,21 @@
         padding: 15px;
     }
     
-    .dailies-panel { grid-column: 1; grid-row: 1; }
-    .goals-panel { grid-column: 1; grid-row: 2; }
-    .challenges-panel { grid-column: 1; grid-row: 3; }
-    .shop-panel { grid-column: 1; grid-row: 4; }
-    .habitus-panel { grid-column: 1; grid-row: 5; }
-    
-    .dashboard-room {
-        transform: scale(0.8);
+    .dailies-panel,
+    .shop-panel,
+    .goals-panel,
+    .challenges-panel,
+    .habitus-panel {
+        grid-column: 1;
+        min-height: 280px; /* Reduced from 300px */
     }
     
-    .shop-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
+    .dailies-panel { grid-row: 1; }
+    .goals-panel { grid-row: 2; }
+    .challenges-panel { grid-row: 3; }
+    .shop-panel { grid-row: 4; }
+    .habitus-panel { 
+        grid-row: 5;
+        min-height: 320px; /* Reduced from 350px */
     }
-}
-
-/* Dark theme specific adjustments */
-.theme-dark .complete-button:hover::before {
-    border-color: var(--accent);
-}
-
-.theme-dark .shop-item:hover {
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-
-.theme-dark .habitus-preview:hover {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }

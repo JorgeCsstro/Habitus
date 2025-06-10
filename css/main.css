@@ -86,6 +86,9 @@ body {
     box-shadow: 0 5px 15px var(--shadow);
     overflow: hidden;
     transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Take full height of grid cell */
 }
 
 .panel-header {
@@ -95,6 +98,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0; /* Don't shrink header */
 }
 
 .panel-header img {
@@ -114,8 +118,10 @@ body {
 .panel-content {
     padding: 15px;
     background-color: var(--bg-panel);
-    flex: 1;
+    flex: 1; /* Take remaining space, pushing footer down */
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .panel-footer {
@@ -149,24 +155,13 @@ body {
     transform: translateY(-2px);
 }
 
-.add-new-button {
-    background-color: var(--bg-panel);
-    color: var(--primary);
-    border-color: var(--border-primary);
-}
-
-.add-new-button:hover {
-    background-color: var(--bg-secondary);
-    border-color: var(--border-primary);
-}
-
-.go-to-shop-button {
+.go-to-shop-button, .add-new-button {
     background-color: var(--warning);
     color: var(--btn-text);
     border-color: var(--warning);
 }
 
-.go-to-shop-button:hover {
+.go-to-shop-button:hover, .add-new-button:hover {
     background-color: var(--accent);
     border-color: var(--accent);
     filter: brightness(0.95);
