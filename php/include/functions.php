@@ -1,6 +1,6 @@
 <?php
 
-// functions.php - Fixed getUserHabitusData function
+// php/include/functions.php - Fixed getUserHabitusData function
 
 /**
  * Get user data from the database

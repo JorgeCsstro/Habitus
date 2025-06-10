@@ -4,6 +4,8 @@
  * Handles translation preferences and other user settings
  */
 
+// php/api/user/update_settings.php
+
 require_once '../config/database.php';
 require_once '../includes/auth.php';
 

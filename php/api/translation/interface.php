@@ -1,5 +1,5 @@
 <?php
-// interface.php - Get interface translations
+// php/api/translation/interface.php - Get interface translations
 
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';

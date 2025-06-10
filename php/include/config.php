@@ -1,5 +1,5 @@
 <?php
-// php/config.php - Updated with enhanced Stripe support and validation
+// php/include/config.php - Updated with enhanced Stripe support and validation
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {

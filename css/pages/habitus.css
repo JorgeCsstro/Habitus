@@ -136,8 +136,8 @@
 /* Room floor - 6x6 grid */
 .room-floor {
     position: absolute;
-    width: 360px;
-    height: 360px;
+    width: 100%;
+    height: 100%;
     background: #FFD700;
     background-image: 
         linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
@@ -150,8 +150,8 @@
 /* Left wall */
 .room-wall-left {
     position: absolute;
-    width: 360px;
-    height: 240px; /* 4 cells high */
+    width: 100%;
+    height: 67%; /* 4 cells high */
     background: linear-gradient(to bottom, #E0E0E0, #D0D0D0);
     transform: rotateX(90deg);
     transform-origin: top;
@@ -161,8 +161,8 @@
 /* Right wall */
 .room-wall-right {
     position: absolute;
-    width: 240px; /* 4 cells high */
-    height: 360px;
+    width: 67%; /* 4 cells high */
+    height: 100%;
     background: linear-gradient(to left, #D0D0D0, #C0C0C0);
     transform: rotateY(-90deg) translateZ(-360px);
     transform-origin: left;

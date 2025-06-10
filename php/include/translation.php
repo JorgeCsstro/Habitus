@@ -1,5 +1,5 @@
 <?php
-// translation.php - Translation service with Azure Translator integration
+// php/include/translation.php - Translation service with Azure Translator integration
 
 class TranslationService {
     private $conn;

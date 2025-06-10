@@ -206,7 +206,7 @@ foreach ($placedItems as $item) {
                                     ?>
                                     <img src="../<?php echo htmlspecialchars($webpPath); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                                     <div class="item-price">
-                                        <img src="../images/icons/hcoin-small.webp" alt="HCoin">
+                                        <img src="../images/icons/hcoin-icon.webp" alt="HCoin">
                                         <span><?php echo $item['price']; ?></span>
                                     </div>
                                 </div>

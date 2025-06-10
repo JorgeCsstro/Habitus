@@ -1,126 +1,44 @@
 /* css/themes/light.css - UPDATED WITH WARMER BACKGROUNDS */
 
-/* CRITICAL: Use :root for highest specificity and inheritance */
 html[data-theme="light"]:root,
 html[data-theme="light"] {
-    /* Core Palette - New Brown/Golden Colors */
-    --primary: #3e1e04 !important;           /* Darkest brown for primary elements */
-    --primary-dark: #2d1603 !important;      /* Even darker brown for hover states */
-    --primary-light: #6a3005 !important;     /* Dark brown for lighter variations */
-    --primary-brown: #3e1e04 !important;     /* Maintaining compatibility */
-    --primary-brown-light: #6a3005 !important;
+    /* Core Palette */
+    --primary: #3e1e04;           /* Darkest brown for primary elements */
+    --primary-light: #6a3005;     /* Dark brown for lighter variations */
+    --secondary: #965015;         /* Medium brown for secondary elements */
+    --accent: #c4923e;            /* Golden brown for accents */
     
-    --secondary: #965015 !important;         /* Medium brown for secondary elements */
-    --secondary-dark: #7a4012 !important;    /* Darker version of medium brown */
-    --secondary-light: #c4923e !important;   /* Golden brown for light secondary */
-    --primary-green: #965015 !important;     /* Using medium brown for "green" elements */
-    --primary-green-light: #c4923e !important;
+    /* Backgrounds */
+    --bg-primary: #f2ede6;        /* Warm cream for main background */
+    --bg-secondary: #cbac85;      /* Light beige for headers/footers */
+    --bg-panel: #f9f6f0;          /* Soft warm panel background */
     
-    --accent: #c4923e !important;           /* Golden brown for accents */
+    /* Text */
+    --text-primary: #3e1e04;      /* Darkest brown for primary text */
+    --text-secondary: #6a3005;     /* Dark brown for secondary text */
     
-    /* Backgrounds - Warmer, softer hierarchy */
-    --bg-0: #f2ede6 !important;             /* Warm cream for main background */
-    --bg-1: #cbac85 !important;             /* Light beige for headers/footers */
-    --bg-2: #f9f6f0 !important;             /* Warm off-white for panels (no pure white!) */
-    --bg-3: #f5f1ea !important;             /* Soft cream for hover states */
-    --bg-primary: #f2ede6 !important;
-    --bg-secondary: #cbac85 !important;
-    --bg-panel: #f9f6f0 !important;         /* Soft warm panel background */
-    --bg-tertiary: #f5f1ea !important;
+    /* Borders */
+    --border-primary: #e6d5c0;    /* Light border derived from beige */
     
-    /* Text - Using darker colors for good contrast */
-    --text-1: #3e1e04 !important;           /* Darkest brown for primary text */
-    --text-2: #6a3005 !important;           /* Dark brown for secondary text */
-    --text-3: #965015 !important;           /* Medium brown for muted text */
-    --text-inverse: #f9f6f0 !important;     /* Warm off-white for dark backgrounds */
-    --text-primary: #3e1e04 !important;
-    --text-secondary: #6a3005 !important;
-    --text-tertiary: #965015 !important;
-    --text-muted: #965015 !important;
+    /* Status Colors */
+    --success: #965015;           /* Medium brown for success */
+    --error: #c4441a;             /* Reddish brown for errors */
+    --warning: #c4923e;           /* Golden brown for warnings */
+    --info: #6a3005;              /* Dark brown for info */
     
-    /* Borders - Using medium tones */
-    --border-1: #e6d5c0 !important;         /* Light border derived from beige */
-    --border-2: #c4923e !important;         /* Golden brown for stronger borders */
-    --border-primary: #e6d5c0 !important;
-    --border-secondary: #c4923e !important;
-    --border-tertiary: #f0e7db !important;  /* Very light border */
-    
-    /* Status Colors - Adapted to new palette */
-    --success: #965015 !important;          /* Medium brown for success */
-    --error: #c4441a !important;            /* Reddish brown that complements palette */
-    --warning: #c4923e !important;          /* Golden brown for warnings */
-    --info: #6a3005 !important;             /* Dark brown for info */
-    
-    --success-text: #965015 !important;
-    --success-bg: #f5f1eb !important;       /* Very light version */
-    --success-border: #c4923e !important;
-    
-    --error-text: #c4441a !important;
-    --error-bg: #fdf6f4 !important;
-    --error-border: #e8a690 !important;
-    
-    --warning-text: #6a3005 !important;
-    --warning-bg: #fcf8f4 !important;
-    --warning-border: #c4923e !important;
-    
-    --info-text: #6a3005 !important;
-    --info-bg: #f7f4f0 !important;
-    --info-border: #965015 !important;
-    
-    /* Shadows - Using primary color */
-    --shadow: rgba(62, 30, 4, 0.12) !important;
-    --shadow-dark: rgba(62, 30, 4, 0.20) !important;
-    --shadow-light: rgba(62, 30, 4, 0.06) !important;
-    --shadow-medium: rgba(62, 30, 4, 0.15) !important;
+    /* Shadows */
+    --shadow: rgba(62, 30, 4, 0.12);
     
     /* Button Variables */
-    --btn-primary-bg: #3e1e04 !important;
-    --btn-primary-text: #f9f6f0 !important;     /* Warm off-white text */
-    --btn-primary-hover: #2d1603 !important;
-    
-    --btn-secondary-bg: #c4923e !important;
-    --btn-secondary-text: #f9f6f0 !important;   /* Warm off-white text */
-    --btn-secondary-border: #965015 !important;
-    --btn-secondary-hover: #b8863a !important;
-    
-    --btn-success-bg: #965015 !important;
-    --btn-success-text: #f9f6f0 !important;     /* Warm off-white text */
-    --btn-success-hover: #7a4012 !important;
+    --btn-bg: #3e1e04;            /* Primary button background */
+    --btn-text: #f9f6f0;          /* Warm off-white text */
     
     /* Input Variables */
-    --input-bg: #f9f6f0 !important;             /* Warm off-white input background */
-    --input-text: #3e1e04 !important;
-    --input-border: #c4923e !important;
-    --input-focus: #965015 !important;
-    --input-placeholder: #965015 !important;
+    --input-bg: #f9f6f0;          /* Warm off-white input background */
+    --input-text: #3e1e04;
     
-    /* Modal Variables */
-    --modal-bg: #f9f6f0 !important;             /* Warm off-white modal background */
-    --modal-overlay: rgba(62, 30, 4, 0.6) !important;
-    --modal-shadow: rgba(62, 30, 4, 0.25) !important;
-    
-    /* Notification Variables */
-    --notification-bg: #f9f6f0 !important;      /* Warm off-white notification background */
-    --notification-shadow: rgba(62, 30, 4, 0.18) !important;
-    
-    /* Sidebar Variables */
-    --sidebar-bg: #cbac85 !important;
-    --sidebar-item-hover: rgba(62, 30, 4, 0.1) !important;
-    --sidebar-item-active: #3e1e04 !important;
-    
-    /* Tooltip Variables */
-    --tooltip-bg: rgba(62, 30, 4, 0.9) !important;
-    --tooltip-text: #f9f6f0 !important;         /* Warm off-white text */
-    --tooltip-shadow: rgba(0, 0, 0, 0.2) !important;
-    
-    /* Scrollbar Variables */
-    --scrollbar-track: #cbac85 !important;
-    --scrollbar-thumb: #c4923e !important;
-    --scrollbar-thumb-hover: #965015 !important;
-    
-    /* Task Item Variables */
-    --task-item-completed: #f5f1eb !important;
-    --task-item-completed-border: #c4923e !important;
+    /* Miscellaneous */
+    --tooltip-bg: rgba(62, 30, 4, 0.9);
 }
 
 /* CRITICAL: Force application with maximum specificity */
