@@ -36,7 +36,7 @@
 .settings-section {
     background-color: var(--bg-panel);
     border-radius: 15px;
-    box-shadow: 0 5px 15px var(--shadow-light);
+    box-shadow: 0 5px 15px var(--shadow);
     border: 1px solid var(--border-primary);
     margin-bottom: 25px;
     overflow: hidden;
@@ -115,7 +115,7 @@
     flex-direction: column;
     align-items: center;
     gap: 5px;
-    color: var(--text-inverse);
+    color: var(--btn-text);
     cursor: pointer;
     text-decoration: none;
 }
@@ -183,13 +183,13 @@
 }
 
 .setting-select:hover {
-    border-color: var(--border-secondary);
+    border-color: var(--accent);
 }
 
 .setting-select:focus {
-    border-color: var(--input-focus);
+    border-color: var(--accent);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(141, 91, 76, 0.1);
+    box-shadow: 0 0 0 3px var(--shadow);
 }
 
 /* Theme Selector - Enhanced */
@@ -222,15 +222,15 @@
 
 .theme-option:hover {
     background-color: var(--bg-secondary);
-    border-color: var(--border-secondary);
+    border-color: var(--accent);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px var(--shadow-light);
+    box-shadow: 0 4px 12px var(--shadow);
 }
 
 .theme-option.active {
-    border-color: var(--primary-brown);
+    border-color: var(--primary);
     background-color: var(--bg-secondary);
-    box-shadow: 0 0 0 3px rgba(141, 91, 76, 0.1);
+    box-shadow: 0 0 0 3px var(--shadow);
 }
 
 .theme-option input[type="radio"] {
@@ -243,25 +243,25 @@
     border-radius: 8px;
     overflow: hidden;
     margin-bottom: 15px;
-    box-shadow: 0 2px 8px var(--shadow-light);
+    box-shadow: 0 2px 8px var(--shadow);
     position: relative;
 }
 
 .theme-preview.theme-light {
-    background-color: #f9f5f0;
+    background-color: #f9f6f0;
 }
 
 .theme-preview.theme-dark {
-    background-color: #070F2B;
+    background-color: #1a1a3a;
 }
 
 .preview-header {
     height: 20%;
-    background-color: var(--primary-brown);
+    background-color: var(--primary);
 }
 
 .theme-preview.theme-dark .preview-header {
-    background-color: #1B1A55;
+    background-color: #1b1a55;
 }
 
 .preview-content {
@@ -271,16 +271,16 @@
 
 .preview-sidebar {
     width: 20%;
-    background-color: #e9e2d9;
+    background-color: var(--bg-secondary);
 }
 
 .theme-preview.theme-dark .preview-sidebar {
-    background-color: #121233;
+    background-color: #03396c;
 }
 
 .preview-main {
     flex: 1;
-    background-color: white;
+    background-color: var(--bg-primary);
     display: flex;
     flex-direction: column;
     padding: 4px;
@@ -293,12 +293,12 @@
 
 .preview-card {
     flex: 1;
-    background-color: #f5f1ea;
+    background-color: var(--bg-panel);
     border-radius: 2px;
 }
 
 .theme-preview.theme-dark .preview-card {
-    background-color: #535C91;
+    background-color: #1b1a55;
 }
 
 .theme-info {
@@ -327,8 +327,8 @@
 }
 
 .current-badge {
-    background: var(--primary-green);
-    color: var(--text-inverse);
+    background: var(--success);
+    color: var(--btn-text);
     padding: 3px 8px;
     border-radius: 12px;
     font-size: 0.7rem;
@@ -343,7 +343,7 @@
 }
 
 .theme-shortcuts small {
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: 0.85rem;
 }
 
@@ -400,7 +400,7 @@
 }
 
 .plan-name {
-    color: var(--primary-brown);
+    color: var(--primary);
     transition: color 0.3s ease;
 }
 
@@ -426,27 +426,26 @@
 }
 
 .upgrade-btn {
-    background-color: var(--btn-primary-bg);
-    color: var(--btn-primary-text);
-    border-color: var(--btn-primary-bg);
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
+    border-color: var(--btn-bg);
 }
 
 .upgrade-btn:hover {
-    background-color: var(--btn-primary-hover);
-    border-color: var(--btn-primary-hover);
+    background-color: var(--primary-light);
+    border-color: var(--primary-light);
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px var(--shadow-light);
+    box-shadow: 0 4px 10px var(--shadow);
 }
 
 .manage-btn {
-    background-color: var(--btn-secondary-bg);
-    color: var(--btn-secondary-text);
-    border-color: var(--btn-secondary-border);
+    background-color: var(--bg-panel);
+    color: var(--text-primary);
+    border-color: var(--border-primary);
 }
 
 .manage-btn:hover {
-    background-color: var(--btn-secondary-hover);
-    border-color: var(--border-secondary);
+    background-color: var(--bg-secondary);
 }
 
 /* Setting Buttons */
@@ -469,17 +468,17 @@
 
 .setting-button:hover {
     background-color: var(--bg-secondary);
-    border-color: var(--border-secondary);
+    border-color: var(--accent);
     transform: translateX(5px);
 }
 
 .setting-button.danger {
-    border-color: var(--error-border);
+    border-color: var(--error);
 }
 
 .setting-button.danger:hover {
-    background-color: var(--error-bg);
-    border-color: var(--error-border);
+    background-color: var(--bg-secondary);
+    border-color: var(--error);
 }
 
 .button-icon {
@@ -501,8 +500,8 @@
 }
 
 .setting-button.danger .button-icon {
-    background-color: var(--error-bg);
-    border-color: var(--error-border);
+    background-color: var(--bg-secondary);
+    border-color: var(--error);
 }
 
 .button-text {
@@ -519,7 +518,7 @@
 }
 
 .setting-button.danger .button-title {
-    color: var(--error-text);
+    color: var(--error);
 }
 
 .button-description {
@@ -531,7 +530,7 @@
 
 .button-arrow {
     font-size: 1.5rem;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     transition: color 0.3s ease;
 }
 
@@ -541,7 +540,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px 0;
-    border-bottom: 1px solid var(--border-tertiary);
+    border-bottom: 1px solid var(--border-primary);
     cursor: pointer;
 }
 
@@ -591,11 +590,11 @@
     background-color: var(--bg-panel);
     border-radius: 50%;
     transition: transform 0.3s;
-    box-shadow: 0 2px 4px var(--shadow-light);
+    box-shadow: 0 2px 4px var(--shadow);
 }
 
 .setting-toggle input[type="checkbox"]:checked + .toggle-switch {
-    background-color: var(--primary-green);
+    background-color: var(--success);
 }
 
 .setting-toggle input[type="checkbox"]:checked + .toggle-switch::after {
@@ -610,16 +609,16 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: var(--modal-overlay);
+    background-color: var(--shadow);
     z-index: 1000;
     justify-content: center;
     align-items: center;
 }
 
 .modal-content {
-    background-color: var(--modal-bg);
+    background-color: var(--bg-panel);
     border-radius: 15px;
-    box-shadow: 0 10px 30px var(--modal-shadow);
+    box-shadow: 0 10px 30px var(--shadow);
     width: 90%;
     max-width: 500px;
     max-height: 90vh;
@@ -650,7 +649,7 @@
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     line-height: 1;
     transition: color 0.3s ease;
 }
@@ -687,16 +686,16 @@
 }
 
 .form-group input:focus {
-    border-color: var(--input-focus);
+    border-color: var(--accent);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(141, 91, 76, 0.1);
+    box-shadow: 0 0 0 3px var(--shadow);
 }
 
 .field-hint {
     display: block;
     margin-top: 5px;
     font-size: 0.85rem;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     transition: color 0.3s ease;
 }
 
@@ -709,9 +708,9 @@
 
 .cancel-btn {
     padding: 12px 25px;
-    background-color: var(--btn-secondary-bg);
-    color: var(--btn-secondary-text);
-    border: 1px solid var(--btn-secondary-border);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
     border-radius: 25px;
     cursor: pointer;
     font-weight: 500;
@@ -719,13 +718,13 @@
 }
 
 .cancel-btn:hover {
-    background-color: var(--btn-secondary-hover);
+    background-color: var(--bg-panel);
 }
 
 .save-btn {
     padding: 12px 25px;
-    background-color: var(--btn-success-bg);
-    color: var(--btn-success-text);
+    background-color: var(--success);
+    color: var(--btn-text);
     border: none;
     border-radius: 25px;
     cursor: pointer;
@@ -734,15 +733,17 @@
 }
 
 .save-btn:hover {
-    background-color: var(--btn-success-hover);
+    background-color: var(--secondary);
 }
 
 .delete-btn {
-    background-color: var(--error-text);
+    background-color: var(--error);
+    color: var(--btn-text);
 }
 
 .delete-btn:hover {
-    background-color: var(--error-border);
+    background-color: var(--error);
+    opacity: 0.8;
 }
 
 /* Warning Message */
@@ -751,8 +752,8 @@
     align-items: flex-start;
     gap: 15px;
     padding: 15px;
-    background-color: var(--warning-bg);
-    border: 1px solid var(--warning-border);
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--warning);
     border-radius: 8px;
     margin-bottom: 20px;
 }
@@ -765,7 +766,7 @@
 
 .warning-message p {
     margin: 0;
-    color: var(--warning-text);
+    color: var(--warning);
     line-height: 1.5;
 }
 
@@ -781,10 +782,10 @@
 }
 
 .notification {
-    background: var(--notification-bg);
+    background: var(--bg-panel);
     padding: 15px 20px;
     border-radius: 8px;
-    box-shadow: 0 5px 15px var(--notification-shadow);
+    box-shadow: 0 5px 15px var(--shadow);
     transform: translateX(400px);
     transition: transform 0.3s;
     max-width: 300px;
@@ -799,19 +800,19 @@
 }
 
 .notification.success {
-    border-left: 4px solid var(--success-text);
+    border-left: 4px solid var(--success);
 }
 
 .notification.error {
-    border-left: 4px solid var(--error-text);
+    border-left: 4px solid var(--error);
 }
 
 .notification.warning {
-    border-left: 4px solid var(--warning-text);
+    border-left: 4px solid var(--warning);
 }
 
 .notification.info {
-    border-left: 4px solid var(--info-text);
+    border-left: 4px solid var(--info);
 }
 
 .notification-icon {
@@ -830,7 +831,7 @@
 .notification-close {
     background: none;
     border: none;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     cursor: pointer;
     font-size: 1.2rem;
     padding: 0;
@@ -869,6 +870,71 @@
     margin-right: 8px;
 }
 
+/* Translation Usage Info */
+.translation-usage-info {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-primary);
+}
+
+.usage-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.usage-header h4 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.refresh-usage-btn {
+    background: none;
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.refresh-usage-btn:hover {
+    background-color: var(--bg-panel);
+    border-color: var(--accent);
+}
+
+.usage-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.usage-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.usage-item:last-child {
+    border-bottom: none;
+}
+
+.usage-label {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.usage-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .settings-content {
@@ -905,26 +971,4 @@
         margin: 20px;
         max-height: calc(100vh - 40px);
     }
-}
-
-/* Dark theme specific adjustments */
-[data-theme="dark"] .theme-switching,
-[data-theme="dark"] .theme-switching * {
-    transition: none;
-}
-
-/* Ensure proper contrast in dark theme */
-[data-theme="dark"] .theme-preview.theme-light {
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] .theme-preview.theme-dark {
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
-}
-
-/* Dark theme image filters for settings icons */
-[data-theme="dark"] .button-icon img,
-[data-theme="dark"] .status-icon img,
-[data-theme="dark"] .warning-message img {
-    filter: invert(1);
 }

@@ -1,4 +1,4 @@
-/* subscription.css - Complete with Stripe Elements modal - FIXED */
+/* subscription.css - Complete with Stripe Elements modal - UPDATED WITH LIGHT THEME VARIABLES */
 
 /* ===== BASIC RESET AND LAYOUT ===== */
 * {
@@ -11,7 +11,7 @@
 .subscription-content {
     flex: 1;
     padding: 20px;
-    background-color: #f9f5f0;
+    background-color: var(--bg-primary);
     overflow-y: auto;
     max-width: 1200px;
     margin: 0 auto;
@@ -25,7 +25,7 @@
 
 .subscription-header h1 {
     font-size: 2.5rem;
-    color: #2d2926;
+    color: var(--text-primary);
     margin-bottom: 15px;
     font-family: 'Quicksand', sans-serif;
     font-weight: 600;
@@ -33,32 +33,32 @@
 
 .subscription-header p {
     font-size: 1.2rem;
-    color: #5a5755;
+    color: var(--text-secondary);
     margin-bottom: 0;
 }
 
 /* Debug notice */
 .debug-notice {
-    background: #fff3cd;
-    border: 1px solid #ffeaa7;
+    background: var(--bg-panel);
+    border: 1px solid var(--warning);
     padding: 15px;
     border-radius: 8px;
     margin-top: 20px;
-    color: #856404;
+    color: var(--warning);
     font-weight: 500;
 }
 
 /* Current Subscription Status */
 .current-subscription {
-    background: linear-gradient(135deg, #e4ebe7 0%, #f0f5f2 100%);
-    border: 1px solid #cfdad4;
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-panel) 100%);
+    border: 1px solid var(--border-primary);
     border-radius: 12px;
     padding: 25px;
     margin-bottom: 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 3px 10px rgba(106, 141, 127, 0.1);
+    box-shadow: 0 3px 10px var(--shadow);
 }
 
 .subscription-status {
@@ -75,34 +75,34 @@
 
 .subscription-status h3 {
     margin: 0;
-    color: #2d2926;
+    color: var(--text-primary);
     font-size: 1.3rem;
     font-weight: 600;
 }
 
 .subscription-status p {
     margin: 8px 0 0;
-    color: #5a5755;
+    color: var(--text-secondary);
     font-size: 1rem;
 }
 
 .manage-subscription-btn {
     padding: 12px 24px;
-    background-color: #6a8d7f;
-    color: white;
+    background-color: var(--secondary);
+    color: var(--btn-text);
     border: none;
     border-radius: 25px;
     cursor: pointer;
     font-weight: 600;
     font-size: 1rem;
     transition: all 0.3s;
-    box-shadow: 0 3px 8px rgba(106, 141, 127, 0.2);
+    box-shadow: 0 3px 8px var(--shadow);
 }
 
 .manage-subscription-btn:hover {
-    background-color: #5a7c70;
+    background-color: var(--primary-light);
     transform: translateY(-2px);
-    box-shadow: 0 5px 12px rgba(106, 141, 127, 0.3);
+    box-shadow: 0 5px 12px var(--shadow);
 }
 
 /* ===== SUBSCRIPTION PLANS GRID ===== */
@@ -115,11 +115,11 @@
 
 /* Plan Card */
 .plan-card {
-    background-color: white;
+    background-color: var(--bg-panel);
     border-radius: 20px;
     padding: 35px;
-    box-shadow: 0 8px 25px rgba(141, 91, 76, 0.08);
-    border: 3px solid #e9e2d9;
+    box-shadow: 0 8px 25px var(--shadow);
+    border: 3px solid var(--border-primary);
     position: relative;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     min-height: 550px;
@@ -129,17 +129,17 @@
 
 .plan-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 15px 35px rgba(141, 91, 76, 0.15);
+    box-shadow: 0 15px 35px var(--shadow);
 }
 
 .plan-card.current {
-    border-color: #6a8d7f;
-    background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
+    border-color: var(--secondary);
+    background: linear-gradient(135deg, var(--bg-panel) 0%, var(--bg-primary) 100%);
 }
 
 .plan-card.premium {
-    border-color: #c4a356;
-    background: linear-gradient(135deg, #ffffff 0%, #fffdf8 100%);
+    border-color: var(--accent);
+    background: linear-gradient(135deg, var(--bg-panel) 0%, var(--bg-primary) 100%);
 }
 
 /* Plan Badge */
@@ -148,15 +148,15 @@
     top: -15px;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg, #c4a356, #d4b366);
-    color: white;
+    background: linear-gradient(135deg, var(--accent), var(--warning));
+    color: var(--btn-text);
     padding: 8px 25px;
     border-radius: 25px;
     font-size: 0.9rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    box-shadow: 0 4px 12px rgba(196, 163, 86, 0.3);
+    box-shadow: 0 4px 12px var(--shadow);
 }
 
 /* Plan Header */
@@ -164,12 +164,12 @@
     text-align: center;
     margin-bottom: 35px;
     padding-bottom: 25px;
-    border-bottom: 2px solid #f0ebe4;
+    border-bottom: 2px solid var(--border-primary);
 }
 
 .plan-header h2 {
     margin: 0 0 20px;
-    color: #2d2926;
+    color: var(--text-primary);
     font-size: 1.8rem;
     font-family: 'Quicksand', sans-serif;
     font-weight: 600;
@@ -185,13 +185,13 @@
 .plan-price .price {
     font-size: 3rem;
     font-weight: 800;
-    color: #8d5b4c;
+    color: var(--primary);
     font-family: 'Quicksand', sans-serif;
 }
 
 .plan-price .period {
     font-size: 1.1rem;
-    color: #8d8580;
+    color: var(--text-secondary);
     font-weight: 500;
 }
 
@@ -214,7 +214,7 @@
     display: flex;
     align-items: center;
     gap: 15px;
-    color: #2d2926;
+    color: var(--text-primary);
     font-size: 1rem;
     line-height: 1.4;
     padding: 8px 0;
@@ -228,7 +228,7 @@
 }
 
 .plan-features li.disabled {
-    color: #8d8580;
+    color: var(--text-secondary);
     opacity: 0.7;
 }
 
@@ -237,7 +237,7 @@
 }
 
 .plan-features li strong {
-    color: #6a8d7f;
+    color: var(--secondary);
     font-weight: 600;
 }
 
@@ -256,46 +256,46 @@
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s;
-    background: linear-gradient(135deg, #8d5b4c, #a66b5c);
-    color: white;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: var(--btn-text);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-family: 'Quicksand', sans-serif;
-    box-shadow: 0 4px 15px rgba(141, 91, 76, 0.3);
+    box-shadow: 0 4px 15px var(--shadow);
 }
 
 .plan-button:hover:not(:disabled), .subscribe-btn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #7d4b3c, #96615c);
+    background: linear-gradient(135deg, var(--primary-light), var(--secondary));
     transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(141, 91, 76, 0.4);
+    box-shadow: 0 8px 20px var(--shadow);
 }
 
 .plan-button.current-plan {
-    background: linear-gradient(135deg, #e9e2d9, #f0ebe4);
-    color: #8d8580;
+    background: linear-gradient(135deg, var(--bg-secondary), var(--border-primary));
+    color: var(--text-secondary);
     cursor: default;
-    box-shadow: inset 0 2px 5px rgba(141, 133, 128, 0.2);
+    box-shadow: inset 0 2px 5px var(--shadow);
 }
 
 .plan-button.downgrade {
-    background: linear-gradient(135deg, #f5f1ea, #e9e2d9);
-    color: #8d5b4c;
-    border: 2px solid #e2d7cf;
+    background: linear-gradient(135deg, var(--bg-panel), var(--bg-secondary));
+    color: var(--primary);
+    border: 2px solid var(--border-primary);
 }
 
 .plan-button.downgrade:hover {
-    background: linear-gradient(135deg, #e9e2d9, #ddd4c7);
-    border-color: #d6cfc7;
+    background: linear-gradient(135deg, var(--bg-secondary), var(--border-primary));
+    border-color: var(--accent);
 }
 
 .plan-button.premium-btn, .subscribe-btn[data-plan-id="premium"] {
-    background: linear-gradient(135deg, #c4a356, #d4b366);
-    box-shadow: 0 4px 15px rgba(196, 163, 86, 0.3);
+    background: linear-gradient(135deg, var(--accent), var(--warning));
+    box-shadow: 0 4px 15px var(--shadow);
 }
 
 .plan-button.premium-btn:hover, .subscribe-btn[data-plan-id="premium"]:hover {
-    background: linear-gradient(135deg, #b6945a, #c4a356);
-    box-shadow: 0 8px 20px rgba(196, 163, 86, 0.4);
+    background: linear-gradient(135deg, var(--warning), var(--accent));
+    box-shadow: 0 8px 20px var(--shadow);
 }
 
 /* ===== STRIPE PAYMENT MODAL - FIXED ===== */
@@ -340,14 +340,14 @@
 }
 
 .modal-container {
-    background: white;
+    background: var(--bg-panel);
     border-radius: 12px;
     max-width: 500px;
     width: 90%;
     max-height: 90vh;
     overflow-y: auto;
     position: relative;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 40px var(--shadow);
     animation: modalSlideIn 0.3s ease-out;
     z-index: 10001;
     transform: translateY(0);
@@ -366,7 +366,7 @@
 
 .modal-header {
     padding: 1.5rem;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--border-primary);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -376,7 +376,7 @@
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #2d2926;
+    color: var(--text-primary);
 }
 
 .modal-close {
@@ -385,7 +385,7 @@
     font-size: 1.5rem;
     cursor: pointer;
     padding: 0.25rem;
-    color: #6b7280;
+    color: var(--text-secondary);
     border-radius: 50%;
     transition: all 0.2s ease;
     width: 32px;
@@ -396,8 +396,8 @@
 }
 
 .modal-close:hover {
-    color: #2d2926;
-    background-color: rgba(141, 91, 76, 0.1);
+    color: var(--text-primary);
+    background-color: var(--bg-secondary);
     transform: rotate(90deg);
 }
 
@@ -406,7 +406,7 @@
 }
 
 .subscription-info {
-    background: #f9fafb;
+    background: var(--bg-primary);
     padding: 1rem;
     border-radius: 8px;
     margin-bottom: 1.5rem;
@@ -416,12 +416,12 @@
 .subscription-info h3 {
     margin: 0 0 0.5rem 0;
     font-weight: 600;
-    color: #2d2926;
+    color: var(--text-primary);
 }
 
 .subscription-info p {
     margin: 0;
-    color: #6b7280;
+    color: var(--text-secondary);
 }
 
 /* Payment Form Styles */
@@ -434,15 +434,15 @@
     margin-bottom: 1rem;
     min-height: 150px;
     padding: 10px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-primary);
     border-radius: 8px;
-    background: white;
+    background: var(--input-bg);
 }
 
 .error-message {
-    color: #dc2626;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
+    color: var(--error);
+    background: var(--bg-panel);
+    border: 1px solid var(--error);
     border-radius: 6px;
     padding: 0.75rem;
     margin-bottom: 1rem;
@@ -455,9 +455,9 @@
 }
 
 .success-message {
-    color: #059669;
-    background: #ecfdf5;
-    border: 1px solid #a7f3d0;
+    color: var(--success);
+    background: var(--bg-panel);
+    border: 1px solid var(--success);
     border-radius: 6px;
     padding: 0.75rem;
     margin-bottom: 1rem;
@@ -491,33 +491,33 @@
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #8d5b4c, #a66b5c);
-    color: white;
-    box-shadow: 0 2px 4px rgba(141, 91, 76, 0.3);
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: var(--btn-text);
+    box-shadow: 0 2px 4px var(--shadow);
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: linear-gradient(135deg, #7d4b3c, #96615c);
+    background: linear-gradient(135deg, var(--primary-light), var(--secondary));
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(141, 91, 76, 0.4);
+    box-shadow: 0 4px 8px var(--shadow);
 }
 
 .btn-primary:disabled {
-    background: #d1d5db;
+    background: var(--bg-secondary);
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
 }
 
 .btn-secondary {
-    background: #f9fafb;
-    color: #374151;
-    border: 1px solid #e5e7eb;
+    background: var(--bg-panel);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
 }
 
 .btn-secondary:hover {
-    background: #f3f4f6;
-    border-color: #d1d5db;
+    background: var(--bg-secondary);
+    border-color: var(--accent);
 }
 
 /* Loading spinner */
@@ -540,20 +540,21 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
 /* ===== BENEFITS SECTION ===== */
 .subscription-benefits {
-    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    background: linear-gradient(135deg, var(--bg-panel) 0%, var(--bg-primary) 100%);
     border-radius: 20px;
     padding: 50px;
     margin-bottom: 50px;
-    box-shadow: 0 8px 25px rgba(141, 91, 76, 0.08);
-    border: 1px solid #e9e2d9;
+    box-shadow: 0 8px 25px var(--shadow);
+    border: 1px solid var(--border-primary);
 }
 
 .subscription-benefits h2 {
     text-align: center;
     margin-bottom: 40px;
-    color: #2d2926;
+    color: var(--text-primary);
     font-size: 2rem;
     font-family: 'Quicksand', sans-serif;
     font-weight: 600;
@@ -573,13 +574,13 @@
 .benefit-icon {
     width: 80px;
     height: 80px;
-    background: linear-gradient(135deg, #f5f1ea, #e9e2d9);
+    background: linear-gradient(135deg, var(--bg-secondary), var(--border-primary));
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 20px;
-    box-shadow: 0 4px 15px rgba(141, 91, 76, 0.1);
+    box-shadow: 0 4px 15px var(--shadow);
 }
 
 .benefit-icon img {
@@ -589,7 +590,7 @@
 
 .benefit h3 {
     margin: 0 0 15px;
-    color: #2d2926;
+    color: var(--text-primary);
     font-size: 1.3rem;
     font-weight: 600;
     font-family: 'Quicksand', sans-serif;
@@ -597,24 +598,24 @@
 
 .benefit p {
     margin: 0;
-    color: #5a5755;
+    color: var(--text-secondary);
     font-size: 1rem;
     line-height: 1.6;
 }
 
 /* ===== FAQ SECTION ===== */
 .subscription-faq {
-    background-color: white;
+    background-color: var(--bg-panel);
     border-radius: 20px;
     padding: 50px;
-    box-shadow: 0 8px 25px rgba(141, 91, 76, 0.08);
-    border: 1px solid #e9e2d9;
+    box-shadow: 0 8px 25px var(--shadow);
+    border: 1px solid var(--border-primary);
 }
 
 .subscription-faq h2 {
     text-align: center;
     margin-bottom: 40px;
-    color: #2d2926;
+    color: var(--text-primary);
     font-size: 2rem;
     font-family: 'Quicksand', sans-serif;
     font-weight: 600;
@@ -626,7 +627,7 @@
 }
 
 .faq-item {
-    border-bottom: 1px solid #e9e2d9;
+    border-bottom: 1px solid var(--border-primary);
     padding: 25px 0;
 }
 
@@ -645,14 +646,14 @@
     cursor: pointer;
     text-align: left;
     font-size: 1.1rem;
-    color: #2d2926;
+    color: var(--text-primary);
     font-weight: 600;
     transition: color 0.3s;
     font-family: 'Quicksand', sans-serif;
 }
 
 .faq-question:hover {
-    color: #8d5b4c;
+    color: var(--primary);
 }
 
 .faq-question img {
@@ -679,7 +680,7 @@
 
 .faq-answer p {
     margin: 0;
-    color: #5a5755;
+    color: var(--text-secondary);
     line-height: 1.6;
     font-size: 1rem;
 }

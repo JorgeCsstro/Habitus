@@ -1,4 +1,4 @@
-/* main.css - Core styles for Habitus Zone with Theme Variables - FIXED */
+/* main.css - Core styles for Habitus Zone with Theme Variables - UPDATED TO USE LIGHT.CSS VARIABLES */
 
 /* REMOVED: Light Theme Variables (moved to theme files) */
 /* The theme-specific files now handle all variable definitions */
@@ -57,8 +57,8 @@ html[data-theme] * {
 
 body {
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: var(--bg-0);
-    color: var(--text-1);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     overflow-x: hidden;
 }
 
@@ -80,8 +80,8 @@ body {
 
 /* Panel styling */
 .panel {
-    background-color: var(--bg-2);
-    border: 1px solid var(--border-1);
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-primary);
     border-radius: 15px;
     box-shadow: 0 5px 15px var(--shadow);
     overflow: hidden;
@@ -89,8 +89,8 @@ body {
 }
 
 .panel-header {
-    background-color: var(--bg-1);
-    border-bottom: 1px solid var(--border-1);
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-primary);
     padding: 18px 15px;
     display: flex;
     align-items: center;
@@ -105,7 +105,7 @@ body {
 }
 
 .panel-header h2 {
-    color: var(--text-1);
+    color: var(--text-primary);
     font-size: 1.25rem;
     font-weight: 600;
     margin: 0;
@@ -113,14 +113,14 @@ body {
 
 .panel-content {
     padding: 15px;
-    background-color: var(--bg-2);
+    background-color: var(--bg-panel);
     flex: 1;
     overflow-y: auto;
 }
 
 .panel-footer {
-    background-color: var(--bg-1);
-    border-top: 1px solid var(--border-1);
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-primary);
     padding: 15px;
     display: flex;
     justify-content: center;
@@ -136,7 +136,7 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 5px var(--shadow-light);
+    box-shadow: 0 2px 5px var(--shadow);
     width: 100%;
     max-width: 220px;
     border: 1px solid;
@@ -145,42 +145,42 @@ body {
 }
 
 .add-new-button:hover, .go-to-shop-button:hover, .edit-habitus-button:hover {
-    box-shadow: 0 4px 8px var(--shadow-medium);
+    box-shadow: 0 4px 8px var(--shadow);
     transform: translateY(-2px);
 }
 
 .add-new-button {
-    background-color: var(--btn-secondary-bg);
-    color: var(--btn-primary-bg);
-    border-color: var(--border-secondary);
+    background-color: var(--bg-panel);
+    color: var(--primary);
+    border-color: var(--border-primary);
 }
 
 .add-new-button:hover {
-    background-color: var(--btn-secondary-hover);
-    border-color: var(--border-secondary);
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
 }
 
 .go-to-shop-button {
-    background-color: var(--warning-bg);
-    color: var(--warning-text);
-    border-color: var(--warning-border);
+    background-color: var(--warning);
+    color: var(--btn-text);
+    border-color: var(--warning);
 }
 
 .go-to-shop-button:hover {
-    background-color: var(--warning-bg);
-    border-color: var(--warning-border);
+    background-color: var(--accent);
+    border-color: var(--accent);
     filter: brightness(0.95);
 }
 
 .edit-habitus-button {
-    background-color: var(--success-bg);
-    color: var(--success-text);
-    border-color: var(--success-border);
+    background-color: var(--success);
+    color: var(--btn-text);
+    border-color: var(--success);
 }
 
 .edit-habitus-button:hover {
-    background-color: var(--success-bg);
-    border-color: var(--success-border);
+    background-color: var(--secondary);
+    border-color: var(--secondary);
     filter: brightness(0.95);
 }
 
@@ -201,39 +201,39 @@ body {
 }
 
 .alert-success {
-    background-color: var(--success-bg);
-    color: var(--success-text);
-    border: 1px solid var(--success-border);
+    background-color: var(--bg-panel);
+    color: var(--success);
+    border: 1px solid var(--success);
 }
 
 .alert-error {
-    background-color: var(--error-bg);
-    color: var(--error-text);
-    border: 1px solid var(--error-border);
+    background-color: var(--bg-panel);
+    color: var(--error);
+    border: 1px solid var(--error);
 }
 
 .alert-warning {
-    background-color: var(--warning-bg);
-    color: var(--warning-text);
-    border: 1px solid var(--warning-border);
+    background-color: var(--bg-panel);
+    color: var(--warning);
+    border: 1px solid var(--warning);
 }
 
 .alert-info {
-    background-color: var(--info-bg);
-    color: var(--info-text);
-    border: 1px solid var(--info-border);
+    background-color: var(--bg-panel);
+    color: var(--info);
+    border: 1px solid var(--info);
 }
 
 /* Empty messages */
 .empty-message {
-    color: var(--text-muted);
+    color: var(--text-secondary);
     text-align: center;
     font-style: italic;
     padding: 30px 20px;
     background-color: var(--bg-secondary);
     border-radius: 8px;
     margin: 10px 0;
-    border: 1px dashed var(--border-secondary);
+    border: 1px dashed var(--border-primary);
     font-family: 'Quicksand', sans-serif;
 }
 
@@ -242,8 +242,8 @@ body {
     position: fixed;
     top: 20px;
     right: 20px;
-    background-color: var(--notification-bg);
-    box-shadow: 0 4px 12px var(--notification-shadow);
+    background-color: var(--bg-panel);
+    box-shadow: 0 4px 12px var(--shadow);
     border-radius: 10px;
     padding: 15px 20px;
     display: flex;
@@ -252,7 +252,7 @@ body {
     opacity: 0;
     transition: all 0.5s ease;
     z-index: 1000;
-    border-left: 3px solid var(--warning-text);
+    border-left: 3px solid var(--warning);
 }
 
 .hcoin-notification.show {
@@ -274,18 +274,18 @@ body {
 /* General link styling */
 a {
     text-decoration: none;
-    color: var(--primary-brown);
+    color: var(--accent);
     transition: color 0.3s;
 }
 
 a:hover {
-    color: var(--primary-brown-light);
+    color: var(--secondary);
 }
 
 /* Form Elements */
 input, select, textarea {
     background-color: var(--input-bg);
-    border: 1px solid var(--input-border);
+    border: 1px solid var(--border-primary);
     color: var(--input-text);
     padding: 10px 15px;
     border-radius: 8px;
@@ -293,13 +293,14 @@ input, select, textarea {
 }
 
 input:focus, select:focus, textarea:focus {
-    border-color: var(--input-focus);
+    border-color: var(--accent);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(141, 91, 76, 0.1);
+    box-shadow: 0 0 0 3px rgba(196, 146, 62, 0.2);
 }
 
 input::placeholder, textarea::placeholder {
-    color: var(--input-placeholder);
+    color: var(--text-secondary);
+    opacity: 0.7;
 }
 
 /* Buttons */
@@ -308,8 +309,8 @@ button {
 }
 
 .btn-primary {
-    background-color: var(--btn-primary-bg);
-    color: var(--btn-primary-text);
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
     border: none;
     padding: 10px 20px;
     border-radius: 25px;
@@ -318,15 +319,15 @@ button {
 }
 
 .btn-primary:hover {
-    background-color: var(--btn-primary-hover);
+    background-color: var(--primary-light);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px var(--shadow);
 }
 
 .btn-secondary {
-    background-color: var(--btn-secondary-bg);
-    color: var(--btn-secondary-text);
-    border: 1px solid var(--btn-secondary-border);
+    background-color: var(--bg-panel);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
     padding: 10px 20px;
     border-radius: 25px;
     cursor: pointer;
@@ -334,18 +335,18 @@ button {
 }
 
 .btn-secondary:hover {
-    background-color: var(--btn-secondary-hover);
-    border-color: var(--border-2);
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
 }
 
 .btn-success {
-    background-color: var(--btn-success-bg);
-    color: var(--btn-success-text);
+    background-color: var(--success);
+    color: var(--btn-text);
     border: none;
 }
 
 .btn-success:hover {
-    background-color: var(--btn-success-hover);
+    background-color: var(--secondary);
 }
 
 /* Scrollbar styling */
@@ -354,14 +355,14 @@ button {
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--scrollbar-track);
+    background: var(--bg-secondary);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb);
+    background: var(--accent);
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--scrollbar-thumb-hover);
+    background: var(--secondary);
 }

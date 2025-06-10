@@ -1,11 +1,11 @@
-/* Updated index.css with softer, muted warm colors */
+/* Updated index.css with CSS variables from light.css */
 
 body {
     font-family: 'Poppins', sans-serif;
     margin: 0;
     padding: 0;
-    color: #2d2926; /* Darker text color */
-    background-color: #f5f1ea; /* Muted cream background */
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
     overflow-x: hidden;
 }
 
@@ -38,7 +38,7 @@ body {
 .logo span {
     font-size: 1.4rem;
     font-weight: 700;
-    color: #8d5b4c; /* Muted earthy brown */
+    color: var(--secondary);
 }
 
 .nav-buttons {
@@ -55,30 +55,30 @@ body {
 }
 
 .login-btn {
-    color: #8d5b4c; /* Muted earthy brown */
-    border: 1px solid #8d5b4c;
+    color: var(--secondary);
+    border: 1px solid var(--secondary);
 }
 
 .login-btn:hover {
-    background-color: #f4ede6; /* Light earthy brown */
+    background-color: var(--bg-panel);
 }
 
 .register-btn {
-    background-color: #8d5b4c; /* Muted earthy brown */
+    background-color: var(--secondary);
     color: white;
-    border: 1px solid #8d5b4c;
+    border: 1px solid var(--secondary);
 }
 
 .register-btn:hover {
-    background-color: #7d4b3c; /* Slightly darker muted brown */
-    border-color: #7d4b3c;
+    background-color: var(--primary-light);
+    border-color: var(--primary-light);
 }
 
 /* Hero Section with Carousel */
 .hero-section {
     position: relative;
     padding: 40px 0;
-    background-color: #eee6dd; /* Soft beige background */
+    background-color: var(--bg-secondary);
     text-align: center;
 }
 
@@ -91,12 +91,12 @@ body {
 .hero-title {
     font-size: 2.8rem;
     margin-bottom: 15px;
-    color: #2d2926;
+    color: var(--text-primary);
 }
 
 .hero-subtitle {
     font-size: 1.3rem;
-    color: #555;
+    color: var(--text-secondary);
     margin-bottom: 30px;
 }
 
@@ -153,7 +153,7 @@ body {
     top: 50%;
     transform: translateY(-50%);
     background-color: rgba(255, 255, 255, 0.5);
-    color: #333;
+    color: var(--text-primary);
     border: none;
     border-radius: 50%;
     width: 40px;
@@ -205,14 +205,14 @@ body {
 /* Why Habitus Zone Section */
 .why-habitus {
     padding: 80px 5%;
-    background-color: #f5f1ea; /* Muted cream background */
+    background-color: var(--bg-primary);
 }
 
 .section-title {
     text-align: center;
     font-size: 2.2rem;
     margin-bottom: 50px;
-    color: #2d2926;
+    color: var(--text-primary);
     position: relative;
 }
 
@@ -221,7 +221,7 @@ body {
     display: block;
     width: 80px;
     height: 3px;
-    background-color: #8d5b4c; /* Muted earthy brown */
+    background-color: var(--secondary);
     margin: 15px auto 0;
 }
 
@@ -259,20 +259,20 @@ body {
 
 .benefit-content h3 {
     margin: 0 0 15px 0;
-    color: #8d5b4c; /* Muted earthy brown */
+    color: var(--secondary);
     font-size: 1.3rem;
 }
 
 .benefit-content p {
     margin: 0;
-    color: #555;
+    color: var(--text-secondary);
     line-height: 1.6;
 }
 
 /* Features Section */
 .features-section {
     padding: 80px 5%;
-    background-color: #e9e2d9; /* Slightly darker muted beige */
+    background-color: var(--bg-secondary);
 }
 
 .features-grid {
@@ -291,7 +291,7 @@ body {
 .feature-icon {
     width: 60px;
     height: 60px;
-    background-color: #f2ebe3; /* Very light beige */
+    background-color: var(--bg-panel);
     border-radius: 12px;
     display: flex;
     justify-content: center;
@@ -309,19 +309,19 @@ body {
 .feature-text h3 {
     margin: 0 0 10px 0;
     font-size: 1.2rem;
-    color: #2d2926;
+    color: var(--text-primary);
 }
 
 .feature-text p {
     margin: 0;
-    color: #555;
+    color: var(--text-secondary);
     line-height: 1.6;
 }
 
 /* How it works section */
 .how-it-works {
     padding: 80px 5%;
-    background-color: #f5f1ea; /* Muted cream background */
+    background-color: var(--bg-primary);
     text-align: center;
 }
 
@@ -349,7 +349,7 @@ body {
     transform: translateX(-50%);
     width: 30px;
     height: 30px;
-    background-color: #8d5b4c; /* Muted earthy brown */
+    background-color: var(--secondary);
     color: white;
     border-radius: 50%;
     display: flex;
@@ -361,7 +361,7 @@ body {
 .step-icon {
     width: 70px;
     height: 70px;
-    background-color: #f2ebe3; /* Very light beige */
+    background-color: var(--bg-panel);
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -377,12 +377,12 @@ body {
 .step h3 {
     margin: 0 0 15px 0;
     font-size: 1.2rem;
-    color: #2d2926;
+    color: var(--text-primary);
 }
 
 .step p {
     margin: 0;
-    color: #555;
+    color: var(--text-secondary);
     font-size: 0.95rem;
 }
 
@@ -390,7 +390,7 @@ body {
 .testimonials {
     padding: 80px 5%;
     text-align: center;
-    background-color: #e9e2d9; /* Slightly darker muted beige */
+    background-color: var(--bg-secondary);
 }
 
 .testimonial-slider {
@@ -421,20 +421,20 @@ body {
 .quote {
     font-size: 1.1rem;
     font-style: italic;
-    color: #2d2926;
+    color: var(--text-primary);
     margin-bottom: 20px;
     line-height: 1.6;
 }
 
 .author {
     font-weight: 600;
-    color: #8d5b4c; /* Muted earthy brown */
+    color: var(--secondary);
 }
 
 /* Final CTA section */
 .final-cta {
     padding: 100px 5%;
-    background-color: #8d5b4c; /* Muted earthy brown */
+    background-color: var(--secondary);
     text-align: center;
     color: white;
 }
@@ -471,11 +471,11 @@ body {
 
 .primary-button {
     background-color: white;
-    color: #8d5b4c; /* Muted earthy brown */
+    color: var(--secondary);
 }
 
 .primary-button:hover {
-    background-color: #f4ede6;
+    background-color: var(--bg-panel);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
 }
@@ -494,7 +494,7 @@ body {
 /* Footer */
 .landing-footer {
     padding: 40px 5%;
-    background-color: #f5f1ea; /* Muted cream background */
+    background-color: var(--bg-primary);
     text-align: center;
 }
 
@@ -513,7 +513,7 @@ body {
 .footer-logo span {
     font-size: 1.2rem;
     font-weight: 600;
-    color: #8d5b4c; /* Muted earthy brown */
+    color: var(--secondary);
 }
 
 .footer-links {
@@ -525,17 +525,18 @@ body {
 }
 
 .footer-links a {
-    color: #666;
+    color: var(--text-secondary);
     text-decoration: none;
     transition: color 0.3s;
 }
 
 .footer-links a:hover {
-    color: #8d5b4c; /* Muted earthy brown */
+    color: var(--secondary);
 }
 
 .copyright {
-    color: #999;
+    color: var(--text-secondary);
+    opacity: 0.7;
     font-size: 0.9rem;
 }
 

@@ -52,7 +52,7 @@ html[data-theme="dark"] .panel {
     background-color: var(--bg-panel);
     border-color: var(--border-primary);
     color: var(--text-primary);
-    box-shadow: 0 2px 8px var(--shadow-light), 0 1px 3px var(--shadow);
+    box-shadow: 0 2px 8px var(--shadow), 0 1px 3px var(--shadow);
 }
 
 html[data-theme="dark"] .panel-header {
@@ -65,18 +65,18 @@ html[data-theme="dark"] .main-header {
     background-color: var(--bg-panel);
     border-color: var(--border-primary);
     color: var(--text-primary);
-    box-shadow: 0 1px 3px var(--shadow-light);
+    box-shadow: 0 1px 3px var(--shadow);
 }
 
 html[data-theme="dark"] .left-menu {
-    background-color: var(--sidebar-bg);
+    background-color: var(--bg-panel);
     border-color: var(--border-primary);
-    box-shadow: 2px 0 4px var(--shadow-light);
+    box-shadow: 2px 0 4px var(--shadow);
 }
 
 /* Content areas */
 html[data-theme="dark"] .content-container {
-    background-color: var(--bg-0);
+    background-color: var(--bg-primary);
 }
 
 html[data-theme="dark"] .dashboard-content,
@@ -85,7 +85,7 @@ html[data-theme="dark"] .settings-content,
 html[data-theme="dark"] .shop-content,
 html[data-theme="dark"] .habitus-content,
 html[data-theme="dark"] .subscription-content {
-    background-color: var(--bg-0);
+    background-color: var(--bg-primary);
 }
 
 /* CRITICAL: Text color inheritance for dark theme */
@@ -109,7 +109,7 @@ html[data-theme="dark"] .challenge-item,
 html[data-theme="dark"] .task-item {
     background-color: var(--bg-panel);
     border: 1px solid var(--border-primary);
-    box-shadow: 0 1px 3px var(--shadow-light);
+    box-shadow: 0 1px 3px var(--shadow);
     color: var(--text-primary);
 }
 
@@ -117,8 +117,8 @@ html[data-theme="dark"] .daily-item:hover,
 html[data-theme="dark"] .goal-item:hover,
 html[data-theme="dark"] .challenge-item:hover,
 html[data-theme="dark"] .task-item:hover {
-    background-color: var(--bg-tertiary);
-    border-color: var(--border-secondary);
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
     box-shadow: 0 2px 6px var(--shadow);
 }
 
@@ -126,12 +126,12 @@ html[data-theme="dark"] .task-item:hover {
 html[data-theme="dark"] .shop-item {
     background-color: var(--bg-panel);
     border: 1px solid var(--border-primary);
-    box-shadow: 0 1px 3px var(--shadow-light);
+    box-shadow: 0 1px 3px var(--shadow);
 }
 
 html[data-theme="dark"] .shop-item:hover {
-    background-color: var(--bg-tertiary);
-    border-color: var(--border-secondary);
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
     box-shadow: 0 3px 8px var(--shadow);
 }
 
@@ -139,24 +139,24 @@ html[data-theme="dark"] .shop-item:hover {
 html[data-theme="dark"] .settings-section {
     background-color: var(--bg-panel);
     border: 1px solid var(--border-primary);
-    box-shadow: 0 1px 3px var(--shadow-light);
+    box-shadow: 0 1px 3px var(--shadow);
 }
 
 html[data-theme="dark"] .theme-option {
     background-color: var(--bg-panel);
     border: 2px solid var(--border-primary);
-    box-shadow: 0 1px 3px var(--shadow-light);
+    box-shadow: 0 1px 3px var(--shadow);
 }
 
 html[data-theme="dark"] .theme-option:hover {
-    background-color: var(--bg-tertiary);
-    border-color: var(--border-secondary);
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
     box-shadow: 0 2px 6px var(--shadow);
 }
 
 html[data-theme="dark"] .theme-option.active {
     border-color: var(--primary);
-    background-color: var(--bg-tertiary);
+    background-color: var(--bg-secondary);
     box-shadow: 0 0 0 3px rgba(179, 205, 224, 0.2);
 }
 
@@ -164,12 +164,12 @@ html[data-theme="dark"] .theme-option.active {
 html[data-theme="dark"] .inventory-item {
     background-color: var(--bg-panel);
     border: 1px solid var(--border-primary);
-    box-shadow: 0 1px 3px var(--shadow-light);
+    box-shadow: 0 1px 3px var(--shadow);
 }
 
 html[data-theme="dark"] .inventory-item:hover:not(.disabled) {
-    background-color: var(--bg-tertiary);
-    border-color: var(--border-secondary);
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
     box-shadow: 0 2px 6px var(--shadow);
 }
 
@@ -181,8 +181,8 @@ html[data-theme="dark"] .plan-card {
 }
 
 html[data-theme="dark"] .plan-card:hover {
-    border-color: var(--border-secondary);
-    box-shadow: 0 8px 20px var(--shadow-medium);
+    border-color: var(--border-primary);
+    box-shadow: 0 8px 20px var(--shadow);
 }
 
 /* UI elements with proper dark styling */
@@ -192,7 +192,7 @@ html[data-theme="dark"] .cart-dropdown,
 html[data-theme="dark"] .notifications-dropdown {
     background-color: var(--bg-panel);
     border: 1px solid var(--border-primary);
-    box-shadow: 0 8px 25px var(--shadow-medium);
+    box-shadow: 0 8px 25px var(--shadow);
 }
 
 html[data-theme="dark"] .hcoin-balance,
@@ -202,7 +202,7 @@ html[data-theme="dark"] .profile-button,
 html[data-theme="dark"] .theme-toggle-button {
     background-color: var(--bg-panel);
     border: 1px solid var(--border-primary);
-    box-shadow: 0 1px 3px var(--shadow-light);
+    box-shadow: 0 1px 3px var(--shadow);
 }
 
 html[data-theme="dark"] .hcoin-balance:hover,
@@ -210,19 +210,19 @@ html[data-theme="dark"] .survey-button:hover,
 html[data-theme="dark"] .messages-button:hover, 
 html[data-theme="dark"] .profile-button:hover,
 html[data-theme="dark"] .theme-toggle-button:hover {
-    background-color: var(--bg-tertiary);
-    border-color: var(--border-secondary);
+    background-color: var(--bg-secondary);
+    border-color: var(--border-primary);
     box-shadow: 0 2px 6px var(--shadow);
 }
 
 /* Dark theme specific enhancements */
 html[data-theme="dark"] input::placeholder,
 html[data-theme="dark"] textarea::placeholder {
-    color: var(--input-placeholder);
+    color: var(--text-secondary);
 }
 
 html[data-theme="dark"] .complete-button:hover::before {
-    border-color: var(--primary-green-light);
+    border-color: var(--primary-light);
 }
 
 /* Additional dark theme text color fixes */
@@ -246,11 +246,33 @@ html[data-theme="dark"] .notification-message {
 html[data-theme="dark"] .daily-dots,
 html[data-theme="dark"] .goal-dots,
 html[data-theme="dark"] .challenge-dots {
-    border-color: var(--border-secondary);
+    border-color: var(--border-primary);
 }
 
 html[data-theme="dark"] .menu-item img,
 html[data-theme="dark"] .user-actions div img,
 html[data-theme="dark"] .user-actions a img{
+    filter: invert(0.8);
+}
+
+/* Settings page specific dark theme styles */
+html[data-theme="dark"] .theme-switching,
+html[data-theme="dark"] .theme-switching * {
+    transition: none;
+}
+
+/* Ensure proper contrast in dark theme */
+html[data-theme="dark"] .theme-preview.theme-light {
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+html[data-theme="dark"] .theme-preview.theme-dark {
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+/* Dark theme image filters for settings icons */
+html[data-theme="dark"] .button-icon img,
+html[data-theme="dark"] .status-icon img,
+html[data-theme="dark"] .warning-message img {
     filter: invert(0.8);
 }
