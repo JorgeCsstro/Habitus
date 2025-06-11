@@ -216,7 +216,6 @@ class ThemeManager {
             if (!hasManualPreference) {
                 const newTheme = e.matches ? 'dark' : 'light';
                 this.setTheme(newTheme, true, true);
-                this.showNotification(`Auto-switched to ${newTheme} theme`, 'info');
             }
         };
 
@@ -229,7 +228,6 @@ class ThemeManager {
             if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'T') {
                 e.preventDefault();
                 const newTheme = this.toggleTheme();
-                this.showNotification(`Theme toggled to ${newTheme}!`, 'info');
                 
                 // Mark as manual preference
                 localStorage.setItem('habitus-theme-manual', 'true');
@@ -322,17 +320,6 @@ class ThemeManager {
                 console.error('Observer error:', error);
             }
         });
-    }
-
-    showNotification(message, type = 'info') {
-        // Use existing notification system if available
-        if (typeof showNotification === 'function') {
-            showNotification(message, type);
-            return;
-        }
-
-        // Simple fallback notification that doesn't interfere with theme
-        console.log(`📢 ${type.toUpperCase()}: ${message}`);
     }
 }
 

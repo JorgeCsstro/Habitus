@@ -230,6 +230,7 @@
 /* Habitus Preview */
 .habitus-preview {
     width: calc(100% - 10px);
+    height: 100%;
     aspect-ratio: 1 / 1;
     background-color: var(--bg-secondary);
     border-radius: 8px;
@@ -242,7 +243,6 @@
     justify-content: center;
     transition: all 0.3s ease;
     flex-shrink: 0;
-    min-height: 150px;
 }
 
 
@@ -522,6 +522,10 @@
     50% { transform: scale(1.15); }
 }
 
+@media (max-width: 1200px) {
+    .dashboard-room{transform: scale(0.8);}
+}
+
 /* Responsive adjustments */
 @media (max-width: 1200px) {
     .dashboard-content {
@@ -535,18 +539,29 @@
     .challenges-panel {
         min-height: 320px; /* Reduced from 350px */
     }
-    
+
     .habitus-panel {
         grid-column: 1 / span 2;
+        grid-row: 1;
+        min-height: 800px; /* Smaller panel */
+    }
+
+    .dailies-panel, .shop-panel{
+        grid-row: 2;
+    }
+    .goals-panel, .challenges-panel{
         grid-row: 3;
-        min-height: 300px; /* Smaller panel */
+    }
+
+    .dashboard-room{
+        transform: scale(1);
     }
 }
 
 @media (max-width: 768px) {
     .dashboard-content {
         grid-template-columns: 1fr;
-        grid-template-rows: repeat(5, auto);
+        grid-template-rows: repeat(4, auto);
         gap: 15px;
         padding: 15px;
     }
@@ -557,32 +572,20 @@
     .challenges-panel,
     .habitus-panel {
         grid-column: 1;
-        min-height: 280px; /* Reduced from 300px */
+        min-height: 400px; /* Reduced from 300px */
     }
-    
-    .dailies-panel { grid-row: 1; }
-    .goals-panel { grid-row: 2; }
-    .challenges-panel { grid-row: 3; }
-    .shop-panel { grid-row: 4; }
 
     .habitus-panel { 
-        grid-row: 5;
-        min-height: 220px; /* Even smaller */
+        grid-row: 1;
+        min-height: 750px;
+        
     }
-
-    .habitus-preview {
-        min-height: 120px; /* Smaller container */
-    }
-
-}
-
-@media (max-width: 480px) {
-    
-    .habitus-panel {
-        min-height: 180px;
+    .dashboard-room{
+        transform: scale(0.8);
     }
     
-    .habitus-preview {
-        min-height: 100px;
-    }
+    .dailies-panel { grid-row: 2; }
+    .goals-panel { grid-row: 3; }
+    .challenges-panel { grid-row: 4; }
+    .shop-panel { display: none;}
 }

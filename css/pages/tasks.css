@@ -1040,11 +1040,6 @@
         gap: 10px;
     }
     
-    .tasks-tabs {
-        width: 100%;
-        overflow-x: auto;
-    }
-    
     .tab {
         padding: 10px 15px;
         white-space: nowrap;

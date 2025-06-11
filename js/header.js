@@ -222,11 +222,6 @@ function toggleTheme() {
             button.style.pointerEvents = '';
             button.style.opacity = '';
         }, 500);
-        
-        // Show notification
-        if (typeof showNotification === 'function') {
-            showNotification(`Switched to ${newTheme} theme`, 'success');
-        }
     } else {
         console.error('Theme manager not available');
     }

@@ -255,6 +255,10 @@ html[data-theme="dark"] .user-actions a img{
     filter: invert(0.8);
 }
 
+html[data-theme="dark"] .profile-button img {
+    filter: none;
+}
+
 /* Settings page specific dark theme styles */
 html[data-theme="dark"] .theme-switching,
 html[data-theme="dark"] .theme-switching * {

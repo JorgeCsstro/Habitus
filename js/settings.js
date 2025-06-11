@@ -642,45 +642,6 @@ function handleAccountDelete(e) {
 }
 
 /**
- * Toggle email notifications
- * @param {boolean} enabled - Whether notifications are enabled
- */
-function toggleEmailNotifications(enabled) {
-    localStorage.setItem('emailNotifications', enabled);
-    updateNotificationPreference('email_notifications', enabled);
-}
-
-/**
- * Toggle task reminders
- * @param {boolean} enabled - Whether reminders are enabled
- */
-function toggleTaskReminders(enabled) {
-    localStorage.setItem('taskReminders', enabled);
-    updateNotificationPreference('task_reminders', enabled);
-}
-
-/**
- * Toggle auto theme switching
- * @param {boolean} enabled - Whether auto theme is enabled
- */
-function toggleAutoTheme(enabled) {
-    if (enabled) {
-        // Implement auto theme switching based on time
-        const hour = new Date().getHours();
-        const isDaytime = hour >= 6 && hour < 18;
-        const newTheme = isDaytime ? 'light' : 'dark';
-        
-        const manager = getThemeManager();
-        if (manager && manager.getTheme() !== newTheme) {
-            manager.setTheme(newTheme);
-            showNotification(`Auto-switched to ${newTheme} theme`, 'info');
-        }
-    }
-    
-    localStorage.setItem('autoTheme', enabled);
-}
-
-/**
  * Update notification preference on server
  * @param {string} type - Notification type
  * @param {boolean} enabled - Whether enabled
@@ -924,84 +885,6 @@ function changeLanguage(language) {
     });
 }
 
-/**
- * Settings Management for Habitus Zone
- * Fixed toggleAutoTranslation function with proper error handling
- */
-
-// Your existing settings.js code here, with this updated function:
-
-async function toggleAutoTranslation(enabled) {
-    const checkbox = document.getElementById('auto-translation');
-    
-    try {
-        // Update localStorage immediately
-        localStorage.setItem('translationEnabled', enabled.toString());
-        
-        // Notify translation manager
-        if (window.habitusTranslator) {
-            window.habitusTranslator.toggleTranslation();
-        }
-        
-        // Update server preference with proper data format
-        const response = await fetch('../php/api/user/update_settings.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({
-                setting: 'auto_translation',
-                value: enabled ? 1 : 0
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        
-        if (!data.success) {
-            throw new Error(data.error || data.message || 'Unknown error');
-        }
-        
-        // Show success notification
-        if (enabled) {
-            showNotification('🌐 Auto-translation enabled', 'success');
-        } else {
-            showNotification('🚫 Auto-translation disabled', 'info');
-        }
-        
-    } catch (error) {
-        console.error('Failed to update translation preference:', error);
-        
-        // Revert checkbox state on error
-        if (checkbox) {
-            checkbox.checked = !enabled;
-        }
-        
-        // Revert localStorage
-        localStorage.setItem('translationEnabled', (!enabled).toString());
-        
-        // Show error notification
-        showNotification('❌ Failed to update translation setting: ' + error.message, 'error');
-    }
-}
-
-function toggleHighQualityTranslation(enabled) {
-    localStorage.setItem('highQualityTranslation', enabled.toString());
-    
-    // Update server preference
-    updateTranslationPreference('high_quality_translation', enabled);
-    
-    if (enabled) {
-        showNotification('✨ High-quality translation enabled', 'success');
-    } else {
-        showNotification('📝 Standard translation enabled', 'info');
-    }
-}
-
 function updateTranslationPreference(type, enabled) {
     fetch('../php/api/user/update_settings.php', {
         method: 'POST',
@@ -1202,11 +1085,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (autoTranslationCheckbox) {
         const isEnabled = localStorage.getItem('translationEnabled') === 'true';
         autoTranslationCheckbox.checked = isEnabled;
-        
-        // Add event listener
-        autoTranslationCheckbox.addEventListener('change', function() {
-            toggleAutoTranslation(this.checked);
-        });
     }
     
     // Load language selector

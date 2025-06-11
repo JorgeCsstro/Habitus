@@ -133,48 +133,6 @@ $themes = [
                                     <option value="ko">한국어</option>
                                 </select>
                         </label>
-
-                        <!-- Auto-Translation Toggle -->
-                        <label class="setting-toggle">
-                            <div class="toggle-info">
-                                <span class="toggle-title">🌐 Auto-Translation</span>
-                                <span class="toggle-description">Automatically translate content to your language</span>
-                            </div>
-                            <input type="checkbox" id="auto-translation" onchange="toggleAutoTranslation(this.checked)">
-                            <span class="toggle-switch"></span>
-                        </label>
-
-                        <!-- Translation Quality Setting -->
-                        <label class="setting-toggle">
-                            <div class="toggle-info">
-                                <span class="toggle-title">✨ High-Quality Translation</span>
-                                <span class="toggle-description">Use premium translation service for better accuracy</span>
-                            </div>
-                            <input type="checkbox" id="high-quality-translation" onchange="toggleHighQualityTranslation(this.checked)">
-                            <span class="toggle-switch"></span>
-                        </label>
-
-                        <!-- Translation Usage Info -->
-                        <div class="translation-usage-info">
-                            <div class="usage-header">
-                                <h4>Translation Usage This Month</h4>
-                                <button class="refresh-usage-btn" onclick="refreshUsageStats()">🔄</button>
-                            </div>
-                            <div class="usage-stats" id="usage-stats">
-                                <div class="usage-item">
-                                    <span class="usage-label">Characters Translated:</span>
-                                    <span class="usage-value" id="characters-used">Loading...</span>
-                                </div>
-                                <div class="usage-item">
-                                    <span class="usage-label">API Calls:</span>
-                                    <span class="usage-value" id="api-calls">Loading...</span>
-                                </div>
-                                <div class="usage-item">
-                                    <span class="usage-label">Free Tier Remaining:</span>
-                                    <span class="usage-value" id="free-tier-remaining">Loading...</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -218,10 +176,6 @@ $themes = [
                                         </div>
                                     </label>
                                 <?php endforeach; ?>
-                            </div>
-                            
-                            <div class="theme-shortcuts">
-                                <small>💡 Tip: Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> to quickly toggle themes</small>
                             </div>
                         </div>
                     </div>
@@ -269,17 +223,6 @@ $themes = [
                             <span class="button-arrow">›</span>
                         </button>
                         
-                        <button class="setting-button" onclick="showChangeEmailModal()">
-                            <span class="button-icon">
-                                <img src="../images/icons/email-icon.webp" alt="Email">
-                            </span>
-                            <div class="button-text">
-                                <span class="button-title">Change Email</span>
-                                <span class="button-description">Update your email address</span>
-                            </div>
-                            <span class="button-arrow">›</span>
-                        </button>
-                        
                         <button class="setting-button danger" onclick="showDeleteAccountModal()">
                             <span class="button-icon">
                                 <img src="../images/icons/trash.webp" alt="Delete">
@@ -287,67 +230,6 @@ $themes = [
                             <div class="button-text">
                                 <span class="button-title">Delete Account</span>
                                 <span class="button-description">Permanently delete your account and data</span>
-                            </div>
-                            <span class="button-arrow">›</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Notifications Section -->
-                <div class="settings-section">
-                    <h2>Notifications</h2>
-                    <div class="settings-group">
-                        <label class="setting-toggle">
-                            <div class="toggle-info">
-                                <span class="toggle-title">Email Notifications</span>
-                                <span class="toggle-description">Receive updates about your tasks and achievements</span>
-                            </div>
-                            <input type="checkbox" id="email-notifications" checked onchange="toggleEmailNotifications(this.checked)">
-                            <span class="toggle-switch"></span>
-                        </label>
-                        
-                        <label class="setting-toggle">
-                            <div class="toggle-info">
-                                <span class="toggle-title">Task Reminders</span>
-                                <span class="toggle-description">Get reminded about incomplete daily tasks</span>
-                            </div>
-                            <input type="checkbox" id="task-reminders" checked onchange="toggleTaskReminders(this.checked)">
-                            <span class="toggle-switch"></span>
-                        </label>
-                        
-                        <label class="setting-toggle">
-                            <div class="toggle-info">
-                                <span class="toggle-title">Theme Auto-Switch</span>
-                                <span class="toggle-description">Automatically switch theme based on time of day</span>
-                            </div>
-                            <input type="checkbox" id="auto-theme" onchange="toggleAutoTheme(this.checked)">
-                            <span class="toggle-switch"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Advanced Section -->
-                <div class="settings-section">
-                    <h2>Advanced</h2>
-                    <div class="settings-group">
-                        <button class="setting-button" onclick="exportUserData()">
-                            <span class="button-icon">
-                                <img src="../images/icons/download-icon.webp" alt="Export">
-                            </span>
-                            <div class="button-text">
-                                <span class="button-title">Export Data</span>
-                                <span class="button-description">Download your account data</span>
-                            </div>
-                            <span class="button-arrow">›</span>
-                        </button>
-                        
-                        <button class="setting-button" onclick="clearCache()">
-                            <span class="button-icon">
-                                <img src="../images/icons/refresh-icon.webp" alt="Clear">
-                            </span>
-                            <div class="button-text">
-                                <span class="button-title">Clear Cache</span>
-                                <span class="button-description">Clear stored data and refresh</span>
                             </div>
                             <span class="button-arrow">›</span>
                         </button>
@@ -382,33 +264,6 @@ $themes = [
                     <div class="form-actions">
                         <button type="button" class="cancel-btn" onclick="closeModal('password-modal')">Cancel</button>
                         <button type="submit" class="save-btn">Update Password</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Change Email Modal -->
-    <div id="email-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Change Email</h2>
-                <button class="close-modal" onclick="closeModal('email-modal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="change-email-form">
-                    <div class="form-group">
-                        <label for="new-email">New Email Address</label>
-                        <input type="email" id="new-email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email-password">Current Password</label>
-                        <input type="password" id="email-password" required>
-                        <span class="field-hint">Enter your password to confirm this change</span>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="cancel-btn" onclick="closeModal('email-modal')">Cancel</button>
-                        <button type="submit" class="save-btn">Update Email</button>
                     </div>
                 </form>
             </div>
@@ -462,74 +317,5 @@ $themes = [
 
     <!-- Load translation manager -->
     <script src="../js/translation-manager.js"></script>
-    
-    <!-- Initialize theme system -->
-    <script>
-        // Additional settings functions
-        function showChangeEmailModal() {
-            const modal = document.getElementById('email-modal');
-            if (modal) {
-                modal.style.display = 'flex';
-                modal.classList.add('show');
-            }
-        }
-        
-        function toggleAutoTheme(enabled) {
-            if (enabled) {
-                // Implement auto theme switching based on time
-                const hour = new Date().getHours();
-                const isDaytime = hour >= 6 && hour < 18;
-                const newTheme = isDaytime ? 'light' : 'dark';
-                
-                if (window.themeManager && window.themeManager.getTheme() !== newTheme) {
-                    window.themeManager.setTheme(newTheme);
-                    showNotification(`Auto-switched to ${newTheme} theme`, 'info');
-                }
-            }
-            
-            localStorage.setItem('autoTheme', enabled);
-        }
-        
-        function exportUserData() {
-            showNotification('Preparing your data export...', 'info');
-            
-            fetch('../php/api/user/export_data.php', {
-                method: 'POST'
-            })
-            .then(response => response.blob())
-            .then(blob => {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'habitus-zone-data.json';
-                a.click();
-                window.URL.revokeObjectURL(url);
-                showNotification('Data exported successfully', 'success');
-            })
-            .catch(error => {
-                console.error('Export error:', error);
-                showNotification('Error exporting data', 'error');
-            });
-        }
-        
-        function clearCache() {
-            if (confirm('This will clear all cached data and refresh the page. Continue?')) {
-                localStorage.clear();
-                sessionStorage.clear();
-                
-                // Clear service worker cache if available
-                if ('caches' in window) {
-                    caches.keys().then(names => {
-                        names.forEach(name => caches.delete(name));
-                    });
-                }
-                
-                showNotification('Cache cleared. Refreshing...', 'success');
-                setTimeout(() => {
-                    window.location.reload(true);
-                }, 1500);
-            }
-        }
-    </script>
 </body>
 </html>

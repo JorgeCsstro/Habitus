@@ -85,8 +85,6 @@
             } else {
                 await this.translatePage();
             }
-
-            this.showNotification(`🌐 Language changed to ${this.getLanguageName(newLanguage)}`, 'success');
         }
 
         async translatePage() {
@@ -105,10 +103,8 @@
                     await this.delay(100);
                 }
 
-                this.showNotification('✅ Page translation completed', 'success');
             } catch (error) {
                 console.error('Translation failed:', error);
-                this.showNotification('❌ Translation failed: ' + error.message, 'error');
             } finally {
                 this.isTranslating = false;
                 this.showTranslationProgress(false);
@@ -412,14 +408,6 @@
                 document.body.appendChild(progressIndicator);
             } else if (!show && progressIndicator) {
                 progressIndicator.remove();
-            }
-        }
-
-        showNotification(message, type = 'info') {
-            if (typeof showNotification === 'function') {
-                showNotification(message, type);
-            } else {
-                console.log(`[${type.toUpperCase()}] ${message}`);
             }
         }
 
