@@ -1200,7 +1200,6 @@
     
     .room-container {
         height: 700px;
-        overflow: auto;
     }
     
     .room-inventory {
@@ -1211,11 +1210,12 @@
 }
 
 @media (max-width: 768px) {
-    .isometric-room {
-        transform: scale(0.8);
-    }
     
     .room-container {
         padding: 20px;
+    }
+
+    .isometric-room{
+        right: 110px;
     }
 }
