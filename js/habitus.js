@@ -687,25 +687,6 @@ function clearRoom() {
     showNotification('Room cleared', 'info');
 }
 
-// Change room
-function changeRoom(roomId) {
-    window.location.href = `habitus.php?room_id=${roomId}`;
-}
-
-// Create new room
-function createNewRoom() {
-    document.getElementById('modal-title').textContent = 'Create New Room';
-    document.getElementById('room-name-input').value = '';
-    document.getElementById('room-modal').style.display = 'flex';
-}
-
-// Rename room
-function renameRoom() {
-    document.getElementById('modal-title').textContent = 'Rename Room';
-    document.getElementById('room-name-input').value = currentRoom.name;
-    document.getElementById('room-modal').style.display = 'flex';
-}
-
 // Close room modal
 function closeRoomModal() {
     document.getElementById('room-modal').style.display = 'none';

@@ -168,17 +168,6 @@ $debugInfo = [
             <!-- Habitus Content -->
             <div class="habitus-content">
                 <div class="habitus-header">
-                    <div class="room-selector">
-                        <select id="room-select" onchange="changeRoom(this.value)">
-                            <?php foreach ($rooms as $room): ?>
-                                <option value="<?php echo $room['id']; ?>" <?php echo ($room['id'] == $roomId) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($room['name']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <button class="new-room-btn" onclick="createNewRoom()">+ New Room</button>
-                        <button class="rename-room-btn" onclick="renameRoom()">Rename</button>
-                    </div>
                     <div class="room-actions">
                         <button class="save-room-btn" onclick="saveRoom()">Save Layout</button>
                         <button class="clear-room-btn" onclick="clearRoom()">Clear Room</button>

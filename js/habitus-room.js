@@ -1861,31 +1861,6 @@ function clearRoom() {
     showNotification('Room cleared - all items returned to inventory', 'info');
 }
 
-// Navigation functions
-function changeRoom(roomId) {
-    window.location.href = `habitus.php?room_id=${roomId}`;
-}
-
-function createNewRoom() {
-    const modalTitle = document.getElementById('modal-title');
-    const roomNameInput = document.getElementById('room-name-input');
-    const roomModal = document.getElementById('room-modal');
-    
-    if (modalTitle) modalTitle.textContent = 'Create New Room';
-    if (roomNameInput) roomNameInput.value = '';
-    if (roomModal) roomModal.style.display = 'flex';
-}
-
-function renameRoom() {
-    const modalTitle = document.getElementById('modal-title');
-    const roomNameInput = document.getElementById('room-name-input');
-    const roomModal = document.getElementById('room-modal');
-    
-    if (modalTitle) modalTitle.textContent = 'Rename Room';
-    if (roomNameInput) roomNameInput.value = currentRoom.name;
-    if (roomModal) roomModal.style.display = 'flex';
-}
-
 function closeRoomModal() {
     const roomModal = document.getElementById('room-modal');
     if (roomModal) roomModal.style.display = 'none';
@@ -1968,9 +1943,6 @@ window.toggleGrid = toggleGrid;
 window.filterInventory = filterInventory;
 window.saveRoom = saveRoom;
 window.clearRoom = clearRoom;
-window.changeRoom = changeRoom;
-window.createNewRoom = createNewRoom;
-window.renameRoom = renameRoom;
 window.closeRoomModal = closeRoomModal;
 window.saveRoomName = saveRoomName;
 window.startDrag = startDrag;
