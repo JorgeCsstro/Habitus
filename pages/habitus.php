@@ -79,46 +79,61 @@ foreach ($placedItems as &$item) {
 }
 
 // FIXED: Get user's inventory with better quantity tracking
-$inventoryQuery = "SELECT ui.*, si.name, si.image_path, si.category_id, 
-                  si.grid_width, si.grid_height, si.rotation_variants,
-                  si.allowed_surfaces, ic.name as category,
-                  SUM(ui.quantity) as total_quantity
+$inventoryQuery = "SELECT 
+                    ui.item_id,
+                    SUM(ui.quantity) as total_quantity,
+                    si.name, 
+                    si.image_path, 
+                    si.category_id, 
+                    si.grid_width, 
+                    si.grid_height, 
+                    si.rotation_variants,
+                    si.allowed_surfaces, 
+                    ic.name as category
                   FROM user_inventory ui
                   JOIN shop_items si ON ui.item_id = si.id
                   JOIN item_categories ic ON si.category_id = ic.id
                   WHERE ui.user_id = ? AND ui.quantity > 0
-                  GROUP BY ui.user_id, ui.item_id
+                  GROUP BY ui.item_id
                   ORDER BY si.category_id, si.name";
 $stmt = $conn->prepare($inventoryQuery);
 $stmt->execute([$_SESSION['user_id']]);
-$inventory = $stmt->fetchAll();
+$rawInventory = $stmt->fetchAll();
 
-// Then update the quantity field after fetching
-foreach ($inventory as &$item) {
-    $item['quantity'] = $item['total_quantity'];
-}
+$inventory = [];
 
-// Process rotation variants for inventory
-foreach ($inventory as &$item) {
+foreach ($rawInventory as $item) {
+    // Get any inventory ID for this item (for usage tracking)
+    $getIdQuery = "SELECT id FROM user_inventory WHERE user_id = ? AND item_id = ? LIMIT 1";
+    $stmt2 = $conn->prepare($getIdQuery);
+    $stmt2->execute([$_SESSION['user_id'], $item['item_id']]);
+    $idResult = $stmt2->fetch();
+    
+    $item['id'] = $idResult['id']; // Set a representative ID
+    $item['quantity'] = $item['total_quantity']; // Rename for consistency
+    
+    // Process rotation variants
     if (!empty($item['rotation_variants'])) {
         $item['rotation_variants'] = json_decode($item['rotation_variants'], true);
     }
+    
+    $inventory[] = $item;
 }
 
 // FIXED: Calculate available quantities more accurately
 $inventoryUsage = [];
 foreach ($placedItems as $placedItem) {
-    $inventoryId = $placedItem['inventory_id'];
-    if (isset($inventoryUsage[$inventoryId])) {
-        $inventoryUsage[$inventoryId]++;
+    $itemId = $placedItem['item_id']; // Use item_id instead of inventory_id
+    if (isset($inventoryUsage[$itemId])) {
+        $inventoryUsage[$itemId]++;
     } else {
-        $inventoryUsage[$inventoryId] = 1;
+        $inventoryUsage[$itemId] = 1;
     }
 }
 
 // Add usage information to inventory items
 foreach ($inventory as &$item) {
-    $used = isset($inventoryUsage[$item['id']]) ? $inventoryUsage[$item['id']] : 0;
+    $used = isset($inventoryUsage[$item['item_id']]) ? $inventoryUsage[$item['item_id']] : 0;
     $item['used_count'] = $used;
     $item['available_count'] = $item['quantity'] - $used;
 }
@@ -210,18 +225,29 @@ $debugInfo = [
                             <?php if (empty($inventory)): ?>
                                 <p class="empty-inventory">Your inventory is empty. Visit the shop to buy items!</p>
                             <?php else: ?>
+                                <?php 
+                                // Track which inventory IDs we've already displayed to prevent duplicates
+                                $displayedItemIds = [];
+                                ?>
                                 <?php foreach ($inventory as $item): ?>
                                     <?php
+                                    // Skip if we've already displayed this inventory ID
+                                    if (in_array($item['item_id'], $displayedItemIds)) {    
+                                        continue;
+                                    }
+                                    // Add this ID to our tracking array
+                                    $displayedItemIds[] = $item['item_id'];
+
                                     // Get item size
                                     $itemWidth = isset($item['grid_width']) ? $item['grid_width'] : 1;
                                     $itemHeight = isset($item['grid_height']) ? $item['grid_height'] : 1;
-                                    
+
                                     // Get allowed surfaces
                                     $allowedSurfaces = isset($item['allowed_surfaces']) ? explode(',', $item['allowed_surfaces']) : ['floor'];
-                                    
+
                                     // Get rotation variants
                                     $rotationVariants = !empty($item['rotation_variants']) ? $item['rotation_variants'] : [];
-                                    
+
                                     // Check if item is available
                                     $isAvailable = $item['available_count'] > 0;
                                     $isDisabled = !$isAvailable;
