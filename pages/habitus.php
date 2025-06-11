@@ -81,6 +81,7 @@ foreach ($placedItems as &$item) {
 // FIXED: Get user's inventory with better quantity tracking
 $inventoryQuery = "SELECT 
                     ui.item_id,
+                    ui.id as inventory_id,
                     SUM(ui.quantity) as total_quantity,
                     si.name, 
                     si.image_path, 
@@ -89,12 +90,15 @@ $inventoryQuery = "SELECT
                     si.grid_height, 
                     si.rotation_variants,
                     si.allowed_surfaces, 
-                    ic.name as category
+                    ic.name as category,
+                    si.is_available
                   FROM user_inventory ui
-                  JOIN shop_items si ON ui.item_id = si.id
-                  JOIN item_categories ic ON si.category_id = ic.id
-                  WHERE ui.user_id = ? AND ui.quantity > 0
-                  GROUP BY ui.item_id
+                  INNER JOIN shop_items si ON ui.item_id = si.id
+                  INNER JOIN item_categories ic ON si.category_id = ic.id
+                  WHERE ui.user_id = ? 
+                    AND ui.quantity > 0 
+                    AND si.is_available = 1
+                  GROUP BY ui.item_id, si.name, si.image_path, si.category_id, si.grid_width, si.grid_height, si.rotation_variants, si.allowed_surfaces, ic.name, si.is_available
                   ORDER BY si.category_id, si.name";
 $stmt = $conn->prepare($inventoryQuery);
 $stmt->execute([$_SESSION['user_id']]);
@@ -102,14 +106,8 @@ $rawInventory = $stmt->fetchAll();
 
 $inventory = [];
 
-foreach ($rawInventory as $item) {
-    // Get any inventory ID for this item (for usage tracking)
-    $getIdQuery = "SELECT id FROM user_inventory WHERE user_id = ? AND item_id = ? LIMIT 1";
-    $stmt2 = $conn->prepare($getIdQuery);
-    $stmt2->execute([$_SESSION['user_id'], $item['item_id']]);
-    $idResult = $stmt2->fetch();
-    
-    $item['id'] = $idResult['id']; // Set a representative ID
+foreach ($rawInventory as $index => $item) {
+    $item['id'] = $item['inventory_id']; // Use the ID from main query
     $item['quantity'] = $item['total_quantity']; // Rename for consistency
     
     // Process rotation variants
@@ -132,10 +130,10 @@ foreach ($placedItems as $placedItem) {
 }
 
 // Add usage information to inventory items
-foreach ($inventory as &$item) {
+foreach ($inventory as $index => $item) {
     $used = isset($inventoryUsage[$item['item_id']]) ? $inventoryUsage[$item['item_id']] : 0;
-    $item['used_count'] = $used;
-    $item['available_count'] = $item['quantity'] - $used;
+    $inventory[$index]['used_count'] = $used;
+    $inventory[$index]['available_count'] = $item['quantity'] - $used;
 }
 
 // Create rotation data map for JavaScript
@@ -232,24 +230,24 @@ $debugInfo = [
                                 <?php foreach ($inventory as $item): ?>
                                     <?php
                                     // Skip if we've already displayed this inventory ID
-                                    if (in_array($item['item_id'], $displayedItemIds)) {    
+                                    if (in_array($item['item_id'], $displayedItemIds)) {
                                         continue;
                                     }
                                     // Add this ID to our tracking array
                                     $displayedItemIds[] = $item['item_id'];
-
+                                
                                     // Get item size
                                     $itemWidth = isset($item['grid_width']) ? $item['grid_width'] : 1;
                                     $itemHeight = isset($item['grid_height']) ? $item['grid_height'] : 1;
-
+                                
                                     // Get allowed surfaces
                                     $allowedSurfaces = isset($item['allowed_surfaces']) ? explode(',', $item['allowed_surfaces']) : ['floor'];
-
+                                
                                     // Get rotation variants
                                     $rotationVariants = !empty($item['rotation_variants']) ? $item['rotation_variants'] : [];
-
+                                
                                     // Check if item is available
-                                    $isAvailable = $item['available_count'] > 0;
+                                    $isAvailable = isset($item['available_count']) ? $item['available_count'] > 0 : true;
                                     $isDisabled = !$isAvailable;
                                     ?>
                                     <div class="inventory-item <?php echo $isDisabled ? 'disabled' : ''; ?>" 
@@ -272,11 +270,11 @@ $debugInfo = [
                                         <img src="../<?php echo $item['image_path']; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                                         <div class="item-info">
                                             <span class="item-name"><?php echo htmlspecialchars($item['name']); ?></span>
-                                            <?php if ($item['available_count'] > 1): ?>
+                                            <?php if (isset($item['available_count']) && $item['available_count'] > 1): ?>
                                                 <span class="item-quantity">x<?php echo $item['available_count']; ?></span>
-                                            <?php elseif ($item['available_count'] === 1): ?>
+                                            <?php elseif (isset($item['available_count']) && $item['available_count'] === 1): ?>
                                                 <span class="item-quantity" style="display: none;">x1</span>
-                                            <?php elseif ($item['used_count'] > 0): ?>
+                                            <?php elseif (isset($item['used_count']) && $item['used_count'] > 0): ?>
                                                 <span class="item-quantity used">In use (<?php echo $item['used_count']; ?>)</span>
                                             <?php endif; ?>
                                         </div>
