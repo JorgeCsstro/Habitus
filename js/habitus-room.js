@@ -47,7 +47,7 @@ const ROTATION_ANGLES = {
 const ITEM_SIZES = {
     'wooden_chair': { width: 1, height: 1, surfaces: ['floor'] },
     'simple_table': { width: 2, height: 2, surfaces: ['floor'] },
-    'bookshelf': { width: 1, height: 2, surfaces: ['floor', 'wall-left', 'wall-right'] },
+    'bookshelf': { width: 1, height: 2, surfaces: ['floor'] },
     'cozy_sofa': { width: 3, height: 2, surfaces: ['floor'] },
     'potted_plant': { width: 1, height: 1, surfaces: ['floor'] },
     'floor_lamp': { width: 1, height: 1, surfaces: ['floor'] },

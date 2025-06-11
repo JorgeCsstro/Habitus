@@ -81,15 +81,22 @@ foreach ($placedItems as &$item) {
 // FIXED: Get user's inventory with better quantity tracking
 $inventoryQuery = "SELECT ui.*, si.name, si.image_path, si.category_id, 
                   si.grid_width, si.grid_height, si.rotation_variants,
-                  si.allowed_surfaces, ic.name as category
+                  si.allowed_surfaces, ic.name as category,
+                  SUM(ui.quantity) as total_quantity
                   FROM user_inventory ui
                   JOIN shop_items si ON ui.item_id = si.id
                   JOIN item_categories ic ON si.category_id = ic.id
                   WHERE ui.user_id = ? AND ui.quantity > 0
+                  GROUP BY ui.user_id, ui.item_id
                   ORDER BY si.category_id, si.name";
 $stmt = $conn->prepare($inventoryQuery);
 $stmt->execute([$_SESSION['user_id']]);
 $inventory = $stmt->fetchAll();
+
+// Then update the quantity field after fetching
+foreach ($inventory as &$item) {
+    $item['quantity'] = $item['total_quantity'];
+}
 
 // Process rotation variants for inventory
 foreach ($inventory as &$item) {
