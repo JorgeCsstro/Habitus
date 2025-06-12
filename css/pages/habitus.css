@@ -1090,7 +1090,7 @@
 @media (max-width: 1200px) {
     .habitus-editor {
         flex-direction: column;
-        height: auto;
+        height: 1000px;
     }
     
     .room-container {
