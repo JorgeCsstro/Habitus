@@ -228,7 +228,7 @@
 .difficulty {
     padding: 4px 10px;
     border-radius: 15px;
-    font-size: 0.8rem;
+    font-size: 1rem;
     font-weight: 600;
 }
 
@@ -245,7 +245,8 @@
     background-color: var(--bg-secondary);
     padding: 4px 10px;
     border-radius: 15px;
-    font-size: 0.8rem;
+    font-size: 1rem;
+    font-weight: bold;
     border: 1px solid var(--border-primary);
 }
 

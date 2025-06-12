@@ -968,28 +968,6 @@ function loadTranslationSettings() {
     }
 }
 
-function updateTranslationPreference(type, enabled) {
-    fetch('../php/api/user/update_settings.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            setting: type,
-            value: enabled
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (!data.success) {
-            console.error('Failed to update translation preference:', data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error updating translation preference:', error);
-    });
-}
-
 async function loadUsageStats() {
     try {
         const response = await fetch('../php/api/translation/stats.php');
@@ -1033,19 +1011,6 @@ function updateUsageDisplay(stats) {
         freeTierRemaining.textContent = formatNumber(remaining);
         freeTierRemaining.style.color = remaining < 100000 ? 'var(--error-text)' : 'var(--success-text)';
     }
-}
-
-function refreshUsageStats() {
-    const refreshBtn = document.querySelector('.refresh-usage-btn');
-    if (refreshBtn) {
-        refreshBtn.style.animation = 'spin 1s linear infinite';
-    }
-    
-    loadUsageStats().finally(() => {
-        if (refreshBtn) {
-            refreshBtn.style.animation = '';
-        }
-    });
 }
 
 function formatNumber(num) {

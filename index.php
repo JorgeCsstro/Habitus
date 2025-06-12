@@ -49,21 +49,21 @@ if (isset($_SESSION['user_id'])) {
             <div class="carousel-container">
                 <div class="carousel">
                     <div class="carousel-slide">
-                        <img src="images/landing/dashboard-preview.jpg" alt="Dashboard Preview">
+                        <img src="./images/index-intro/dashboard-preview.jpg" alt="Dashboard Preview">
                         <div class="slide-caption">
                             <h3>Personalized Dashboard</h3>
                             <p>Track your daily tasks, challenges, and see your progress at a glance</p>
                         </div>
                     </div>
                     <div class="carousel-slide">
-                        <img src="images/landing/habitus-preview.jpg" alt="Habitus Room Preview">
+                        <img src="./images/index-intro/habitus-preview.jpg" alt="Habitus Room Preview">
                         <div class="slide-caption">
                             <h3>Customize Your Habitus</h3>
                             <p>Design your personal space with furniture, decorations and more</p>
                         </div>
                     </div>
                     <div class="carousel-slide">
-                        <img src="images/landing/shop-preview.jpg" alt="Shop Preview">
+                        <img src="./images/index-intro/shop-preview.jpg" alt="Shop Preview">
                         <div class="slide-caption">
                             <h3>Rewards Marketplace</h3>
                             <p>Earn HCoins and spend them on items for your virtual space</p>

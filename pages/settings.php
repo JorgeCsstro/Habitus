@@ -142,52 +142,6 @@ $themes = [
                                 <option value="ko" <?php echo $currentLanguage === 'ko' ? 'selected' : ''; ?>>한국어</option>
                             </select>
                         </label>
-
-                        <!-- Auto-translation Toggle -->
-                        <div class="setting-toggle">
-                            <div class="toggle-info">
-                                <span class="toggle-title">Auto-Translation</span>
-                                <span class="toggle-description">Automatically translate content to your preferred language</span>
-                            </div>
-                            <label>
-                                <input type="checkbox" id="auto-translation" onchange="updateTranslationPreference('auto_translation', this.checked)">
-                                <div class="toggle-switch"></div>
-                            </label>
-                        </div>
-
-                        <!-- High Quality Translation Toggle -->
-                        <div class="setting-toggle">
-                            <div class="toggle-info">
-                                <span class="toggle-title">High-Quality Translation</span>
-                                <span class="toggle-description">Use premium translation service for better accuracy</span>
-                            </div>
-                            <label>
-                                <input type="checkbox" id="high-quality-translation" onchange="updateTranslationPreference('high_quality_translation', this.checked)">
-                                <div class="toggle-switch"></div>
-                            </label>
-                        </div>
-
-                        <!-- Translation Usage Stats -->
-                        <div class="translation-usage-info">
-                            <div class="usage-header">
-                                <h4>Translation Usage</h4>
-                                <button class="refresh-usage-btn" onclick="refreshUsageStats()" title="Refresh">🔄</button>
-                            </div>
-                            <div class="usage-stats">
-                                <div class="usage-item">
-                                    <span class="usage-label">Characters this month:</span>
-                                    <span class="usage-value" id="characters-used">Loading...</span>
-                                </div>
-                                <div class="usage-item">
-                                    <span class="usage-label">API calls this month:</span>
-                                    <span class="usage-value" id="api-calls">Loading...</span>
-                                </div>
-                                <div class="usage-item">
-                                    <span class="usage-label">Free tier remaining:</span>
-                                    <span class="usage-value" id="free-tier-remaining">Loading...</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 

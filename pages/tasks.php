@@ -187,7 +187,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                                 </span>
                                                 <?php if (!empty($goal['deadline'])): ?>
                                                     <span class="deadline">
-                                                        <img src="../images/icons/calendar.webp" alt="Deadline">
+                                                        <img src="../images/icons/calendar-icon.webp" alt="Deadline">
                                                         <?php echo date('M j, Y', strtotime($goal['deadline'])); ?>
                                                     </span>
                                                 <?php endif; ?>
@@ -218,7 +218,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                             </button>
                                         <?php else: ?>
                                             <button class="manage-subtasks-btn" onclick="showSubtasks(<?php echo $goal['id']; ?>, 'goal')">
-                                                <img src="../images/icons/subtasks.webp" alt="Subtasks">
+                                                <img src="../images/icons/tasks-icon.webp" alt="Subtasks">
                                                 Subtasks
                                                 <span class="subtask-count"><?php echo countSubtasks($goal['id']); ?></span>
                                             </button>
@@ -315,7 +315,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                             </button>
                                         <?php else: ?>
                                             <button class="manage-subtasks-btn" onclick="showSubtasks(<?php echo $challenge['id']; ?>, 'challenge')">
-                                                <img src="../images/icons/subtasks.webp" alt="Subtasks">
+                                                <img src="../images/icons/tasks-icon.webp" alt="Subtasks">
                                                 Subtasks
                                                 <span class="subtask-count"><?php echo countSubtasks($challenge['id']); ?></span>
                                             </button>

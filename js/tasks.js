@@ -521,7 +521,7 @@ function saveTask() {
             // For production, you might want to refresh the page or update the task list dynamically
             // For now, we'll refresh to show the new/updated task
             setTimeout(() => {
-                location.reload();
+                location.href = location.pathname;
             }, 1000);
         } else {
             // Show error
@@ -656,7 +656,7 @@ function deleteTask() {
                 }, 300);
             } else {
                 // If we can't find the task element, just refresh the page
-                location.reload();
+                location.href = location.pathname;
             }
         } else {
             // Show error message
