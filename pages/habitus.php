@@ -223,8 +223,6 @@ $debugInfo = [
                             <button class="filter-btn active" data-filter="all" onclick="filterInventory('all')">All</button>
                             <button class="filter-btn" data-filter="furniture" onclick="filterInventory('furniture')">Furniture</button>
                             <button class="filter-btn" data-filter="decorations" onclick="filterInventory('decorations')">Decorations</button>
-                            <button class="filter-btn" data-filter="walls" onclick="filterInventory('walls')">Walls</button>
-                            <button class="filter-btn" data-filter="floors" onclick="filterInventory('floors')">Floors</button>
                         </div>
                         
                         <div class="inventory-items" id="inventory-items">
