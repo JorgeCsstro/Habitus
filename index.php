@@ -17,6 +17,7 @@ if (isset($_SESSION['user_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Habitus Zone - Gamify Your Life</title>
+    <link rel="stylesheet" href="../css/themes/light.css" id="theme-stylesheet">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/pages/index.css">
     <link rel="icon" href="images/favicon.ico" type="image/x-icon">

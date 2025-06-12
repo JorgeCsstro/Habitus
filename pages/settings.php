@@ -22,7 +22,16 @@ $userHabitusName = $userData['username'] . "'s Habitus";
 $currentLanguage = $userData['language'] ?? 'en';
 $currentTheme = $userData['theme'] ?? 'light';
 $currentSubscription = $userData['subscription_type'] ?? 'free';
-$profilePicture = $userData['profile_picture'] ?? '../images/avatars/default.webp';
+$profilePicture = "../" . $userData['profile_picture'] ?? '../uploads/profile-icon.webp';
+
+// Ensure theme is valid
+if (!in_array($currentTheme, ['light', 'dark'])) {
+    $currentTheme = 'light';
+    // Update database with valid theme
+    updateUserTheme($_SESSION['user_id'], $currentTheme);
+}
+
+$_SESSION['user_theme'] = $currentTheme;
 
 // Language options
 $languages = [
@@ -49,11 +58,11 @@ $themes = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - <?php echo SITE_NAME; ?></title>
-    
-        <!-- REQUIRED: Theme CSS - Add this to ALL pages -->
+
+    <!-- CRITICAL: Theme CSS LAST (overrides base) -->
     <link rel="stylesheet" href="../css/themes/<?php echo $currentTheme; ?>.css" id="theme-stylesheet">
     
-    <!-- Your existing CSS files AFTER theme CSS -->
+    <!-- CRITICAL: Base CSS FIRST -->
     <link rel="stylesheet" href="../css/main.css">
     
     <!-- Component CSS -->
@@ -63,7 +72,6 @@ $themes = [
     
     <!-- Page-specific CSS -->
     <link rel="stylesheet" href="../css/pages/settings.css">
-    
     <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
     
     <!-- Enhanced Fonts -->
@@ -71,6 +79,7 @@ $themes = [
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body class="theme-<?php echo $currentTheme; ?>">
     <div class="main-container">
         <!-- Left Navigation Menu -->
@@ -94,7 +103,7 @@ $themes = [
                     <div class="settings-group">
                         <div class="profile-picture-section">
                             <div class="current-profile-picture">
-                                <img src="<?php echo htmlspecialchars($user['profile_picture'] ?? '../uploads/profile-icon.webp'); ?>" 
+                                <img src="<?php echo htmlspecialchars($profilePicture); ?>" 
                                      alt="Profile Picture" 
                                      id="profile-picture-preview">
                                 <div class="profile-picture-overlay">
@@ -120,19 +129,65 @@ $themes = [
                                 <span class="setting-title">Display Language</span>
                                 <span class="setting-description">Choose your preferred language</span>
                             </div>
-                                <select id="language-selector" class="form-control">
-                                    <option value="en">English</option>
-                                    <option value="es">Español</option>
-                                    <option value="fr">Français</option>
-                                    <option value="de">Deutsch</option>
-                                    <option value="it">Italiano</option>
-                                    <option value="pt">Português</option>
-                                    <option value="ru">Русский</option>
-                                    <option value="zh">中文</option>
-                                    <option value="ja">日本語</option>
-                                    <option value="ko">한국어</option>
-                                </select>
+                            <select id="language-selector" class="setting-select">
+                                <option value="en" <?php echo $currentLanguage === 'en' ? 'selected' : ''; ?>>English</option>
+                                <option value="es" <?php echo $currentLanguage === 'es' ? 'selected' : ''; ?>>Español</option>
+                                <option value="fr" <?php echo $currentLanguage === 'fr' ? 'selected' : ''; ?>>Français</option>
+                                <option value="de" <?php echo $currentLanguage === 'de' ? 'selected' : ''; ?>>Deutsch</option>
+                                <option value="it" <?php echo $currentLanguage === 'it' ? 'selected' : ''; ?>>Italiano</option>
+                                <option value="pt" <?php echo $currentLanguage === 'pt' ? 'selected' : ''; ?>>Português</option>
+                                <option value="ru" <?php echo $currentLanguage === 'ru' ? 'selected' : ''; ?>>Русский</option>
+                                <option value="zh" <?php echo $currentLanguage === 'zh' ? 'selected' : ''; ?>>中文</option>
+                                <option value="ja" <?php echo $currentLanguage === 'ja' ? 'selected' : ''; ?>>日本語</option>
+                                <option value="ko" <?php echo $currentLanguage === 'ko' ? 'selected' : ''; ?>>한국어</option>
+                            </select>
                         </label>
+
+                        <!-- Auto-translation Toggle -->
+                        <div class="setting-toggle">
+                            <div class="toggle-info">
+                                <span class="toggle-title">Auto-Translation</span>
+                                <span class="toggle-description">Automatically translate content to your preferred language</span>
+                            </div>
+                            <label>
+                                <input type="checkbox" id="auto-translation" onchange="updateTranslationPreference('auto_translation', this.checked)">
+                                <div class="toggle-switch"></div>
+                            </label>
+                        </div>
+
+                        <!-- High Quality Translation Toggle -->
+                        <div class="setting-toggle">
+                            <div class="toggle-info">
+                                <span class="toggle-title">High-Quality Translation</span>
+                                <span class="toggle-description">Use premium translation service for better accuracy</span>
+                            </div>
+                            <label>
+                                <input type="checkbox" id="high-quality-translation" onchange="updateTranslationPreference('high_quality_translation', this.checked)">
+                                <div class="toggle-switch"></div>
+                            </label>
+                        </div>
+
+                        <!-- Translation Usage Stats -->
+                        <div class="translation-usage-info">
+                            <div class="usage-header">
+                                <h4>Translation Usage</h4>
+                                <button class="refresh-usage-btn" onclick="refreshUsageStats()" title="Refresh">🔄</button>
+                            </div>
+                            <div class="usage-stats">
+                                <div class="usage-item">
+                                    <span class="usage-label">Characters this month:</span>
+                                    <span class="usage-value" id="characters-used">Loading...</span>
+                                </div>
+                                <div class="usage-item">
+                                    <span class="usage-label">API calls this month:</span>
+                                    <span class="usage-value" id="api-calls">Loading...</span>
+                                </div>
+                                <div class="usage-item">
+                                    <span class="usage-label">Free tier remaining:</span>
+                                    <span class="usage-value" id="free-tier-remaining">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -177,6 +232,10 @@ $themes = [
                                     </label>
                                 <?php endforeach; ?>
                             </div>
+                            
+                            <div class="theme-shortcuts">
+                                <small>💡 Tip: Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> to quickly toggle themes</small>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -219,6 +278,39 @@ $themes = [
                             <div class="button-text">
                                 <span class="button-title">Change Password</span>
                                 <span class="button-description">Update your account password</span>
+                            </div>
+                            <span class="button-arrow">›</span>
+                        </button>
+                        
+                        <button class="setting-button" onclick="showChangeEmailModal()">
+                            <span class="button-icon">
+                                <img src="../images/icons/email-icon.webp" alt="Email">
+                            </span>
+                            <div class="button-text">
+                                <span class="button-title">Change Email</span>
+                                <span class="button-description">Update your email address</span>
+                            </div>
+                            <span class="button-arrow">›</span>
+                        </button>
+                        
+                        <button class="setting-button" onclick="exportUserData()">
+                            <span class="button-icon">
+                                <img src="../images/icons/download-icon.webp" alt="Export">
+                            </span>
+                            <div class="button-text">
+                                <span class="button-title">Export Data</span>
+                                <span class="button-description">Download your account data</span>
+                            </div>
+                            <span class="button-arrow">›</span>
+                        </button>
+                        
+                        <button class="setting-button" onclick="clearCache()">
+                            <span class="button-icon">
+                                <img src="../images/icons/refresh-icon.webp" alt="Clear Cache">
+                            </span>
+                            <div class="button-text">
+                                <span class="button-title">Clear Cache</span>
+                                <span class="button-description">Clear stored data and refresh</span>
                             </div>
                             <span class="button-arrow">›</span>
                         </button>
@@ -270,6 +362,33 @@ $themes = [
         </div>
     </div>
 
+    <!-- Change Email Modal -->
+    <div id="email-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Change Email</h2>
+                <button class="close-modal" onclick="closeModal('email-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="change-email-form">
+                    <div class="form-group">
+                        <label for="new-email">New Email Address</label>
+                        <input type="email" id="new-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email-password">Current Password</label>
+                        <input type="password" id="email-password" required>
+                        <span class="field-hint">Confirm your current password to change email</span>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="cancel-btn" onclick="closeModal('email-modal')">Cancel</button>
+                        <button type="submit" class="save-btn">Update Email</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Delete Account Modal -->
     <div id="delete-account-modal" class="modal">
         <div class="modal-content">
@@ -301,21 +420,16 @@ $themes = [
     </div>
 
     <!-- Scripts -->
-    <script src="../js/main.js"></script>
-
-    <script>
-    // REQUIRED: Theme initialization for ALL pages
-    window.initialTheme = '<?php echo $currentTheme; ?>';
-    document.documentElement.setAttribute('data-theme', window.initialTheme);
-    document.body.classList.add('theme-' + window.initialTheme);
-    </script>
-
-    <!-- Load theme manager on ALL pages -->
+    <!-- Load theme manager FIRST -->
     <script src="../js/theme-manager.js"></script>
-
+    
+    <!-- Then load settings script -->
     <script src="../js/settings.js"></script>
-
+    
     <!-- Load translation manager -->
     <script src="../js/translation-manager.js"></script>
+    
+    <!-- Load header script -->
+    <script src="../js/header.js"></script>
 </body>
 </html>

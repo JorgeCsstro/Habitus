@@ -21,6 +21,14 @@ $userHabitusName = $userData['username'] . "'s Habitus";
 $currentLanguage = $userData['language'] ?? 'en';
 $currentTheme = $userData['theme'] ?? 'light';
 
+if (!in_array($currentTheme, ['light', 'dark'])) {
+    $currentTheme = 'light';
+    // Update database with valid theme
+    updateUserTheme($_SESSION['user_id'], $currentTheme);
+}
+
+$_SESSION['user_theme'] = $currentTheme;
+
 // Get user's subscription info
 $subscriptionType = $userData['subscription_type'] ?? 'free';
 $subscriptionExpires = $userData['subscription_expires'] ?? null;

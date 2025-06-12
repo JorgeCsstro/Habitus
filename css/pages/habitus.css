@@ -1,4 +1,4 @@
-/* habitus.css - Enhanced isometric room with CSS variables from light.css */
+/* habitus.css - Habitus room editor specific styles */
 
 /* Main content container */
 .habitus-content {
@@ -125,8 +125,8 @@
 /* Room base (floor + walls container) */
 .room-base {
     position: absolute;
-    width: 360px; /* 6 cells * 60px */
-    height: 360px; /* 6 cells * 60px */
+    width: 360px;
+    height: 360px;
     top: 200px;
     left: 170px;
     transform: rotateX(60deg) rotateZ(-45deg);
@@ -142,7 +142,7 @@
     background-image: 
         linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
-    background-size: 60px 60px; /* Cell size for 6x6 */
+    background-size: 60px 60px;
     background-position: -1px -1px;
     box-shadow: 0 2px 10px var(--shadow);
 }
@@ -151,7 +151,7 @@
 .room-wall-left {
     position: absolute;
     width: 100%;
-    height: 67%; /* 4 cells high */
+    height: 67%;
     background: linear-gradient(to bottom, #E0E0E0, #D0D0D0);
     transform: rotateX(90deg);
     transform-origin: top;
@@ -161,7 +161,7 @@
 /* Right wall */
 .room-wall-right {
     position: absolute;
-    width: 67%; /* 4 cells high */
+    width: 67%;
     height: 100%;
     background: linear-gradient(to left, #D0D0D0, #C0C0C0);
     transform: rotateY(-90deg) translateZ(-359px);
@@ -174,8 +174,8 @@
     position: absolute;
     width: 60px;
     height: 120px;
-    background: linear-gradient(to bottom, var(--primary), var(--primary-light));
-    left: 60px; /* Second column */
+    background: linear-gradient(to bottom, #8B6347, #654321);
+    left: 60px;
     bottom: 0;
     transform: rotateX(-90deg) translateZ(-360px);
     transform-origin: bottom;
@@ -188,14 +188,14 @@
     position: absolute;
     width: 8px;
     height: 8px;
-    background: var(--accent);
+    background: #c4923e;
     border-radius: 50%;
     right: 10px;
     top: 60px;
-    box-shadow: 0 0 5px var(--accent);
+    box-shadow: 0 0 5px #c4923e;
 }
 
-/* Door mat/entrance area on floor (visual indicator) */
+/* Door mat/entrance area on floor */
 .room-floor::after {
     content: '';
     position: absolute;
@@ -203,23 +203,22 @@
     height: 60px;
     background: rgba(139, 99, 71, 0.3);
     border: 2px dashed rgba(139, 99, 71, 0.5);
-    left: 60px; /* Second column */
-    top: 0; /* First row */
+    left: 60px;
+    top: 0;
     pointer-events: none;
 }
 
-/* FIXED: Grid overlays with proper initial state */
+/* Grid overlays */
 .room-grid-floor,
 .room-grid-wall-left,
 .room-grid-wall-right {
     position: absolute;
     pointer-events: none;
-    display: none; /* FIXED: Hidden by default */
+    display: none;
     opacity: 0;
     transition: opacity 0.3s ease;
 }
 
-/* Grid overlays - Floor grid */
 .room-grid-floor {
     width: 360px;
     height: 360px;
@@ -228,7 +227,6 @@
     left: 170px;
 }
 
-/* Grid overlays - Left wall grid */
 .room-grid-wall-left {
     width: 360px;
     height: 240px;
@@ -238,7 +236,6 @@
     left: 42px;
 }
 
-/* Grid overlays - Right wall grid */
 .room-grid-wall-right {
     width: 240px;
     height: 360px;
@@ -248,7 +245,7 @@
     left: 222px;
 }
 
-/* FIXED: Show grids only when dragging */
+/* Show grids when dragging */
 .isometric-room.dragging .room-grid-floor,
 .isometric-room.dragging .room-grid-wall-left,
 .isometric-room.dragging .room-grid-wall-right {
@@ -267,7 +264,7 @@
     border-color: var(--success);
 }
 
-/* FIXED: Manual grid toggle */
+/* Manual grid toggle */
 .isometric-room.grid-visible .room-grid-floor,
 .isometric-room.grid-visible .room-grid-wall-left,
 .isometric-room.grid-visible .room-grid-wall-right {
@@ -276,7 +273,7 @@
     pointer-events: all;
 }
 
-/* Grid cells - 60px for 6x6 grid */
+/* Grid cells */
 .grid-cell {
     position: absolute;
     width: 60px;
@@ -337,7 +334,7 @@
     cursor: not-allowed;
 }
 
-/* FIXED: Placed items containers for each surface */
+/* Placed items containers for each surface */
 .placed-items-floor {
     position: absolute;
     width: 360px;
@@ -394,7 +391,6 @@
     transform-style: preserve-3d;
 }
 
-/* FIXED: Counter-rotate images to prevent distortion */
 .placed-item img {
     width: 100%;
     height: 100%;
@@ -437,7 +433,6 @@
     pointer-events: none;
 }
 
-/* FIXED: Dragging state - don't inherit placement transforms */
 .placed-item.dragging {
     opacity: 0.3;
     pointer-events: none;
@@ -447,11 +442,10 @@
 }
 
 .placed-item.dragging img {
-    /* Keep normal transforms when showing as being dragged */
     filter: brightness(0.7);
 }
 
-/* FIXED: Drag preview - clean styling without placement transforms */
+/* Drag preview */
 .drag-preview {
     position: absolute;
     pointer-events: none;
@@ -459,7 +453,6 @@
     z-index: 9999;
     display: none;
     transition: none;
-    /* Remove all borders and backgrounds */
 }
 
 .drag-preview img,
@@ -498,16 +491,6 @@
 @keyframes invalidPulse {
     0% { opacity: 0.3; }
     100% { opacity: 0.6; }
-}
-
-/* FIXED: Counter-rotation for drag previews - only when placed */
-.placed-items-floor .drag-preview.dragging img {
-    transform: rotateZ(40deg) rotateY(55deg) rotateX(0deg) rotate(5deg) scale(2);   
-    translate: 10px -15px;
-}
-
-.placed-items-wall-right .drag-preview.dragging img {
-    transform: rotateZ(165deg) rotateX(105deg) rotate(-135deg) rotateY(280deg) scale(1.4);
 }
 
 /* Room controls */
@@ -636,7 +619,6 @@
     cursor: grabbing;
 }
 
-/* FIXED: Disabled inventory items */
 .inventory-item.disabled {
     background-color: var(--bg-secondary);
     border-color: var(--border-primary);
@@ -697,7 +679,6 @@
     font-weight: 600;
 }
 
-/* Rotation indicator for items with variants */
 .rotation-indicator {
     position: absolute;
     top: 5px;
@@ -717,7 +698,6 @@
     filter: brightness(0) invert(1);
 }
 
-/* Item surface compatibility indicator */
 .item-surface-badge {
     position: absolute;
     bottom: 5px;
@@ -779,7 +759,7 @@
     box-shadow: 0 4px 8px var(--shadow);
 }
 
-/* FIXED: Hold-to-drag system */
+/* Hold-to-drag system */
 .hold-to-drag-indicator {
     position: fixed;
     width: 60px;
@@ -821,7 +801,6 @@
     transition: none;
 }
 
-/* Item being held/dragged */
 .placed-item.being-held {
     z-index: 9999;
     pointer-events: none;
@@ -830,9 +809,7 @@
     transition: all 0.2s ease;
 }
 
-
 .placed-item.being-held img {
-    /* FIXED: Clean display when being held */
     transform: none;
     translate: none;
     scale: 1;
@@ -865,7 +842,7 @@
     }
 }
 
-/* FIXED: Floating action menu with enhanced visibility */
+/* Floating action menu */
 .floating-action-menu {
     position: fixed;
     background: var(--bg-panel);
@@ -874,7 +851,7 @@
     box-shadow: 0 8px 32px var(--shadow);
     border: 2px solid var(--success);
     padding: 8px;
-    display: none; /* Force hidden by default */
+    display: none;
     flex-direction: column;
     gap: 4px;
     z-index: 10001;
@@ -883,7 +860,7 @@
 }
 
 .floating-action-menu.show {
-    display: flex; /* Force show when needed */
+    display: flex;
 }
 
 @keyframes fadeInSlide {
@@ -1025,7 +1002,7 @@
     font-size: 1.2rem;
 }
 
-/* Modal */
+/* Habitus-specific modals */
 .modal {
     display: none;
     position: fixed;
@@ -1109,88 +1086,6 @@
     background-color: var(--secondary);
 }
 
-/* Notifications */
-.notification-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 20000;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.notification {
-    background: var(--bg-panel);
-    padding: 15px 20px;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px var(--shadow);
-    transform: translateX(400px);
-    transition: transform 0.3s;
-    max-width: 300px;
-}
-
-.notification.show {
-    transform: translateX(0);
-}
-
-.notification.success {
-    border-left: 4px solid var(--success);
-}
-
-.notification.error {
-    border-left: 4px solid var(--error);
-}
-
-.notification.warning {
-    border-left: 4px solid var(--warning);
-}
-
-.notification.info {
-    border-left: 4px solid var(--info);
-}
-
-/* Action feedback animation */
-.action-feedback {
-    position: fixed;
-    background: var(--success);
-    color: var(--btn-text);
-    padding: 4px 12px;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    opacity: 0;
-    transform: translateY(10px);
-    animation: actionSuccess 1.5s ease-out forwards;
-    pointer-events: none;
-    z-index: 10000;
-}
-
-@keyframes actionSuccess {
-    0% { opacity: 0; transform: translateY(10px); }
-    20% { opacity: 1; transform: translateY(0); }
-    80% { opacity: 1; transform: translateY(-10px); }
-    100% { opacity: 0; transform: translateY(-20px); }
-}
-
-/* Scrollbar */
-.inventory-items::-webkit-scrollbar {
-    width: 6px;
-}
-
-.inventory-items::-webkit-scrollbar-track {
-    background: var(--bg-secondary);
-}
-
-.inventory-items::-webkit-scrollbar-thumb {
-    background-color: var(--border-primary);
-    border-radius: 3px;
-}
-
-.inventory-items::-webkit-scrollbar-thumb:hover {
-    background-color: var(--accent);
-}
-
 /* Responsive */
 @media (max-width: 1200px) {
     .habitus-editor {
@@ -1210,12 +1105,11 @@
 }
 
 @media (max-width: 768px) {
-    
     .room-container {
         padding: 20px;
     }
 
-    .isometric-room{
+    .isometric-room {
         right: 110px;
         transform: scale(0.8);
     }

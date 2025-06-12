@@ -81,7 +81,7 @@
 }
 
 /* Action buttons */
-.survey-button, .messages-button, .profile-button {
+.survey-button, .messages-button {
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -96,6 +96,22 @@
     text-decoration: none;
 }
 
+.profile-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--bg-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-primary);
+    position: relative;
+    text-decoration: none;
+    overflow: hidden; /* ADD THIS LINE */
+}
+
 .survey-button:hover, .messages-button:hover, .profile-button:hover {
     background-color: var(--bg-panel);
     border-color: var(--accent);
@@ -103,9 +119,16 @@
     box-shadow: 0 4px 12px var(--shadow);
 }
 
-.survey-button img, .messages-button img, .profile-button img {
+.survey-button img, .messages-button img {
     width: 20px;
     height: 20px;
+    transition: all 0.3s ease;
+}
+
+.profile-button img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     transition: all 0.3s ease;
 }
 
@@ -644,7 +667,7 @@
         height: 35px;
     }
     
-    .survey-button img, .messages-button img, .profile-button img {
+    .survey-button img, .messages-button img {
         width: 18px;
         height: 18px;
     }

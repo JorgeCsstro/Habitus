@@ -1,4 +1,4 @@
-/* shop.css - Shop page styling with centered cart and animations */
+/* shop.css - Shop page specific styles */
 
 /* Shop content container */
 .shop-content {
@@ -34,14 +34,14 @@
     font-weight: 600;
 }
 
-/* Shop Grid */
+/* Shop Grid (different from dashboard version) */
 .shop-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
 }
 
-/* Shop Item */
+/* Shop Item (enhanced from dashboard version) */
 .shop-item {
     background-color: var(--bg-panel);
     border-radius: 10px;
@@ -339,7 +339,7 @@
     animation: cartWiggle 0.5s ease-in-out;
 }
 
-/* Notification Styles */
+/* Shop-specific notifications */
 .shop-notification {
     position: fixed;
     top: 20px;
@@ -374,7 +374,7 @@
     border-left: 4px solid var(--error);
 }
 
-/* Scrollbar for cart items */
+/* Shop-specific scrollbar for cart items */
 .cart-dropdown-items::-webkit-scrollbar {
     width: 4px;
 }
@@ -398,7 +398,7 @@
         flex-direction: column;
     }
     
-    .shop-section{
+    .shop-section {
         width: 100%;
     }
 }

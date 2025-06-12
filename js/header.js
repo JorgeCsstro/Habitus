@@ -1,4 +1,4 @@
-// js/header.js
+// js/header.js - Updated theme toggle function
 
 document.addEventListener('DOMContentLoaded', function() {
     // Toggle notifications dropdown
@@ -204,35 +204,141 @@ function updateNotificationBadge() {
     }
 }
 
+/**
+ * FIXED: Enhanced theme toggle function with proper persistence
+ */
 function toggleTheme() {
-    if (window.themeManager) {
-        const currentTheme = window.themeManager.getTheme();
-        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-        
-        // Add loading state
-        const button = document.querySelector('.theme-toggle-button');
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    
+    console.log(`🎨 Toggling theme from ${currentTheme} to ${newTheme}`);
+    
+    // Show loading state
+    const button = document.querySelector('.theme-toggle-button');
+    if (button) {
         button.style.pointerEvents = 'none';
         button.style.opacity = '0.7';
-        
-        // Change theme
-        window.themeManager.setTheme(newTheme);
-        
-        // Re-enable button after animation
-        setTimeout(() => {
+    }
+    
+    // Apply theme immediately to DOM for instant feedback
+    applyThemeToDOM(newTheme);
+    
+    // Save theme to database
+    saveThemeToDatabase(newTheme).then(success => {
+        if (button) {
             button.style.pointerEvents = '';
             button.style.opacity = '';
-        }, 500);
-    } else {
-        console.error('Theme manager not available');
+        }
+        
+        if (success) {
+            console.log(`✅ Theme ${newTheme} saved successfully`);
+            // Update localStorage as backup
+            localStorage.setItem('habitus-theme', newTheme);
+            
+            // Dispatch custom event for other components to listen to
+            window.dispatchEvent(new CustomEvent('themeChanged', {
+                detail: { theme: newTheme }
+            }));
+        } else {
+            console.error('❌ Failed to save theme to database');
+            // Revert theme if save failed
+            applyThemeToDOM(currentTheme);
+        }
+    });
+}
+
+/**
+ * Apply theme to DOM immediately
+ */
+function applyThemeToDOM(theme) {
+    const html = document.documentElement;
+    const body = document.body;
+    
+    // Update data attribute
+    html.setAttribute('data-theme', theme);
+    
+    // Update body classes
+    body.classList.remove('theme-light', 'theme-dark');
+    body.classList.add(`theme-${theme}`);
+    
+    // Update theme CSS file
+    updateThemeCSS(theme);
+    
+    console.log(`✅ Applied theme ${theme} to DOM`);
+}
+
+/**
+ * Update theme CSS file
+ */
+function updateThemeCSS(theme) {
+    let themeStylesheet = document.getElementById('theme-stylesheet');
+    
+    if (!themeStylesheet) {
+        themeStylesheet = document.createElement('link');
+        themeStylesheet.id = 'theme-stylesheet';
+        themeStylesheet.rel = 'stylesheet';
+        document.head.appendChild(themeStylesheet);
+    }
+    
+    // Determine correct path
+    const isInSubdirectory = window.location.pathname.includes('/pages/');
+    const basePath = isInSubdirectory ? '../css/themes/' : 'css/themes/';
+    themeStylesheet.href = `${basePath}${theme}.css`;
+}
+
+/**
+ * Save theme to database via API
+ */
+async function saveThemeToDatabase(theme) {
+    try {
+        // Determine correct API path
+        const isInSubdirectory = window.location.pathname.includes('/pages/');
+        const apiPath = isInSubdirectory ? '../php/api/user/update_settings.php' : 'php/api/user/update_settings.php';
+        
+        console.log(`🎨 Saving theme ${theme} to database via ${apiPath}`);
+        
+        const response = await fetch(apiPath, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                setting: 'theme',
+                value: theme
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('✅ Theme saved to database successfully');
+            return true;
+        } else {
+            console.error('❌ API returned error:', data.error);
+            return false;
+        }
+        
+    } catch (error) {
+        console.error('❌ Error saving theme to database:', error);
+        return false;
     }
 }
 
-// The enhanced version doesn't need manual icon updates since CSS handles it
+// Initialize theme on page load
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Theme toggle ready with current theme:', window.initialTheme);
+    
+    // Ensure theme is properly applied
+    if (window.initialTheme) {
+        applyThemeToDOM(window.initialTheme);
+    }
 });
 
-// Listen for theme changes
+// Listen for theme changes from other components
 window.addEventListener('themeChanged', function(e) {
     console.log('Theme changed to:', e.detail.theme);
 });

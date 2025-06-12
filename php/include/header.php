@@ -1,4 +1,4 @@
-<!-- header.php -->
+<!-- header.php - COMPLETE VERSION -->
 <header class="main-header">
     <div class="user-info">
         <h1 class="habitus-name"><?php echo htmlspecialchars($userHabitusName); ?></h1>
@@ -29,10 +29,10 @@
             <?php endif; ?>
         </div>
 
-        <!-- header.php (just the profile picture part) -->
+        <!-- Profile picture with COMPLETE error handling -->
         <a href="settings.php" class="profile-button" title="Profile settings">
             <?php
-            // FIXED: Better profile picture path handling
+            // COMPLETE: Better profile picture path handling
             $profilePic = $userData['profile_picture'] ?? 'uploads/profile-icon.webp';
             // Create proper URL based on path type
             if (strpos($profilePic, 'http') === 0) {

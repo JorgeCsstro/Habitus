@@ -341,11 +341,11 @@
     position: absolute;
     width: 8px;
     height: 8px;
-    background: var(--accent);
+    background: #c4923e;
     border-radius: 50%;
     right: 10px;
     top: 60px;
-    box-shadow: 0 0 5px rgba(196, 146, 62, 0.5);
+    box-shadow: 0 0 5px #c4923e;
 }
 
 .dashboard-room .placed-items-floor {

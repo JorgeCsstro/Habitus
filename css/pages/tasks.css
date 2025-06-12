@@ -1,4 +1,4 @@
-/* tasks.css - Styling for the tasks page */
+/* tasks.css - Tasks page specific styles */
 
 /* Main content container */
 .tasks-content {
@@ -155,7 +155,7 @@
     gap: 15px;
 }
 
-/* Individual task item */
+/* Individual task item (different from dashboard version) */
 .task-item {
     background-color: var(--bg-panel);
     border-radius: 10px;
@@ -232,24 +232,11 @@
     font-weight: 600;
 }
 
-.difficulty.easy {
-    background-color: var(--bg-secondary);
-    color: var(--success);
-}
-
-.difficulty.medium {
-    background-color: var(--bg-secondary);
-    color: var(--warning);
-}
-
-.difficulty.hard {
-    background-color: var(--bg-secondary);
-    color: var(--accent);
-}
-
+.difficulty.easy,
+.difficulty.medium,
+.difficulty.hard,
 .difficulty.expert {
     background-color: var(--bg-secondary);
-    color: var(--error);
 }
 
 .reward {
@@ -286,7 +273,104 @@
     opacity: 0.7;
 }
 
-/* Daily streak display */
+/* Task action buttons */
+.task-actions {
+    display: flex;
+    padding: 10px 15px;
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-primary);
+}
+
+.complete-btn, .edit-btn, .delete-btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.complete-btn {
+    background-color: var(--success);
+    color: var(--btn-text);
+    margin-right: auto;
+}
+
+.complete-btn:hover {
+    background-color: var(--secondary);
+}
+
+.complete-btn.done {
+    background-color: var(--border-primary);
+    cursor: default;
+}
+
+.complete-btn img {
+    width: 16px;
+    height: 16px;
+    margin-right: 5px;
+    filter: brightness(10);
+}
+
+.edit-btn, .delete-btn {
+    background-color: transparent;
+    margin-left: 10px;
+}
+
+.edit-btn:hover {
+    background-color: var(--border-primary);
+}
+
+.delete-btn:hover {
+    background-color: var(--error);
+}
+
+.edit-btn img, .delete-btn img {
+    width: 16px;
+    height: 16px;
+}
+
+/* Subtask Button in Task Item */
+.manage-subtasks-btn {
+    padding: 6px 12px;
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-right: 10px;
+}
+
+.manage-subtasks-btn:hover {
+    background-color: var(--border-primary);
+    color: var(--text-primary);
+}
+
+.manage-subtasks-btn img {
+    width: 14px;
+    height: 14px;
+}
+
+.subtask-count {
+    display: inline-flex;
+    min-width: 16px;
+    height: 16px;
+    background-color: var(--border-primary);
+    color: var(--text-secondary);
+    border-radius: 8px;
+    font-size: 0.7rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+}
+
+/* Task stats and timeframes */
 .task-stats {
     display: flex;
     background-color: var(--bg-secondary);
@@ -395,65 +479,7 @@
     color: var(--text-secondary);
 }
 
-/* Task action buttons */
-.task-actions {
-    display: flex;
-    padding: 10px 15px;
-    background-color: var(--bg-secondary);
-    border-top: 1px solid var(--border-primary);
-}
-
-.complete-btn, .edit-btn, .delete-btn {
-    padding: 8px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    transition: all 0.2s ease;
-}
-
-.complete-btn {
-    background-color: var(--success);
-    color: var(--btn-text);
-    margin-right: auto;
-}
-
-.complete-btn:hover {
-    background-color: var(--secondary);
-}
-
-.complete-btn.done {
-    background-color: var(--border-primary);
-    cursor: default;
-}
-
-.complete-btn img {
-    width: 16px;
-    height: 16px;
-    margin-right: 5px;
-    filter: brightness(10);
-}
-
-.edit-btn, .delete-btn {
-    background-color: transparent;
-    margin-left: 10px;
-}
-
-.edit-btn:hover {
-    background-color: var(--border-primary);
-}
-
-.delete-btn:hover {
-    background-color: var(--error);
-}
-
-.edit-btn img, .delete-btn img {
-    width: 16px;
-    height: 16px;
-}
-
-/* Modal styles */
+/* Task form modal (tasks-specific) */
 .modal {
     display: none;
     position: fixed;
@@ -481,11 +507,6 @@
     max-height: 90vh;
     overflow-y: auto;
     animation: slideUp 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
 }
 
 @keyframes slideUp {
@@ -532,7 +553,7 @@
 .form-group {
     transition: all 0.3s ease;
     overflow: hidden;
-    max-height: 500px; /* Set to a value larger than your tallest form group */
+    max-height: 500px;
     margin-bottom: 20px;
 }
 
@@ -715,90 +736,12 @@
     color: var(--warning);
 }
 
-/* Notification styles */
-.notification-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 2000;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 300px;
-}
-
-.notification {
-    background-color: var(--bg-panel);
-    border-radius: 8px;
-    padding: 15px 20px;
-    box-shadow: 0 5px 15px var(--shadow);
-    transform: translateX(120%);
-    opacity: 0;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.notification.show {
-    transform: translateX(0);
-    opacity: 1;
-}
-
-.notification::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-}
-
-.notification.success {
-    border-left: 4px solid var(--success);
-}
-
-.notification.error {
-    border-left: 4px solid var(--error);
-}
-
-.notification.warning {
-    border-left: 4px solid var(--warning);
-}
-
-.notification.info {
-    border-left: 4px solid var(--info);
-}
-
-/* Loading spinner animation */
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.loading-icon {
-    animation: spin 1s linear infinite;
-    width: 16px;
-    height: 16px;
-    margin-right: 5px;
-}
-
-/* Task list animations */
-.task-item {
-    transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-/* Clean visual feedback when a task is being removed */
-.task-item.removing {
-    opacity: 0;
-    transform: translateX(20px);
-}
-
-/* Subtasks Section in Tasks Modal */
+/* Subtasks Section */
 .use-subtasks-toggle {
     margin-top: 15px;
 }
 
-/* Subtasks Modal */
+/* Subtasks Modal Components */
 .subtasks-container {
     display: flex;
     flex-direction: column;
@@ -964,45 +907,6 @@
     border: 1px solid var(--border-primary);
 }
 
-/* Subtask Button in Task Item */
-.manage-subtasks-btn {
-    padding: 6px 12px;
-    background-color: var(--bg-secondary);
-    color: var(--text-secondary);
-    border: 1px solid var(--border-primary);
-    border-radius: 20px;
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-right: 10px;
-}
-
-.manage-subtasks-btn:hover {
-    background-color: var(--border-primary);
-    color: var(--text-primary);
-}
-
-.manage-subtasks-btn img {
-    width: 14px;
-    height: 14px;
-}
-
-.subtask-count {
-    display: inline-flex;
-    min-width: 16px;
-    height: 16px;
-    background-color: var(--border-primary);
-    color: var(--text-secondary);
-    border-radius: 8px;
-    font-size: 0.7rem;
-    align-items: center;
-    justify-content: center;
-    padding: 0 4px;
-}
-
 .subtask-progress {
     margin-top: 15px;
 }
@@ -1027,9 +931,14 @@
     border-left: 3px solid var(--secondary);
 }
 
-@keyframes pulse {
-    from { transform: scale(1); }
-    to { transform: scale(1.05); box-shadow: 0 0 10px var(--shadow); }
+/* Task list animations */
+.task-item {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.task-item.removing {
+    opacity: 0;
+    transform: translateX(20px);
 }
 
 /* Responsive adjustments */
@@ -1056,12 +965,5 @@
     
     .cancel-btn, .save-btn, .primary-btn {
         width: 100%;
-    }
-    
-    /* Adjust notifications for mobile */
-    .notification-container {
-        left: 20px;
-        right: 20px;
-        max-width: calc(100% - 40px);
     }
 }

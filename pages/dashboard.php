@@ -21,6 +21,14 @@ $userHabitusName = $userData['username'] . "'s Habitus";
 $currentLanguage = $userData['language'] ?? 'en';
 $currentTheme = $userData['theme'] ?? 'light';
 
+if (!in_array($currentTheme, ['light', 'dark'])) {
+    $currentTheme = 'light';
+    // Update database with valid theme
+    updateUserTheme($_SESSION['user_id'], $currentTheme);
+}
+
+$_SESSION['user_theme'] = $currentTheme;
+
 // Get user's dailies
 $dailies = getUserDailies($_SESSION['user_id']);
 

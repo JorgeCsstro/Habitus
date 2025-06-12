@@ -1,6 +1,6 @@
 <?php
 
-// php/include/functions.php - Fixed getUserHabitusData function
+// php/include/functions.php - Added theme persistence function
 
 /**
  * Get user data from the database
@@ -15,10 +15,77 @@ function getUserData($userId) {
     $stmt->execute([$userId]);
     
     if ($stmt->rowCount() > 0) {
-        return $stmt->fetch();
+        $userData = $stmt->fetch();
+        
+        // Store theme in session for faster access
+        $_SESSION['user_theme'] = $userData['theme'] ?? 'light';
+        
+        return $userData;
     }
     
     return [];
+}
+
+/**
+ * Get user's current theme from database
+ * @param int $userId - User ID
+ * @return string - Theme name (light/dark)
+ */
+function getUserTheme($userId) {
+    global $conn;
+    
+    // Check session first
+    if (isset($_SESSION['user_theme'])) {
+        return $_SESSION['user_theme'];
+    }
+    
+    $sql = "SELECT theme FROM users WHERE id = ? LIMIT 1";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$userId]);
+    
+    if ($stmt->rowCount() > 0) {
+        $result = $stmt->fetch();
+        $theme = $result['theme'] ?? 'light';
+        
+        // Store in session for faster access
+        $_SESSION['user_theme'] = $theme;
+        
+        return $theme;
+    }
+    
+    return 'light'; // Default fallback
+}
+
+/**
+ * Update user theme in database and session
+ * @param int $userId - User ID
+ * @param string $theme - Theme name
+ * @return bool - Success status
+ */
+function updateUserTheme($userId, $theme) {
+    global $conn;
+    
+    // Validate theme
+    if (!in_array($theme, ['light', 'dark'])) {
+        return false;
+    }
+    
+    try {
+        $sql = "UPDATE users SET theme = ? WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $success = $stmt->execute([$theme, $userId]);
+        
+        if ($success) {
+            // Update session
+            $_SESSION['user_theme'] = $theme;
+            error_log("✅ Theme updated for user {$userId}: {$theme}");
+        }
+        
+        return $success;
+    } catch (Exception $e) {
+        error_log("❌ Error updating theme: " . $e->getMessage());
+        return false;
+    }
 }
 
 /**

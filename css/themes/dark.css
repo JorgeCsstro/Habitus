@@ -249,13 +249,19 @@ html[data-theme="dark"] .challenge-dots {
     border-color: var(--border-primary);
 }
 
-html[data-theme="dark"] .menu-item img,
-html[data-theme="dark"] .user-actions div img,
-html[data-theme="dark"] .user-actions a img{
+html[data-theme="dark"] .menu-item img {
     filter: invert(0.8);
 }
 
-html[data-theme="dark"] .profile-button img {
+/* Dark theme - invert user action icons */
+html[data-theme="dark"] .user-actions .hcoin-balance img,
+html[data-theme="dark"] .user-actions .survey-button img,
+html[data-theme="dark"] .user-actions .messages-button img {
+    filter: invert(0.8);
+}
+
+/* Profile picture should remain unfiltered */
+html[data-theme="dark"] .user-actions .profile-button img {
     filter: none;
 }
 

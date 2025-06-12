@@ -1,4 +1,4 @@
-// js/theme-manager.js - FIXED VERSION (No Color Removal)
+// js/theme-manager.js - COMPLETE Theme System
 
 class ThemeManager {
     constructor() {
@@ -12,7 +12,7 @@ class ThemeManager {
     }
 
     init() {
-        console.log('🎨 Initializing FIXED theme manager...');
+        console.log('🎨 Initializing COMPLETE theme manager...');
         
         try {
             // Get initial theme safely
@@ -77,13 +77,8 @@ class ThemeManager {
             this.themeStylesheet.id = 'theme-stylesheet';
             this.themeStylesheet.rel = 'stylesheet';
             
-            // Insert as the FIRST stylesheet for proper cascade
-            const firstLink = document.head.querySelector('link[rel="stylesheet"]');
-            if (firstLink) {
-                document.head.insertBefore(this.themeStylesheet, firstLink);
-            } else {
-                document.head.appendChild(this.themeStylesheet);
-            }
+            // Insert as the LAST stylesheet for proper cascade
+            document.head.appendChild(this.themeStylesheet);
         } else {
             console.log('Found existing theme stylesheet');
         }
@@ -109,7 +104,7 @@ class ThemeManager {
         this.isChanging = true;
 
         try {
-            // Apply theme immediately without complex animations
+            // Apply theme immediately
             this.applyTheme(theme, animate, false);
             this.currentTheme = theme;
             
@@ -200,8 +195,8 @@ class ThemeManager {
         }
         
         const colors = {
-            light: '#f9f5f0',
-            dark: '#011f4b'
+            light: '#f9f6f0',
+            dark: '#1a1a3a'
         };
         
         metaThemeColor.content = colors[theme] || colors.light;
@@ -246,6 +241,16 @@ class ThemeManager {
                 const isActive = input.value === this.currentTheme;
                 option.classList.toggle('active', isActive);
                 input.checked = isActive;
+                
+                // Update current badge
+                const currentBadge = option.querySelector('.current-badge');
+                const indicator = option.querySelector('.theme-indicator');
+                
+                if (isActive && !currentBadge && indicator) {
+                    indicator.innerHTML = '<span class="current-badge">Current</span>';
+                } else if (!isActive && currentBadge) {
+                    currentBadge.remove();
+                }
             }
         });
 
@@ -323,7 +328,7 @@ class ThemeManager {
     }
 }
 
-// CSS for theme transitions - SIMPLIFIED
+// CSS for theme transitions - COMPLETE
 const style = document.createElement('style');
 style.textContent = `
     .theme-switching,
@@ -340,21 +345,48 @@ style.textContent = `
     html[data-theme] * {
         transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     }
+    
+    /* Loading spinner for various states */
+    .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top: 2px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 5px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid transparent;
+        border-top: 2px solid currentColor;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        margin-right: 8px;
+    }
 `;
 document.head.appendChild(style);
 
-// FIXED: Single global declaration and initialization
+// COMPLETE: Single global declaration and initialization
 let themeManager;
 
 function initializeThemeManager() {
-    console.log('🎨 Starting FIXED theme manager initialization...');
+    console.log('🎨 Starting COMPLETE theme manager initialization...');
     
     if (!themeManager) {
         themeManager = new ThemeManager();
         window.themeManager = themeManager;
-        console.log('✅ FIXED theme manager created and exposed globally');
+        console.log('✅ COMPLETE theme manager created and exposed globally');
     } else {
-        console.log('✅ FIXED theme manager already exists');
+        console.log('✅ COMPLETE theme manager already exists');
     }
     return themeManager;
 }
@@ -377,4 +409,4 @@ if (typeof window !== 'undefined') {
     };
 }
 
-console.log('✅ FIXED Theme Manager script loaded');
+console.log('✅ COMPLETE Theme Manager script loaded');

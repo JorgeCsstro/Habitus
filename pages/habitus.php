@@ -21,6 +21,14 @@ $userHabitusName = $userData['username'] . "'s Habitus";
 $currentLanguage = $userData['language'] ?? 'en';
 $currentTheme = $userData['theme'] ?? 'light';
 
+if (!in_array($currentTheme, ['light', 'dark'])) {
+    $currentTheme = 'light';
+    // Update database with valid theme
+    updateUserTheme($_SESSION['user_id'], $currentTheme);
+}
+
+$_SESSION['user_theme'] = $currentTheme;
+
 // Get room ID from URL or use default
 $roomId = isset($_GET['room_id']) ? intval($_GET['room_id']) : 0;
 

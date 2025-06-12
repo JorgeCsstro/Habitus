@@ -21,6 +21,14 @@ $userHabitusName = $userData['username'] . "'s Habitus";
 $currentLanguage = $userData['language'] ?? 'en';
 $currentTheme = $userData['theme'] ?? 'light';
 
+if (!in_array($currentTheme, ['light', 'dark'])) {
+    $currentTheme = 'light';
+    // Update database with valid theme
+    updateUserTheme($_SESSION['user_id'], $currentTheme);
+}
+
+$_SESSION['user_theme'] = $currentTheme;
+
 // Get tab selection from URL parameter
 $activeTab = isset($_GET['tab']) ? $_GET['tab'] : 'dailies';
 
@@ -37,7 +45,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tasks - <?php echo SITE_NAME; ?></title>
     
-        <!-- REQUIRED: Theme CSS - Add this to ALL pages -->
+    <!-- REQUIRED: Theme CSS - Add this to ALL pages -->
     <link rel="stylesheet" href="../css/themes/<?php echo $currentTheme; ?>.css" id="theme-stylesheet">
     
     <!-- Your existing CSS files AFTER theme CSS -->
@@ -108,9 +116,6 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                              <div class="task-meta">
                                                 <span class="difficulty <?php echo $daily['difficulty']; ?>">
                                                     <?php echo ucfirst($daily['difficulty']); ?>
-                                                <span class="difficulty <?php echo isset($daily['difficulty']) ? $daily['difficulty'] : 'medium'; ?>">
-                                                    <?php echo ucfirst(isset($daily['difficulty']) ? $daily['difficulty'] : 'medium'); ?>
-                                                 </span>
                                                  <span class="reward">
                                                      <img src="../images/icons/hcoin-icon.webp" alt="HCoin">
                                                     <?php echo $daily['hcoin_reward']; ?>

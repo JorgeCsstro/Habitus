@@ -1,20 +1,8 @@
-// js/settings.js - FIXED Theme System and Profile Picture Upload
+// js/settings.js - COMPLETE Theme System and Profile Picture Upload
 
 // FIXED: Use global theme manager - NO redeclaration
 function getThemeManager() {
     return window.themeManager || window.getThemeManager();
-}
-
-// Updated changeTheme function
-function changeTheme(theme) {
-    const manager = getThemeManager();
-    if (!manager) {
-        console.error('Theme manager not initialized');
-        return;
-    }
-    
-    manager.setTheme(theme);
-    showNotification(`Switched to ${theme} theme`, 'success');
 }
 
 // Initialize when DOM is loaded
@@ -34,6 +22,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 setupSettingsAfterThemeManager();
             } else {
                 console.warn('Theme manager not available after timeout');
+                // Initialize basic functionality without theme manager
+                setupBasicSettings();
             }
         }, 1000);
     }
@@ -42,19 +32,21 @@ document.addEventListener('DOMContentLoaded', function() {
 function setupSettingsAfterThemeManager() {
     console.log('✅ Setting up settings page with theme manager');
     
+    setupThemeListeners();
+    setupBasicSettings();
+    
+    console.log('✅ Settings page initialized');
+}
+
+function setupBasicSettings() {
     // Set up form listeners
     setupFormListeners();
     
     // Load saved preferences
     loadSavedPreferences();
     
-    // Setup theme change listeners
-    setupThemeListeners();
-    
     // Add keyboard shortcuts
     setupKeyboardShortcuts();
-    
-    console.log('✅ Settings page initialized');
 }
 
 /**
@@ -107,31 +99,122 @@ function setupKeyboardShortcuts() {
  * @param {string} theme - Theme name (light/dark)
  */
 function changeTheme(theme) {
-    const manager = getThemeManager();
-    if (!manager) {
-        console.error('Theme manager not initialized');
-        return;
-    }
+    console.log(`🎨 Settings: Changing theme to ${theme}`);
     
-    // Show loading state briefly
+    // Show loading state
     const themeOptions = document.querySelectorAll('.theme-option');
     themeOptions.forEach(option => {
         option.style.pointerEvents = 'none';
         option.style.opacity = '0.7';
     });
     
-    // Apply theme
-    manager.setTheme(theme);
+    // Apply theme immediately to DOM
+    applyThemeToDOM(theme);
     
-    // Show success notification and re-enable options
-    setTimeout(() => {
-        showNotification(`Switched to ${theme} theme`, 'success');
-        
+    // Save theme to database
+    saveThemeToDatabase(theme).then(success => {
+        // Re-enable options
         themeOptions.forEach(option => {
             option.style.pointerEvents = '';
             option.style.opacity = '';
         });
-    }, 100);
+        
+        if (success) {
+            showNotification(`✨ Switched to ${theme} theme`, 'success');
+            // Update UI to show current theme
+            updateThemeUI(theme);
+        } else {
+            showNotification('Failed to save theme preference', 'error');
+        }
+    });
+}
+
+function updateThemeUI(selectedTheme) {
+    // Update radio buttons and active states
+    document.querySelectorAll('.theme-option').forEach(option => {
+        const input = option.querySelector('input[type="radio"]');
+        if (input) {
+            const isActive = input.value === selectedTheme;
+            option.classList.toggle('active', isActive);
+            input.checked = isActive;
+            
+            // Update current badge
+            const currentBadge = option.querySelector('.current-badge');
+            const indicator = option.querySelector('.theme-indicator');
+            
+            if (isActive && !currentBadge && indicator) {
+                indicator.innerHTML = '<span class="current-badge">Current</span>';
+            } else if (!isActive && currentBadge) {
+                currentBadge.remove();
+            }
+        }
+    });
+}
+
+function applyThemeToDOM(theme) {
+    const html = document.documentElement;
+    const body = document.body;
+    
+    html.setAttribute('data-theme', theme);
+    body.classList.remove('theme-light', 'theme-dark');
+    body.classList.add(`theme-${theme}`);
+    
+    updateThemeCSS(theme);
+    console.log(`✅ Applied theme ${theme} to DOM`);
+}
+
+function updateThemeCSS(theme) {
+    let themeStylesheet = document.getElementById('theme-stylesheet');
+    
+    if (!themeStylesheet) {
+        themeStylesheet = document.createElement('link');
+        themeStylesheet.id = 'theme-stylesheet';
+        themeStylesheet.rel = 'stylesheet';
+        document.head.appendChild(themeStylesheet);
+    }
+    
+    const isInSubdirectory = window.location.pathname.includes('/pages/');
+    const basePath = isInSubdirectory ? '../css/themes/' : 'css/themes/';
+    themeStylesheet.href = `${basePath}${theme}.css`;
+}
+
+async function saveThemeToDatabase(theme) {
+    try {
+        const isInSubdirectory = window.location.pathname.includes('/pages/');
+        const apiPath = isInSubdirectory ? '../php/api/user/update_settings.php' : 'php/api/user/update_settings.php';
+        
+        console.log(`🎨 Saving theme ${theme} to database via ${apiPath}`);
+        
+        const response = await fetch(apiPath, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                setting: 'theme',
+                value: theme
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('✅ Theme saved to database successfully');
+            localStorage.setItem('habitus-theme', theme);
+            return true;
+        } else {
+            console.error('❌ API returned error:', data.error);
+            return false;
+        }
+        
+    } catch (error) {
+        console.error('❌ Error saving theme to database:', error);
+        return false;
+    }
 }
 
 /**
@@ -154,6 +237,14 @@ function setupFormListeners() {
     const deleteForm = document.getElementById('delete-account-form');
     if (deleteForm) {
         deleteForm.addEventListener('submit', handleAccountDelete);
+    }
+    
+    // Language selector
+    const languageSelector = document.getElementById('language-selector');
+    if (languageSelector) {
+        languageSelector.addEventListener('change', function() {
+            changeLanguage(this.value);
+        });
     }
 }
 
@@ -345,6 +436,12 @@ function updateAllProfilePictures(newUrl) {
  * @param {string} language - Language code
  */
 async function changeLanguage(languageCode) {
+    const select = document.getElementById('language-selector');
+    if (select) {
+        select.disabled = true;
+        select.style.opacity = '0.7';
+    }
+    
     try {
         const response = await fetch('../php/api/user/update_settings.php', {
             method: 'POST',
@@ -353,7 +450,7 @@ async function changeLanguage(languageCode) {
                 'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify({
-                setting: 'preferred_language',
+                setting: 'language',
                 value: languageCode
             })
         });
@@ -370,7 +467,15 @@ async function changeLanguage(languageCode) {
                 await window.habitusTranslator.changeLanguage(languageCode);
             }
             
-            showNotification('🌐 Language preference updated', 'success');
+            // Update local storage
+            localStorage.setItem('userLanguage', languageCode);
+            
+            showNotification(`🌐 Language changed to ${getLanguageName(languageCode)}`, 'success');
+            
+            // Reload page after delay to apply server-side language changes
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
         } else {
             throw new Error(data.error || 'Failed to update language preference');
         }
@@ -378,6 +483,11 @@ async function changeLanguage(languageCode) {
     } catch (error) {
         console.error('Language change error:', error);
         showNotification('❌ Failed to change language: ' + error.message, 'error');
+    } finally {
+        if (select) {
+            select.disabled = false;
+            select.style.opacity = '1';
+        }
     }
 }
 
@@ -730,6 +840,15 @@ function showNotification(message, type = 'success', duration = 4000) {
     if (!container) {
         container = document.createElement('div');
         container.className = 'notification-container';
+        container.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        `;
         document.body.appendChild(container);
     }
     
@@ -751,16 +870,34 @@ function showNotification(message, type = 'success', duration = 4000) {
         <button class="notification-close" onclick="this.parentElement.remove()">×</button>
     `;
     
+    notification.style.cssText = `
+        background: var(--bg-panel);
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px var(--shadow);
+        transform: translateX(400px);
+        transition: transform 0.3s;
+        max-width: 300px;
+        border: 1px solid var(--border-primary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-left: 4px solid ${type === 'success' ? 'var(--success)' : 
+                                 type === 'error' ? 'var(--error)' : 
+                                 type === 'warning' ? 'var(--warning)' : 
+                                 'var(--info)'};
+    `;
+    
     container.appendChild(notification);
     
     // Animate in
     setTimeout(() => {
-        notification.classList.add('show');
+        notification.style.transform = 'translateX(0)';
     }, 10);
     
     // Auto remove after delay
     setTimeout(() => {
-        notification.classList.remove('show');
+        notification.style.transform = 'translateX(400px)';
         setTimeout(() => {
             if (notification.parentElement) {
                 notification.remove();
@@ -770,7 +907,7 @@ function showNotification(message, type = 'success', duration = 4000) {
     
     // Make notification clickable to dismiss
     notification.addEventListener('click', () => {
-        notification.classList.remove('show');
+        notification.style.transform = 'translateX(400px)';
         setTimeout(() => {
             if (notification.parentElement) {
                 notification.remove();
@@ -829,60 +966,6 @@ function loadTranslationSettings() {
     if (highQualityToggle) {
         highQualityToggle.checked = highQuality;
     }
-}
-
-function changeLanguage(language) {
-    const select = document.getElementById('language-select');
-    if (select) {
-        select.disabled = true;
-        select.style.opacity = '0.7';
-    }
-    
-    // Update user language preference
-    fetch('../php/api/user/update_settings.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            setting: 'language',
-            value: language
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (select) {
-            select.disabled = false;
-            select.style.opacity = '1';
-        }
-        
-        if (data.success) {
-            // Update local storage
-            localStorage.setItem('userLanguage', language);
-            
-            // Notify translation manager
-            if (window.habitusTranslator) {
-                window.habitusTranslator.switchLanguage(language);
-            }
-            
-            showNotification(`Language changed to ${getLanguageName(language)}`, 'success');
-            
-            // Reload page after delay to apply server-side language changes
-            setTimeout(() => {
-                window.location.reload();
-            }, 2000);
-        } else {
-            showNotification(data.message || 'Error updating language', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        if (select) {
-            select.disabled = false;
-            select.style.opacity = '1';
-        }
-        showNotification('Error updating language', 'error');
-    });
 }
 
 function updateTranslationPreference(type, enabled) {
@@ -991,82 +1074,6 @@ function getLanguageName(langCode) {
     return names[langCode] || langCode.toUpperCase();
 }
 
-// Add CSS for usage stats
-const usageStatsCSS = `
-.translation-usage-info {
-    background-color: var(--bg-secondary);
-    border-radius: 12px;
-    padding: 20px;
-    margin-top: 20px;
-    border: 1px solid var(--border-primary);
-}
-
-.usage-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.usage-header h4 {
-    margin: 0;
-    color: var(--text-primary);
-    font-size: 1.1rem;
-}
-
-.refresh-usage-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-    padding: 5px;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-}
-
-.refresh-usage-btn:hover {
-    background-color: var(--bg-tertiary);
-    transform: scale(1.1);
-}
-
-.usage-stats {
-    display: grid;
-    gap: 10px;
-}
-
-.usage-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border-tertiary);
-}
-
-.usage-item:last-child {
-    border-bottom: none;
-}
-
-.usage-label {
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.usage-value {
-    color: var(--text-primary);
-    font-weight: 600;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-`;
-
-// Add the CSS to the page
-const usageStyleSheet = document.createElement('style');
-usageStyleSheet.textContent = usageStatsCSS;
-document.head.appendChild(usageStyleSheet);
-
 // Close modals when clicking outside
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('modal')) {
@@ -1098,3 +1105,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+console.log('✅ Settings script loaded with all functionality');

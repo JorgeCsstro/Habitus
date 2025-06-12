@@ -21,6 +21,14 @@ $userHabitusName = $userData['username'] . "'s Habitus";
 $currentLanguage = $userData['language'] ?? 'en';
 $currentTheme = $userData['theme'] ?? 'light';
 
+if (!in_array($currentTheme, ['light', 'dark'])) {
+    $currentTheme = 'light';
+    // Update database with valid theme
+    updateUserTheme($_SESSION['user_id'], $currentTheme);
+}
+
+$_SESSION['user_theme'] = $currentTheme;
+
 // Get category filter if any
 $categoryId = isset($_GET['category']) ? intval($_GET['category']) : 0;
 $searchQuery = isset($_GET['search']) ? trim($_GET['search']) : '';
@@ -62,7 +70,7 @@ $categories = $categoryStmt->fetchAll();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shop - <?php echo SITE_NAME; ?></title>
     
-        <!-- REQUIRED: Theme CSS - Add this to ALL pages -->
+    <!-- REQUIRED: Theme CSS - Add this to ALL pages -->
     <link rel="stylesheet" href="../css/themes/<?php echo $currentTheme; ?>.css" id="theme-stylesheet">
     
     <!-- Your existing CSS files AFTER theme CSS -->
