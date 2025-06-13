@@ -83,48 +83,348 @@ function setupEventListeners() {
 }
 
 /**
- * Update task completion status via API
+ * Update task completion status via API (Enhanced with subtask checking)
  * @param {number} taskId - ID of the task
  * @param {string} taskType - Type of task (daily, goal, or challenge)
  */
 function updateTaskCompletion(taskId, taskType) {
+    const button = document.querySelector(`.complete-button[data-id="${taskId}"]`);
+    
+    // Check for subtasks first (for goals and challenges)
+    if (taskType === 'goal' || taskType === 'challenge') {
+        // Check if task has subtasks
+        fetch(`../php/api/tasks/subtasks.php?task_id=${taskId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const subtasks = data.subtasks;
+                    
+                    // If no subtasks, proceed with completion
+                    if (subtasks.length === 0) {
+                        proceedWithDashboardCompletion(button, taskId, taskType);
+                        return;
+                    }
+                    
+                    // Check if all subtasks are completed
+                    const allCompleted = subtasks.every(subtask => subtask.is_completed == 1);
+                    
+                    if (allCompleted) {
+                        proceedWithDashboardCompletion(button, taskId, taskType);
+                    } else {
+                        // Show subtasks modal - need to open tasks page or show modal
+                        showDashboardSubtasksModal(taskId, taskType, subtasks);
+                    }
+                } else {
+                    // If error fetching subtasks, proceed anyway
+                    proceedWithDashboardCompletion(button, taskId, taskType);
+                }
+            })
+            .catch(error => {
+                console.error('Error checking subtasks:', error);
+                // If error, proceed anyway
+                proceedWithDashboardCompletion(button, taskId, taskType);
+            });
+    } else {
+        // For dailies, proceed directly
+        proceedWithDashboardCompletion(button, taskId, taskType);
+    }
+}
+
+/**
+ * Proceed with actual task completion
+ * @param {HTMLElement} button - The completion button
+ * @param {number} taskId - ID of the task
+ * @param {string} taskType - Type of task
+ */
+function proceedWithDashboardCompletion(button, taskId, taskType) {
+    // Show loading state
+    const originalText = button.innerHTML;
+    button.innerHTML = '<span class="loading">Processing...</span>';
+    button.disabled = true;
+    
     // Create form data for the API request
     const formData = new FormData();
     formData.append('task_id', taskId);
     formData.append('task_type', taskType);
     
-    // Determine the appropriate API endpoint
-    let apiEndpoint = '../php/api/tasks/complete.php';
-    
     // Send API request
-    fetch(apiEndpoint, {
+    fetch('../php/api/tasks/complete.php', {
         method: 'POST',
         body: formData
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Update UI based on server response
-            updateUIAfterCompletion(taskId, taskType, data);
+            // Update UI immediately
+            button.classList.add('completed');
+            button.closest('li').classList.add('completed');
+            button.innerHTML = '✓ Completed';
+            button.disabled = true;
             
-            // If HCoins were earned, show notification
+            // Update HCoin balance if available
+            if (data.new_balance) {
+                const hcoinElement = document.querySelector('.hcoin-balance span');
+                if (hcoinElement) {
+                    hcoinElement.textContent = new Intl.NumberFormat().format(data.new_balance);
+                }
+            }
+            
+            // Show HCoin notification
             if (data.hcoins_earned && data.hcoins_earned > 0) {
                 showHCoinEarnedNotification(data.hcoins_earned);
             }
         } else {
-            // Handle error
+            // Handle error - revert UI changes
             console.error('Error updating task completion:', data.message);
-            // Revert UI changes if needed
-            const button = document.querySelector(`.complete-button[data-id="${taskId}"]`);
-            if (button) {
-                button.classList.toggle('completed');
-                button.closest('li').classList.toggle('completed');
-            }
+            button.innerHTML = originalText;
+            button.disabled = false;
+            button.classList.remove('completed');
+            button.closest('li').classList.remove('completed');
+            
+            // Show error notification
+            showNotification('Error completing task: ' + (data.message || 'Unknown error'), 'error');
         }
     })
     .catch(error => {
         console.error('API request failed:', error);
+        // Revert UI changes
+        button.innerHTML = originalText;
+        button.disabled = false;
+        button.classList.remove('completed');
+        button.closest('li').classList.remove('completed');
+        
+        showNotification('Network error. Please try again.', 'error');
     });
+}
+
+/**
+ * Show subtasks modal for dashboard
+ * @param {number} taskId - ID of the task
+ * @param {string} taskType - Type of task
+ * @param {Array} subtasks - Array of subtasks
+ */
+function showDashboardSubtasksModal(taskId, taskType, subtasks) {
+    // Show notification
+    showNotification('Complete all subtasks before completing the main task', 'warning');
+    
+    // If subtasks modal exists on dashboard, show it
+    const modal = document.getElementById('subtasks-modal');
+    if (modal) {
+        // Load subtasks into modal
+        loadSubtasksInModal(taskId, taskType, subtasks);
+        modal.classList.add('show');
+    } else {
+        // Redirect to tasks page with modal open
+        window.location.href = `tasks.php?show_subtasks=${taskId}&type=${taskType}`;
+    }
+}
+
+/**
+ * Load subtasks into the dashboard modal
+ * @param {number} taskId - ID of the parent task
+ * @param {string} taskType - Type of task
+ * @param {Array} subtasks - Array of subtasks
+ */
+function loadSubtasksInModal(taskId, taskType, subtasks) {
+    const subtasksList = document.getElementById('dashboard-subtasks-list');
+    const modalTitle = document.getElementById('subtasks-modal-title');
+    
+    // Update modal title
+    modalTitle.textContent = `Manage Subtasks (${taskType.charAt(0).toUpperCase() + taskType.slice(1)})`;
+    
+    // Clear existing content
+    subtasksList.innerHTML = '';
+    
+    if (subtasks.length === 0) {
+        subtasksList.innerHTML = '<div class="empty-subtasks">No subtasks yet.</div>';
+        updateDashboardSubtaskProgress(0, 0);
+        return;
+    }
+    
+    // Add each subtask
+    subtasks.forEach(subtask => {
+        const subtaskItem = document.createElement('div');
+        subtaskItem.className = `subtask-item ${subtask.is_completed == 1 ? 'completed' : ''}`;
+        
+        subtaskItem.innerHTML = `
+            <div class="subtask-content">
+                <input type="checkbox" 
+                       id="dashboard-subtask-${subtask.id}" 
+                       ${subtask.is_completed == 1 ? 'checked' : ''}
+                       onchange="toggleDashboardSubtask(${subtask.id}, this.checked)">
+                <label for="dashboard-subtask-${subtask.id}" class="subtask-label">
+                    <span class="subtask-title">${escapeHtml(subtask.title)}</span>
+                    ${subtask.description ? `<span class="subtask-description">${escapeHtml(subtask.description)}</span>` : ''}
+                </label>
+            </div>
+        `;
+        
+        subtasksList.appendChild(subtaskItem);
+    });
+    
+    // Update progress
+    const completed = subtasks.filter(s => s.is_completed == 1).length;
+    updateDashboardSubtaskProgress(completed, subtasks.length);
+}
+
+/**
+ * Escape HTML to prevent XSS
+ * @param {string} text - Text to escape
+ * @returns {string} - Escaped text
+ */
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+
+/**
+ * Toggle subtask completion in dashboard
+ * @param {number} subtaskId - ID of the subtask
+ * @param {boolean} completed - New completion status
+ */
+function toggleDashboardSubtask(subtaskId, completed) {
+    const subtaskElement = document.querySelector(`#dashboard-subtask-${subtaskId}`).closest('.subtask-item');
+    
+    // Apply visual change immediately
+    if (completed) {
+        subtaskElement.classList.add('completed');
+    } else {
+        subtaskElement.classList.remove('completed');
+    }
+    
+    // Send API request
+    fetch('../php/api/tasks/subtasks.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            action: 'update',
+            subtask_id: subtaskId,
+            completed: completed
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update progress
+            const checkboxes = document.querySelectorAll('#dashboard-subtasks-list input[type="checkbox"]');
+            const total = checkboxes.length;
+            const completedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+            
+            updateDashboardSubtaskProgress(completedCount, total);
+            
+            // If all completed, show notification
+            if (data.all_completed && completed) {
+                showNotification('All subtasks completed! You can now complete the main task.', 'success');
+            }
+        } else {
+            // Revert change
+            const checkbox = document.querySelector(`#dashboard-subtask-${subtaskId}`);
+            checkbox.checked = !completed;
+            if (completed) {
+                subtaskElement.classList.remove('completed');
+            } else {
+                subtaskElement.classList.add('completed');
+            }
+            showNotification('Error updating subtask', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Revert change
+        const checkbox = document.querySelector(`#dashboard-subtask-${subtaskId}`);
+        checkbox.checked = !completed;
+        showNotification('Network error', 'error');
+    });
+}
+
+/**
+ * Update subtask progress display
+ * @param {number} completed - Number of completed subtasks
+ * @param {number} total - Total number of subtasks
+ */
+function updateDashboardSubtaskProgress(completed, total) {
+    const progressBar = document.querySelector('#subtasks-modal .progress');
+    const progressText = document.querySelector('#subtasks-modal .progress-text');
+    
+    if (!progressBar || !progressText) return;
+    
+    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+    
+    progressBar.style.width = percentage + '%';
+    progressText.innerHTML = `
+        <span>${completed} / ${total} subtasks</span>
+        <span class="percentage">${percentage}%</span>
+    `;
+}
+
+/**
+ * Close dashboard subtasks modal
+ */
+function closeDashboardSubtasksModal() {
+    const modal = document.getElementById('subtasks-modal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+}
+
+/**
+ * Show notification message
+ * @param {string} message - Message to display
+ * @param {string} type - Notification type (success, error, warning)
+ */
+function showNotification(message, type = 'success') {
+    // Check if notification container exists
+    let container = document.querySelector('.notification-container');
+    
+    if (!container) {
+        // Create container if it doesn't exist
+        container = document.createElement('div');
+        container.className = 'notification-container';
+        container.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+        `;
+        document.body.appendChild(container);
+    }
+    
+    // Create notification
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.style.cssText = `
+        background: ${type === 'success' ? '#4caf50' : type === 'warning' ? '#ff9800' : '#f44336'};
+        color: white;
+        padding: 12px 20px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        transform: translateX(300px);
+        transition: transform 0.3s ease;
+    `;
+    notification.textContent = message;
+    
+    // Add to container
+    container.appendChild(notification);
+    
+    // Show notification
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+    
+    // Remove after delay
+    setTimeout(() => {
+        notification.style.transform = 'translateX(300px)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 4000);
 }
 
 /**

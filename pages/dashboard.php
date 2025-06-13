@@ -321,6 +321,34 @@ foreach ($placedItems as $item) {
         </div>
     </div>
 
+    <div id="subtasks-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="subtasks-modal-title">Manage Subtasks</h2>
+                <button class="close-modal" onclick="closeDashboardSubtasksModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="subtasks-container">
+                    <h3>Current Subtasks</h3>
+                    <div class="subtasks-list" id="dashboard-subtasks-list">
+                        <!-- Subtasks will be loaded here -->
+                        <div class="empty-subtasks">No subtasks yet.</div>
+                    </div>
+                                    
+                    <div class="subtask-progress">
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span>0 / 0 subtasks</span>
+                            <span class="percentage">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript -->
     <script src="../js/main.js"></script>
 
