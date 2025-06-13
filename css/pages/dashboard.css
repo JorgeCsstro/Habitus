@@ -131,6 +131,10 @@
     border-color: var(--secondary);
 }
 
+.complete-button.daily-completed {
+    cursor: not-allowed;
+}
+
 .complete-button img {
     width: 14px;
     height: 14px;

@@ -137,8 +137,10 @@ function updateTaskCompletion(taskId, taskType) {
  * @param {string} taskType - Type of task
  */
 function proceedWithDashboardCompletion(button, taskId, taskType) {
+    // Store the original button HTML before processing
+    const originalHTML = button.innerHTML;
+    
     // Show loading state
-    const originalText = button.innerHTML;
     button.innerHTML = '<span class="loading">Processing...</span>';
     button.disabled = true;
     
@@ -155,11 +157,21 @@ function proceedWithDashboardCompletion(button, taskId, taskType) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Update UI immediately
+            // Update UI - but keep original appearance
             button.classList.add('completed');
             button.closest('li').classList.add('completed');
-            button.innerHTML = '✓ Completed';
-            button.disabled = true;
+            
+            // IMPORTANT: Revert to original HTML instead of showing "✓ Completed"
+            button.innerHTML = originalHTML;
+            
+            // Keep button disabled until next day for dailies
+            if (taskType === 'daily') {
+                button.disabled = true;
+                // Add a class to indicate it's completed but visually unchanged
+                button.classList.add('daily-completed');
+            } else {
+                button.disabled = true;
+            }
             
             // Update HCoin balance if available
             if (data.new_balance) {
@@ -176,7 +188,7 @@ function proceedWithDashboardCompletion(button, taskId, taskType) {
         } else {
             // Handle error - revert UI changes
             console.error('Error updating task completion:', data.message);
-            button.innerHTML = originalText;
+            button.innerHTML = originalHTML;
             button.disabled = false;
             button.classList.remove('completed');
             button.closest('li').classList.remove('completed');
@@ -188,7 +200,7 @@ function proceedWithDashboardCompletion(button, taskId, taskType) {
     .catch(error => {
         console.error('API request failed:', error);
         // Revert UI changes
-        button.innerHTML = originalText;
+        button.innerHTML = originalHTML;
         button.disabled = false;
         button.classList.remove('completed');
         button.closest('li').classList.remove('completed');
