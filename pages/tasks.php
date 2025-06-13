@@ -124,12 +124,12 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                         </div>
                                         <div class="task-stats">
                                             <div class="streak">
-                                                <img src="../images/icons/streak.webp" alt="Streak">
+                                                <img src="../images/icons/streak-icon.webp" alt="Streak">
                                                 <span><?php echo $daily['current_streak']; ?></span>
                                                 <span class="label">Current Streak</span>
                                             </div>
                                             <div class="best-streak">
-                                                <img src="../images/icons/best-streak.webp" alt="Best">
+                                                <img src="../images/icons/best_streak-icon.webp" alt="Best">
                                                 <span><?php echo $daily['highest_streak']; ?></span>
                                                 <span class="label">Best Streak</span>
                                             </div>

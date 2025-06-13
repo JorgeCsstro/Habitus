@@ -1946,11 +1946,29 @@ function toggleMobileInventory() {
     const isVisible = inventory.classList.contains('show');
     
     if (isVisible) {
-        // Hide inventory (show only header)
+        // Hide inventory (slide down to show only header)
         inventory.classList.remove('show');
+        
+        // Add small haptic feedback if supported
+        if (navigator.vibrate) {
+            navigator.vibrate(50);
+        }
     } else {
-        // Show full inventory
+        // Show full inventory (slide up)
         inventory.classList.add('show');
+        
+        // Add small haptic feedback if supported
+        if (navigator.vibrate) {
+            navigator.vibrate(100);
+        }
+        
+        // Focus first inventory item for better UX
+        setTimeout(() => {
+            const firstItem = inventory.querySelector('.inventory-item:not(.disabled)');
+            if (firstItem) {
+                firstItem.focus();
+            }
+        }, 200);
     }
 }
 

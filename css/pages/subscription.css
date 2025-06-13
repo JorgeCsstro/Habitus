@@ -230,7 +230,7 @@
 }
 
 .plan-features li strong {
-    color: var(--secondary);
+    color: var(--benefits);
     font-weight: 600;
 }
 

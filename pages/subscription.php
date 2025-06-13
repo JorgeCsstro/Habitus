@@ -149,21 +149,12 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                                 </li>
                                 <li>
                                     <img src="../images/icons/check.webp" alt="✓">
-                                    Earn and spend HCoins
+                                    Earn and spend HCoins to buy items
                                 </li>
                                 <li>
                                     <img src="../images/icons/check.webp" alt="✓">
                                     Track streaks and progress
                                 </li>
-                                <li class="disabled">
-                                    <img src="../images/icons/cross.webp" alt="✗">
-                                    Contains advertisements
-                                </li>
-                                <li class="disabled">
-                                    <img src="../images/icons/cross.webp" alt="✗">
-                                    Limited shop items
-                                </li>
-                            </ul>
                         </div>
                         <div class="plan-button-wrapper">
                             <?php if ($subscriptionType === 'free'): ?>
@@ -192,22 +183,6 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                                 <li>
                                     <img src="../images/icons/check.webp" alt="✓">
                                     <strong>No advertisements</strong>
-                                </li>
-                                <li>
-                                    <img src="../images/icons/check.webp" alt="✓">
-                                    Clean, distraction-free interface
-                                </li>
-                                <li>
-                                    <img src="../images/icons/check.webp" alt="✓">
-                                    Support development
-                                </li>
-                                <li class="disabled">
-                                    <img src="../images/icons/cross.webp" alt="✗">
-                                    No exclusive items
-                                </li>
-                                <li class="disabled">
-                                    <img src="../images/icons/cross.webp" alt="✗">
-                                    No premium features
                                 </li>
                             </ul>
                         </div>
@@ -250,18 +225,6 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                                     <img src="../images/icons/check.webp" alt="✓">
                                     <strong>Premium room themes</strong>
                                 </li>
-                                <li>
-                                    <img src="../images/icons/check.webp" alt="✓">
-                                    <strong>Advanced statistics</strong>
-                                </li>
-                                <li>
-                                    <img src="../images/icons/check.webp" alt="✓">
-                                    <strong>Priority support</strong>
-                                </li>
-                                <li>
-                                    <img src="../images/icons/check.webp" alt="✓">
-                                    <strong>Early access to features</strong>
-                                </li>
                             </ul>
                         </div>
                         <div class="plan-button-wrapper">
@@ -289,7 +252,7 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                                 <img src="../images/icons/ads-icon.webp" alt="No Ads">
                             </div>
                             <h3>Ad-Free Experience</h3>
-                            <p>Focus on your tasks without any distractions or interruptions from advertisements. Enjoy a clean, professional interface.</p>
+                            <p>Focus on your tasks without any distractions or interruptions from advertisements.</p>
                         </div>
                         <div class="benefit">
                             <div class="benefit-icon">
@@ -315,7 +278,7 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                         <div class="faq-item">
                             <button class="faq-question" onclick="toggleFaq(this)">
                                 Can I cancel anytime?
-                                <img src="../images/icons/chevron-down.webp" alt="Toggle">
+                                <img src="../images/icons/arrow_down-icon.webp" alt="Toggle">
                             </button>
                             <div class="faq-answer">
                                 <p>Yes! You can cancel your subscription at any time. You'll retain access to premium features until the end of your current billing period. No cancellation fees or hassles.</p>
@@ -324,28 +287,19 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                         <div class="faq-item">
                             <button class="faq-question" onclick="toggleFaq(this)">
                                 What payment methods do you accept?
-                                <img src="../images/icons/chevron-down.webp" alt="Toggle">
+                                <img src="../images/icons/arrow_down-icon.webp" alt="Toggle">
                             </button>
                             <div class="faq-answer">
-                                <p>We accept all major credit and debit cards through our secure payment processor Stripe. Your payment information is encrypted and never stored on our servers.</p>
+                                <p>We accept all major credit and debit cards through our secure payment processor <b>Stripe<b>. Your payment information is encrypted and never stored on our servers.</p>
                             </div>
                         </div>
                         <div class="faq-item">
                             <button class="faq-question" onclick="toggleFaq(this)">
                                 Can I change plans later?
-                                <img src="../images/icons/chevron-down.webp" alt="Toggle">
+                                <img src="../images/icons/arrow_down-icon.webp" alt="Toggle">
                             </button>
                             <div class="faq-answer">
                                 <p>Absolutely! You can upgrade or downgrade your plan at any time. Changes take effect immediately and billing adjusts accordingly. You'll always have access to features you've paid for.</p>
-                            </div>
-                        </div>
-                        <div class="faq-item">
-                            <button class="faq-question" onclick="toggleFaq(this)">
-                                Is my payment information secure?
-                                <img src="../images/icons/chevron-down.webp" alt="Toggle">
-                            </button>
-                            <div class="faq-answer">
-                                <p>Yes, we use Stripe's industry-standard encryption and security. We never store your payment details on our servers. All transactions are PCI DSS compliant and secured with bank-level encryption.</p>
                             </div>
                         </div>
                     </div>

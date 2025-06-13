@@ -39,6 +39,8 @@ html[data-theme="dark"] {
     
     /* Miscellaneous */
     --tooltip-bg: rgba(179, 205, 224, 0.9);
+
+    --benefits: #8700a5;
 }
 
 

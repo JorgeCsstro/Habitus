@@ -39,6 +39,8 @@ html[data-theme="light"] {
     
     /* Miscellaneous */
     --tooltip-bg: rgba(62, 30, 4, 0.9);
+
+    --benefits: #098200;
 }
 
 /* CRITICAL: Force application with maximum specificity */
