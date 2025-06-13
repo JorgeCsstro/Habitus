@@ -1107,7 +1107,7 @@
         width: 90%;
         position: fixed;
         bottom: 0;
-        left: 50%;
+        left: 54%;
         /* START POSITION: Hidden except for header (60px visible) */
         transform: translateX(-50%) translateY(calc(100% - 60px));
         border-radius: 15px 15px 0 0;

@@ -253,10 +253,18 @@
 }
 
 .preview-sidebar {
+    position: absolute;
     width: 14%;
+    bottom: -6px;
+    height: 102px;
 }
 
 .preview-content {
+    position: absolute;
+    top: 15px;
+    left: 0;
+    right: 0;
+    bottom: 0;
     height: 80%;
     display: flex;
 }
@@ -271,6 +279,8 @@
 
 .preview-card {
     flex: 1;
+    width: 85%;
+    margin-left: 24px;
     border-radius: 2px;
 }
 
