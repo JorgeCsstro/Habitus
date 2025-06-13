@@ -74,24 +74,26 @@ $challenges = getUserChallenges($_SESSION['user_id']);
             <!-- Tasks Content -->
             <div class="tasks-content">
                 <div class="tasks-header">
-                    <h1>Your Tasks</h1>
-                    <button class="create-task-btn" id="create-task-button">+ New Task</button>
+                    <h1 translate="yes">Your Tasks</h1>
+                    <button class="create-task-btn" id="create-task-button">
+                        <span translate="yes">+ New Task</span>
+                    </button>
                 </div>
 
                 <div class="tasks-tabs">
                     <div class="tab <?php echo $activeTab === 'dailies' ? 'active' : ''; ?>" 
                          onclick="changeTab('dailies')">
-                        <span>Dailies</span>
+                        <span translate="yes">Dailies</span>
                         <span class="task-count"><?php echo count($dailies); ?></span>
                     </div>
                     <div class="tab <?php echo $activeTab === 'goals' ? 'active' : ''; ?>" 
                          onclick="changeTab('goals')">
-                        <span>Goals</span>
+                        <span translate="yes">Goals</span>
                         <span class="task-count"><?php echo count($goals); ?></span>
                     </div>
                     <div class="tab <?php echo $activeTab === 'challenges' ? 'active' : ''; ?>" 
                          onclick="changeTab('challenges')">
-                        <span>Challenges</span>
+                        <span translate="yes">Challenges</span>
                         <span class="task-count"><?php echo count($challenges); ?></span>
                     </div>
                 </div>
@@ -100,8 +102,10 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                 <div class="tab-content <?php echo $activeTab === 'dailies' ? 'active' : ''; ?>" id="dailies-tab">
                     <?php if (empty($dailies)): ?>
                         <div class="empty-tasks">
-                            <p>You don't have any daily tasks yet.</p>
-                            <button class="add-task-btn" onclick="openTaskModal('daily')">Add Your First Daily</button>
+                            <p translate="yes">You don't have any daily tasks yet.</p>
+                            <button class="add-task-btn" onclick="openTaskModal('daily')">
+                                <span translate="yes">Add Your First Daily</span>
+                            </button>
                         </div>
                     <?php else: ?>
                         <div class="tasks-list dailies-list">
@@ -114,8 +118,9 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                                 <p class="task-description"><?php echo htmlspecialchars($daily['description']); ?></p>
                                              <?php endif; ?>
                                              <div class="task-meta">
-                                                <span class="difficulty <?php echo $daily['difficulty']; ?>">
+                                                <span class="difficulty <?php echo $daily['difficulty']; ?>" translate="yes">
                                                     <?php echo ucfirst($daily['difficulty']); ?>
+                                                </span>
                                                  <span class="reward">
                                                      <img src="../images/icons/hcoin-icon.webp" alt="HCoin">
                                                     <?php echo $daily['hcoin_reward']; ?>
@@ -126,12 +131,12 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                             <div class="streak">
                                                 <img src="../images/icons/streak-icon.webp" alt="Streak">
                                                 <span><?php echo $daily['current_streak']; ?></span>
-                                                <span class="label">Current Streak</span>
+                                                <span class="label" translate="yes">Current Streak</span>
                                             </div>
                                             <div class="best-streak">
                                                 <img src="../images/icons/best_streak-icon.webp" alt="Best">
                                                 <span><?php echo $daily['highest_streak']; ?></span>
-                                                <span class="label">Best Streak</span>
+                                                <span class="label" translate="yes">Best Streak</span>
                                             </div>
                                         </div>
                                     </div>
@@ -139,12 +144,12 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                         <?php if ($daily['completed']): ?>
                                             <button class="complete-btn done" disabled>
                                                 <img src="../images/icons/check.webp" alt="Done">
-                                                Completed
+                                                <span translate="yes">Completed</span>
                                             </button>
                                         <?php else: ?>
                                             <button class="complete-btn" onclick="completeTask(<?php echo $daily['id']; ?>, 'daily')">
                                                 <img src="../images/icons/check.webp" alt="Complete">
-                                                Complete
+                                                <span translate="yes">Complete</span>
                                             </button>
                                         <?php endif; ?>
                                         <button class="edit-btn" onclick="openTaskModal('daily', <?php echo $daily['id']; ?>)">
@@ -164,8 +169,10 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                 <div class="tab-content <?php echo $activeTab === 'goals' ? 'active' : ''; ?>" id="goals-tab">
                     <?php if (empty($goals)): ?>
                         <div class="empty-tasks">
-                            <p>You don't have any goals yet.</p>
-                            <button class="add-task-btn" onclick="openTaskModal('goal')">Add Your First Goal</button>
+                            <p translate="yes">You don't have any goals yet.</p>
+                            <button class="add-task-btn" onclick="openTaskModal('goal')">
+                                <span translate="yes">Add Your First Goal</span>
+                            </button>
                         </div>
                     <?php else: ?>
                         <div class="tasks-list goals-list">
@@ -178,7 +185,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                                 <p class="task-description"><?php echo htmlspecialchars($goal['description']); ?></p>
                                             <?php endif; ?>
                                             <div class="task-meta">
-                                                <span class="difficulty <?php echo isset($goal['difficulty']) ? $goal['difficulty'] : 'medium'; ?>">
+                                                <span class="difficulty <?php echo isset($goal['difficulty']) ? $goal['difficulty'] : 'medium'; ?>" translate="yes">
                                                     <?php echo ucfirst(isset($goal['difficulty']) ? $goal['difficulty'] : 'medium'); ?>
                                                 </span>
                                                 <span class="reward">
@@ -202,30 +209,28 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                                     <div class="progress" style="width: <?php echo ($completed / $total) * 100; ?>%"></div>
                                                 </div>
                                                 <div class="progress-text">
-                                                    <span><?php echo $completed; ?> / <?php echo $total; ?> subtasks</span>
+                                                    <span><?php echo $completed; ?> / <?php echo $total; ?> <span translate="yes">subtasks</span></span>
                                                     <span class="percentage"><?php echo round(($completed / $total) * 100); ?>%</span>
                                                 </div>
                                             </div>
                                             <?php endif; ?>
                                         </div>
-                                        <!-- Remove task-progress section completely -->
                                     </div>
                                     <div class="task-actions">
                                         <?php if ($goal['completed']): ?>
                                             <button class="complete-btn done" disabled>
                                                 <img src="../images/icons/check.webp" alt="Done">
-                                                Completed
+                                                <span translate="yes">Completed</span>
                                             </button>
                                         <?php else: ?>
                                             <button class="manage-subtasks-btn" onclick="showSubtasks(<?php echo $goal['id']; ?>, 'goal')">
                                                 <img src="../images/icons/tasks-icon.webp" alt="Subtasks">
-                                                Subtasks
+                                                <span translate="yes">Subtasks</span>
                                                 <span class="subtask-count"><?php echo countSubtasks($goal['id']); ?></span>
                                             </button>
-                                            <!-- Change button text from "Complete Step" to "Complete" -->
                                             <button class="complete-btn" onclick="completeTask(<?php echo $goal['id']; ?>, 'goal')">
                                                 <img src="../images/icons/check.webp" alt="Complete">
-                                                Complete
+                                                <span translate="yes">Complete</span>
                                             </button>
                                         <?php endif; ?>
                                         <button class="edit-btn" onclick="openTaskModal('goal', <?php echo $goal['id']; ?>)">
@@ -245,8 +250,10 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                 <div class="tab-content <?php echo $activeTab === 'challenges' ? 'active' : ''; ?>" id="challenges-tab">
                     <?php if (empty($challenges)): ?>
                         <div class="empty-tasks">
-                            <p>You don't have any challenges yet.</p>
-                            <button class="add-task-btn" onclick="openTaskModal('challenge')">Add Your First Challenge</button>
+                            <p translate="yes">You don't have any challenges yet.</p>
+                            <button class="add-task-btn" onclick="openTaskModal('challenge')">
+                                <span translate="yes">Add Your First Challenge</span>
+                            </button>
                         </div>
                     <?php else: ?>
                         <div class="tasks-list challenges-list">
@@ -259,7 +266,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                                 <p class="task-description"><?php echo htmlspecialchars($challenge['description']); ?></p>
                                             <?php endif; ?>
                                             <div class="task-meta">
-                                                <span class="difficulty <?php echo isset($challenge['difficulty']) ? $challenge['difficulty'] : 'medium'; ?>">
+                                                <span class="difficulty <?php echo isset($challenge['difficulty']) ? $challenge['difficulty'] : 'medium'; ?>" translate="yes">
                                                     <?php echo ucfirst(isset($challenge['difficulty']) ? $challenge['difficulty'] : 'medium'); ?>
                                                 </span>
                                                 <span class="reward">
@@ -277,7 +284,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                                     <div class="progress" style="width: <?php echo ($completed / $total) * 100; ?>%"></div>
                                                 </div>
                                                 <div class="progress-text">
-                                                    <span><?php echo $completed; ?> / <?php echo $total; ?> subtasks</span>
+                                                    <span><?php echo $completed; ?> / <?php echo $total; ?> <span translate="yes">subtasks</span></span>
                                                     <span class="percentage"><?php echo round(($completed / $total) * 100); ?>%</span>
                                                 </div>
                                             </div>
@@ -286,11 +293,11 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                         <div class="task-timeframe">
                                             <div class="dates">
                                                 <div class="start-date">
-                                                    <span class="label">Started:</span>
+                                                    <span class="label" translate="yes">Started:</span>
                                                     <span><?php echo date('M j, Y', strtotime($challenge['start_date'])); ?></span>
                                                 </div>
                                                 <div class="end-date">
-                                                    <span class="label">Ends:</span>
+                                                    <span class="label" translate="yes">Ends:</span>
                                                     <span><?php echo date('M j, Y', strtotime($challenge['end_date'])); ?></span>
                                                 </div>
                                             </div>
@@ -303,7 +310,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                             ?>
                                             <div class="time-left">
                                                 <span class="days"><?php echo $daysLeft; ?></span>
-                                                <span class="label">Days Left</span>
+                                                <span class="label" translate="yes">Days Left</span>
                                             </div>
                                         </div>
                                     </div>
@@ -311,17 +318,17 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                                         <?php if ($challenge['completed']): ?>
                                             <button class="complete-btn done" disabled>
                                                 <img src="../images/icons/check.webp" alt="Done">
-                                                Completed
+                                                <span translate="yes">Completed</span>
                                             </button>
                                         <?php else: ?>
                                             <button class="manage-subtasks-btn" onclick="showSubtasks(<?php echo $challenge['id']; ?>, 'challenge')">
                                                 <img src="../images/icons/tasks-icon.webp" alt="Subtasks">
-                                                Subtasks
+                                                <span translate="yes">Subtasks</span>
                                                 <span class="subtask-count"><?php echo countSubtasks($challenge['id']); ?></span>
                                             </button>
                                             <button class="complete-btn" onclick="completeTask(<?php echo $challenge['id']; ?>, 'challenge')">
                                                 <img src="../images/icons/check.webp" alt="Complete">
-                                                Complete
+                                                <span translate="yes">Complete</span>
                                             </button>
                                         <?php endif; ?>
                                         <button class="edit-btn" onclick="openTaskModal('challenge', <?php echo $challenge['id']; ?>)">
@@ -342,7 +349,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
             <div id="task-modal" class="modal">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h2 id="modal-title">Create New Task</h2>
+                        <h2 id="modal-title" translate="yes">Create New Task</h2>
                         <button class="close-modal" onclick="closeTaskModal()">&times;</button>
                     </div>
                     <div class="modal-body">
@@ -351,91 +358,95 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                             <input type="hidden" id="task-type" name="task_type" value="daily">
                                                     
                             <div class="form-group">
-                                <label for="title">Task Title</label>
-                                <input type="text" id="title" name="title" placeholder="Enter task title" required>
+                                <label for="title" translate="yes">Task Title</label>
+                                <input type="text" id="title" name="title" placeholder="Enter task title" translate="yes" required>
                             </div>
                                                     
                             <div class="form-group">
-                                <label for="description">Description (optional)</label>
-                                <textarea id="description" name="description" rows="3" placeholder="Add details about your task"></textarea>
+                                <label for="description" translate="yes">Description (optional)</label>
+                                <textarea id="description" name="description" rows="3" placeholder="Add details about your task" translate="yes"></textarea>
                             </div>
                                                     
                             <div class="form-group">
-                                <label for="difficulty">Difficulty</label>
+                                <label for="difficulty" translate="yes">Difficulty</label>
                                 <select id="difficulty" name="difficulty" onchange="updateRewardCalculation()">
-                                    <option value="easy">Easy (10 HCoins)</option>
-                                    <option value="medium" selected>Medium (20 HCoins)</option>
-                                    <option value="hard">Hard (35 HCoins)</option>
-                                    <option value="expert">Expert (50 HCoins)</option>
+                                    <option value="easy" translate="yes">Easy (10 HCoins)</option>
+                                    <option value="medium" selected translate="yes">Medium (20 HCoins)</option>
+                                    <option value="hard" translate="yes">Hard (35 HCoins)</option>
+                                    <option value="expert" translate="yes">Expert (50 HCoins)</option>
                                 </select>
                             </div>
                                                     
                             <!-- Duration field - only shown for dailies -->
                             <div class="form-group" id="duration-group">
-                                <label for="duration">Estimated Duration (minutes)</label>
+                                <label for="duration" translate="yes">Estimated Duration (minutes)</label>
                                 <input type="number" id="duration" name="duration" min="1" value="15" oninput="updateRewardCalculation()">
-                                <span class="hint">Longer tasks earn more HCoins</span>
+                                <span class="hint" translate="yes">Longer tasks earn more HCoins</span>
                             </div>
                                                     
                             <!-- Daily-specific fields -->
                             <div id="daily-fields" class="type-specific-fields">
                                 <div class="form-group">
-                                    <label for="reset_time">Reset Time</label>
+                                    <label for="reset_time" translate="yes">Reset Time</label>
                                     <input type="time" id="reset_time" name="reset_time" value="00:00">
-                                    <span class="hint">When should this daily reset?</span>
+                                    <span class="hint" translate="yes">When should this daily reset?</span>
                                 </div>
                             </div>
                                                     
                             <!-- Goal-specific fields -->
                             <div id="goal-fields" class="type-specific-fields" style="display: none;">
                                 <div class="form-group">
-                                    <label for="deadline">Deadline (optional)</label>
+                                    <label for="deadline" translate="yes">Deadline (optional)</label>
                                     <input type="date" id="deadline" name="deadline">
                                 </div>
                                 <div class="form-group">
                                     <label class="checkbox-label">
                                         <input type="checkbox" id="use_subtasks" name="use_subtasks" checked>
-                                        Break this task into subtasks
+                                        <span translate="yes">Break this task into subtasks</span>
                                     </label>
-                                    <span class="hint">Split your task into smaller, manageable steps</span>
+                                    <span class="hint" translate="yes">Split your task into smaller, manageable steps</span>
                                 </div>
                             </div>
                                                     
                             <!-- Challenge-specific fields -->
                             <div id="challenge-fields" class="type-specific-fields" style="display: none;">
                                 <div class="form-group">
-                                    <label for="start_date">Start Date</label>
+                                    <label for="start_date" translate="yes">Start Date</label>
                                     <input type="date" id="start_date" name="start_date">
                                 </div>
                                 <div class="form-group">
-                                    <label for="end_date">End Date</label>
+                                    <label for="end_date" translate="yes">End Date</label>
                                     <input type="date" id="end_date" name="end_date">
-                                    <span class="hint">Challenge will expire after this date</span>
+                                    <span class="hint" translate="yes">Challenge will expire after this date</span>
                                 </div>
                                 <div class="form-group">
                                     <label class="checkbox-label">
                                         <input type="checkbox" id="use_subtasks" name="use_subtasks" checked>
-                                        Break this task into subtasks
+                                        <span translate="yes">Break this task into subtasks</span>
                                     </label>
-                                    <span class="hint">Split your task into smaller, manageable steps</span>
+                                    <span class="hint" translate="yes">Split your task into smaller, manageable steps</span>
                                 </div>
                             </div>
                                                     
                             <div class="form-group reward-preview">
-                                <label>Reward Preview</label>
+                                <label translate="yes">Reward Preview</label>
                                 <div class="reward-display">
-                                    <span id="reward-amount">20</span> HCoins
+                                    <span id="reward-amount">20</span> <span translate="yes">HCoins</span>
                                     <div class="reward-calculation">
-                                        Base: <span id="base-reward">20</span> × 
-                                        Duration: <span id="duration-multiplier">1</span> × 
-                                        Type: <span id="type-multiplier">1</span>
+                                        <span translate="yes">Base:</span> <span id="base-reward">20</span> × 
+                                        <span translate="yes">Duration:</span> <span id="duration-multiplier">1</span> × 
+                                        <span translate="yes">Type:</span> <span id="type-multiplier">1</span>
                                     </div>
                                 </div>
                             </div>
                                                     
                             <div class="form-actions">
-                                <button type="button" class="cancel-btn" onclick="closeTaskModal()">Cancel</button>
-                                <button type="submit" class="save-btn" id="save-task-btn">Save Task</button>
+                                <button type="button" class="cancel-btn" onclick="closeTaskModal()">
+                                    <span translate="yes">Cancel</span>
+                                </button>
+                                <button type="submit" class="save-btn" id="save-task-btn">
+                                    <span translate="yes">Save Task</span>
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -446,14 +457,18 @@ $challenges = getUserChallenges($_SESSION['user_id']);
             <div id="delete-modal" class="modal">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h2>Delete Task</h2>
+                        <h2 translate="yes">Delete Task</h2>
                         <button class="close-modal" onclick="closeDeleteModal()">&times;</button>
                     </div>
                     <div class="modal-body">
-                        <p>Are you sure you want to delete this task? This action cannot be undone.</p>
+                        <p translate="yes">Are you sure you want to delete this task? This action cannot be undone.</p>
                         <div class="form-actions">
-                            <button class="cancel-btn" onclick="closeDeleteModal()">Cancel</button>
-                            <button class="delete-btn" id="confirm-delete-btn">Delete</button>
+                            <button class="cancel-btn" onclick="closeDeleteModal()">
+                                <span translate="yes">Cancel</span>
+                            </button>
+                            <button class="delete-btn" id="confirm-delete-btn">
+                                <span translate="yes">Delete</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -463,64 +478,73 @@ $challenges = getUserChallenges($_SESSION['user_id']);
             <div id="completion-modal" class="modal">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h2>Task Completed!</h2>
+                        <h2 translate="yes">Task Completed!</h2>
                         <button class="close-modal" onclick="closeCompletionModal()">&times;</button>
                     </div>
                     <div class="modal-body">
                         <div class="completion-animation">
                             <img src="../images/icons/success.webp" alt="Success">
                         </div>
-                        <p id="completion-message">You earned <span id="earned-hcoins">0</span> HCoins!</p>
+                        <p id="completion-message">
+                            <span translate="yes">You earned</span> <span id="earned-hcoins">0</span> <span translate="yes">HCoins!</span>
+                        </p>
                         
                         <div id="streak-bonus" style="display: none;">
                             <p>
                                 <span class="streak-icon">🔥</span>
-                                Current streak: <span id="current-streak">0</span> days
+                                <span translate="yes">Current streak:</span> <span id="current-streak">0</span> <span translate="yes">days</span>
                             </p>
                         </div>
                         
                         <div class="form-actions">
-                            <button class="primary-btn" onclick="closeCompletionModal()">Continue</button>
+                            <button class="primary-btn" onclick="closeCompletionModal()">
+                                <span translate="yes">Continue</span>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
-            <!-- Add this to tasks.php, after the other modals -->
 
-        <!-- Subtasks Modal -->
-        <div id="subtasks-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 id="subtasks-modal-title">Manage Subtasks</h2>
-                    <button class="close-modal" onclick="closeSubtasksModal()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="subtasks-container">
-                        <h3>Current Subtasks</h3>
-                        <div class="subtasks-list">
-                            <!-- Subtasks will be loaded here -->
-                            <div class="empty-subtasks">No subtasks yet. Add some to break down this task!</div>
-                        </div>
-                                                
-                        <div class="subtask-form">
-                            <h3>Add New Subtask</h3>
-                            <input type="hidden" id="subtask-id" value="0">
-                            <div class="form-group">
-                                <label for="subtask-title">Title</label>
-                                <input type="text" id="subtask-title" placeholder="Enter subtask title">
+            <!-- Subtasks Modal -->
+            <div id="subtasks-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 id="subtasks-modal-title" translate="yes">Manage Subtasks</h2>
+                        <button class="close-modal" onclick="closeSubtasksModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="subtasks-container">
+                            <h3 translate="yes">Current Subtasks</h3>
+                            <div class="subtasks-list">
+                                <!-- Subtasks will be loaded here -->
+                                <div class="empty-subtasks" translate="yes">No subtasks yet. Add some to break down this task!</div>
                             </div>
-                            <div class="form-group">
-                                <label for="subtask-description">Description (optional)</label>
-                                <textarea id="subtask-description" rows="2" placeholder="Add details about this subtask"></textarea>
-                            </div>
-                            <div class="form-actions">
-                                <button type="button" class="cancel-btn" onclick="resetSubtaskForm()">Reset</button>
-                                <button type="button" class="save-btn" id="add-subtask-btn" onclick="createSubtask()">Add Subtask</button>
-                            </div>
+                                                    
+                            <div class="subtask-form">
+                                <h3 translate="yes">Add New Subtask</h3>
+                                <input type="hidden" id="subtask-id" value="0">
+                                <div class="form-group">
+                                    <label for="subtask-title" translate="yes">Title</label>
+                                    <input type="text" id="subtask-title" placeholder="Enter subtask title" translate="yes">
+                                </div>
+                                <div class="form-group">
+                                    <label for="subtask-description" translate="yes">Description (optional)</label>
+                                    <textarea id="subtask-description" rows="2" placeholder="Add details about this subtask" translate="yes"></textarea>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="button" class="cancel-btn" onclick="resetSubtaskForm()">
+                                        <span translate="yes">Reset</span>
+                                    </button>
+                                    <button type="button" class="save-btn" id="add-subtask-btn" onclick="createSubtask()">
+                                        <span translate="yes">Add Subtask</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div class="form-actions modal-footer">
-                            <button type="button" class="primary-btn" onclick="closeSubtasksModal()">Done</button>
+                            <button type="button" class="primary-btn" onclick="closeSubtasksModal()">
+                                <span translate="yes">Done</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -534,6 +558,7 @@ $challenges = getUserChallenges($_SESSION['user_id']);
     <script>
     // REQUIRED: Theme initialization for ALL pages
     window.initialTheme = '<?php echo $currentTheme; ?>';
+    window.currentUserLanguage = '<?php echo $currentLanguage; ?>';
     document.documentElement.setAttribute('data-theme', window.initialTheme);
     document.body.classList.add('theme-' + window.initialTheme);
     </script>
@@ -541,11 +566,12 @@ $challenges = getUserChallenges($_SESSION['user_id']);
     <!-- Load theme manager on ALL pages -->
     <script src="../js/theme-manager.js"></script>
 
+    <!-- Load enhanced translation manager -->
+    <script src="../js/translation-manager.js"></script>
+
     <!-- Tasks-specific JavaScript -->
     <script src="../js/tasks.js"></script>
 
-    <!-- Load translation manager -->
-    <script src="../js/translation-manager.js"></script>
     <script>
         // Wait for the document to be fully loaded
         document.addEventListener('DOMContentLoaded', function() {
@@ -586,6 +612,15 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                     if (modalTitle) {
                         const capitalizedType = taskType.charAt(0).toUpperCase() + taskType.slice(1);
                         modalTitle.textContent = `Create New ${capitalizedType}`;
+                        
+                        // Trigger translation for the new modal title if translation is enabled
+                        if (window.habitusTranslator && window.habitusTranslator.currentLanguage !== 'en') {
+                            window.habitusTranslator.translateElement({
+                                element: modalTitle,
+                                text: modalTitle.textContent,
+                                type: 'text'
+                            });
+                        }
                     }
                 
                     // 5. Show appropriate fields based on task type
@@ -608,6 +643,14 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                     const modal = document.getElementById('task-modal');
                     if (modal) {
                         modal.classList.add('show');
+                        
+                        // If translation is enabled and language is not English, translate new modal content
+                        if (window.habitusTranslator && window.habitusTranslator.currentLanguage !== 'en') {
+                            setTimeout(() => {
+                                window.habitusTranslator.translatePage();
+                            }, 100);
+                        }
+                        
                         console.log('Modal should be visible now');
                     } else {
                         console.error('Modal element not found!');
@@ -615,6 +658,19 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                 });
             } else {
                 console.error('Create task button not found!');
+            }
+
+            // Initialize translation system with current language
+            if (window.habitusTranslator) {
+                window.habitusTranslator.currentLanguage = window.currentUserLanguage;
+                localStorage.setItem('userLanguage', window.currentUserLanguage);
+                
+                // Auto-translate if not English
+                if (window.currentUserLanguage !== 'en') {
+                    window.habitusTranslator.autoTranslateEnabled = true;
+                    localStorage.setItem('translationEnabled', 'true');
+                    window.habitusTranslator.translatePage();
+                }
             }
         });
     </script>

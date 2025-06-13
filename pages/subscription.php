@@ -99,8 +99,8 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
             <div class="subscription-content">
                 <!-- Header Section -->
                 <div class="subscription-header">
-                    <h1>Subscription Plans</h1>
-                    <p>Choose the plan that's right for you and unlock premium features</p>
+                    <h1 translate="yes">Subscription Plans</h1>
+                    <p translate="yes">Choose the plan that's right for you and unlock premium features</p>
                     <?php if ($debugMode): ?>
                         <div class="debug-notice">
                             <strong>Debug Mode Active:</strong> Subscriptions will be simulated for testing
@@ -114,15 +114,15 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                     <div class="subscription-status">
                         <img src="../images/icons/sub-icon.webp" alt="Subscription">
                         <div>
-                            <h3>Current Plan: <?php echo ucfirst($subscriptionType); ?></h3>
+                            <h3 translate="yes">Current Plan: <?php echo ucfirst($subscriptionType); ?></h3>
                             <?php if ($subscriptionExpires && $isSubscriptionActive): ?>
-                                <p>Valid until: <?php echo date('F j, Y', strtotime($subscriptionExpires)); ?></p>
+                                <p translate="yes">Valid until: <?php echo date('F j, Y', strtotime($subscriptionExpires)); ?></p>
                             <?php elseif ($subscriptionExpires && !$isSubscriptionActive): ?>
-                                <p style="color: #a15c5c;">Expired: <?php echo date('F j, Y', strtotime($subscriptionExpires)); ?></p>
+                                <p style="color: #a15c5c;" translate="yes">Expired: <?php echo date('F j, Y', strtotime($subscriptionExpires)); ?></p>
                             <?php endif; ?>
                         </div>
                     </div>
-                    <button class="manage-subscription-btn" onclick="manageSubscription()">Manage Subscription</button>
+                    <button class="manage-subscription-btn" onclick="manageSubscription()" translate="yes">Manage Subscription</button>
                 </div>
                 <?php endif; ?>
 
@@ -131,36 +131,36 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                     <!-- Free Plan -->
                     <div class="plan-card <?php echo $subscriptionType === 'free' ? 'current' : ''; ?>">
                         <div class="plan-header">
-                            <h2>Free Plan</h2>
+                            <h2 translate="yes">Free Plan</h2>
                             <div class="plan-price">
                                 <span class="price">0€</span>
-                                <span class="period">/month</span>
+                                <span class="period" translate="yes">/month</span>
                             </div>
                         </div>
                         <div class="plan-features">
                             <ul>
-                                <li>
+                                <li translate="yes">
                                     <img src="../images/icons/check.webp" alt="✓">
                                     Unlimited tasks creation
                                 </li>
-                                <li>
+                                <li translate="yes">
                                     <img src="../images/icons/check.webp" alt="✓">
                                     Basic room customization
                                 </li>
-                                <li>
+                                <li translate="yes">
                                     <img src="../images/icons/check.webp" alt="✓">
                                     Earn and spend HCoins to buy items
                                 </li>
-                                <li>
+                                <li translate="yes">
                                     <img src="../images/icons/check.webp" alt="✓">
                                     Track streaks and progress
                                 </li>
                         </div>
                         <div class="plan-button-wrapper">
                             <?php if ($subscriptionType === 'free'): ?>
-                                <button class="plan-button current-plan" disabled>Current Plan</button>
+                                <button class="plan-button current-plan" disabled translate="yes">Current Plan</button>
                             <?php else: ?>
-                                <button class="plan-button downgrade" onclick="downgradeToFree()">Downgrade to Free</button>
+                                <button class="plan-button downgrade" onclick="downgradeToFree()" translate="yes">Downgrade to Free</button>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -168,19 +168,19 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                     <!-- Ad-Free Plan -->
                     <div class="plan-card <?php echo $subscriptionType === 'adfree' ? 'current' : ''; ?>">
                         <div class="plan-header">
-                            <h2>Ad-Free</h2>
+                            <h2 translate="yes">Ad-Free</h2>
                             <div class="plan-price">
                                 <span class="price">0.99€</span>
-                                <span class="period">/month</span>
+                                <span class="period" translate="yes">/month</span>
                             </div>
                         </div>
                         <div class="plan-features">
                             <ul>
-                                <li>
+                                <li translate="yes">
                                     <img src="../images/icons/check.webp" alt="✓">
                                     Everything in Free
                                 </li>
-                                <li>
+                                <li translate="yes">
                                     <img src="../images/icons/check.webp" alt="✓">
                                     <strong>No advertisements</strong>
                                 </li>
@@ -188,13 +188,14 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                         </div>
                         <div class="plan-button-wrapper">
                             <?php if ($subscriptionType === 'adfree'): ?>
-                                <button class="plan-button current-plan" disabled>Current Plan</button>
+                                <button class="plan-button current-plan" disabled translate="yes">Current Plan</button>
                             <?php else: ?>
                                 <button class="plan-button subscribe-btn" 
                                         data-plan-id="adfree"
                                         data-plan-name="Ad-Free Plan"
                                         data-plan-price="€0.99/month"
-                                        data-price-id="<?php echo STRIPE_PRICE_ADFREE_MONTHLY; ?>">
+                                        data-price-id="<?php echo STRIPE_PRICE_ADFREE_MONTHLY; ?>"
+                                        translate="yes">
                                     Subscribe
                                 </button>
                             <?php endif; ?>
@@ -203,25 +204,25 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
 
                     <!-- Premium Plan -->
                     <div class="plan-card premium <?php echo $subscriptionType === 'premium' ? 'current' : ''; ?>">
-                        <div class="plan-badge">BEST VALUE</div>
+                        <div class="plan-badge" translate="yes">BEST VALUE</div>
                         <div class="plan-header">
                             <h2>Premium</h2>
                             <div class="plan-price">
                                 <span class="price">4.99€</span>
-                                <span class="period">/month</span>
+                                <span class="period" translate="yes">/month</span>
                             </div>
                         </div>
                         <div class="plan-features">
                             <ul>
-                                <li>
+                                <li translate="yes">
                                     <img src="../images/icons/check.webp" alt="✓">
                                     Everything in Ad-Free
                                 </li>
-                                <li>
+                                <li translate="yes">
                                     <img src="../images/icons/check.webp" alt="✓">
                                     <strong>Exclusive shop items</strong>
                                 </li>
-                                <li>
+                                <li translate="yes">
                                     <img src="../images/icons/check.webp" alt="✓">
                                     <strong>Premium room themes</strong>
                                 </li>
@@ -229,13 +230,14 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                         </div>
                         <div class="plan-button-wrapper">
                             <?php if ($subscriptionType === 'premium'): ?>
-                                <button class="plan-button current-plan" disabled>Current Plan</button>
+                                <button class="plan-button current-plan" disabled translate="yes">Current Plan</button>
                             <?php else: ?>
                                 <button class="plan-button premium-btn subscribe-btn" 
                                         data-plan-id="premium"
                                         data-plan-name="Premium Plan"
                                         data-plan-price="€4.99/month"
-                                        data-price-id="<?php echo STRIPE_PRICE_SUPPORTER_MONTHLY; ?>">
+                                        data-price-id="<?php echo STRIPE_PRICE_SUPPORTER_MONTHLY; ?>"
+                                        translate="yes">
                                     Go Premium
                                 </button>
                             <?php endif; ?>
@@ -245,43 +247,43 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
 
                 <!-- Benefits Section -->
                 <div class="subscription-benefits">
-                    <h2>Why Subscribe?</h2>
+                    <h2 translate="yes">Why Subscribe?</h2>
                     <div class="benefits-grid">
                         <div class="benefit">
                             <div class="benefit-icon">
                                 <img src="../images/icons/ads-icon.webp" alt="No Ads">
                             </div>
-                            <h3>Ad-Free Experience</h3>
-                            <p>Focus on your tasks without any distractions or interruptions from advertisements.</p>
+                            <h3 translate="yes">Ad-Free Experience</h3>
+                            <p translate="yes">Focus on your tasks without any distractions or interruptions from advertisements.</p>
                         </div>
                         <div class="benefit">
                             <div class="benefit-icon">
                                 <img src="../images/icons/exclusive-icon.webp" alt="Exclusive">
                             </div>
-                            <h3>Exclusive Content</h3>
-                            <p>Access special items, themes, and features not available to free users. Customize your Habitus with premium decorations.</p>
+                            <h3 translate="yes">Exclusive Content</h3>
+                            <p translate="yes">Access special items, themes, and features not available to free users. Customize your Habitus with premium decorations.</p>
                         </div>
                         <div class="benefit">
                             <div class="benefit-icon">
                                 <img src="../images/icons/support-icon.webp" alt="Support">
                             </div>
-                            <h3>Support Development</h3>
-                            <p>Help us continue improving Habitus Zone and adding new features for everyone. Your support keeps the platform growing.</p>
+                            <h3 translate="yes">Support Development</h3>
+                            <p translate="yes">Help us continue improving Habitus Zone and adding new features for everyone. Your support keeps the platform growing.</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- FAQ Section -->
                 <div class="subscription-faq">
-                    <h2>Frequently Asked Questions</h2>
+                    <h2 translate="yes">Frequently Asked Questions</h2>
                     <div class="faq-list">
                         <div class="faq-item">
-                            <button class="faq-question" onclick="toggleFaq(this)">
+                            <button class="faq-question" onclick="toggleFaq(this)" translate="yes">
                                 Can I cancel anytime?
                                 <img src="../images/icons/arrow_down-icon.webp" alt="Toggle">
                             </button>
                             <div class="faq-answer">
-                                <p>Yes! You can cancel your subscription at any time. You'll retain access to premium features until the end of your current billing period. No cancellation fees or hassles.</p>
+                                <p translate="yes">Yes! You can cancel your subscription at any time. You'll retain access to premium features until the end of your current billing period. No cancellation fees or hassles.</p>
                             </div>
                         </div>
                         <div class="faq-item">
@@ -290,7 +292,7 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                                 <img src="../images/icons/arrow_down-icon.webp" alt="Toggle">
                             </button>
                             <div class="faq-answer">
-                                <p>We accept all major credit and debit cards through our secure payment processor <b>Stripe<b>. Your payment information is encrypted and never stored on our servers.</p>
+                                <p translate="yes">We accept all major credit and debit cards through our secure payment processor <b>Stripe<b>. Your payment information is encrypted and never stored on our servers.</p>
                             </div>
                         </div>
                         <div class="faq-item">
@@ -299,7 +301,7 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                                 <img src="../images/icons/arrow_down-icon.webp" alt="Toggle">
                             </button>
                             <div class="faq-answer">
-                                <p>Absolutely! You can upgrade or downgrade your plan at any time. Changes take effect immediately and billing adjusts accordingly. You'll always have access to features you've paid for.</p>
+                                <p translate="yes">Absolutely! You can upgrade or downgrade your plan at any time. Changes take effect immediately and billing adjusts accordingly. You'll always have access to features you've paid for.</p>
                             </div>
                         </div>
                     </div>
@@ -313,7 +315,7 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
         <div class="modal-overlay"></div>
         <div class="modal-container">
             <div class="modal-header">
-                <h2 id="modal-title">Complete Your Subscription</h2>
+                <h2 id="modal-title" translate="yes">Complete Your Subscription</h2>
                 <button class="modal-close" type="button" aria-label="Close">&times;</button>
             </div>
                                 
@@ -332,10 +334,10 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                     <div id="payment-success" class="success-message hidden"></div>
                                 
                     <div class="form-actions">
-                        <button type="button" class="btn btn-secondary">Cancel</button>
+                        <button type="button" class="btn btn-secondary" translate="yes">Cancel</button>
                         <button type="submit" id="stripe-submit-btn" class="btn btn-primary">
                             <div class="spinner"></div>
-                            <span class="btn-text">Subscribe Now</span>
+                            <span class="btn-text" translate="yes">Subscribe Now</span>
                         </button>
                     </div>
                 </form>

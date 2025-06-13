@@ -124,10 +124,10 @@ $themes = [
                     <h2>Translation & Language</h2>
                     <div class="settings-group">
                         <!-- Enhanced Language Selector -->
-                        <label for="language-select" class="setting-label">
+                        <label for="language-selector" class="setting-label">
                             <div class="setting-info">
-                                <span class="setting-title">Display Language</span>
-                                <span class="setting-description">Choose your preferred language</span>
+                                <span class="setting-title" translate="yes">Display Language</span>
+                                <span class="setting-description" translate="yes">Choose your preferred language</span>
                             </div>
                             <select id="language-selector" class="setting-select">
                                 <option value="en" <?php echo $currentLanguage === 'en' ? 'selected' : ''; ?>>English</option>
@@ -141,6 +141,15 @@ $themes = [
                                 <option value="ja" <?php echo $currentLanguage === 'ja' ? 'selected' : ''; ?>>日本語</option>
                                 <option value="ko" <?php echo $currentLanguage === 'ko' ? 'selected' : ''; ?>>한국어</option>
                             </select>
+                        </label>
+                        
+                        <!-- Auto-translation toggle -->
+                        <label for="auto-translation" class="setting-label">
+                            <div class="setting-info">
+                                <span class="setting-title" translate="yes">Auto-Translation</span>
+                                <span class="setting-description" translate="yes">Automatically translate content when language changes</span>
+                            </div>
+                            <input type="checkbox" id="auto-translation" class="setting-checkbox" checked>
                         </label>
                     </div>
                 </div>
@@ -385,5 +394,16 @@ $themes = [
     
     <!-- Load header script -->
     <script src="../js/header.js"></script>
+    <script>
+        // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load the enhanced translation manager
+        if (!window.habitusTranslator) {
+            const script = document.createElement('script');
+            script.src = '../js/translation-manager.js';
+            document.head.appendChild(script);
+        }
+    });
+    </script>
 </body>
 </html>

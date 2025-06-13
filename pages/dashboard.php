@@ -164,11 +164,11 @@ foreach ($placedItems as $item) {
                 <div class="panel dailies-panel">
                     <div class="panel-header">
                         <img src="../images/icons/dailies-icon.webp" alt="Calendar">
-                        <h2>Dailies</h2>
+                        <h2 translate="yes">Dailies</h2>
                     </div>
                     <div class="panel-content">
                         <?php if (empty($dailies)): ?>
-                            <p class="empty-message">No dailies found. Add some to get started!</p>
+                            <p class="empty-message" translate="yes">No dailies found. Add some to get started!</p>
                         <?php else: ?>
                             <ul class="dailies-list">
                                 <?php foreach ($dailies as $daily): ?>
@@ -191,7 +191,7 @@ foreach ($placedItems as $item) {
                     </div>
                     <div class="panel-footer">
                         <button class="add-new-button" onclick="location.href='tasks.php?add=daily'">
-                            <img src="../images/icons/task_add-icon.webp" alt="Add">
+                            <img src="../images/icons/task_add-icon.webp" alt="Add" translate="yes">
                             Add new daily...
                         </button>
                     </div>
@@ -201,7 +201,7 @@ foreach ($placedItems as $item) {
                 <div class="panel shop-panel">
                     <div class="panel-header">
                         <img src="../images/icons/shop-icon.webp" alt="Shop">
-                        <h2>Featured Shop</h2>
+                        <h2 translate="yes">Featured Shop</h2>
                     </div>
                     <div class="panel-content">
                         <div class="shop-grid">
@@ -223,7 +223,7 @@ foreach ($placedItems as $item) {
                     </div>
                     <div class="panel-footer">
                         <button class="go-to-shop-button" onclick="location.href='shop.php'">
-                            <img src="../images/icons/cart-icon.webp" alt="Shop">
+                            <img src="../images/icons/cart-icon.webp" alt="Shop" translate="yes">
                             Go to Shop
                         </button>
                     </div>
@@ -244,7 +244,7 @@ foreach ($placedItems as $item) {
                     </div>
                     <div class="panel-footer">
                         <button class="edit-habitus-button" onclick="location.href='habitus.php'">
-                            <img src="../images/icons/edit-icon.webp" alt="Edit">
+                            <img src="../images/icons/edit-icon.webp" alt="Edit" translate="yes">
                             Edit your Habitus...
                         </button>
                     </div>
@@ -254,11 +254,11 @@ foreach ($placedItems as $item) {
                 <div class="panel goals-panel">
                     <div class="panel-header">
                         <img src="../images/icons/goals-icon.webp" alt="Goals">
-                        <h2>Goals</h2>
+                        <h2 translate="yes">Goals</h2>
                     </div>
                     <div class="panel-content">
                         <?php if (empty($goals)): ?>
-                            <p class="empty-message">No goals found. Add some to track your progress!</p>
+                            <p class="empty-message" translate="yes">No goals found. Add some to track your progress!</p>
                         <?php else: ?>
                             <ul class="goals-list">
                                 <?php foreach ($goals as $goal): ?>
@@ -278,8 +278,8 @@ foreach ($placedItems as $item) {
                     </div>
                     <div class="panel-footer">
                         <button class="add-new-button" onclick="location.href='tasks.php?add=goal'">
-                            <img src="../images/icons/task_add-icon.webp" alt="Add">
-                            Add new objective...
+                            <img src="../images/icons/task_add-icon.webp" alt="Add" translate="yes">
+                            Add new goal...
                         </button>
                     </div>
                 </div>
@@ -288,11 +288,11 @@ foreach ($placedItems as $item) {
                 <div class="panel challenges-panel">
                     <div class="panel-header">
                         <img src="../images/icons/challenge-icon.webp" alt="Challenges">
-                        <h2>Challenges</h2>
+                        <h2 translate="yes">Challenges</h2>
                     </div>
                     <div class="panel-content">
                         <?php if (empty($challenges)): ?>
-                            <p class="empty-message">No challenges found. Try something new!</p>
+                            <p class="empty-message" translate="yes">No challenges found. Try something new!</p>
                         <?php else: ?>
                             <ul class="challenges-list">
                                 <?php foreach ($challenges as $challenge): ?>
@@ -312,7 +312,7 @@ foreach ($placedItems as $item) {
                     </div>
                     <div class="panel-footer">
                         <button class="add-new-button" onclick="location.href='tasks.php?add=challenge'">
-                            <img src="../images/icons/task_add-icon.webp" alt="Add">
+                            <img src="../images/icons/task_add-icon.webp" alt="Add" translate="yes">
                             Add new challenge...
                         </button>
                     </div>
@@ -324,15 +324,15 @@ foreach ($placedItems as $item) {
     <div id="subtasks-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="subtasks-modal-title">Manage Subtasks</h2>
+                <h2 id="subtasks-modal-title" translate="yes">Manage Subtasks</h2>
                 <button class="close-modal" onclick="closeDashboardSubtasksModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="subtasks-container">
-                    <h3>Current Subtasks</h3>
+                    <h3 translate="yes">Current Subtasks</h3>
                     <div class="subtasks-list" id="dashboard-subtasks-list">
                         <!-- Subtasks will be loaded here -->
-                        <div class="empty-subtasks">No subtasks yet.</div>
+                        <div class="empty-subtasks" translate="yes">No subtasks yet.</div>
                     </div>
                                     
                     <div class="subtask-progress">
@@ -340,7 +340,7 @@ foreach ($placedItems as $item) {
                             <div class="progress" style="width: 0%"></div>
                         </div>
                         <div class="progress-text">
-                            <span>0 / 0 subtasks</span>
+                            <span translate="yes">0 / 0 subtasks</span>
                             <span class="percentage">0%</span>
                         </div>
                     </div>
@@ -425,7 +425,7 @@ foreach ($placedItems as $item) {
                         <div style="padding: 20px; text-align: center; color: #888; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
                             <p>Unable to load room preview.</p>
                             <p style="font-size: 0.9em; margin-top: 10px;">
-                                <a href="habitus.php" style="color: #6a8d7f; text-decoration: none;">Visit the Habitus page to place items →</a>
+                                <a href="habitus.php" style="color: #6a8d7f; text-decoration: none;" translate="yes">Visit the Habitus page to place items →</a>
                             </p>
                         </div>
                     `;

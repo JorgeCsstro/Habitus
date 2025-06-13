@@ -197,8 +197,8 @@ $debugInfo = [
             <div class="habitus-content">
                 <div class="habitus-header">
                     <div class="room-actions">
-                        <button class="save-room-btn" onclick="saveRoom()">Save Layout</button>
-                        <button class="clear-room-btn" onclick="clearRoom()">Clear Room</button>
+                        <button class="save-room-btn" onclick="saveRoom()" translate="yes">Save Layout</button>
+                        <button class="clear-room-btn" onclick="clearRoom()" translate="yes">Clear Room</button>
                     </div>
                 </div>
 
@@ -211,23 +211,23 @@ $debugInfo = [
                         <!-- Room controls -->
                         <div class="room-controls">
                             <button onclick="toggleGrid()" title="Toggle Grid">
-                                <img src="../images/icons/grid.svg" alt="Grid"> Grid
+                                <img src="../images/icons/grid.svg" alt="Grid" translate="yes"> Grid
                             </button>
-                            <span class="surface-info">Hold items to drag them around</span>
+                            <span class="surface-info" translate="yes">Hold items to drag them around</span>
                         </div>
                     </div>
                     
                     <div class="room-inventory">
                         <h3>Your Inventory</h3>
                         <div class="inventory-filters">
-                            <button class="filter-btn active" data-filter="all" onclick="filterInventory('all')">All</button>
-                            <button class="filter-btn" data-filter="furniture" onclick="filterInventory('furniture')">Furniture</button>
-                            <button class="filter-btn" data-filter="decorations" onclick="filterInventory('decorations')">Decorations</button>
+                            <button class="filter-btn active" data-filter="all" onclick="filterInventory('all')" translate="yes">All</button>
+                            <button class="filter-btn" data-filter="furniture" onclick="filterInventory('furniture')" translate="yes">Furniture</button>
+                            <button class="filter-btn" data-filter="decorations" onclick="filterInventory('decorations')" translate="yes">Decorations</button>
                         </div>
                         
                         <div class="inventory-items" id="inventory-items">
                             <?php if (empty($inventory)): ?>
-                                <p class="empty-inventory">Your inventory is empty. Visit the shop to buy items!</p>
+                                <p class="empty-inventory" translate="yes">Your inventory is empty. Visit the shop to buy items!</p>
                             <?php else: ?>
                                 <?php 
                                 // Track which inventory IDs we've already displayed to prevent duplicates
@@ -310,7 +310,7 @@ $debugInfo = [
                         </div>
                         
                         <div class="inventory-actions">
-                            <a href="shop.php" class="shop-btn">Shop for More Items</a>
+                            <a href="shop.php" class="shop-btn" translate="yes">Shop for More Items</a>
                         </div>
                     </div>
                 </div>
@@ -321,14 +321,14 @@ $debugInfo = [
     <!-- Room name modal -->
     <div id="room-modal" class="modal" style="display: none;">
         <div class="modal-content">
-            <h3 id="modal-title">Create New Room</h3>
+            <h3 id="modal-title" translate="yes">Create New Room</h3>
             <div class="form-group">
-                <label for="room-name-input">Room Name</label>
+                <label for="room-name-input" translate="yes">Room Name</label>
                 <input type="text" id="room-name-input" placeholder="Enter room name">
             </div>
             <div class="modal-actions">
-                <button class="cancel-btn" onclick="closeRoomModal()">Cancel</button>
-                <button class="save-btn" onclick="saveRoomName()">Save</button>
+                <button class="cancel-btn" onclick="closeRoomModal()" translate="yes">Cancel</button>
+                <button class="save-btn" onclick="saveRoomName()" translate="yes">Save</button>
             </div>
         </div>
     </div>

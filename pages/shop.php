@@ -101,7 +101,7 @@ $categories = $categoryStmt->fetchAll();
                 <div class="shop-sections">
                     <!-- Featured Shop Section -->
                     <div class="shop-section">
-                        <h2>Featured Shop</h2>
+                        <h2 translate="yes">Featured Shop</h2>
                         <div class="shop-grid">
                             <?php 
                             $featuredItems = array_filter($shopItems, function($item) {
@@ -145,7 +145,7 @@ $categories = $categoryStmt->fetchAll();
 
                     <!-- All Shop Section -->
                     <div class="shop-section">
-                        <h2>Shop</h2>
+                        <h2 translate="yes">Shop</h2>
                         <div class="shop-grid">
                             <?php 
                             $allItems = array_slice($shopItems, 0, 9);
@@ -174,11 +174,11 @@ $categories = $categoryStmt->fetchAll();
                     <!-- Cart Dropdown -->
                     <div class="cart-dropdown" id="cart-dropdown">
                         <div class="cart-dropdown-header">
-                            <h3>Shopping Cart</h3>
+                            <h3 translate="yes">Shopping Cart</h3>
                             <button class="clear-cart-btn" onclick="clearCart()">Clear All</button>
                         </div>
                         <div class="cart-dropdown-items" id="cart-items">
-                            <p class="empty-cart-message">Your cart is empty</p>
+                            <p class="empty-cart-message" translate="yes">Your cart is empty</p>
                         </div>
                         <div class="cart-dropdown-footer">
                             <div class="cart-total-row">
@@ -188,7 +188,7 @@ $categories = $categoryStmt->fetchAll();
                                     <span id="cart-total">0</span>
                                 </div>
                             </div>
-                            <button class="checkout-button" onclick="checkout()" disabled>Checkout</button>
+                            <button class="checkout-button" onclick="checkout()" disabled translate="yes">Checkout</button>
                         </div>
                     </div>
                 </div>
