@@ -312,17 +312,6 @@ $debugInfo = [
                         <div class="inventory-actions">
                             <a href="shop.php" class="shop-btn">Shop for More Items</a>
                         </div>
-                        
-                        <!-- FIXED: Add debug info panel (remove in production) -->
-                        <?php if (isset($_GET['debug'])): ?>
-                        <div class="debug-panel" style="margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 8px; font-size: 0.8rem;">
-                            <strong>Debug Info:</strong><br>
-                            Room ID: <?php echo $roomId; ?><br>
-                            Inventory Items: <?php echo count($inventory); ?><br>
-                            Placed Items: <?php echo count($placedItems); ?><br>
-                            Usage: <?php echo json_encode($inventoryUsage); ?>
-                        </div>
-                        <?php endif; ?>
                     </div>
                 </div>
             </div>

@@ -1937,6 +1937,61 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
+// Mobile inventory toggle functionality
+function toggleMobileInventory() {
+    const inventory = document.querySelector('.room-inventory');
+    
+    if (!inventory) return;
+    
+    const isVisible = inventory.classList.contains('show');
+    
+    if (isVisible) {
+        // Hide inventory (show only header)
+        inventory.classList.remove('show');
+    } else {
+        // Show full inventory
+        inventory.classList.add('show');
+    }
+}
+
+// Initialize mobile inventory state on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click handler to h3 on mobile only
+    function initMobileInventoryToggle() {
+        const inventoryHeader = document.querySelector('.room-inventory h3');
+        
+        if (inventoryHeader && window.innerWidth <= 1200) {
+            inventoryHeader.addEventListener('click', toggleMobileInventory);
+            
+            // Add a subtle indication that it's clickable
+            inventoryHeader.style.cursor = 'pointer';
+        }
+    }
+    
+    // Initialize on load
+    initMobileInventoryToggle();
+    
+    // Reinitialize on window resize
+    window.addEventListener('resize', function() {
+        const inventoryHeader = document.querySelector('.room-inventory h3');
+        
+        if (window.innerWidth > 1200) {
+            // Desktop view - remove mobile click handler and show inventory
+            if (inventoryHeader) {
+                inventoryHeader.removeEventListener('click', toggleMobileInventory);
+                inventoryHeader.style.cursor = 'default';
+            }
+            const inventory = document.querySelector('.room-inventory');
+            if (inventory) {
+                inventory.classList.remove('show');
+            }
+        } else {
+            // Mobile view - add click handler
+            initMobileInventoryToggle();
+        }
+    });
+});
+
 // Make functions globally available
 window.initializeHabitusRoom = initializeHabitusRoom;
 window.toggleGrid = toggleGrid;
@@ -1946,5 +2001,4 @@ window.clearRoom = clearRoom;
 window.closeRoomModal = closeRoomModal;
 window.saveRoomName = saveRoomName;
 window.startDrag = startDrag;
-
-console.log('🚀 COMPLETELY FIXED Habitus Room system loaded with bulletproof floating menu');
+window.toggleMobileInventory = toggleMobileInventory;

@@ -560,6 +560,10 @@
     font-family: 'Quicksand', sans-serif;
 }
 
+.inventory-toggle {
+    display: none;
+}
+
 .inventory-filters {
     display: flex;
     padding: 10px;
@@ -1090,7 +1094,8 @@
 @media (max-width: 1200px) {
     .habitus-editor {
         flex-direction: column;
-        height: 1000px;
+        height: 500px;
+        position: relative;
     }
     
     .room-container {
@@ -1098,9 +1103,74 @@
     }
     
     .room-inventory {
-        width: 100%;
-        max-width: 600px;
-        margin: 0 auto;
+        width: 90%;
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%) translateY(calc(100% - 60px));
+        border-radius: 15px 15px 0 0;
+        /* Enhanced smooth animation */
+        transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        z-index: 1000;
+        max-height: 50vh;
+        box-shadow: 0 -5px 20px var(--shadow);
+    }
+
+    .room-inventory.show {
+        transform: translateX(-50%) translateY(0);
+    }
+    
+    /* Simple clickable header */
+    .room-inventory h3 {
+        cursor: pointer;
+        position: relative;
+        transition: background-color 0.2s ease;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .room-inventory h3:hover {
+        background-color: var(--primary);
+        color: var(--btn-text);
+    }
+    
+    /* Simple arrow animation */
+    .room-inventory h3::after {
+        content: '▲';
+        font-size: 0.9rem;
+        transition: transform 0.3s ease;
+        transform: rotate(180deg); /* Points down when closed */
+    }
+    
+    .room-inventory.show h3::after {
+        transform: rotate(0deg); /* Points up when open */
+    }
+    
+    /* Content fade animation */
+    .room-inventory .inventory-items,
+    .room-inventory .inventory-filters,
+    .room-inventory .inventory-actions {
+        transition: opacity 0.2s ease;
+    }
+    
+    .room-inventory:not(.show) .inventory-items,
+    .room-inventory:not(.show) .inventory-filters,
+    .room-inventory:not(.show) .inventory-actions {
+        opacity: 0;
+        pointer-events: none;
+    }
+    
+    .room-inventory .inventory-items {
+        max-height: calc(50vh - 140px);
+        overflow-y: auto;
+    }
+
+    /* Ensure inventory items have proper spacing for 2-item scroll */
+    .inventory-item {
+        min-height: 60px;
+        margin-bottom: 8px;
     }
 }
 
