@@ -699,6 +699,7 @@
 .rotation-indicator img {
     width: 10px;
     height: 10px;
+    margin-right: 0px;
     filter: brightness(0) invert(1);
 }
 
@@ -1094,7 +1095,7 @@
 @media (max-width: 1200px) {
     .habitus-editor {
         flex-direction: column;
-        height: 500px;
+        height: 620px;
         position: relative;
     }
     
@@ -1226,6 +1227,13 @@
 }
 
 @media (max-width: 768px) {
+
+    .habitus-editor {
+        flex-direction: column;
+        height: 530px;
+        position: relative;
+    }
+
     .room-container {
         padding: 20px;
     }
@@ -1233,5 +1241,10 @@
     .isometric-room {
         right: 110px;
         transform: scale(0.8);
+    }
+
+    .room-inventory{
+        width: 85%;
+        left: 55.2%;
     }
 }

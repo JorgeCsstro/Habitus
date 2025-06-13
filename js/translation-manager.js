@@ -182,10 +182,25 @@
             } else if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
                 return element.value;
             } else {
-                // For buttons and other elements, get only direct text nodes
-                return element.childNodes[0]?.nodeType === Node.TEXT_NODE 
-                    ? element.childNodes[0].textContent.trim()
-                    : element.textContent.trim();
+                // Extract all text content from text nodes, ignoring HTML elements
+                const walker = document.createTreeWalker(
+                    element,
+                    NodeFilter.SHOW_TEXT,
+                    null,
+                    false
+                );
+
+                let textParts = [];
+                let node;
+
+                while (node = walker.nextNode()) {
+                    const text = node.textContent.trim();
+                    if (text) {
+                        textParts.push(text);
+                    }
+                }
+
+                return textParts.join(' ').trim();
             }
         }
 
@@ -307,7 +322,7 @@
         applyTranslation(element, originalText, translatedText, type) {
             // Store original text
             element.setAttribute('data-original-text', originalText);
-            
+
             // Apply translation based on element type
             switch (type) {
                 case 'placeholder':
@@ -318,17 +333,69 @@
                     break;
                 case 'text':
                 default:
-                    // For buttons and other elements, only replace text nodes
-                    if (element.childNodes[0]?.nodeType === Node.TEXT_NODE) {
-                        element.childNodes[0].textContent = translatedText;
-                    } else {
-                        element.textContent = translatedText;
-                    }
+                    // Find and replace only text nodes, preserving HTML elements
+                    this.replaceTextNodes(element, originalText, translatedText);
                     break;
             }
-            
+
             // Mark as translated
             element.classList.add('translated');
+        }
+
+        /**
+         * Replace text nodes while preserving HTML elements and their positions
+         */
+        replaceTextNodes(element, originalText, translatedText) {
+            const walker = document.createTreeWalker(
+                element,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+
+            let textNodes = [];
+            let node;
+
+            // Collect all non-empty text nodes
+            while (node = walker.nextNode()) {
+                const text = node.textContent.trim();
+                if (text) {
+                    textNodes.push({
+                        node: node,
+                        originalText: text
+                    });
+                }
+            }
+
+            if (textNodes.length === 0) return;
+
+            // If there's only one text node, replace it directly
+            if (textNodes.length === 1) {
+                textNodes[0].node.textContent = translatedText;
+                return;
+            }
+
+            // For multiple text nodes, find the one with the most content
+            // and replace it, while clearing the others
+            let mainTextNode = textNodes[0];
+            let maxLength = textNodes[0].originalText.length;
+
+            for (let i = 1; i < textNodes.length; i++) {
+                if (textNodes[i].originalText.length > maxLength) {
+                    maxLength = textNodes[i].originalText.length;
+                    mainTextNode = textNodes[i];
+                }
+            }
+
+            // Replace the main text node with translation
+            mainTextNode.node.textContent = translatedText;
+
+            // Clear other text nodes
+            textNodes.forEach(textNode => {
+                if (textNode !== mainTextNode) {
+                    textNode.node.textContent = '';
+                }
+            });
         }
 
         /**
@@ -337,22 +404,66 @@
         restoreOriginalText() {
             document.querySelectorAll('.translated').forEach(element => {
                 const originalText = element.getAttribute('data-original-text');
-                
+
                 if (originalText) {
                     if (element.hasAttribute('placeholder')) {
                         element.placeholder = originalText;
                     } else if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
                         element.value = originalText;
-                    } else if (element.childNodes[0]?.nodeType === Node.TEXT_NODE) {
-                        element.childNodes[0].textContent = originalText;
                     } else {
-                        element.textContent = originalText;
+                        // Restore text nodes while preserving HTML
+                        this.restoreTextNodes(element, originalText);
                     }
-                    
+
                     element.removeAttribute('data-original-text');
                     element.classList.remove('translated');
                 }
             });
+        }
+
+        /**
+         * Restore original text in text nodes
+         */
+        restoreTextNodes(element, originalText) {
+            const walker = document.createTreeWalker(
+                element,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+            
+            let textNodes = [];
+            let node;
+            
+            while (node = walker.nextNode()) {
+                textNodes.push(node);
+            }
+            
+            if (textNodes.length === 0) return;
+            
+            // Find the text node that currently has content (the translated one)
+            let activeTextNode = null;
+            for (let textNode of textNodes) {
+                if (textNode.textContent.trim()) {
+                    activeTextNode = textNode;
+                    break;
+                }
+            }
+            
+            if (activeTextNode) {
+                // Restore original text to the active node
+                activeTextNode.textContent = originalText;
+                
+                // Clear any other text nodes
+                textNodes.forEach(textNode => {
+                    if (textNode !== activeTextNode && !textNode.textContent.trim()) {
+                        textNode.textContent = '';
+                    }
+                });
+            } else {
+                // Fallback: restore to first text node
+                textNodes[0].textContent = originalText;
+            }
         }
 
         /**

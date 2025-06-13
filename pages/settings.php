@@ -93,13 +93,13 @@ $themes = [
             <!-- Settings Content -->
             <div class="settings-content">
                 <div class="settings-header">
-                    <h1>Settings</h1>
-                    <p>Customize your Habitus Zone experience</p>
+                    <h1 translate="yes">Settings</h1>
+                    <p translate="yes">Customize your Habitus Zone experience</p>
                 </div>
 
                 <!-- Profile Section -->
                 <div class="settings-section">
-                    <h2>Profile</h2>
+                    <h2 translate="yes">Profile</h2>
                     <div class="settings-group">
                         <div class="profile-picture-section">
                             <div class="current-profile-picture">
@@ -121,7 +121,7 @@ $themes = [
 
                 <!-- Translation Section -->
                 <div class="settings-section">
-                    <h2>Translation & Language</h2>
+                    <h2 translate="yes">Translation & Language</h2>
                     <div class="settings-group">
                         <!-- Enhanced Language Selector -->
                         <label for="language-selector" class="setting-label">
@@ -156,12 +156,12 @@ $themes = [
 
                 <!-- Appearance Section - Enhanced -->
                 <div class="settings-section">
-                    <h2>Appearance</h2>
+                    <h2 translate="yes">Appearance</h2>
                     <div class="settings-group">
                         <div class="theme-selector">
                             <div class="theme-header">
-                                <span class="setting-title">Theme</span>
-                                <span class="setting-description">Choose between light and dark themes</span>
+                                <span class="setting-title" translate="yes">Theme</span>
+                                <span class="setting-description" translate="yes">Choose between light and dark themes</span>
                             </div>
                             <div class="theme-options">
                                 <?php foreach ($themes as $themeKey => $themeInfo): ?>
@@ -182,9 +182,9 @@ $themes = [
                                         </div>
                                         
                                         <div class="theme-info">
-                                            <span class="theme-name"><?php echo $themeInfo['name']; ?></span>
+                                            <span class="theme-name" translate="yes"><?php echo $themeInfo['name']; ?></span>
                                             <br>
-                                            <span class="theme-description"><?php echo $themeInfo['description']; ?></span>
+                                            <span class="theme-description" translate="yes"><?php echo $themeInfo['description']; ?></span>
                                         </div>
                                         
                                         <div class="theme-indicator">
@@ -195,17 +195,13 @@ $themes = [
                                     </label>
                                 <?php endforeach; ?>
                             </div>
-                            
-                            <div class="theme-shortcuts">
-                                <small>💡 Tip: Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> to quickly toggle themes</small>
-                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Subscription Section -->
                 <div class="settings-section">
-                    <h2>Subscription</h2>
+                    <h2 translate="yes">Subscription</h2>
                     <div class="settings-group">
                         <div class="subscription-info">
                             <div class="subscription-status">
@@ -213,17 +209,17 @@ $themes = [
                                     <img src="../images/icons/sub-icon.webp" alt="Subscription">
                                 </div>
                                 <div class="status-details">
-                                    <h3>Current Plan: <span class="plan-name"><?php echo ucfirst($currentSubscription); ?></span></h3>
+                                    <h3 translate="yes">Current Plan: <span class="plan-name"><?php echo ucfirst($currentSubscription); ?></span></h3>
                                     <?php if ($currentSubscription !== 'free' && $userData['subscription_expires']): ?>
-                                        <p>Valid until: <?php echo date('F j, Y', strtotime($userData['subscription_expires'])); ?></p>
+                                        <p translate="yes">Valid until: <?php echo date('F j, Y', strtotime($userData['subscription_expires'])); ?></p>
                                     <?php endif; ?>
                                 </div>
                             </div>
                             <div class="subscription-actions">
                                 <?php if ($currentSubscription === 'free'): ?>
-                                    <a href="subscription.php" class="upgrade-btn">Upgrade Plan</a>
+                                    <a href="subscription.php" class="upgrade-btn" translate="yes">Upgrade Plan</a>
                                 <?php else: ?>
-                                    <button class="manage-btn" onclick="openCustomerPortal()">Manage Subscription</button>
+                                    <button class="manage-btn" onclick="openCustomerPortal()" translate="yes">Manage Subscription</button>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -232,48 +228,15 @@ $themes = [
 
                 <!-- Account Section -->
                 <div class="settings-section">
-                    <h2>Account</h2>
+                    <h2 translate="yes">Account</h2>
                     <div class="settings-group">
                         <button class="setting-button" onclick="showChangePasswordModal()">
                             <span class="button-icon">
                                 <img src="../images/icons/key-icon.webp" alt="Password">
                             </span>
                             <div class="button-text">
-                                <span class="button-title">Change Password</span>
-                                <span class="button-description">Update your account password</span>
-                            </div>
-                            <span class="button-arrow">›</span>
-                        </button>
-                        
-                        <button class="setting-button" onclick="showChangeEmailModal()">
-                            <span class="button-icon">
-                                <img src="../images/icons/email-icon.webp" alt="Email">
-                            </span>
-                            <div class="button-text">
-                                <span class="button-title">Change Email</span>
-                                <span class="button-description">Update your email address</span>
-                            </div>
-                            <span class="button-arrow">›</span>
-                        </button>
-                        
-                        <button class="setting-button" onclick="exportUserData()">
-                            <span class="button-icon">
-                                <img src="../images/icons/download-icon.webp" alt="Export">
-                            </span>
-                            <div class="button-text">
-                                <span class="button-title">Export Data</span>
-                                <span class="button-description">Download your account data</span>
-                            </div>
-                            <span class="button-arrow">›</span>
-                        </button>
-                        
-                        <button class="setting-button" onclick="clearCache()">
-                            <span class="button-icon">
-                                <img src="../images/icons/refresh-icon.webp" alt="Clear Cache">
-                            </span>
-                            <div class="button-text">
-                                <span class="button-title">Clear Cache</span>
-                                <span class="button-description">Clear stored data and refresh</span>
+                                <span class="button-title" translate="yes">Change Password</span>
+                                <span class="button-description" translate="yes">Update your account password</span>
                             </div>
                             <span class="button-arrow">›</span>
                         </button>
@@ -283,8 +246,8 @@ $themes = [
                                 <img src="../images/icons/trash.webp" alt="Delete">
                             </span>
                             <div class="button-text">
-                                <span class="button-title">Delete Account</span>
-                                <span class="button-description">Permanently delete your account and data</span>
+                                <span class="button-title" translate="yes">Delete Account</span>
+                                <span class="button-description" translate="yes">Permanently delete your account and data</span>
                             </div>
                             <span class="button-arrow">›</span>
                         </button>
@@ -298,54 +261,27 @@ $themes = [
     <div id="password-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Change Password</h2>
+                <h2 translate="yes">Change Password</h2>
                 <button class="close-modal" onclick="closeModal('password-modal')">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="change-password-form">
                     <div class="form-group">
-                        <label for="current-password">Current Password</label>
+                        <label for="current-password" translate="yes">Current Password</label>
                         <input type="password" id="current-password" required>
                     </div>
                     <div class="form-group">
-                        <label for="new-password">New Password</label>
+                        <label for="new-password" translate="yes">New Password</label>
                         <input type="password" id="new-password" required>
-                        <span class="field-hint">At least 8 characters with uppercase, lowercase, and numbers</span>
+                        <span class="field-hint" translate="yes">At least 8 characters with uppercase, lowercase, number and special character</span>
                     </div>
                     <div class="form-group">
-                        <label for="confirm-password">Confirm New Password</label>
+                        <label for="confirm-password" translate="yes">Confirm New Password</label>
                         <input type="password" id="confirm-password" required>
                     </div>
                     <div class="form-actions">
-                        <button type="button" class="cancel-btn" onclick="closeModal('password-modal')">Cancel</button>
-                        <button type="submit" class="save-btn">Update Password</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Change Email Modal -->
-    <div id="email-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Change Email</h2>
-                <button class="close-modal" onclick="closeModal('email-modal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="change-email-form">
-                    <div class="form-group">
-                        <label for="new-email">New Email Address</label>
-                        <input type="email" id="new-email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email-password">Current Password</label>
-                        <input type="password" id="email-password" required>
-                        <span class="field-hint">Confirm your current password to change email</span>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="cancel-btn" onclick="closeModal('email-modal')">Cancel</button>
-                        <button type="submit" class="save-btn">Update Email</button>
+                        <button type="button" class="cancel-btn" onclick="closeModal('password-modal')" translate="yes">Cancel</button>
+                        <button type="submit" class="save-btn" translate="yes">Update Password</button>
                     </div>
                 </form>
             </div>
@@ -356,26 +292,26 @@ $themes = [
     <div id="delete-account-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Delete Account</h2>
+                <h2 translate="yes">Delete Account</h2>
                 <button class="close-modal" onclick="closeModal('delete-account-modal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="warning-message">
                     <img src="../images/icons/warning.webp" alt="Warning">
-                    <p>This action cannot be undone. All your data, including tasks, habitus items, and HCoins will be permanently deleted.</p>
+                    <p translate="yes">This action cannot be undone. All your data, including tasks, habitus items, and HCoins will be permanently deleted.</p>
                 </div>
                 <form id="delete-account-form">
                     <div class="form-group">
-                        <label for="delete-password">Password</label>
+                        <label for="delete-password" translate="yes">Password</label>
                         <input type="password" id="delete-password" required>
                     </div>
                     <div class="form-group">
-                        <label for="delete-confirm">Type "DELETE" to confirm</label>
+                        <label for="delete-confirm" translate="yes">Type "DELETE" to confirm</label>
                         <input type="text" id="delete-confirm" required pattern="DELETE" placeholder="Type DELETE here">
                     </div>
                     <div class="form-actions">
-                        <button type="button" class="cancel-btn" onclick="closeModal('delete-account-modal')">Cancel</button>
-                        <button type="submit" class="delete-btn">Delete My Account</button>
+                        <button type="button" class="cancel-btn" onclick="closeModal('delete-account-modal')" translate="yes">Cancel</button>
+                        <button type="submit" class="delete-btn" translate="yes">Delete My Account</button>
                     </div>
                 </form>
             </div>

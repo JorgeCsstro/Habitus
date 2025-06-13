@@ -291,7 +291,7 @@ $debugInfo = [
                                         <!-- Rotation indicator if item has variants -->
                                         <?php if (!empty($rotationVariants)): ?>
                                             <div class="rotation-indicator" title="This item can be rotated">
-                                                <img src="../images/icons/rotate.svg" alt="Rotatable">
+                                                <img src="../images/icons/rotate-icon.webp" alt="Rotatable">
                                             </div>
                                         <?php endif; ?>
                                         

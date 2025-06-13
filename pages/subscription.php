@@ -287,7 +287,7 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                             </div>
                         </div>
                         <div class="faq-item">
-                            <button class="faq-question" onclick="toggleFaq(this)">
+                            <button class="faq-question" onclick="toggleFaq(this)" translate="yes">
                                 What payment methods do you accept?
                                 <img src="../images/icons/arrow_down-icon.webp" alt="Toggle">
                             </button>
@@ -296,7 +296,7 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                             </div>
                         </div>
                         <div class="faq-item">
-                            <button class="faq-question" onclick="toggleFaq(this)">
+                            <button class="faq-question" onclick="toggleFaq(this)" translate="yes">
                                 Can I change plans later?
                                 <img src="../images/icons/arrow_down-icon.webp" alt="Toggle">
                             </button>
