@@ -175,16 +175,6 @@ if (isset($_SESSION['user_id'])) {
                         <p>Design your virtual space with items purchased from our shop. Express yourself through customization and decoration.</p>
                     </div>
                 </div>
-                
-                <!-- <div class="feature">
-                    <div class="feature-icon">
-                        <img src="images/icons/dashboard-icon.webp" alt="Dashboard Icon">
-                    </div>
-                    <div class="feature-text">
-                        <h3>Adaptable Dashboard</h3>
-                        <p>Arrange your dashboard to suit your workflow. Prioritize the components that matter most to your productivity.</p>
-                    </div>
-                </div> -->
             </div>
         </section>
 
@@ -227,33 +217,6 @@ if (isset($_SESSION['user_id'])) {
                     </div>
                     <h3>Grow</h3>
                     <p>Build lasting habits, achieve goals, and watch your virtual space evolve</p>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Testimonials section -->
-        <section class="testimonials">
-            <h2 class="section-title">What Our Users Say</h2>
-            
-            <div class="testimonial-slider">
-                <div class="testimonial">
-                    <div class="quote">"Habitus has transformed how I approach my daily routine. The streak system keeps me motivated, and watching my virtual space grow feels incredibly rewarding."</div>
-                    <div class="author">- Alex S.</div>
-                </div>
-                
-                <div class="testimonial">
-                    <div class="quote">"I've tried many productivity apps, but none have kept me engaged like Habitus. Creating my own tasks with custom rewards makes habit-building feel personal and meaningful."</div>
-                    <div class="author">- Jamie P.</div>
-                </div>
-                
-                <div class="testimonial">
-                    <div class="quote">"The visualization of progress through my Habitus space has been a game-changer. It's not just about checking off tasks; it's about building something beautiful through consistency."</div>
-                    <div class="author">- Taylor K.</div>
-                </div>
-                
-                <div class="testimonial">
-                    <div class="quote">"As someone who struggled with maintaining habits, the gamification aspect of Habitus makes me excited to complete my daily tasks. It's turned productivity into something I look forward to."</div>
-                    <div class="author">- Morgan L.</div>
                 </div>
             </div>
         </section>

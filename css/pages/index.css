@@ -427,51 +427,6 @@ body {
     font-size: 0.95rem;
 }
 
-/* Testimonials section */
-.testimonials {
-    padding: 80px 5%;
-    text-align: center;
-    background-color: var(--bg-secondary);
-}
-
-.testimonial-slider {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    gap: 20px;
-    padding: 20px 0;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-.testimonial-slider::-webkit-scrollbar {
-    display: none;
-}
-
-.testimonial {
-    scroll-snap-align: start;
-    min-width: 280px;
-    max-width: 350px;
-    padding: 30px;
-    background-color: white;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    margin: 10px;
-}
-
-.quote {
-    font-size: 1.1rem;
-    font-style: italic;
-    color: var(--text-primary);
-    margin-bottom: 20px;
-    line-height: 1.6;
-}
-
-.author {
-    font-weight: 600;
-    color: var(--secondary);
-}
-
 /* Final CTA section */
 .final-cta {
     padding: 100px 5%;
