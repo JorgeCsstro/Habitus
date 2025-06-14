@@ -69,7 +69,11 @@ function initCarousel() {
     
     // Function to update carousel position and indicators
     function updateCarousel() {
-        // Update carousel position
+        // Add transitioning class for fade effect
+        const carouselContainer = document.querySelector('.carousel-container');
+        carouselContainer.classList.add('transitioning');
+        
+        // Update carousel position with enhanced timing
         carousel.style.transform = `translateX(-${currentSlide * 100}%)`;
         
         // Update indicators
@@ -80,6 +84,11 @@ function initCarousel() {
                 indicator.classList.remove('active');
             }
         });
+        
+        // Remove transitioning class after animation
+        setTimeout(() => {
+            carouselContainer.classList.remove('transitioning');
+        }, 600);
     }
 }
 

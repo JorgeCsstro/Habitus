@@ -240,7 +240,18 @@ $themes = [
                             </div>
                             <span class="button-arrow">›</span>
                         </button>
-                        
+
+                        <button class="setting-button" onclick="logoutUser()">
+                            <span class="button-icon">
+                                <img src="../images/icons/logout-icon.webp" alt="Logout">
+                            </span>
+                            <div class="button-text">
+                                <span class="button-title" translate="yes">Logout</span>
+                                <span class="button-description" translate="yes">Sign out of your account</span>
+                            </div>
+                            <span class="button-arrow">›</span>
+                        </button>
+
                         <button class="setting-button danger" onclick="showDeleteAccountModal()">
                             <span class="button-icon">
                                 <img src="../images/icons/trash.webp" alt="Delete">

@@ -500,6 +500,20 @@ async function changeLanguage(languageCode) {
 }
 
 /**
+ * Handle user logout
+ */
+function logoutUser() {
+    // Show confirmation dialog
+    if (confirm('Are you sure you want to logout?')) {
+        // Show loading notification
+        showNotification('Logging out...', 'info');
+        
+        // Redirect to logout page
+        window.location.href = '../pages/logout.php';
+    }
+}
+
+/**
  * Show change password modal
  */
 function showChangePasswordModal() {

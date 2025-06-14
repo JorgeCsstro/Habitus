@@ -85,6 +85,7 @@ if (isset($_SESSION['user_id'])) {
                     <button class="carousel-indicator active" data-slide="0"></button>
                     <button class="carousel-indicator" data-slide="1"></button>
                     <button class="carousel-indicator" data-slide="2"></button>
+                    <button class="carousel-indicator" data-slide="3"></button>
                 </div>
             </div>
         </section>
