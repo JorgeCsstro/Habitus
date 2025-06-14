@@ -140,45 +140,28 @@ function updateUserSetting($userId, $setting, $value) {
             error_log("🎨 Theme update request - User: {$userId}, Setting: {$setting}, Value: {$value}");
         }
         
-        // FIXED: For theme and language, update the users table directly using PDO
-        if ($setting === 'theme' || $setting === 'language') {
-            $updateStmt = $conn->prepare("UPDATE users SET {$setting} = ? WHERE id = ?");
-            $success = $updateStmt->execute([$validatedValue, $userId]);
-            
-            if ($success) {
-                if ($setting === 'theme') {
-                    error_log("✅ Theme updated successfully in database: User {$userId} -> {$validatedValue}");
-                } else {
-                    error_log("User {$userId} updated {$setting} to '{$validatedValue}' in users table");
-                }
-                
-                // Update session to reflect the change immediately
-                if ($setting === 'theme') {
-                    $_SESSION['user_theme'] = $validatedValue;
-                }
-            } else {
-                throw new Exception("Database update failed");
-            }
-        } else {
-            // For other settings, use user_settings table
-            $checkStmt = $conn->prepare("SELECT id FROM user_settings WHERE user_id = ? AND setting_name = ?");
-            $checkStmt->execute([$userId, $setting]);
-            $result = $checkStmt->fetch();
-            
-            if ($result) {
-                // Update existing setting
-                $updateStmt = $conn->prepare("UPDATE user_settings SET setting_value = ?, updated_at = NOW() WHERE user_id = ? AND setting_name = ?");
-                $success = $updateStmt->execute([$validatedValue, $userId, $setting]);
-            } else {
-                // Insert new setting
-                $insertStmt = $conn->prepare("INSERT INTO user_settings (user_id, setting_name, setting_value, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())");
-                $success = $insertStmt->execute([$userId, $setting, $validatedValue]);
-            }
+        // All settings now go to users table
+        $allowedColumns = [
+            'theme', 'language', 'auto_translation', 'translation_quality', 
+            'high_quality_translation', 'email_notifications', 'task_reminders', 
+            'preferred_language', 'theme_preference'
+        ];
+        
+        if (!in_array($setting, $allowedColumns)) {
+            throw new InvalidArgumentException("Setting not allowed: " . htmlspecialchars($setting));
         }
         
+        // Handle preferred_language -> language mapping
+        $columnName = ($setting === 'preferred_language') ? 'language' : $setting;
+        
+        $updateStmt = $conn->prepare("UPDATE users SET {$columnName} = ? WHERE id = ?");
+        $success = $updateStmt->execute([$validatedValue, $userId]);
+        
         if ($success) {
-            // Enhanced return for theme changes
             if ($setting === 'theme') {
+                error_log("✅ Theme updated successfully in database: User {$userId} -> {$validatedValue}");
+                $_SESSION['user_theme'] = $validatedValue;
+                
                 return [
                     'success' => true,
                     'message' => 'Theme updated successfully',
@@ -187,8 +170,7 @@ function updateUserSetting($userId, $setting, $value) {
                     'theme' => $validatedValue
                 ];
             } else {
-                // Log the setting change for other settings
-                error_log("User {$userId} updated setting '{$setting}' to '{$validatedValue}'");
+                error_log("User {$userId} updated {$setting} to '{$validatedValue}' in users table");
                 
                 return [
                     'success' => true,
