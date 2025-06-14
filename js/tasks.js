@@ -186,8 +186,8 @@ function initializeTaskForm() {
 }
 
 /**
- * Change tab and update URL
- * @param {string} tabName - Name of the tab to show
+ * Change active task tab
+ * @param {string} tabName - Name of tab to activate
  */
 function changeTab(tabName) {
     // Validate tab name
@@ -207,11 +207,20 @@ function changeTab(tabName) {
     document.getElementById(tabName + '-tab').classList.add('active');
     document.querySelector(`.tab[onclick="changeTab('${tabName}')"]`).classList.add('active');
     
+    // Trigger translation for newly visible content
+    if (window.habitusTranslator && window.habitusTranslator.currentLanguage !== 'en') {
+        // Small delay to ensure content is visible before translating
+        setTimeout(() => {
+            window.habitusTranslator.translatePage();
+        }, 50);
+    }
+    
     // Update URL without reloading page
     const url = new URL(window.location);
     url.searchParams.set('tab', tabName);
     window.history.pushState({}, '', url);
 }
+
 
 /**
  * Open modal to create or edit a task

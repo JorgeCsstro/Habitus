@@ -319,15 +319,22 @@ $themes = [
     </div>
 
     <!-- Scripts -->
-    <!-- Load theme manager FIRST -->
+    <script src="../js/main.js"></script>
+
+    <script>
+    // REQUIRED: Theme initialization for ALL pages
+    window.initialTheme = '<?php echo $currentTheme; ?>';
+    document.documentElement.setAttribute('data-theme', window.initialTheme);
+    document.body.classList.add('theme-' + window.initialTheme);
+    </script>
+
+    <!-- Load theme manager on ALL pages -->
     <script src="../js/theme-manager.js"></script>
-    
-    <!-- Then load settings script -->
     <script src="../js/settings.js"></script>
-    
+
     <!-- Load translation manager -->
     <script src="../js/translation-manager.js"></script>
-    
+
     <!-- Load header script -->
     <script src="../js/header.js"></script>
     <script>

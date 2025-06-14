@@ -292,7 +292,7 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                                 <img src="../images/icons/arrow_down-icon.webp" alt="Toggle">
                             </button>
                             <div class="faq-answer">
-                                <p translate="yes">We accept all major credit and debit cards through our secure payment processor <b>Stripe<b>. Your payment information is encrypted and never stored on our servers.</p>
+                                <p translate="yes">We accept all major credit and debit cards through our secure payment processor Stripe. Your payment information is encrypted and never stored on our servers.</p>
                             </div>
                         </div>
                         <div class="faq-item">
@@ -389,6 +389,29 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
         if (!window.stripeConfig.publishableKey.startsWith('pk_')) {
             console.error('Invalid Stripe publishable key format - should start with pk_');
             window.stripeConfig = null;
+        }
+    }
+
+    function toggleFaq(button) {
+        // Get the answer div (next sibling of the button)
+        const answer = button.nextElementSibling;
+        const isActive = button.classList.contains('active');
+        
+        if (isActive) {
+            // Close this FAQ
+            button.classList.remove('active');
+            answer.classList.remove('show');
+        } else {
+            // Close all other FAQs first (optional - for accordion behavior)
+            const allQuestions = document.querySelectorAll('.faq-question');
+            const allAnswers = document.querySelectorAll('.faq-answer');
+
+            allQuestions.forEach(q => q.classList.remove('active'));
+            allAnswers.forEach(a => a.classList.remove('show'));
+
+            // Open this FAQ
+            button.classList.add('active');
+            answer.classList.add('show');
         }
     }
     </script>
