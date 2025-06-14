@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 14-06-2025 a las 10:53:49
+-- Tiempo de generación: 14-06-2025 a las 16:38:09
 -- Versión del servidor: 10.11.10-MariaDB
 -- Versión de PHP: 7.2.34
 
@@ -90,8 +90,7 @@ CREATE TABLE `challenges` (
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL,
   `is_completed` tinyint(1) DEFAULT 0,
-  `use_subtasks` tinyint(1) DEFAULT 1,
-  `completed` tinyint(1) DEFAULT 0
+  `use_subtasks` tinyint(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -103,8 +102,9 @@ TRUNCATE TABLE `challenges`;
 -- Volcado de datos para la tabla `challenges`
 --
 
-INSERT INTO `challenges` (`id`, `task_id`, `start_date`, `end_date`, `is_completed`, `use_subtasks`, `completed`) VALUES
-(1, 6, '2025-06-12', '2025-07-06', 1, 1, 0);
+INSERT INTO `challenges` (`id`, `task_id`, `start_date`, `end_date`, `is_completed`, `use_subtasks`) VALUES
+(1, 6, '2025-06-12', '2025-07-06', 1, 1),
+(2, 14, '2025-06-14', '2030-07-21', 0, 1);
 
 -- --------------------------------------------------------
 
@@ -177,7 +177,9 @@ INSERT INTO `dailies` (`id`, `task_id`, `current_streak`, `highest_streak`, `res
 (4, 5, 1, 1, '08:00:00', '2025-06-13'),
 (5, 8, 1, 1, '12:00:00', '2025-06-13'),
 (6, 9, 1, 1, '01:00:00', '2025-06-13'),
-(7, 10, 1, 1, '00:00:00', '2025-06-13');
+(7, 10, 1, 1, '00:00:00', '2025-06-13'),
+(8, 11, 0, 0, '09:00:00', NULL),
+(9, 12, 0, 0, '11:00:00', NULL);
 
 -- --------------------------------------------------------
 
@@ -250,7 +252,8 @@ TRUNCATE TABLE `goals`;
 
 INSERT INTO `goals` (`id`, `task_id`, `deadline`, `use_subtasks`, `progress`, `total_steps`) VALUES
 (1, 2, '2025-06-15', 1, 1, 1),
-(2, 7, '2025-06-12', 1, 1, 1);
+(2, 7, '2025-06-12', 1, 1, 1),
+(3, 13, '2025-06-15', 1, 0, 1);
 
 -- --------------------------------------------------------
 
@@ -346,6 +349,17 @@ CREATE TABLE `placed_items` (
 --
 
 TRUNCATE TABLE `placed_items`;
+--
+-- Volcado de datos para la tabla `placed_items`
+--
+
+INSERT INTO `placed_items` (`id`, `room_id`, `inventory_id`, `surface`, `grid_x`, `grid_y`, `rotation`, `z_index`, `created_at`) VALUES
+(11, 4, 26, 'floor', 3, 4, 0, 1, '2025-06-14 12:54:22'),
+(12, 4, 27, 'floor', 5, 0, 0, 2, '2025-06-14 12:54:22'),
+(13, 4, 29, 'wall-left', 3, 1, 0, 1, '2025-06-14 12:54:22'),
+(14, 4, 28, 'floor', 2, 5, 0, 3, '2025-06-14 12:54:22'),
+(15, 4, 30, 'wall-right', 2, 3, 0, 1, '2025-06-14 12:54:22');
+
 -- --------------------------------------------------------
 
 --
@@ -649,8 +663,7 @@ CREATE TABLE `tasks` (
   `duration` int(11) DEFAULT NULL,
   `hcoin_reward` int(11) NOT NULL,
   `is_custom` tinyint(1) DEFAULT 0,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `duration_backup` int(11) DEFAULT NULL
+  `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -662,16 +675,20 @@ TRUNCATE TABLE `tasks`;
 -- Volcado de datos para la tabla `tasks`
 --
 
-INSERT INTO `tasks` (`id`, `user_id`, `type_id`, `title`, `description`, `difficulty`, `duration`, `hcoin_reward`, `is_custom`, `created_at`, `duration_backup`) VALUES
-(1, 2, 1, 'Hola', 'Hola', 'expert', 60, 75, 1, '2025-06-03 13:55:36', NULL),
-(2, 2, 2, 'Claude', '', 'hard', NULL, 53, 1, '2025-06-03 13:57:26', NULL),
-(3, 2, 1, 'ggg', '', 'expert', 60, 75, 1, '2025-06-03 14:00:27', NULL),
-(5, 1, 1, 'Hello world', 'a', 'expert', 1, 50, 1, '2025-06-12 20:50:14', NULL),
-(6, 1, 3, 'My first Challenge', 'a', 'medium', NULL, 40, 1, '2025-06-12 21:03:26', NULL),
-(7, 1, 2, 'Sample goal 7', 'This is a sample goal description.', 'medium', NULL, 38, 1, '2025-06-12 21:04:28', NULL),
-(8, 1, 1, '1', '1', 'easy', 1, 10, 1, '2025-06-13 15:20:20', NULL),
-(9, 1, 1, 'Hi', 'aaaa', 'easy', 15, 10, 1, '2025-06-13 15:28:28', NULL),
-(10, 1, 1, 'aaaaa', 'aaaa', 'hard', 15, 35, 1, '2025-06-13 15:44:43', NULL);
+INSERT INTO `tasks` (`id`, `user_id`, `type_id`, `title`, `description`, `difficulty`, `duration`, `hcoin_reward`, `is_custom`, `created_at`) VALUES
+(1, 2, 1, 'Hola', 'Hola', 'expert', 60, 75, 1, '2025-06-03 13:55:36'),
+(2, 2, 2, 'Claude', '', 'hard', NULL, 53, 1, '2025-06-03 13:57:26'),
+(3, 2, 1, 'ggg', '', 'expert', 60, 75, 1, '2025-06-03 14:00:27'),
+(5, 1, 1, 'Hello world', 'a', 'expert', 1, 50, 1, '2025-06-12 20:50:14'),
+(6, 1, 3, 'My first Challenge', 'a', 'medium', NULL, 40, 1, '2025-06-12 21:03:26'),
+(7, 1, 2, 'Sample goal 7', 'This is a sample goal description.', 'medium', NULL, 38, 1, '2025-06-12 21:04:28'),
+(8, 1, 1, '1', '1', 'easy', 1, 10, 1, '2025-06-13 15:20:20'),
+(9, 1, 1, 'Hi', 'aaaa', 'easy', 15, 10, 1, '2025-06-13 15:28:28'),
+(10, 1, 1, 'aaaaa', 'aaaa', 'hard', 15, 35, 1, '2025-06-13 15:44:43'),
+(11, 4, 1, 'Hola Mundo', 'Hola Mundo', 'easy', 1, 10, 1, '2025-06-14 11:33:51'),
+(12, 4, 1, 'Ejercicio', '', 'medium', 30, 25, 1, '2025-06-14 11:34:52'),
+(13, 4, 2, 'Terminar proyecto', '', 'hard', NULL, 53, 1, '2025-06-14 11:35:18'),
+(14, 4, 3, 'Continuar Habitus', '', 'expert', NULL, 100, 1, '2025-06-14 11:36:53');
 
 -- --------------------------------------------------------
 
@@ -778,7 +795,12 @@ INSERT INTO `transactions` (`id`, `user_id`, `amount`, `description`, `transacti
 (40, 1, 80, 'Completed Challenge: My first Challenge', 'earn', 6, 'task', NULL, NULL, 'eur', '2025-06-13 14:52:02', NULL, NULL, NULL, 'completed', NULL, NULL),
 (41, 1, 10, 'Completed Daily: 1', 'earn', 8, 'task', NULL, NULL, 'eur', '2025-06-13 15:20:24', NULL, NULL, NULL, 'completed', NULL, NULL),
 (42, 1, 10, 'Completed Daily: Hi', 'earn', 9, 'task', NULL, NULL, 'eur', '2025-06-13 15:29:12', NULL, NULL, NULL, 'completed', NULL, NULL),
-(43, 1, 35, 'Completed Daily: aaaaa', 'earn', 10, 'task', NULL, NULL, 'eur', '2025-06-13 15:44:48', NULL, NULL, NULL, 'completed', NULL, NULL);
+(43, 1, 35, 'Completed Daily: aaaaa', 'earn', 10, 'task', NULL, NULL, 'eur', '2025-06-13 15:44:48', NULL, NULL, NULL, 'completed', NULL, NULL),
+(44, 4, 300, 'Purchased: Cozy Sofa', 'spend', 4, 'shop', NULL, NULL, 'eur', '2025-06-14 11:58:21', NULL, NULL, NULL, 'completed', NULL, NULL),
+(45, 4, 25, 'Purchased: Cactus', 'spend', 8, 'shop', NULL, NULL, 'eur', '2025-06-14 11:58:21', NULL, NULL, NULL, 'completed', NULL, NULL),
+(46, 4, 120, 'Purchased: Floor Lamp', 'spend', 6, 'shop', NULL, NULL, 'eur', '2025-06-14 11:58:21', NULL, NULL, NULL, 'completed', NULL, NULL),
+(47, 4, 80, 'Purchased: Wall Clock', 'spend', 9, 'shop', NULL, NULL, 'eur', '2025-06-14 12:23:32', NULL, NULL, NULL, 'completed', NULL, NULL),
+(48, 4, 40, 'Purchased: Picture Frame', 'spend', 7, 'shop', NULL, NULL, 'eur', '2025-06-14 12:23:32', NULL, NULL, NULL, 'completed', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -917,11 +939,15 @@ CREATE TABLE `users` (
   `last_payment_failure` datetime DEFAULT NULL,
   `subscription_created_at` timestamp NULL DEFAULT NULL COMMENT 'When subscription was first created',
   `subscription_updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp() COMMENT 'Last subscription update',
-  `demo_subscription_plan` enum('adfree','premium') DEFAULT NULL,
-  `demo_subscription_date` timestamp NULL DEFAULT NULL,
   `profile_picture` varchar(255) DEFAULT 'images/icons/profile-icon.webp',
   `preferred_language` varchar(5) DEFAULT 'en',
-  `timezone` varchar(50) DEFAULT 'UTC'
+  `timezone` varchar(50) DEFAULT 'UTC',
+  `auto_translation` tinyint(1) DEFAULT 1,
+  `translation_quality` varchar(20) DEFAULT 'standard',
+  `high_quality_translation` tinyint(1) DEFAULT 0,
+  `email_notifications` tinyint(1) DEFAULT 1,
+  `task_reminders` tinyint(1) DEFAULT 1,
+  `theme_preference` varchar(20) DEFAULT 'auto'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -933,10 +959,10 @@ TRUNCATE TABLE `users`;
 -- Volcado de datos para la tabla `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `email`, `password`, `hcoin`, `subscription_type`, `subscription_expires`, `theme`, `language`, `created_at`, `last_login`, `stripe_customer_id`, `stripe_subscription_id`, `last_payment_intent`, `payment_method_id`, `payment_failures`, `last_payment_failure`, `subscription_created_at`, `subscription_updated_at`, `demo_subscription_plan`, `demo_subscription_date`, `profile_picture`, `preferred_language`, `timezone`) VALUES
-(1, 'Jorge', 'jorgecastrot2005@gmail.com', '$2y$10$JQ1TE1jvG4dWqls4/k0Ofe2.A0gcw0cKT037LucNQH6RbV.tYlSYC', 7189, 'free', NULL, 'light', 'en', '2025-06-01 12:39:17', '2025-06-13 14:13:56', 'cus_SQ1mbEWErMMsiq', 'sub_1RZfjZP82CUp8m3NlvOlPuhD', 'pi_3RZfjaP82CUp8m3N1MSlbG6k', NULL, 0, NULL, '2025-06-06 00:23:02', '2025-06-13 23:37:05', NULL, NULL, 'uploads/profiles/profile_1_1749749630.png', 'en', 'UTC'),
-(2, 'vicent', 'va.tataymocholi@edu.gva.es', '$2y$10$XyC5KYwkluqvjmJuoJibJ.x6ri/HvXVA9AJ6tEYFGst9dCqFWPZfy', 0, 'free', NULL, 'light', 'en', '2025-06-03 13:53:40', NULL, 'cus_SQn1JZL6IIaYYW', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, 'images/icons/profile-icon.webp', 'en', 'UTC'),
-(4, 'Eternal', 'eternalthehunter@gmail.com', '$2y$10$fknB6NRQ6OvVHq4qWHb/VOgwBlh.2omIpVtR7SBKd6AhJlUhtENJW', 0, 'free', NULL, 'light', 'en', '2025-06-14 10:51:12', NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, 'images/icons/profile-icon.webp', 'en', 'UTC');
+INSERT INTO `users` (`id`, `username`, `email`, `password`, `hcoin`, `subscription_type`, `subscription_expires`, `theme`, `language`, `created_at`, `last_login`, `stripe_customer_id`, `stripe_subscription_id`, `last_payment_intent`, `payment_method_id`, `payment_failures`, `last_payment_failure`, `subscription_created_at`, `subscription_updated_at`, `profile_picture`, `preferred_language`, `timezone`, `auto_translation`, `translation_quality`, `high_quality_translation`, `email_notifications`, `task_reminders`, `theme_preference`) VALUES
+(1, 'Jorge', 'jorgecastrot2005@gmail.com', '$2y$10$JQ1TE1jvG4dWqls4/k0Ofe2.A0gcw0cKT037LucNQH6RbV.tYlSYC', 7189, 'free', NULL, 'light', 'en', '2025-06-01 12:39:17', '2025-06-13 14:13:56', 'cus_SQ1mbEWErMMsiq', 'sub_1RZfjZP82CUp8m3NlvOlPuhD', 'pi_3RZfjaP82CUp8m3N1MSlbG6k', NULL, 0, NULL, '2025-06-06 00:23:02', '2025-06-13 23:37:05', 'uploads/profiles/profile_1_1749749630.png', 'en', 'UTC', 1, 'standard', 0, 1, 1, 'auto'),
+(2, 'vicent', 'va.tataymocholi@edu.gva.es', '$2y$10$XyC5KYwkluqvjmJuoJibJ.x6ri/HvXVA9AJ6tEYFGst9dCqFWPZfy', 0, 'free', NULL, 'light', 'en', '2025-06-03 13:53:40', NULL, 'cus_SQn1JZL6IIaYYW', NULL, NULL, NULL, 0, NULL, NULL, NULL, 'images/icons/profile-icon.webp', 'en', 'UTC', 1, 'standard', 0, 1, 1, 'auto'),
+(4, 'Eternal', 'eternalthehunter@gmail.com', '$2y$10$fknB6NRQ6OvVHq4qWHb/VOgwBlh.2omIpVtR7SBKd6AhJlUhtENJW', 6404, 'free', NULL, 'light', 'en', '2025-06-14 10:51:12', NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, '2025-06-14 12:23:32', 'images/icons/profile-icon.webp', 'en', 'UTC', 1, 'standard', 0, 1, 1, 'auto');
 
 --
 -- Disparadores `users`
@@ -1003,28 +1029,13 @@ TRUNCATE TABLE `user_inventory`;
 INSERT INTO `user_inventory` (`id`, `user_id`, `item_id`, `quantity`, `acquired_at`) VALUES
 (23, 1, 6, 1, '2025-06-11 17:58:36'),
 (24, 1, 4, 1, '2025-06-11 17:58:36'),
-(25, 1, 9, 1, '2025-06-11 17:58:36');
+(25, 1, 9, 1, '2025-06-11 17:58:36'),
+(26, 4, 4, 1, '2025-06-14 11:58:21'),
+(27, 4, 8, 1, '2025-06-14 11:58:21'),
+(28, 4, 6, 1, '2025-06-14 11:58:21'),
+(29, 4, 9, 1, '2025-06-14 12:23:32'),
+(30, 4, 7, 1, '2025-06-14 12:23:32');
 
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `user_settings`
---
-
-CREATE TABLE `user_settings` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `setting_name` varchar(100) NOT NULL,
-  `setting_value` text DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Truncar tablas antes de insertar `user_settings`
---
-
-TRUNCATE TABLE `user_settings`;
 -- --------------------------------------------------------
 
 --
@@ -1284,14 +1295,6 @@ ALTER TABLE `user_inventory`
   ADD KEY `item_id` (`item_id`);
 
 --
--- Indices de la tabla `user_settings`
---
-ALTER TABLE `user_settings`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `user_setting` (`user_id`,`setting_name`),
-  ADD KEY `idx_user_id` (`user_id`);
-
---
 -- AUTO_INCREMENT de las tablas volcadas
 --
 
@@ -1299,7 +1302,7 @@ ALTER TABLE `user_settings`
 -- AUTO_INCREMENT de la tabla `challenges`
 --
 ALTER TABLE `challenges`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `coupon_codes`
@@ -1311,7 +1314,7 @@ ALTER TABLE `coupon_codes`
 -- AUTO_INCREMENT de la tabla `dailies`
 --
 ALTER TABLE `dailies`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de la tabla `dashboard_layouts`
@@ -1329,7 +1332,7 @@ ALTER TABLE `demo_subscriptions`
 -- AUTO_INCREMENT de la tabla `goals`
 --
 ALTER TABLE `goals`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `item_categories`
@@ -1353,7 +1356,7 @@ ALTER TABLE `payment_methods`
 -- AUTO_INCREMENT de la tabla `placed_items`
 --
 ALTER TABLE `placed_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT de la tabla `refunds`
@@ -1413,7 +1416,7 @@ ALTER TABLE `subtasks`
 -- AUTO_INCREMENT de la tabla `tasks`
 --
 ALTER TABLE `tasks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT de la tabla `task_types`
@@ -1425,7 +1428,7 @@ ALTER TABLE `task_types`
 -- AUTO_INCREMENT de la tabla `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT de la tabla `translations`
@@ -1467,13 +1470,7 @@ ALTER TABLE `user_coupons`
 -- AUTO_INCREMENT de la tabla `user_inventory`
 --
 ALTER TABLE `user_inventory`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
-
---
--- AUTO_INCREMENT de la tabla `user_settings`
---
-ALTER TABLE `user_settings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- Restricciones para tablas volcadas
