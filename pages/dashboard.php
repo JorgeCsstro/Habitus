@@ -129,7 +129,7 @@ foreach ($placedItems as $item) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Habitus Zone</title>
+    <title>Dashboard - Habitus</title>
     
     <!-- REQUIRED: Theme CSS - Add this to ALL pages -->
     <link rel="stylesheet" href="../css/themes/<?php echo $currentTheme; ?>.css" id="theme-stylesheet">

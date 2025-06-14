@@ -585,8 +585,24 @@ function handlePasswordChange(e) {
         errors.push('Password must be at least 8 characters');
     }
     
-    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
-        errors.push('Password must contain uppercase, lowercase, and numbers');
+    if (newPassword.length < 8) {
+        errors.push('Password must be at least 8 characters');
+    }
+    
+    if (!/(?=.*[a-z])/.test(newPassword)) {
+        errors.push('Password must contain at least one lowercase letter');
+    }
+    
+    if (!/(?=.*[A-Z])/.test(newPassword)) {
+        errors.push('Password must contain at least one uppercase letter');
+    }
+    
+    if (!/(?=.*\d)/.test(newPassword)) {
+        errors.push('Password must contain at least one number');
+    }
+    
+    if (!/(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~])/.test(newPassword)) {
+        errors.push('Password must contain at least one special character');
     }
     
     if (newPassword !== confirmPassword) {

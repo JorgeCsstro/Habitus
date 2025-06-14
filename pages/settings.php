@@ -94,7 +94,7 @@ $themes = [
             <div class="settings-content">
                 <div class="settings-header">
                     <h1 translate="yes">Settings</h1>
-                    <p translate="yes">Customize your Habitus Zone experience</p>
+                    <p translate="yes">Customize your Habitus experience</p>
                 </div>
 
                 <!-- Profile Section -->

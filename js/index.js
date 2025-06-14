@@ -1,5 +1,5 @@
 /**
- * index.js - JavaScript for the Habitus Zone landing page
+ * index.js - JavaScript for the Habitus landing page
  */
 
 // Initialize landing page components when DOM is loaded

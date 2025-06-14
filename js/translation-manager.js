@@ -1,6 +1,6 @@
 // js/translation-manager.js
 /**
- * Enhanced Translation Manager for Habitus Zone
+ * Enhanced Translation Manager for Habitus
  * Handles Azure Translator Service integration and UI translation
  */
 (function() {

@@ -1,6 +1,6 @@
 <?php
 /**
- * User Settings Update API for Habitus Zone - FIXED VERSION
+ * User Settings Update API for Habitus - FIXED VERSION
  * Handles theme persistence and other user settings
  */
 

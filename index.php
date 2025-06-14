@@ -16,7 +16,7 @@ if (isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to Habitus Zone - Gamify Your Life</title>
+    <title>Welcome to Habitus - Gamify Your Life</title>
     <link rel="stylesheet" href="../css/themes/light.css" id="theme-stylesheet">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/pages/index.css">
@@ -30,8 +30,8 @@ if (isset($_SESSION['user_id'])) {
         <!-- Top navigation -->
         <nav class="landing-nav">
             <div class="logo">
-                <img src="images/logo/logo.svg" alt="Habitus Zone Logo">
-                <span>Habitus Zone</span>
+                <img src="images/logo/logo.svg" alt="Habitus Logo">
+                <span>Habitus</span>
             </div>
             <div class="nav-buttons">
                 <a href="pages/login.php" class="nav-button login-btn">Login</a>
@@ -82,9 +82,9 @@ if (isset($_SESSION['user_id'])) {
             </div>
         </section>
 
-        <!-- Why Habitus Zone Section -->
+        <!-- Why Habitus Section -->
         <section class="why-habitus" id="why-habitus">
-            <h2 class="section-title">Why Habitus Zone?</h2>
+            <h2 class="section-title">Why Habitus?</h2>
             
             <div class="benefits-container">
                 <div class="benefit-card">
@@ -182,7 +182,7 @@ if (isset($_SESSION['user_id'])) {
 
         <!-- How it works section -->
         <section class="how-it-works" id="how-it-works">
-            <h2 class="section-title">How Habitus Zone Works</h2>
+            <h2 class="section-title">How Habitus Works</h2>
             
             <div class="steps-container">
                 <div class="step">
@@ -229,12 +229,12 @@ if (isset($_SESSION['user_id'])) {
             
             <div class="testimonial-slider">
                 <div class="testimonial">
-                    <div class="quote">"Habitus Zone has transformed how I approach my daily routine. The streak system keeps me motivated, and watching my virtual space grow feels incredibly rewarding."</div>
+                    <div class="quote">"Habitus has transformed how I approach my daily routine. The streak system keeps me motivated, and watching my virtual space grow feels incredibly rewarding."</div>
                     <div class="author">- Alex S.</div>
                 </div>
                 
                 <div class="testimonial">
-                    <div class="quote">"I've tried many productivity apps, but none have kept me engaged like Habitus Zone. Creating my own tasks with custom rewards makes habit-building feel personal and meaningful."</div>
+                    <div class="quote">"I've tried many productivity apps, but none have kept me engaged like Habitus. Creating my own tasks with custom rewards makes habit-building feel personal and meaningful."</div>
                     <div class="author">- Jamie P.</div>
                 </div>
                 
@@ -244,7 +244,7 @@ if (isset($_SESSION['user_id'])) {
                 </div>
                 
                 <div class="testimonial">
-                    <div class="quote">"As someone who struggled with maintaining habits, the gamification aspect of Habitus Zone makes me excited to complete my daily tasks. It's turned productivity into something I look forward to."</div>
+                    <div class="quote">"As someone who struggled with maintaining habits, the gamification aspect of Habitus makes me excited to complete my daily tasks. It's turned productivity into something I look forward to."</div>
                     <div class="author">- Morgan L.</div>
                 </div>
             </div>
@@ -253,7 +253,7 @@ if (isset($_SESSION['user_id'])) {
         <!-- CTA section -->
         <section class="final-cta">
             <h2>Start Your Journey to Better Habits Today</h2>
-            <p>Join Habitus Zone and discover a more engaging way to build consistency, track your progress, and transform your daily routine into a rewarding experience. Create your personalized space and watch as your habits build a better you.</p>
+            <p>Join Habitus and discover a more engaging way to build consistency, track your progress, and transform your daily routine into a rewarding experience. Create your personalized space and watch as your habits build a better you.</p>
             <div class="cta-buttons">
                 <a href="pages/register.php" class="primary-button">Create Your Account</a>
                 <a href="#why-habitus" class="secondary-button">Learn More</a>
@@ -263,8 +263,8 @@ if (isset($_SESSION['user_id'])) {
         <!-- Footer -->
         <footer class="landing-footer">
             <div class="footer-logo">
-                <img src="images/logo/logo.svg" alt="Habitus Zone">
-                <span>Habitus Zone</span>
+                <img src="images/logo/logo.svg" alt="Habitus">
+                <span>Habitus</span>
             </div>
             
             <div class="footer-links">
@@ -275,7 +275,7 @@ if (isset($_SESSION['user_id'])) {
             </div>
             
             <div class="copyright">
-                &copy; <?php echo date('Y'); ?> Habitus Zone. All rights reserved.
+                &copy; <?php echo date('Y'); ?> Habitus. All rights reserved.
             </div>
         </footer>
     </div>

@@ -1,4 +1,4 @@
-// main.js - Core JavaScript functionality for Habitus Zone
+// main.js - Core JavaScript functionality for Habitus
 
 /**
  * Initialize the application when DOM content is loaded

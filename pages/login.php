@@ -6,6 +6,7 @@
 require_once '../php/include/config.php';
 require_once '../php/include/db_connect.php';
 require_once '../php/include/functions.php';
+require_once '../php/include/auth.php';
 
 // If user is already logged in, redirect to dashboard.php
 if (isset($_SESSION['user_id'])) {
@@ -64,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Habitus Zone</title>
+    <title>Login - Habitus</title>
     <link rel="stylesheet" href="../css/themes/light.css" id="theme-stylesheet">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/pages/login.css">
@@ -78,8 +79,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="auth-card">
             <div class="auth-header">
                 <a href="../index.php" class="logo">
-                    <img src="../images/logo/logo.svg" alt="Habitus Zone Logo">
-                    <span>Habitus Zone</span>
+                    <img src="../images/logo/logo.svg" alt="Habitus Logo">
+                    <span>Habitus</span>
                 </a>
                 <h1>Login to Your Account</h1>
                 <p>Welcome back! Enter your credentials to continue your productivity journey.</p>

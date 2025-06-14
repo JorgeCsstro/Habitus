@@ -18,7 +18,7 @@ if (file_exists(__DIR__ . '/../../vendor/autoload.php')) {
 }
 
 // Site configuration
-define('SITE_NAME', 'Habitus Zone');
+define('SITE_NAME', 'Habitus');
 define('SITE_URL', $_ENV['SITE_URL'] ?? 'https://habitus.zone');
 define('ADMIN_EMAIL', $_ENV['ADMIN_EMAIL'] ?? 'jorgecastrot2005@gmail.com');
 
@@ -78,7 +78,7 @@ define('STRIPE_PRICE_SUPPORTER_MONTHLY', $_ENV['STRIPE_PRICE_SUPPORTER_MONTHLY']
 
 // Payment settings
 define('PAYMENT_CURRENCY', $_ENV['PAYMENT_CURRENCY'] ?? 'eur');
-define('PAYMENT_STATEMENT_DESCRIPTOR', $_ENV['PAYMENT_STATEMENT_DESCRIPTOR'] ?? 'HABITUS ZONE');
+define('PAYMENT_STATEMENT_DESCRIPTOR', $_ENV['PAYMENT_STATEMENT_DESCRIPTOR'] ?? 'HABITUS');
 
 // Enable/disable payment methods
 define('ENABLE_APPLE_PAY', true);

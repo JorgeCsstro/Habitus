@@ -1,5 +1,5 @@
 
-# .gitignore for Habitus Zone   
+# .gitignore for Habitus   
 node_modules
 
 # Environment variables (NEVER COMMIT THIS!)

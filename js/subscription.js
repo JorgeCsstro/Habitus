@@ -69,7 +69,7 @@ class SubscriptionManager {
     }
 }
 
-// Usage in your Habitus Zone frontend
+// Usage in your Habitus frontend
 document.addEventListener('DOMContentLoaded', function() {
     const subscriptionManager = new SubscriptionManager();
     
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const result = await subscriptionManager.createSubscription(userId, 'ad_free');
         
         if (result.success) {
-            showSuccessMessage('Welcome to Ad-Free Habitus Zone!');
+            showSuccessMessage('Welcome to Ad-Free Habitus!');
             updateUIForPremiumUser();
             awardHCoins(25); // Bonus HCoins for subscribing
         } else {

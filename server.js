@@ -47,6 +47,6 @@ app.use((err, req, res, next) => {
 
 // Start the server
 app.listen(port, () => {
-  console.log(`Habitus Zone server running at http://localhost:${port}`);
+  console.log(`Habitus server running at http://localhost:${port}`);
   console.log(`Connecting to PHP server at: ${phpServerUrl}`);
 });

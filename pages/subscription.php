@@ -268,7 +268,7 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
                                 <img src="../images/icons/support-icon.webp" alt="Support">
                             </div>
                             <h3 translate="yes">Support Development</h3>
-                            <p translate="yes">Help us continue improving Habitus Zone and adding new features for everyone. Your support keeps the platform growing.</p>
+                            <p translate="yes">Help us continue improving Habitus and adding new features for everyone. Your support keeps the platform growing.</p>
                         </div>
                     </div>
                 </div>

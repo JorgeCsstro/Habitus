@@ -1,6 +1,6 @@
 <?php
 /**
- * Azure Translator Service API Endpoint for Habitus Zone
+ * Azure Translator Service API Endpoint for Habitus
  * Fixed version with proper error handling
  */
 

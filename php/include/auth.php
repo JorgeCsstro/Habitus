@@ -207,6 +207,11 @@ function validatePassword($password) {
         $errors[] = "Password must contain at least one number";
     }
     
+    // Add special character validation
+    if (!preg_match('/[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?`~]/', $password)) {
+        $errors[] = "Password must contain at least one special character";
+    }
+    
     return [
         'valid' => empty($errors),
         'errors' => $errors
