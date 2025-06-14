@@ -991,6 +991,25 @@ function updateItemPosition(itemElement, dropResult) {
         itemElement.dataset.surface = dropResult.surface;
         
         if (oldSurface !== dropResult.surface) {
+            // NEW: Update image when surface changes
+            const img = itemElement.querySelector('img');
+            if (img) {
+                const rotationVariants = itemElement.dataset.rotationVariants ? 
+                    JSON.parse(itemElement.dataset.rotationVariants) : null;
+                
+                const newImagePath = getImagePathForSurface(
+                    item.image_path,
+                    dropResult.surface,
+                    rotationVariants
+                );
+                
+                img.src = '../' + newImagePath;
+                img.onerror = function() {
+                    this.src = '../' + item.image_path;
+                    this.onerror = null;
+                };
+            }
+            
             const newContainer = document.getElementById(`placed-items-${dropResult.surface}`);
             if (newContainer) {
                 newContainer.appendChild(itemElement);
@@ -1031,6 +1050,51 @@ function rotateHeldItem() {
     }
     
     showActionFeedback(heldItem, `Rotated to ${newRotation}°`);
+}
+
+// Get the correct image path based on surface (wall-specific variants)
+function getImagePathForSurface(baseImagePath, surface, rotationVariants = null) {
+    // If it's just floor placement, use the base image
+    if (surface === 'floor') {
+        return baseImagePath;
+    }
+    
+    // Extract the base name and extension from the path
+    const pathParts = baseImagePath.split('/');
+    const filename = pathParts.pop();
+    const directory = pathParts.join('/');
+    const nameWithoutExt = filename.replace(/\.(webp|jpg|png|gif)$/i, '');
+    const extension = filename.match(/\.(webp|jpg|png|gif)$/i)?.[0] || '.webp';
+    
+    // For wall placement, try to find wall-specific variants
+    if (surface === 'wall-left') {
+        // First check if rotation_variants contains a left variant
+        if (rotationVariants && Array.isArray(rotationVariants)) {
+            const leftVariant = rotationVariants.find(variant => 
+                variant.includes('-left') && !variant.includes('-right')
+            );
+            if (leftVariant) return leftVariant;
+        }
+        
+        // Fallback: construct the left variant path
+        return `${directory}/${nameWithoutExt}-left${extension}`;
+    }
+    
+    if (surface === 'wall-right') {
+        // First check if rotation_variants contains a right variant
+        if (rotationVariants && Array.isArray(rotationVariants)) {
+            const rightVariant = rotationVariants.find(variant => 
+                variant.includes('-right') && !variant.includes('-left')
+            );
+            if (rightVariant) return rightVariant;
+        }
+        
+        // Fallback: construct the right variant path
+        return `${directory}/${nameWithoutExt}-right${extension}`;
+    }
+    
+    // Default fallback
+    return baseImagePath;
 }
 
 // Move held item to front
@@ -1279,22 +1343,47 @@ function createPlacedItem(item) {
         itemDiv.style.zIndex = item.z_index || 1;
         
         const img = document.createElement('img');
-        
+        const surface = item.surface || 'floor';
+
         let rotationVariants = item.rotation_variants || itemRotationData[item.item_id];
-        
+
+        // Parse rotation variants if they're stored as JSON string
+        if (typeof rotationVariants === 'string') {
+            try {
+                rotationVariants = JSON.parse(rotationVariants);
+            } catch (e) {
+                console.warn('Failed to parse rotation variants:', rotationVariants);
+                rotationVariants = null;
+            }
+        }
+
         if (!rotationVariants && item.image_path) {
             rotationVariants = generateRotationVariants(item.image_path);
         }
-        
-        const imagePath = getRotatedImagePath(
-            normalizeImagePath(item.image_path), 
-            item.rotation || 0, 
-            rotationVariants
-        );
-        
+
+        // NEW: Use wall-specific image if on wall
+        let imagePath;
+        if (surface === 'wall-left' || surface === 'wall-right') {
+            imagePath = getImagePathForSurface(item.image_path, surface, rotationVariants);
+        } else {
+            // Use existing rotation logic for floor items
+            imagePath = getRotatedImagePath(
+                normalizeImagePath(item.image_path), 
+                item.rotation || 0, 
+                rotationVariants
+            );
+        }
+
         img.src = '../' + imagePath;
         img.alt = item.name || 'Item';
         img.draggable = false;
+
+        // Fallback to base image if wall variant doesn't exist
+        img.onerror = function() {
+            console.warn(`Wall variant not found: ${imagePath}, falling back to base image`);
+            this.src = '../' + item.image_path;
+            this.onerror = null; // Prevent infinite loop
+        };
         
         img.onerror = function() {
             console.warn(`⚠️ Failed to load image: ${imagePath}, falling back to base image`);
@@ -1487,7 +1576,7 @@ function handleDrop(e) {
             itemToMove.grid_x = gridX;
             itemToMove.grid_y = gridY;
             itemToMove.surface = surface;
-            
+
             const itemElement = document.querySelector(`[data-id="${currentDragData.originalId}"]`);
             if (itemElement) {
                 itemElement.style.left = (gridX * CELL_SIZE) + 'px';
@@ -1495,15 +1584,34 @@ function handleDrop(e) {
                 itemElement.dataset.gridX = gridX;
                 itemElement.dataset.gridY = gridY;
                 itemElement.dataset.surface = surface;
-                
+
+                // NEW: Update image if surface changed
                 if (oldSurface !== surface) {
+                    const img = itemElement.querySelector('img');
+                    if (img) {
+                        const rotationVariants = itemElement.dataset.rotationVariants ? 
+                            JSON.parse(itemElement.dataset.rotationVariants) : null;
+
+                        const newImagePath = getImagePathForSurface(
+                            itemToMove.image_path,
+                            surface,
+                            rotationVariants
+                        );
+
+                        img.src = '../' + newImagePath;
+                        img.onerror = function() {
+                            this.src = '../' + itemToMove.image_path;
+                            this.onerror = null;
+                        };
+                    }
+
                     const newContainer = document.getElementById(`placed-items-${surface}`);
                     if (newContainer) {
                         newContainer.appendChild(itemElement);
                     }
                 }
             }
-            
+
             showNotification('Item moved!', 'success');
         }
     } else {

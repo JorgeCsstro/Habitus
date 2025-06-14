@@ -147,7 +147,7 @@ function updateCartDisplay() {
                     <div class="cart-item-details">
                         <div class="cart-item-name">${item.name}</div>
                         <div class="cart-item-price">
-                            <img src="../images/icons/hcoin.svg" alt="HCoin">
+                            <img src="../images/icons/hcoin-icon.webp" alt="HCoin">
                             <span>${item.price.toLocaleString()}</span>
                         </div>
                     </div>

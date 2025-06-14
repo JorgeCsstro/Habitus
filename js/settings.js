@@ -443,6 +443,7 @@ async function changeLanguage(languageCode) {
     }
     
     try {
+        // API call to update database
         const response = await fetch('../php/api/user/update_settings.php', {
             method: 'POST',
             headers: {
@@ -462,20 +463,21 @@ async function changeLanguage(languageCode) {
         const data = await response.json();
         
         if (data.success) {
-            // Update translation manager
+            // Update local storage
+            localStorage.setItem('userLanguage', languageCode);
+            
+            // Update translation manager (without duplicate API call)
             if (window.habitusTranslator) {
                 await window.habitusTranslator.changeLanguage(languageCode);
             }
             
-            // Update local storage
-            localStorage.setItem('userLanguage', languageCode);
-            
+            // Show SINGLE notification
             showNotification(`🌐 Language changed to ${getLanguageName(languageCode)}`, 'success');
             
             // Reload page after delay to apply server-side language changes
             setTimeout(() => {
                 window.location.reload();
-            }, 2000);
+            }, 1500);
         } else {
             throw new Error(data.error || 'Failed to update language preference');
         }
@@ -483,6 +485,12 @@ async function changeLanguage(languageCode) {
     } catch (error) {
         console.error('Language change error:', error);
         showNotification('❌ Failed to change language: ' + error.message, 'error');
+        
+        // Reset selector to previous value
+        if (select) {
+            const savedLanguage = localStorage.getItem('userLanguage') || 'en';
+            select.value = savedLanguage;
+        }
     } finally {
         if (select) {
             select.disabled = false;

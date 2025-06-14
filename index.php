@@ -49,24 +49,31 @@ if (isset($_SESSION['user_id'])) {
             <div class="carousel-container">
                 <div class="carousel">
                     <div class="carousel-slide">
-                        <img src="./images/index-intro/dashboard-preview.jpg" alt="Dashboard Preview">
+                        <img src="./images/index-intro/dashboard_intro.webp" alt="Dashboard Preview">
                         <div class="slide-caption">
-                            <h3>Personalized Dashboard</h3>
+                            <h3>Dashboard</h3>
                             <p>Track your daily tasks, challenges, and see your progress at a glance</p>
                         </div>
                     </div>
                     <div class="carousel-slide">
-                        <img src="./images/index-intro/habitus-preview.jpg" alt="Habitus Room Preview">
+                        <img src="./images/index-intro/tasks_intro.webp" alt="Shop Preview">
                         <div class="slide-caption">
-                            <h3>Customize Your Habitus</h3>
-                            <p>Design your personal space with furniture, decorations and more</p>
+                            <h3>Organize your Habits and Tasks</h3>
+                            <p>Earn HCoins to use later at the Shop to see your In Real Time Progress in your Habitus</p>
                         </div>
                     </div>
                     <div class="carousel-slide">
-                        <img src="./images/index-intro/shop-preview.jpg" alt="Shop Preview">
+                        <img src="./images/index-intro/shop_intro.webp" alt="Shop Preview">
                         <div class="slide-caption">
-                            <h3>Rewards Marketplace</h3>
-                            <p>Earn HCoins and spend them on items for your virtual space</p>
+                            <h3>Shop</h3>
+                            <p>Spend your HCoins to buy your favourite items</p>
+                        </div>
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="./images/index-intro/habitus_intro.webp" alt="Habitus Room Preview">
+                        <div class="slide-caption">
+                            <h3>Customize Your Habitus</h3>
+                            <p>Design your personal space with furniture, decorations and more</p>
                         </div>
                     </div>
                 </div>
@@ -104,7 +111,7 @@ if (isset($_SESSION['user_id'])) {
                 </div>
                 
                 <div class="benefit-card">
-                    <div class="benefit-img" style="background-image: url('images/index-intro/housing.webp');"></div>
+                    <div class="benefit-img" style="background-image: url('images/index-intro/habitus_room_intro.webp');"></div>
                     <div class="benefit-content">
                         <h3>Your Personal Sanctuary</h3>
                         <p>Create a digital space that reflects your achievements. Customize your Habitus with items earned through consistent habit building and goal completion.</p>

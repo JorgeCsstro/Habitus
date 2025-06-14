@@ -47,65 +47,53 @@
         }
 
         /**
-         * Change language with database update and automatic translation
+         * Change language and update database
+         * @param {string} languageCode - Target language code
          */
         async changeLanguage(languageCode) {
             const languageSelector = document.getElementById('language-selector');
-            
-            // Show loading state
+            if (languageSelector && languageSelector.disabled) {
+                return; // Already processing
+            }
+        
+            console.log('🌐 Changing language to:', languageCode);
+        
             if (languageSelector) {
                 languageSelector.disabled = true;
                 languageSelector.style.opacity = '0.7';
             }
-
+        
             try {
-                // Update language in database
-                const response = await fetch('../php/api/user/update_settings.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                        setting: 'language',
-                        value: languageCode
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
-                const data = await response.json();
+                // REMOVED: Duplicate API call - let settings.js handle the database update
+                // The settings.js changeLanguage function already handles the API call
                 
-                if (data.success) {
-                    // Update local variables
-                    this.currentLanguage = languageCode;
-                    localStorage.setItem('userLanguage', languageCode);
-                    
-                    // Auto-translate if not English
-                    if (languageCode !== 'en') {
-                        this.autoTranslateEnabled = true;
-                        localStorage.setItem('translationEnabled', 'true');
-                        await this.translatePage();
-                    } else {
-                        // Restore original text if switching to English
-                        this.restoreOriginalText();
-                    }
-                    
-                    this.showNotification(`🌐 Language changed to ${this.getLanguageName(languageCode)}`, 'success');
+                // Update local variables
+                this.currentLanguage = languageCode;
+                localStorage.setItem('userLanguage', languageCode);
+                
+                // Auto-translate if not English
+                if (languageCode !== 'en') {
+                    this.autoTranslateEnabled = true;
+                    localStorage.setItem('translationEnabled', 'true');
+                    await this.translatePage();
                 } else {
-                    throw new Error(data.error || 'Failed to update language preference');
+                    // Restore original text if switching to English
+                    this.restoreOriginalText();
                 }
+                
+                // REMOVED: Duplicate notification - let settings.js handle the notification
+                console.log('✅ Translation manager updated for language:', languageCode);
                 
             } catch (error) {
-                console.error('Language change error:', error);
-                this.showNotification('❌ Failed to change language: ' + error.message, 'error');
+                console.error('Translation manager language change error:', error);
                 
                 // Reset selector to previous value
                 if (languageSelector) {
                     languageSelector.value = this.currentLanguage;
                 }
+                
+                // Only show error notification from translation manager
+                this.showNotification('❌ Translation error: ' + error.message, 'error');
             } finally {
                 if (languageSelector) {
                     languageSelector.disabled = false;

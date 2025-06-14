@@ -16,7 +16,7 @@
             </div>
         </button>
         <a href="survey.php" class="survey-button" title="Improve with feedback">
-            <img src="../images/icons/survey-icon.webp" alt="Survey">
+            <img src="../images/icons/support-icon.webp" alt="Survey">
         </a>
         <div class="messages-button" id="messages-toggle" title="Notifications">
             <img src="../images/icons/messages-icon.webp" alt="Messages">

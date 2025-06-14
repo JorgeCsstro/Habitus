@@ -68,13 +68,15 @@
 .shop-item-price {
     background-color: var(--bg-panel);
     border-radius: 12px;
-    padding: 3px 8px;
+    padding: 2px 6px;
     display: flex;
     align-items: center;
     border: 1px solid var(--border-primary);
     backdrop-filter: blur(10px);
     box-shadow: 0 2px 8px var(--shadow);
     gap: 5px;
+    width: fit-content;
+    margin: 0 auto;
 }
 
 .shop-item-price img {
@@ -409,6 +411,10 @@
     
     .shop-section {
         width: 100%;
+    }
+
+    .shop-grid {
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 

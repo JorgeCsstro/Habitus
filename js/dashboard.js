@@ -511,7 +511,7 @@ function showHCoinEarnedNotification(amount) {
     const notification = document.createElement('div');
     notification.className = 'hcoin-notification';
     notification.innerHTML = `
-        <img src="../images/icons/hcoin.svg" alt="HCoin">
+        <img src="../images/icons/hcoin-icon.webp" alt="HCoin">
         <span>+${amount} HCoins earned!</span>
     `;
     
