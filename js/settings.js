@@ -2,9 +2,9 @@
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-        setupBasicSettings();
+    setupBasicSettings();
+    setupThemeListeners();
 });
-
 function setupBasicSettings() {
     // Set up form listeners
     setupFormListeners();
@@ -12,6 +12,36 @@ function setupBasicSettings() {
     // Load saved preferences
     loadSavedPreferences();
 }
+
+/**
+ * Set up theme switching event listeners
+ */
+function setupThemeListeners() {
+    // Add click event listeners to theme options
+    document.querySelectorAll('.theme-option').forEach(option => {
+        option.addEventListener('click', function(e) {
+            // Get the theme value from the radio input or data attribute
+            const radioInput = this.querySelector('input[type="radio"]');
+            const themeValue = radioInput ? radioInput.value : this.getAttribute('data-theme');
+            
+            if (themeValue) {
+                console.log(`🎨 Theme option clicked: ${themeValue}`);
+                changeTheme(themeValue);
+            }
+        });
+    });
+    
+    // Also listen for radio button changes directly
+    document.querySelectorAll('input[name="theme"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                console.log(`🎨 Theme radio changed: ${this.value}`);
+                changeTheme(this.value);
+            }
+        });
+    });
+}
+
 
 /**
  * Change theme with enhanced feedback
@@ -1003,9 +1033,6 @@ document.addEventListener('click', function(e) {
         closeModal(modalId);
     }
 });
-
-// FIXED: Export theme manager access for global use - no redeclaration
-window.getSettingsThemeManager = getThemeManager;
 
 // Initialize profile picture system when page loads
 document.addEventListener('DOMContentLoaded', function() {
