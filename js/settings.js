@@ -1008,7 +1008,7 @@ function loadTranslationSettings() {
 
 async function loadUsageStats() {
     try {
-        const response = await fetch('../php/api/translation/stats.php');
+        const response = await fetch('../php/api/user/stats.php');
         const data = await response.json();
         
         if (data.success && data.stats) {

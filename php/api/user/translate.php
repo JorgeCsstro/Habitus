@@ -4,7 +4,7 @@
  * Fixed version with proper error handling
  */
 
- // php/api/translation/translate.php
+ // php/api/user/translate.php
 
 // CRITICAL: Disable HTML error output
 ini_set('display_errors', 0);

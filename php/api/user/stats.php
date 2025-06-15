@@ -1,5 +1,5 @@
 <?php
-// php/api/translation/stats.php - Translation usage statistics
+// php/api/user/stats.php - Translation usage statistics
 
 require_once '../../include/config.php';
 require_once '../../include/db_connect.php';

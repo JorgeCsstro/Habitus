@@ -81,13 +81,7 @@ define('PAYMENT_CURRENCY', $_ENV['PAYMENT_CURRENCY'] ?? 'eur');
 define('PAYMENT_STATEMENT_DESCRIPTOR', $_ENV['PAYMENT_STATEMENT_DESCRIPTOR'] ?? 'HABITUS');
 
 // Enable/disable payment methods
-define('ENABLE_APPLE_PAY', true);
-define('ENABLE_GOOGLE_PAY', true);
 define('ENABLE_CARD_PAYMENTS', true);
-
-// Subscription settings
-define('TRIAL_DAYS', 0);
-define('CANCEL_AT_PERIOD_END', true);
 
 // Email settings
 define('SEND_PAYMENT_RECEIPTS', true);
@@ -95,13 +89,6 @@ define('PAYMENT_SUPPORT_EMAIL', 'jorgecastrot2005@gmail.com');
 
 // Webhook configuration
 define('WEBHOOK_ENDPOINT_URL', SITE_URL . '/php/api/subscription/stripe-webhook.php');
-
-// Tax settings
-define('ENABLE_TAX_COLLECTION', false);
-define('DEFAULT_TAX_RATE', 0);
-
-// Security settings
-define('REQUIRE_3D_SECURE', 'automatic');
 
 // Demo mode flag - set to false for production with real Stripe
 define('STRIPE_DEMO_MODE', false);

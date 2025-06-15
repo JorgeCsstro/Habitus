@@ -13,7 +13,7 @@
             this.translationCache = new Map();
             this.isTranslating = false;
             this.config = {
-                endpoint: '/php/api/translation/translate.php',
+                endpoint: '/php/api/user/translate.php',
                 supportedLanguages: ['en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'zh', 'ja', 'ko'],
                 cacheExpiry: 24 * 60 * 60 * 1000
             };

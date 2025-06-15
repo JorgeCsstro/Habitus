@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 14-06-2025 a las 16:38:09
+-- Tiempo de generación: 15-06-2025 a las 14:28:06
 -- Versión del servidor: 10.11.10-MariaDB
 -- Versión de PHP: 7.2.34
 
@@ -104,48 +104,8 @@ TRUNCATE TABLE `challenges`;
 
 INSERT INTO `challenges` (`id`, `task_id`, `start_date`, `end_date`, `is_completed`, `use_subtasks`) VALUES
 (1, 6, '2025-06-12', '2025-07-06', 1, 1),
-(2, 14, '2025-06-14', '2030-07-21', 0, 1);
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `coupon_codes`
---
-
-CREATE TABLE `coupon_codes` (
-  `id` int(11) NOT NULL,
-  `code` varchar(50) NOT NULL,
-  `stripe_coupon_id` varchar(255) DEFAULT NULL,
-  `discount_percent` int(11) DEFAULT NULL,
-  `discount_amount` int(11) DEFAULT NULL,
-  `duration` enum('once','repeating','forever') DEFAULT 'once',
-  `duration_in_months` int(11) DEFAULT NULL,
-  `max_redemptions` int(11) DEFAULT NULL,
-  `times_redeemed` int(11) DEFAULT 0,
-  `valid_until` datetime DEFAULT NULL,
-  `is_active` tinyint(1) DEFAULT 1,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `discount_type` enum('percent','amount') DEFAULT 'percent',
-  `applies_to` enum('all','adfree','premium') DEFAULT 'all',
-  `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Additional coupon metadata' CHECK (json_valid(`metadata`))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Truncar tablas antes de insertar `coupon_codes`
---
-
-TRUNCATE TABLE `coupon_codes`;
---
--- Volcado de datos para la tabla `coupon_codes`
---
-
-INSERT INTO `coupon_codes` (`id`, `code`, `stripe_coupon_id`, `discount_percent`, `discount_amount`, `duration`, `duration_in_months`, `max_redemptions`, `times_redeemed`, `valid_until`, `is_active`, `created_at`, `discount_type`, `applies_to`, `metadata`) VALUES
-(1, 'WELCOME20', NULL, 20, NULL, 'once', NULL, 100, 0, '2025-08-30 16:42:04', 1, '2025-05-30 16:42:04', 'percent', 'all', NULL),
-(2, 'BETA50', NULL, 50, NULL, 'once', NULL, 50, 0, '2025-06-30 16:42:04', 1, '2025-05-30 16:42:04', 'percent', 'all', NULL),
-(3, 'FRIEND15', NULL, 15, NULL, 'repeating', NULL, NULL, 0, NULL, 1, '2025-05-30 16:42:04', 'percent', 'all', NULL),
-(4, 'WELCOME25', NULL, 25, NULL, 'once', NULL, 1000, 0, '2025-12-31 23:59:59', 1, '2025-06-03 21:00:45', 'percent', 'all', NULL),
-(5, 'PREMIUM50', NULL, 50, NULL, 'once', NULL, 100, 0, '2025-08-31 23:59:59', 1, '2025-06-03 21:00:45', 'percent', 'premium', NULL),
-(6, 'SAVE1EUR', NULL, 100, NULL, 'once', NULL, 500, 0, '2025-12-31 23:59:59', 1, '2025-06-03 21:00:45', 'amount', 'adfree', NULL);
+(2, 14, '2025-06-14', '2030-07-21', 0, 1),
+(3, 17, '2025-06-14', '2025-06-21', 0, 1);
 
 -- --------------------------------------------------------
 
@@ -177,9 +137,10 @@ INSERT INTO `dailies` (`id`, `task_id`, `current_streak`, `highest_streak`, `res
 (4, 5, 1, 1, '08:00:00', '2025-06-13'),
 (5, 8, 1, 1, '12:00:00', '2025-06-13'),
 (6, 9, 1, 1, '01:00:00', '2025-06-13'),
-(7, 10, 1, 1, '00:00:00', '2025-06-13'),
+(7, 10, 2, 2, '00:00:00', '2025-06-14'),
 (8, 11, 0, 0, '09:00:00', NULL),
-(9, 12, 0, 0, '11:00:00', NULL);
+(9, 12, 0, 0, '11:00:00', NULL),
+(10, 15, 1, 1, '11:00:00', '2025-06-14');
 
 -- --------------------------------------------------------
 
@@ -205,27 +166,9 @@ TRUNCATE TABLE `dashboard_layouts`;
 INSERT INTO `dashboard_layouts` (`id`, `user_id`, `layout_json`) VALUES
 (1, 1, '{\"panels\":{\"dailies\":{\"x\":0,\"y\":0,\"w\":1,\"h\":1},\"goals\":{\"x\":0,\"y\":1,\"w\":1,\"h\":1},\"challenges\":{\"x\":1,\"y\":1,\"w\":1,\"h\":1},\"shop\":{\"x\":1,\"y\":0,\"w\":1,\"h\":1},\"habitus\":{\"x\":2,\"y\":0,\"w\":1,\"h\":2}}}'),
 (2, 2, '{\"panels\":{\"dailies\":{\"x\":0,\"y\":0,\"w\":1,\"h\":1},\"goals\":{\"x\":0,\"y\":1,\"w\":1,\"h\":1},\"challenges\":{\"x\":1,\"y\":1,\"w\":1,\"h\":1},\"shop\":{\"x\":1,\"y\":0,\"w\":1,\"h\":1},\"habitus\":{\"x\":2,\"y\":0,\"w\":1,\"h\":2}}}'),
-(4, 4, '{\"panels\":{\"dailies\":{\"x\":0,\"y\":0,\"w\":1,\"h\":1},\"goals\":{\"x\":0,\"y\":1,\"w\":1,\"h\":1},\"challenges\":{\"x\":1,\"y\":1,\"w\":1,\"h\":1},\"shop\":{\"x\":1,\"y\":0,\"w\":1,\"h\":1},\"habitus\":{\"x\":2,\"y\":0,\"w\":1,\"h\":2}}}');
+(4, 4, '{\"panels\":{\"dailies\":{\"x\":0,\"y\":0,\"w\":1,\"h\":1},\"goals\":{\"x\":0,\"y\":1,\"w\":1,\"h\":1},\"challenges\":{\"x\":1,\"y\":1,\"w\":1,\"h\":1},\"shop\":{\"x\":1,\"y\":0,\"w\":1,\"h\":1},\"habitus\":{\"x\":2,\"y\":0,\"w\":1,\"h\":2}}}'),
+(5, 5, '{\"panels\":{\"dailies\":{\"x\":0,\"y\":0,\"w\":1,\"h\":1},\"goals\":{\"x\":0,\"y\":1,\"w\":1,\"h\":1},\"challenges\":{\"x\":1,\"y\":1,\"w\":1,\"h\":1},\"shop\":{\"x\":1,\"y\":0,\"w\":1,\"h\":1},\"habitus\":{\"x\":2,\"y\":0,\"w\":1,\"h\":2}}}');
 
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `demo_subscriptions`
---
-
-CREATE TABLE `demo_subscriptions` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `plan_type` enum('adfree','premium') NOT NULL,
-  `payment_intent_id` varchar(255) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Truncar tablas antes de insertar `demo_subscriptions`
---
-
-TRUNCATE TABLE `demo_subscriptions`;
 -- --------------------------------------------------------
 
 --
@@ -253,7 +196,8 @@ TRUNCATE TABLE `goals`;
 INSERT INTO `goals` (`id`, `task_id`, `deadline`, `use_subtasks`, `progress`, `total_steps`) VALUES
 (1, 2, '2025-06-15', 1, 1, 1),
 (2, 7, '2025-06-12', 1, 1, 1),
-(3, 13, '2025-06-15', 1, 0, 1);
+(3, 13, '2025-06-15', 1, 0, 1),
+(4, 16, '2025-06-16', 1, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -358,7 +302,13 @@ INSERT INTO `placed_items` (`id`, `room_id`, `inventory_id`, `surface`, `grid_x`
 (12, 4, 27, 'floor', 5, 0, 0, 2, '2025-06-14 12:54:22'),
 (13, 4, 29, 'wall-left', 3, 1, 0, 1, '2025-06-14 12:54:22'),
 (14, 4, 28, 'floor', 2, 5, 0, 3, '2025-06-14 12:54:22'),
-(15, 4, 30, 'wall-right', 2, 3, 0, 1, '2025-06-14 12:54:22');
+(15, 4, 30, 'wall-right', 2, 3, 0, 1, '2025-06-14 12:54:22'),
+(16, 5, 31, 'floor', 1, 3, 0, 1, '2025-06-14 19:47:08'),
+(22, 1, 24, 'floor', 3, 4, 0, 1, '2025-06-14 20:11:39'),
+(23, 1, 32, 'floor', 4, 1, 180, 2, '2025-06-14 20:11:39'),
+(24, 1, 33, 'floor', 4, 2, 0, 3, '2025-06-14 20:11:39'),
+(25, 1, 34, 'wall-right', 2, 1, 0, 1, '2025-06-14 20:11:39'),
+(26, 1, 25, 'wall-left', 3, 1, 0, 1, '2025-06-14 20:11:39');
 
 -- --------------------------------------------------------
 
@@ -410,7 +360,8 @@ TRUNCATE TABLE `rooms`;
 INSERT INTO `rooms` (`id`, `user_id`, `name`, `floor_color`, `wall_color`, `created_at`, `updated_at`) VALUES
 (1, 1, 'My First Room', '#FFD700', '#E0E0E0', '2025-06-01 12:39:17', '2025-06-01 12:39:17'),
 (2, 2, 'My First Room', '#FFD700', '#E0E0E0', '2025-06-03 13:53:40', '2025-06-03 13:53:40'),
-(4, 4, 'My First Room', '#FFD700', '#E0E0E0', '2025-06-14 10:51:12', '2025-06-14 10:51:12');
+(4, 4, 'My First Room', '#FFD700', '#E0E0E0', '2025-06-14 10:51:12', '2025-06-14 10:51:12'),
+(5, 5, 'My First Room', '#FFD700', '#E0E0E0', '2025-06-14 19:43:01', '2025-06-14 19:43:01');
 
 -- --------------------------------------------------------
 
@@ -563,7 +514,11 @@ INSERT INTO `subscription_history` (`id`, `user_id`, `event_type`, `plan_type`, 
 (31, 1, 'payment_attempt', 'adfree', 0.00, NULL, NULL, NULL, NULL, '2025-06-08 11:48:29'),
 (32, 1, 'payment_attempt', 'adfree', 0.00, NULL, NULL, NULL, NULL, '2025-06-08 12:19:08'),
 (33, 1, 'payment_attempt', 'adfree', 0.00, NULL, NULL, NULL, NULL, '2025-06-08 12:19:48'),
-(34, 1, 'payment_attempt', 'premium', 0.00, NULL, NULL, NULL, NULL, '2025-06-13 22:06:02');
+(34, 1, 'payment_attempt', 'premium', 0.00, NULL, NULL, NULL, NULL, '2025-06-13 22:06:02'),
+(35, 5, 'payment_attempt', 'adfree', 0.00, NULL, NULL, NULL, NULL, '2025-06-14 19:48:14'),
+(36, 5, 'payment_attempt', 'premium', 0.00, NULL, NULL, NULL, NULL, '2025-06-14 19:49:05'),
+(37, 1, 'payment_attempt', 'adfree', 0.00, NULL, NULL, NULL, NULL, '2025-06-14 20:16:48'),
+(38, 1, 'payment_attempt', 'adfree', 0.00, NULL, NULL, NULL, NULL, '2025-06-15 13:28:01');
 
 -- --------------------------------------------------------
 
@@ -645,7 +600,9 @@ TRUNCATE TABLE `subtasks`;
 
 INSERT INTO `subtasks` (`id`, `parent_task_id`, `title`, `description`, `is_completed`, `order_position`, `created_at`) VALUES
 (1, 2, 'Hacer modo oscuro', '', 1, 0, '2025-06-03 13:57:46'),
-(2, 7, 'Holaaaa 2', '', 1, 0, '2025-06-13 14:51:52');
+(2, 7, 'Holaaaa 2', '', 1, 0, '2025-06-13 14:51:52'),
+(3, 16, 'Hi 1', '', 1, 0, '2025-06-14 19:45:15'),
+(4, 16, 'Hi 2', '', 1, 1, '2025-06-14 19:45:20');
 
 -- --------------------------------------------------------
 
@@ -688,7 +645,10 @@ INSERT INTO `tasks` (`id`, `user_id`, `type_id`, `title`, `description`, `diffic
 (11, 4, 1, 'Hola Mundo', 'Hola Mundo', 'easy', 1, 10, 1, '2025-06-14 11:33:51'),
 (12, 4, 1, 'Ejercicio', '', 'medium', 30, 25, 1, '2025-06-14 11:34:52'),
 (13, 4, 2, 'Terminar proyecto', '', 'hard', NULL, 53, 1, '2025-06-14 11:35:18'),
-(14, 4, 3, 'Continuar Habitus', '', 'expert', NULL, 100, 1, '2025-06-14 11:36:53');
+(14, 4, 3, 'Continuar Habitus', '', 'expert', NULL, 100, 1, '2025-06-14 11:36:53'),
+(15, 5, 1, 'Hello World', 'Hi', 'hard', 50, 44, 1, '2025-06-14 19:44:33'),
+(16, 5, 2, 'Hi', 'Hi', 'medium', NULL, 30, 1, '2025-06-14 19:44:58'),
+(17, 5, 3, 'Hi', '2', 'hard', NULL, 70, 1, '2025-06-14 19:45:54');
 
 -- --------------------------------------------------------
 
@@ -800,7 +760,14 @@ INSERT INTO `transactions` (`id`, `user_id`, `amount`, `description`, `transacti
 (45, 4, 25, 'Purchased: Cactus', 'spend', 8, 'shop', NULL, NULL, 'eur', '2025-06-14 11:58:21', NULL, NULL, NULL, 'completed', NULL, NULL),
 (46, 4, 120, 'Purchased: Floor Lamp', 'spend', 6, 'shop', NULL, NULL, 'eur', '2025-06-14 11:58:21', NULL, NULL, NULL, 'completed', NULL, NULL),
 (47, 4, 80, 'Purchased: Wall Clock', 'spend', 9, 'shop', NULL, NULL, 'eur', '2025-06-14 12:23:32', NULL, NULL, NULL, 'completed', NULL, NULL),
-(48, 4, 40, 'Purchased: Picture Frame', 'spend', 7, 'shop', NULL, NULL, 'eur', '2025-06-14 12:23:32', NULL, NULL, NULL, 'completed', NULL, NULL);
+(48, 4, 40, 'Purchased: Picture Frame', 'spend', 7, 'shop', NULL, NULL, 'eur', '2025-06-14 12:23:32', NULL, NULL, NULL, 'completed', NULL, NULL),
+(49, 5, 45, 'Completed Goal: Hi', 'earn', 16, 'task', NULL, NULL, 'eur', '2025-06-14 19:45:38', NULL, NULL, NULL, 'completed', NULL, NULL),
+(50, 5, 44, 'Completed Daily: Hello World', 'earn', 15, 'task', NULL, NULL, 'eur', '2025-06-14 19:46:14', NULL, NULL, NULL, 'completed', NULL, NULL),
+(51, 5, 50, 'Purchased: Wooden Chair', 'spend', 1, 'shop', NULL, NULL, 'eur', '2025-06-14 19:46:36', NULL, NULL, NULL, 'completed', NULL, NULL),
+(52, 1, 37, 'Completed Daily: aaaaa', 'earn', 10, 'task', NULL, NULL, 'eur', '2025-06-14 20:09:58', NULL, NULL, NULL, 'completed', NULL, NULL),
+(53, 1, 50, 'Purchased: Wooden Chair', 'spend', 1, 'shop', NULL, NULL, 'eur', '2025-06-14 20:11:04', NULL, NULL, NULL, 'completed', NULL, NULL),
+(54, 1, 100, 'Purchased: Simple Table', 'spend', 2, 'shop', NULL, NULL, 'eur', '2025-06-14 20:11:04', NULL, NULL, NULL, 'completed', NULL, NULL),
+(55, 1, 40, 'Purchased: Picture Frame', 'spend', 7, 'shop', NULL, NULL, 'eur', '2025-06-14 20:11:04', NULL, NULL, NULL, 'completed', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -960,9 +927,10 @@ TRUNCATE TABLE `users`;
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `hcoin`, `subscription_type`, `subscription_expires`, `theme`, `language`, `created_at`, `last_login`, `stripe_customer_id`, `stripe_subscription_id`, `last_payment_intent`, `payment_method_id`, `payment_failures`, `last_payment_failure`, `subscription_created_at`, `subscription_updated_at`, `profile_picture`, `preferred_language`, `timezone`, `auto_translation`, `translation_quality`, `high_quality_translation`, `email_notifications`, `task_reminders`, `theme_preference`) VALUES
-(1, 'Jorge', 'jorgecastrot2005@gmail.com', '$2y$10$JQ1TE1jvG4dWqls4/k0Ofe2.A0gcw0cKT037LucNQH6RbV.tYlSYC', 7189, 'free', NULL, 'light', 'en', '2025-06-01 12:39:17', '2025-06-13 14:13:56', 'cus_SQ1mbEWErMMsiq', 'sub_1RZfjZP82CUp8m3NlvOlPuhD', 'pi_3RZfjaP82CUp8m3N1MSlbG6k', NULL, 0, NULL, '2025-06-06 00:23:02', '2025-06-13 23:37:05', 'uploads/profiles/profile_1_1749749630.png', 'en', 'UTC', 1, 'standard', 0, 1, 1, 'auto'),
+(1, 'Jorge', 'jorgecastrot2005@gmail.com', '$2y$10$JQ1TE1jvG4dWqls4/k0Ofe2.A0gcw0cKT037LucNQH6RbV.tYlSYC', 7036, 'free', NULL, 'light', 'es', '2025-06-01 12:39:17', '2025-06-15 11:42:36', 'cus_SQ1mbEWErMMsiq', 'sub_1RaGbMP82CUp8m3NdeYuJI34', 'pi_3RaGbNP82CUp8m3N1l88k32l', NULL, 0, NULL, '2025-06-06 00:23:02', '2025-06-15 13:28:01', 'uploads/profiles/profile_1_1749931944.png', 'en', 'UTC', 1, 'standard', 0, 1, 1, 'auto'),
 (2, 'vicent', 'va.tataymocholi@edu.gva.es', '$2y$10$XyC5KYwkluqvjmJuoJibJ.x6ri/HvXVA9AJ6tEYFGst9dCqFWPZfy', 0, 'free', NULL, 'light', 'en', '2025-06-03 13:53:40', NULL, 'cus_SQn1JZL6IIaYYW', NULL, NULL, NULL, 0, NULL, NULL, NULL, 'images/icons/profile-icon.webp', 'en', 'UTC', 1, 'standard', 0, 1, 1, 'auto'),
-(4, 'Eternal', 'eternalthehunter@gmail.com', '$2y$10$fknB6NRQ6OvVHq4qWHb/VOgwBlh.2omIpVtR7SBKd6AhJlUhtENJW', 6404, 'free', NULL, 'light', 'en', '2025-06-14 10:51:12', NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, '2025-06-14 12:23:32', 'images/icons/profile-icon.webp', 'en', 'UTC', 1, 'standard', 0, 1, 1, 'auto');
+(4, 'Eternal', 'eternalthehunter@gmail.com', '$2y$10$fknB6NRQ6OvVHq4qWHb/VOgwBlh.2omIpVtR7SBKd6AhJlUhtENJW', 6404, 'free', NULL, 'light', 'en', '2025-06-14 10:51:12', NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, '2025-06-14 12:23:32', 'images/icons/profile-icon.webp', 'en', 'UTC', 1, 'standard', 0, 1, 1, 'auto'),
+(5, 'Moe', 'moe@gmail.com', '$2y$10$qvq/3BdPlCLRFkBJBc4CO.FJu/7ysjdrZ/mMucKkPY.evKEd.w1mq', 39, 'free', NULL, 'light', 'en', '2025-06-14 19:43:01', '2025-06-14 19:51:07', 'cus_SV03Y7jPxNBavi', 'sub_1Ra04aP82CUp8m3N5h6wk3iP', 'pi_3Ra04bP82CUp8m3N0inaxnin', NULL, 0, NULL, NULL, '2025-06-14 20:08:49', 'uploads/profiles/profile_5_1749930553.png', 'en', 'UTC', 1, 'standard', 0, 1, 1, 'auto');
 
 --
 -- Disparadores `users`
@@ -981,28 +949,6 @@ END
 $$
 DELIMITER ;
 
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `user_coupons`
---
-
-CREATE TABLE `user_coupons` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `coupon_id` int(11) NOT NULL,
-  `stripe_discount_id` varchar(255) DEFAULT NULL,
-  `applied_to_subscription` varchar(255) DEFAULT NULL,
-  `redeemed_at` timestamp NULL DEFAULT current_timestamp(),
-  `discount_amount` int(11) DEFAULT NULL COMMENT 'Actual discount amount applied',
-  `expires_at` datetime DEFAULT NULL COMMENT 'When discount expires'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Truncar tablas antes de insertar `user_coupons`
---
-
-TRUNCATE TABLE `user_coupons`;
 -- --------------------------------------------------------
 
 --
@@ -1034,7 +980,11 @@ INSERT INTO `user_inventory` (`id`, `user_id`, `item_id`, `quantity`, `acquired_
 (27, 4, 8, 1, '2025-06-14 11:58:21'),
 (28, 4, 6, 1, '2025-06-14 11:58:21'),
 (29, 4, 9, 1, '2025-06-14 12:23:32'),
-(30, 4, 7, 1, '2025-06-14 12:23:32');
+(30, 4, 7, 1, '2025-06-14 12:23:32'),
+(31, 5, 1, 1, '2025-06-14 19:46:36'),
+(32, 1, 1, 1, '2025-06-14 20:11:04'),
+(33, 1, 2, 1, '2025-06-14 20:11:04'),
+(34, 1, 7, 1, '2025-06-14 20:11:04');
 
 -- --------------------------------------------------------
 
@@ -1057,15 +1007,6 @@ ALTER TABLE `challenges`
   ADD KEY `task_id` (`task_id`);
 
 --
--- Indices de la tabla `coupon_codes`
---
-ALTER TABLE `coupon_codes`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `unique_code` (`code`),
-  ADD KEY `idx_active` (`is_active`),
-  ADD KEY `idx_stripe_coupon` (`stripe_coupon_id`);
-
---
 -- Indices de la tabla `dailies`
 --
 ALTER TABLE `dailies`
@@ -1078,15 +1019,6 @@ ALTER TABLE `dailies`
 ALTER TABLE `dashboard_layouts`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
-
---
--- Indices de la tabla `demo_subscriptions`
---
-ALTER TABLE `demo_subscriptions`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `unique_user_plan` (`user_id`,`plan_type`),
-  ADD KEY `idx_user_id` (`user_id`),
-  ADD KEY `idx_payment_intent` (`payment_intent_id`);
 
 --
 -- Indices de la tabla `goals`
@@ -1277,15 +1209,6 @@ ALTER TABLE `users`
   ADD KEY `idx_last_payment_intent` (`last_payment_intent`);
 
 --
--- Indices de la tabla `user_coupons`
---
-ALTER TABLE `user_coupons`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `unique_user_coupon` (`user_id`,`coupon_id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `coupon_id` (`coupon_id`);
-
---
 -- Indices de la tabla `user_inventory`
 --
 ALTER TABLE `user_inventory`
@@ -1302,19 +1225,13 @@ ALTER TABLE `user_inventory`
 -- AUTO_INCREMENT de la tabla `challenges`
 --
 ALTER TABLE `challenges`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de la tabla `coupon_codes`
---
-ALTER TABLE `coupon_codes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `dailies`
 --
 ALTER TABLE `dailies`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `dashboard_layouts`
@@ -1323,16 +1240,10 @@ ALTER TABLE `dashboard_layouts`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT de la tabla `demo_subscriptions`
---
-ALTER TABLE `demo_subscriptions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT de la tabla `goals`
 --
 ALTER TABLE `goals`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `item_categories`
@@ -1356,7 +1267,7 @@ ALTER TABLE `payment_methods`
 -- AUTO_INCREMENT de la tabla `placed_items`
 --
 ALTER TABLE `placed_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT de la tabla `refunds`
@@ -1368,7 +1279,7 @@ ALTER TABLE `refunds`
 -- AUTO_INCREMENT de la tabla `rooms`
 --
 ALTER TABLE `rooms`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `shop_items`
@@ -1392,7 +1303,7 @@ ALTER TABLE `subscription_analytics`
 -- AUTO_INCREMENT de la tabla `subscription_history`
 --
 ALTER TABLE `subscription_history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT de la tabla `subscription_invoices`
@@ -1410,13 +1321,13 @@ ALTER TABLE `subscription_plans`
 -- AUTO_INCREMENT de la tabla `subtasks`
 --
 ALTER TABLE `subtasks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `tasks`
 --
 ALTER TABLE `tasks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT de la tabla `task_types`
@@ -1428,7 +1339,7 @@ ALTER TABLE `task_types`
 -- AUTO_INCREMENT de la tabla `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT de la tabla `translations`
@@ -1458,19 +1369,13 @@ ALTER TABLE `updates`
 -- AUTO_INCREMENT de la tabla `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT de la tabla `user_coupons`
---
-ALTER TABLE `user_coupons`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `user_inventory`
 --
 ALTER TABLE `user_inventory`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- Restricciones para tablas volcadas
@@ -1493,12 +1398,6 @@ ALTER TABLE `dailies`
 --
 ALTER TABLE `dashboard_layouts`
   ADD CONSTRAINT `dashboard_layouts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
-
---
--- Filtros para la tabla `demo_subscriptions`
---
-ALTER TABLE `demo_subscriptions`
-  ADD CONSTRAINT `demo_subscriptions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `goals`
@@ -1580,13 +1479,6 @@ ALTER TABLE `transactions`
 --
 ALTER TABLE `translation_usage`
   ADD CONSTRAINT `translation_usage_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
-
---
--- Filtros para la tabla `user_coupons`
---
-ALTER TABLE `user_coupons`
-  ADD CONSTRAINT `user_coupons_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `user_coupons_ibfk_2` FOREIGN KEY (`coupon_id`) REFERENCES `coupon_codes` (`id`);
 
 --
 -- Filtros para la tabla `user_inventory`
