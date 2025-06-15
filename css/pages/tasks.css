@@ -688,18 +688,6 @@
     transform: translateY(-2px);
 }
 
-/* Completion animation */
-.completion-animation {
-    text-align: center;
-    margin: 20px 0;
-}
-
-.completion-animation img {
-    width: 80px;
-    height: 80px;
-    animation: pulse 1.5s infinite alternate;
-}
-
 @keyframes pulse {
     from { transform: scale(1); }
     to { transform: scale(1.1); }
@@ -942,7 +930,7 @@
     transform: translateX(20px);
 }
 
-/* Responsive adjustments */
+/* Mobile adjustments */
 @media (max-width: 768px) {
     .tasks-header {
         flex-direction: column;

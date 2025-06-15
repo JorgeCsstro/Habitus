@@ -857,7 +857,7 @@
     font-weight: 600;
 }
 
-/* Responsive */
+/* Mobile adjustments */
 @media (max-width: 768px) {
     .settings-content {
         padding: 15px;

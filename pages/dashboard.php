@@ -131,7 +131,7 @@ foreach ($placedItems as $item) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Habitus</title>
     
-    <!-- REQUIRED: Theme CSS - Add this to ALL pages -->
+    <!-- Theme CSS -->
     <link rel="stylesheet" href="../css/themes/<?php echo $currentTheme; ?>.css" id="theme-stylesheet">
     
     <!-- Your existing CSS files AFTER theme CSS -->
@@ -359,8 +359,6 @@ foreach ($placedItems as $item) {
     document.body.classList.add('theme-' + window.initialTheme);
     </script>
 
-    <!-- Load theme manager on ALL pages -->
-    <script src="../js/theme-manager.js"></script>
 
     <script src="../js/dashboard.js"></script>
     

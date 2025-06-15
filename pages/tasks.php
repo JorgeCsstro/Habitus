@@ -482,9 +482,6 @@ $challenges = getUserChallenges($_SESSION['user_id']);
                         <button class="close-modal" onclick="closeCompletionModal()">&times;</button>
                     </div>
                     <div class="modal-body">
-                        <div class="completion-animation">
-                            <img src="../images/icons/success.webp" alt="Success">
-                        </div>
                         <p id="completion-message">
                             <span translate="yes">You earned</span> <span id="earned-hcoins">0</span> <span translate="yes">HCoins!</span>
                         </p>
@@ -562,9 +559,6 @@ $challenges = getUserChallenges($_SESSION['user_id']);
     document.documentElement.setAttribute('data-theme', window.initialTheme);
     document.body.classList.add('theme-' + window.initialTheme);
     </script>
-
-    <!-- Load theme manager on ALL pages -->
-    <script src="../js/theme-manager.js"></script>
 
     <!-- Load enhanced translation manager -->
     <script src="../js/translation-manager.js"></script>

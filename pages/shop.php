@@ -205,8 +205,6 @@ $categories = $categoryStmt->fetchAll();
     document.body.classList.add('theme-' + window.initialTheme);
     </script>
 
-    <!-- Load theme manager on ALL pages -->
-    <script src="../js/theme-manager.js"></script>
     <script src="../js/shop.js"></script>
     <!-- Load translation manager -->
     <script src="../js/translation-manager.js"></script>

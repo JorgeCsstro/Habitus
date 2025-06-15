@@ -211,7 +211,7 @@ $debugInfo = [
                         <!-- Room controls -->
                         <div class="room-controls">
                             <button onclick="toggleGrid()" title="Toggle Grid">
-                                <img src="../images/icons/grid.svg" alt="Grid" translate="yes"> Grid
+                                <img src="../images/icons/grid-icon.webp" alt="Grid" translate="yes"> Grid
                             </button>
                             <span class="surface-info" translate="yes">Hold items to drag them around</span>
                         </div>
@@ -342,9 +342,6 @@ $debugInfo = [
     document.documentElement.setAttribute('data-theme', window.initialTheme);
     document.body.classList.add('theme-' + window.initialTheme);
     </script>
-
-    <!-- Load theme manager on ALL pages -->
-    <script src="../js/theme-manager.js"></script>
 
     <script src="../js/habitus-room.js"></script>
     

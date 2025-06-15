@@ -1,40 +1,40 @@
-/* css/themes/light.css - UPDATED WITH WARMER BACKGROUNDS */
+/* css/themes/light.css */
 
 html[data-theme="light"]:root,
 html[data-theme="light"] {
     /* Core Palette */
-    --primary: #3e1e04;           /* Darkest brown for primary elements */
-    --primary-light: #6a3005;     /* Dark brown for lighter variations */
-    --secondary: #965015;         /* Medium brown for secondary elements */
-    --accent: #c4923e;            /* Golden brown for accents */
-    
+    --primary: #3e1e04;          
+    --primary-light: #6a3005;   
+    --secondary: #965015;         
+    --accent: #c4923e; 
+
     /* Backgrounds */
-    --bg-primary: #e0cfb9;        /* Warm cream for main background */
-    --bg-secondary: #cbac85;      /* Light beige for headers/footers */
-    --bg-panel: #f9f6f0;          /* Soft warm panel background */
+    --bg-primary: #e0cfb9;       
+    --bg-secondary: #cbac85;      
+    --bg-panel: #f9f6f0;     
     
     /* Text */
-    --text-primary: #3e1e04;      /* Darkest brown for primary text */
-    --text-secondary: #6a3005;     /* Dark brown for secondary text */
+    --text-primary: #3e1e04;    
+    --text-secondary: #6a3005;  
     
     /* Borders */
-    --border-primary: #e6d5c0;    /* Light border derived from beige */
+    --border-primary: #e6d5c0;    
     
     /* Status Colors */
-    --success: #965015;           /* Medium brown for success */
-    --error: #c4441a;             /* Reddish brown for errors */
-    --warning: #c4923e;           /* Golden brown for warnings */
-    --info: #6a3005;              /* Dark brown for info */
+    --success: #965015;     
+    --error: #c4441a;       
+    --warning: #c4923e;     
+    --info: #6a3005;        
     
     /* Shadows */
     --shadow: rgba(62, 30, 4, 0.12);
     
     /* Button Variables */
-    --btn-bg: #3e1e04;            /* Primary button background */
-    --btn-text: #f9f6f0;          /* Warm off-white text */
+    --btn-bg: #3e1e04;           
+    --btn-text: #f9f6f0;          
     
     /* Input Variables */
-    --input-bg: #f9f6f0;          /* Warm off-white input background */
+    --input-bg: #f9f6f0;
     --input-text: #3e1e04;
     
     /* Miscellaneous */
@@ -43,7 +43,6 @@ html[data-theme="light"] {
     --benefits: #098200;
 }
 
-/* CRITICAL: Force application with maximum specificity */
 html[data-theme="light"] body {
     background-color: var(--bg-primary);
     color: var(--text-primary);

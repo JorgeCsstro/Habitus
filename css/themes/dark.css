@@ -1,37 +1,37 @@
-/* css/themes/dark.css - UPDATED WITH NEW COLOR PALETTE */
+/* css/themes/dark.css */
 
 html[data-theme="dark"]:root,
 html[data-theme="dark"] {
     /* Core Palette */
-    --primary: #b3cde0;           /* Lightest for primary elements in dark theme */
-    --primary-light: #d1e5f0;     /* Even lighter tint */
-    --secondary: #6497b1;         /* Quaternary for secondary elements */
-    --accent: #b3cde0;            /* Lightest for accents */
+    --primary: #b3cde0;           
+    --primary-light: #d1e5f0;     
+    --secondary: #6497b1;         
+    --accent: #b3cde0;            
     
     /* Backgrounds */
-    --bg-primary: #1a1a3a;        /* Darkest for main background */
-    --bg-secondary: #03396c;      /* Secondary for headers/footers */
-    --bg-panel: #1b1a55;          /* Soft warm panel background */
+    --bg-primary: #1a1a3a;        
+    --bg-secondary: #03396c;      
+    --bg-panel: #1b1a55;          
     
     /* Text */
-    --text-primary: #b3cde0;      /* Lightest for primary text */
-    --text-secondary: #6497b1;     /* Quaternary for secondary text */
+    --text-primary: #b3cde0;      
+    --text-secondary: #6497b1;    
     
     /* Borders */
-    --border-primary: #005b96;    /* Tertiary for borders */
+    --border-primary: #005b96;    
     
     /* Status Colors */
-    --success: #6497b1;           /* Using quaternary */
-    --error: #c98d8d;             /* Lightened red that works with blues */
-    --warning: #b3cde0;           /* Lightest for warnings */
-    --info: #6497b1;              /* Quaternary */
+    --success: #6497b1;           
+    --error: #c98d8d;             
+    --warning: #b3cde0;           
+    --info: #6497b1;              
     
     /* Shadows */
     --shadow: rgba(1, 31, 75, 0.4);
     
     /* Button Variables */
-    --btn-bg: #6497b1;            /* Primary button background */
-    --btn-text: #011f4b;          /* Dark text */
+    --btn-bg: #6497b1;            
+    --btn-text: #011f4b;          
     
     /* Input Variables */
     --input-bg: #005b96;
@@ -44,7 +44,6 @@ html[data-theme="dark"] {
 }
 
 
-/* CRITICAL: Force application with maximum specificity */
 html[data-theme="dark"] body {
     background-color: var(--bg-primary);
     color: var(--text-primary);

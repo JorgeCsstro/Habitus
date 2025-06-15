@@ -695,13 +695,13 @@
     .shop-panel,
     .goals-panel,
     .challenges-panel {
-        min-height: 320px; /* Reduced from 350px */
+        min-height: 320px;
     }
 
     .habitus-panel {
         grid-column: 1 / span 2;
         grid-row: 1;
-        min-height: 800px; /* Smaller panel */
+        min-height: 800px;
     }
 
     .dailies-panel, .shop-panel{
@@ -716,6 +716,7 @@
     }
 }
 
+/* Mobile adjustments */
 @media (max-width: 768px) {
     .dashboard-content {
         grid-template-columns: 1fr;
@@ -730,7 +731,7 @@
     .challenges-panel,
     .habitus-panel {
         grid-column: 1;
-        min-height: 400px; /* Reduced from 300px */
+        min-height: 400px;
     }
 
     .habitus-panel { 

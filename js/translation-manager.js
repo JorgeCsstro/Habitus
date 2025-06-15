@@ -64,8 +64,6 @@
             }
         
             try {
-                // REMOVED: Duplicate API call - let settings.js handle the database update
-                // The settings.js changeLanguage function already handles the API call
                 
                 // Update local variables
                 this.currentLanguage = languageCode;
@@ -81,7 +79,6 @@
                     this.restoreOriginalText();
                 }
                 
-                // REMOVED: Duplicate notification - let settings.js handle the notification
                 console.log('✅ Translation manager updated for language:', languageCode);
                 
             } catch (error) {

@@ -415,9 +415,6 @@ $debugMode = isset($_GET['debug']) && $_GET['debug'] === 'true';
         }
     }
     </script>
-
-    <!-- Load theme manager -->
-    <script src="../js/theme-manager.js"></script>
     
     <!-- Load subscription functionality -->
     <script src="../js/subscription-checkout.js"></script>

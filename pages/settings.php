@@ -108,7 +108,7 @@ $themes = [
                                      id="profile-picture-preview">
                                 <div class="profile-picture-overlay">
                                     <label for="profile-picture-upload" class="change-picture-btn">
-                                        <img src="../images/icons/camera.webp" alt="Change">
+                                        <img src="../images/icons/camera-icon.webp" alt="Change">
                                         <span>Change Photo</span>
                                     </label>
                                 </div>
@@ -308,7 +308,7 @@ $themes = [
             </div>
             <div class="modal-body">
                 <div class="warning-message">
-                    <img src="../images/icons/warning.webp" alt="Warning">
+                    <img src="../images/icons/warning-icon.webp" alt="Warning">
                     <p translate="yes">This action cannot be undone. All your data, including tasks, habitus items, and HCoins will be permanently deleted.</p>
                 </div>
                 <form id="delete-account-form">
@@ -339,8 +339,6 @@ $themes = [
     document.body.classList.add('theme-' + window.initialTheme);
     </script>
 
-    <!-- Load theme manager on ALL pages -->
-    <script src="../js/theme-manager.js"></script>
     <script src="../js/settings.js"></script>
 
     <!-- Load translation manager -->

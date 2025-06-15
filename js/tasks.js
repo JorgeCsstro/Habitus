@@ -527,8 +527,6 @@ function saveTask() {
                 console.log(`Task created: incrementing ${taskType} counter`);
             }
             
-            // For production, you might want to refresh the page or update the task list dynamically
-            // For now, we'll refresh to show the new/updated task
             setTimeout(() => {
                 location.href = location.pathname;
             }, 1000);
@@ -767,7 +765,7 @@ function proceedWithCompletion(button, taskId, taskType) {
             // Update UI
             const taskItem = button.closest('.task-item');
             taskItem.classList.add('completed');
-            button.innerHTML = '<img src="../images/icons/check.svg" alt="Done"> Completed';
+            button.innerHTML = '<img src="../images/icons/check.webp" alt="Done"> Completed';
             button.classList.add('done');
             button.disabled = true;
             
@@ -791,7 +789,7 @@ function proceedWithCompletion(button, taskId, taskType) {
             showNotification(data.message || 'Error completing task', 'error');
             
             // Reset button
-            button.innerHTML = '<img src="../images/icons/check.svg" alt="Complete"> Complete';
+            button.innerHTML = '<img src="../images/icons/check.webp" alt="Complete"> Complete';
             button.disabled = false;
         }
     })
@@ -800,7 +798,7 @@ function proceedWithCompletion(button, taskId, taskType) {
         showNotification('An error occurred while completing the task', 'error');
         
         // Reset button
-        button.innerHTML = '<img src="../images/icons/check.svg" alt="Complete"> Complete';
+        button.innerHTML = '<img src="../images/icons/check.webp" alt="Complete"> Complete';
         button.disabled = false;
     });
 }

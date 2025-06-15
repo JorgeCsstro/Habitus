@@ -1,42 +1,9 @@
 // js/settings.js - COMPLETE Theme System and Profile Picture Upload
 
-// FIXED: Use global theme manager - NO redeclaration
-function getThemeManager() {
-    return window.themeManager || window.getThemeManager();
-}
-
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎨 Initializing settings page theme integration...');
-    
-    // Wait for theme manager to be ready
-    if (window.themeManager) {
-        setupSettingsAfterThemeManager();
-    } else {
-        // Wait for theme manager ready event
-        window.addEventListener('themeManagerReady', setupSettingsAfterThemeManager);
-        
-        // Fallback timeout
-        setTimeout(() => {
-            if (window.themeManager) {
-                setupSettingsAfterThemeManager();
-            } else {
-                console.warn('Theme manager not available after timeout');
-                // Initialize basic functionality without theme manager
-                setupBasicSettings();
-            }
-        }, 1000);
-    }
+        setupBasicSettings();
 });
-
-function setupSettingsAfterThemeManager() {
-    console.log('✅ Setting up settings page with theme manager');
-    
-    setupThemeListeners();
-    setupBasicSettings();
-    
-    console.log('✅ Settings page initialized');
-}
 
 function setupBasicSettings() {
     // Set up form listeners
@@ -44,54 +11,6 @@ function setupBasicSettings() {
     
     // Load saved preferences
     loadSavedPreferences();
-    
-    // Add keyboard shortcuts
-    setupKeyboardShortcuts();
-}
-
-/**
- * Set up theme-related event listeners
- */
-function setupThemeListeners() {
-    // Theme radio buttons
-    document.querySelectorAll('.theme-option input[type="radio"]').forEach(input => {
-        input.addEventListener('change', function() {
-            if (this.checked) {
-                changeTheme(this.value);
-            }
-        });
-    });
-    
-    // Theme option cards (clickable)
-    document.querySelectorAll('.theme-option').forEach(option => {
-        option.addEventListener('click', function(e) {
-            // Prevent double-firing if clicking on the radio button directly
-            if (e.target.type === 'radio') return;
-            
-            const input = this.querySelector('input[type="radio"]');
-            if (input && !input.checked) {
-                input.checked = true;
-                changeTheme(input.value);
-            }
-        });
-    });
-}
-
-/**
- * Set up keyboard shortcuts
- */
-function setupKeyboardShortcuts() {
-    document.addEventListener('keydown', function(e) {
-        // Ctrl/Cmd + Shift + T to toggle theme
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'T') {
-            e.preventDefault();
-            const manager = getThemeManager();
-            if (manager) {
-                const newTheme = manager.toggleTheme();
-                showNotification(`Theme toggled to ${newTheme}!`, 'info');
-            }
-        }
-    });
 }
 
 /**
@@ -392,7 +311,7 @@ async function uploadProfilePicture(file) {
 }
 
 /**
- * FIXED: Update all profile pictures across the site with proper cache busting
+ * Update all profile pictures across the site with proper cache busting
  * @param {string} newUrl - The new image URL with cache buster
  */
 function updateAllProfilePictures(newUrl) {
