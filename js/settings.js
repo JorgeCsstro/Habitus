@@ -794,28 +794,6 @@ function exportUserData() {
 }
 
 /**
- * Clear cache
- */
-function clearCache() {
-    if (confirm('This will clear all cached data and refresh the page. Continue?')) {
-        localStorage.clear();
-        sessionStorage.clear();
-        
-        // Clear service worker cache if available
-        if ('caches' in window) {
-            caches.keys().then(names => {
-                names.forEach(name => caches.delete(name));
-            });
-        }
-        
-        showNotification('Cache cleared. Refreshing...', 'success');
-        setTimeout(() => {
-            window.location.reload(true);
-        }, 1500);
-    }
-}
-
-/**
  * Enhanced notification system
  * @param {string} message - Notification message
  * @param {string} type - Notification type (success, error, warning, info)

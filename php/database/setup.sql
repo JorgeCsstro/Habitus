@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 15-06-2025 a las 14:28:06
+-- Tiempo de generación: 15-06-2025 a las 21:04:28
 -- Versión del servidor: 10.11.10-MariaDB
 -- Versión de PHP: 7.2.34
 
@@ -134,10 +134,10 @@ TRUNCATE TABLE `dailies`;
 INSERT INTO `dailies` (`id`, `task_id`, `current_streak`, `highest_streak`, `reset_time`, `last_completed`) VALUES
 (1, 1, 1, 1, '09:00:00', '2025-06-03'),
 (2, 3, 1, 1, '00:00:00', '2025-06-03'),
-(4, 5, 1, 1, '08:00:00', '2025-06-13'),
+(4, 5, 1, 1, '08:00:00', '2025-06-15'),
 (5, 8, 1, 1, '12:00:00', '2025-06-13'),
-(6, 9, 1, 1, '01:00:00', '2025-06-13'),
-(7, 10, 2, 2, '00:00:00', '2025-06-14'),
+(6, 9, 1, 1, '01:00:00', '2025-06-15'),
+(7, 10, 3, 3, '00:00:00', '2025-06-15'),
 (8, 11, 0, 0, '09:00:00', NULL),
 (9, 12, 0, 0, '11:00:00', NULL),
 (10, 15, 1, 1, '11:00:00', '2025-06-14');
@@ -767,7 +767,10 @@ INSERT INTO `transactions` (`id`, `user_id`, `amount`, `description`, `transacti
 (52, 1, 37, 'Completed Daily: aaaaa', 'earn', 10, 'task', NULL, NULL, 'eur', '2025-06-14 20:09:58', NULL, NULL, NULL, 'completed', NULL, NULL),
 (53, 1, 50, 'Purchased: Wooden Chair', 'spend', 1, 'shop', NULL, NULL, 'eur', '2025-06-14 20:11:04', NULL, NULL, NULL, 'completed', NULL, NULL),
 (54, 1, 100, 'Purchased: Simple Table', 'spend', 2, 'shop', NULL, NULL, 'eur', '2025-06-14 20:11:04', NULL, NULL, NULL, 'completed', NULL, NULL),
-(55, 1, 40, 'Purchased: Picture Frame', 'spend', 7, 'shop', NULL, NULL, 'eur', '2025-06-14 20:11:04', NULL, NULL, NULL, 'completed', NULL, NULL);
+(55, 1, 40, 'Purchased: Picture Frame', 'spend', 7, 'shop', NULL, NULL, 'eur', '2025-06-14 20:11:04', NULL, NULL, NULL, 'completed', NULL, NULL),
+(56, 1, 39, 'Completed Daily: aaaaa', 'earn', 10, 'task', NULL, NULL, 'eur', '2025-06-15 16:16:09', NULL, NULL, NULL, 'completed', NULL, NULL),
+(57, 1, 10, 'Completed Daily: Hi', 'earn', 9, 'task', NULL, NULL, 'eur', '2025-06-15 16:17:52', NULL, NULL, NULL, 'completed', NULL, NULL),
+(58, 1, 50, 'Completed Daily: Hello world', 'earn', 5, 'task', NULL, NULL, 'eur', '2025-06-15 16:19:08', NULL, NULL, NULL, 'completed', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -927,7 +930,7 @@ TRUNCATE TABLE `users`;
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `hcoin`, `subscription_type`, `subscription_expires`, `theme`, `language`, `created_at`, `last_login`, `stripe_customer_id`, `stripe_subscription_id`, `last_payment_intent`, `payment_method_id`, `payment_failures`, `last_payment_failure`, `subscription_created_at`, `subscription_updated_at`, `profile_picture`, `preferred_language`, `timezone`, `auto_translation`, `translation_quality`, `high_quality_translation`, `email_notifications`, `task_reminders`, `theme_preference`) VALUES
-(1, 'Jorge', 'jorgecastrot2005@gmail.com', '$2y$10$JQ1TE1jvG4dWqls4/k0Ofe2.A0gcw0cKT037LucNQH6RbV.tYlSYC', 7036, 'free', NULL, 'light', 'es', '2025-06-01 12:39:17', '2025-06-15 11:42:36', 'cus_SQ1mbEWErMMsiq', 'sub_1RaGbMP82CUp8m3NdeYuJI34', 'pi_3RaGbNP82CUp8m3N1l88k32l', NULL, 0, NULL, '2025-06-06 00:23:02', '2025-06-15 13:28:01', 'uploads/profiles/profile_1_1749931944.png', 'en', 'UTC', 1, 'standard', 0, 1, 1, 'auto'),
+(1, 'Jorge', 'jorgecastrot2005@gmail.com', '$2y$10$JQ1TE1jvG4dWqls4/k0Ofe2.A0gcw0cKT037LucNQH6RbV.tYlSYC', 7135, 'free', NULL, 'light', 'fr', '2025-06-01 12:39:17', '2025-06-15 16:36:27', 'cus_SQ1mbEWErMMsiq', 'sub_1RaGbMP82CUp8m3NdeYuJI34', 'pi_3RaGbNP82CUp8m3N1l88k32l', NULL, 0, NULL, '2025-06-06 00:23:02', '2025-06-15 21:01:44', 'uploads/profiles/profile_1_1749931944.png', 'en', 'UTC', 1, 'standard', 0, 1, 1, 'auto'),
 (2, 'vicent', 'va.tataymocholi@edu.gva.es', '$2y$10$XyC5KYwkluqvjmJuoJibJ.x6ri/HvXVA9AJ6tEYFGst9dCqFWPZfy', 0, 'free', NULL, 'light', 'en', '2025-06-03 13:53:40', NULL, 'cus_SQn1JZL6IIaYYW', NULL, NULL, NULL, 0, NULL, NULL, NULL, 'images/icons/profile-icon.webp', 'en', 'UTC', 1, 'standard', 0, 1, 1, 'auto'),
 (4, 'Eternal', 'eternalthehunter@gmail.com', '$2y$10$fknB6NRQ6OvVHq4qWHb/VOgwBlh.2omIpVtR7SBKd6AhJlUhtENJW', 6404, 'free', NULL, 'light', 'en', '2025-06-14 10:51:12', NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, '2025-06-14 12:23:32', 'images/icons/profile-icon.webp', 'en', 'UTC', 1, 'standard', 0, 1, 1, 'auto'),
 (5, 'Moe', 'moe@gmail.com', '$2y$10$qvq/3BdPlCLRFkBJBc4CO.FJu/7ysjdrZ/mMucKkPY.evKEd.w1mq', 39, 'free', NULL, 'light', 'en', '2025-06-14 19:43:01', '2025-06-14 19:51:07', 'cus_SV03Y7jPxNBavi', 'sub_1Ra04aP82CUp8m3N5h6wk3iP', 'pi_3Ra04bP82CUp8m3N0inaxnin', NULL, 0, NULL, NULL, '2025-06-14 20:08:49', 'uploads/profiles/profile_5_1749930553.png', 'en', 'UTC', 1, 'standard', 0, 1, 1, 'auto');
@@ -1339,7 +1342,7 @@ ALTER TABLE `task_types`
 -- AUTO_INCREMENT de la tabla `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
 -- AUTO_INCREMENT de la tabla `translations`
